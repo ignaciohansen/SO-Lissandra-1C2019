@@ -2,7 +2,7 @@
  * BibliotecaSockets.h
  *
  *  Created on: 12/8/2017
- *      Author: Dario Poma
+ *      Author: mi_ultimo_segundo_tp
  */
 
 //--------------------------------------- Includes -------------------------------------

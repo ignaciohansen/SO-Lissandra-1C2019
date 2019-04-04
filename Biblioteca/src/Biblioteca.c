@@ -1,7 +1,7 @@
 /*
  ============================================================================
  Name        : BibliotecaGeneral.c
- Author      : Dario Poma
+ Author      : mi_ultimo_segundo_tp
  Version     : 1.0
  Copyright   : Todos los derechos reservados papu
  Description : Biblioteca general para dummies
