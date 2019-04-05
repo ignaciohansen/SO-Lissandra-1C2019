@@ -22,6 +22,9 @@ int main() {
 
 void cargarConfiguracion() {
 
+	//LORENZO, TE HAS CONFUNDIDO EN EL TEMA DE LA CONFIGURACION DE LA ESTRUCTURA DEL KERNEL
+	//POR LA CONFIGURACION DE LA ESTRUCTURA DEL FILESYSTEM
+
 	log_info(log_kernel,
 			"Por reservar memoria para variable de configuracion.");
 
@@ -40,10 +43,11 @@ void cargarConfiguracion() {
 
 		log_info(log_kernel, "Almacenando el puerto");
 
-		arc_config->puerto_escucha = config_get_int_value(configFile,
+		//Por lo que dice el texto
+		arc_config->puerto_memoria = config_get_int_value(configFile,
 				"puerto_escucha");
 
-		log_info(log_kernel, "El puerto es: %d", arc_config->puerto_escucha);
+		log_info(log_kernel, "El puerto es: %d", arc_config->puerto_memoria);
 	}
 
 }

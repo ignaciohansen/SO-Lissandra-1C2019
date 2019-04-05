@@ -14,7 +14,7 @@
 #include <commons/string.h>
 #include <commons/config.h>
 #include <commons/collections/queue.h>
-#include "../Biblioteca/src/Biblioteca.c"
+#include "../../Biblioteca/src/Biblioteca.c"
 
 #define PATH_KERNEL_CONFIG "KERNEL.txt"
 #define LOG_PATH "logKERNEL.txt"
@@ -22,11 +22,14 @@
 t_log* log_kernel;
 
 typedef struct{
-    int puerto_escucha;
-    char* punto_montaje;
-    int retardo;
-    int tamanio_value;
-    int tiempo_dump;
+
+	//Estos son los datos obligatorios que deben estar
+	char* ip_memoria;
+	int puerto_memoria;
+	int quantum; //PARA ALGORITMO ROUND ROBIN
+	int multiprocesamiento;
+	int metadata_refresh;
+	int sleep_ejecucion;
 }t_kernel_config;
 
 t_kernel_config* configFile;
