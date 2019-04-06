@@ -14,7 +14,7 @@
 #include <commons/string.h>
 #include <commons/config.h>
 #include <commons/collections/queue.h>
-#include "../../Biblioteca/src/Biblioteca.c"
+#include "../Biblioteca/src/Biblioteca.c"
 
 #define PATH_KERNEL_CONFIG "KERNEL.txt"
 #define LOG_PATH "logKERNEL.txt"
