@@ -54,36 +54,39 @@ int abrirServidorLissandra() {
 
 			return 0;
 		}
+		configFile = config_create("../LISANDRAFS.txt");
+		int puerto_a_escuchar = config_get_int_value(configFile,
+									"PUERTO_ESCUCHA");
 
-		imprimirVerde1(socketEscuchaMemoria, "Se ha creado el socket con exito con valor %d: .", socketEscuchaMemoria);
+		imprimirVerde1(log_lfilesystem, "Se ha creado el socket con exito con valor %d: .", socketEscuchaMemoria);
 
-		imprimirMensaje1(socketEscuchaMemoria,
+		imprimirMensaje1(log_lfilesystem,
 				"El socket de escucha se creo con exito, con valor %d: .", socketEscuchaMemoria);
-		imprimirMensaje(socketEscuchaMemoria,
+		imprimirMensaje(log_lfilesystem,
 				"Por asociar el socket con el puerto de escucha.");
 
-		imprimirMensaje1(socketEscuchaMemoria,
-				"El puerto que vamos a asociar es %d:", configFile->puerto_escucha);
+		imprimirMensaje1(log_lfilesystem,
+				"El puerto que vamos a asociar es %i:", puerto_a_escuchar);
 
 
-		asociarSocket(socketEscuchaMemoria,configFile->puerto_escucha,socketEscuchaMemoria);
+		asociarSocket(socketEscuchaMemoria,puerto_a_escuchar,log_lfilesystem);
 
-		imprimirMensaje(socketEscuchaMemoria,
+		imprimirMensaje(log_lfilesystem,
 						"Ya asociado al puerto lo ponemos a la escucha.");
 
-		socketEscuchar(socketEscuchaMemoria,10,socketEscuchaMemoria);
+		socketEscuchar(socketEscuchaMemoria,10,log_lfilesystem);
 
 		while(1){
-			imprimirMensaje(socketEscuchaMemoria, "En el while esperando conexiones.");
+			imprimirMensaje(log_lfilesystem, "En el while esperando conexiones.");
 
-			conexionEntrante = aceptarConexionSocket(socketEscuchaMemoria,socketEscuchaMemoria);
+			conexionEntrante = aceptarConexionSocket(socketEscuchaMemoria,log_lfilesystem);
 
 			if(conexionEntrante == ERROR){
 
-				imprimirError(socketEscuchaMemoria,"Se produjo un error al aceptar la conexion, salimos");
+				imprimirError(log_lfilesystem,"Se produjo un error al aceptar la conexion, salimos");
 				return -1;
 			} else {
-				imprimirVerde(socketEscuchaMemoria, "Se ha conectado un cliente");
+				imprimirVerde(log_lfilesystem, "Se ha conectado un cliente");
 			}
 
 			buffer = malloc(10*sizeof(char));
@@ -94,11 +97,11 @@ int abrirServidorLissandra() {
 
 
 
-			imprimirMensaje(socketEscuchaMemoria, "Mensaje recibido:");
-			imprimirVerde(socketEscuchaMemoria, buffer);
+			imprimirMensaje(log_lfilesystem, "Mensaje recibido:");
+			imprimirVerde(log_lfilesystem, buffer);
 		}
 		imprimirMensajeProceso("FIN PROCESO SOCKET");
-		log_info(socketEscuchaMemoria,
+		log_info(log_lfilesystem,
 					"Fin del proceso.");
 
 		return 1;
