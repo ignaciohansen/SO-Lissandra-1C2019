@@ -1,3 +1,4 @@
+#ifndef LFILESSYSTEM_H_
 #define LFILESSYSTEM_H_
 
 #include <stdio.h>
@@ -6,9 +7,9 @@
 #include <commons/string.h>
 #include <commons/config.h>
 #include <commons/collections/queue.h>
-#include "../../Biblioteca/src/Biblioteca.c"
+#include "../Biblioteca/src/Biblioteca.c"
 
-#define PATH_LFILESYSTEM_CONFIG "LFILESSYSTEM.txt"
+#define PATH_LFILESYSTEM_CONFIG "../LissandraFileSystem/Default/LFILESSYSTEM_CONFIG.txt"
 #define LOG_PATH "logLFILESSYSTEM.txt"
 
 t_log* log_lfilesystem;
@@ -18,7 +19,7 @@ typedef struct{
 	int puerto_escucha;
 	char* punto_montaje;
 	int retardo;
-	int tamaño_value;
+	int tamanio_value;
 	int tiempo_dump;
 
 

@@ -892,7 +892,7 @@ void imprimirAviso(ArchivoLog archivoLog, String mensaje) {
 	printf(AMARILLO);
 	puts(mensaje);
 	printf(BLANCO);
-	log_info(archivoLog, mensaje);
+	log_warning(archivoLog, mensaje);
 }
 
 void imprimirAviso1(ArchivoLog archivoLog, String mensaje, void* algo1) {
@@ -908,7 +908,7 @@ void imprimirAviso2(ArchivoLog archivoLog, String mensaje, void* algo1, void* al
 	printf(mensaje, algo1, algo2);
 	printf(BLANCO);
 	puts("");
-	log_info(archivoLog, mensaje, algo1, algo2);
+	log_warning(archivoLog, mensaje, algo1, algo2);
 }
 
 void imprimirAviso3(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3) {
@@ -916,7 +916,7 @@ void imprimirAviso3(ArchivoLog archivoLog, String mensaje, void* algo1, void* al
 	printf(mensaje, algo1, algo2, algo3);
 	printf(BLANCO);
 	puts("");
-	log_info(archivoLog, mensaje, algo1, algo2, algo3);
+	log_warning(archivoLog, mensaje, algo1, algo2, algo3);
 }
 
 void imprimirAviso4(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3, void* algo4) {
@@ -924,7 +924,7 @@ void imprimirAviso4(ArchivoLog archivoLog, String mensaje, void* algo1, void* al
 	printf(mensaje, algo1, algo2, algo3, algo4);
 	printf(BLANCO);
 	puts("");
-	log_info(archivoLog, mensaje, algo1, algo2, algo3, algo4);
+	log_warning(archivoLog, mensaje, algo1, algo2, algo3, algo4);
 }
 
 void imprimirError(ArchivoLog archivoLog, String mensaje) {
@@ -938,7 +938,7 @@ void imprimirError1(ArchivoLog archivoLog, String mensaje, void* algo1) {
 	printf(mensaje, algo1);
 	printf(BLANCO);
 	puts("");
-	log_info(archivoLog, mensaje, algo1);
+	log_error(archivoLog, mensaje, algo1);
 }
 
 void imprimirError2(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2) {
@@ -954,7 +954,7 @@ void imprimirError3(ArchivoLog archivoLog, String mensaje, void* algo1, void* al
 	printf(mensaje, algo1, algo2, algo3);
 	printf(BLANCO);
 	puts("");
-	log_info(archivoLog, mensaje, algo1, algo2, algo3);
+	log_error(archivoLog, mensaje, algo1, algo2, algo3);
 }
 
 void imprimirError4(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3, void* algo4) {
@@ -962,7 +962,14 @@ void imprimirError4(ArchivoLog archivoLog, String mensaje, void* algo1, void* al
 	printf(mensaje, algo1, algo2, algo3, algo4);
 	printf(BLANCO);
 	puts("");
-	log_info(archivoLog, mensaje, algo1, algo2, algo3, algo4);
+	log_error(archivoLog, mensaje, algo1, algo2, algo3, algo4);
+}
+
+void imprimirVerde(ArchivoLog archivoLog, String mensaje) {
+	printf(VERDE);
+	puts(mensaje);
+	printf(BLANCO);
+	log_info(archivoLog, mensaje);
 }
 
 void imprimirMensajeProceso(String mensaje) {

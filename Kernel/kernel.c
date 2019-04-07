@@ -84,7 +84,11 @@ void cargarConfiguracion() {
 
 	configFile = config_create(PATH_KERNEL_CONFIG);
 
+	imprimirMensajeProceso("CREANDO ARCHIVO CONFIG");
+
 	if (configFile != NULL) {
+
+		imprimirMensajeProceso("SE CREO ARCHIVO CONFIG");
 
 		log_info(log_kernel, "Kernel: Leyendo Archivo de Configuracion...");
 
