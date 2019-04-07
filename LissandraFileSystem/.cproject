@@ -25,8 +25,9 @@
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.952695411" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.base.260221449" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base">
-								<option id="gnu.c.link.option.libs.1788074177" superClass="gnu.c.link.option.libs" useByScannerDiscovery="false" valueType="libs">
+								<option id="gnu.c.link.option.libs.1788074177" name="Libraries (-l)" superClass="gnu.c.link.option.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" value="pthread"/>
+									<listOptionValue builtIn="false" value="readline"/>
 									<listOptionValue builtIn="false" value="m"/>
 									<listOptionValue builtIn="false" value="commons"/>
 								</option>
@@ -61,4 +62,5 @@
 		</configuration>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 </cproject>
