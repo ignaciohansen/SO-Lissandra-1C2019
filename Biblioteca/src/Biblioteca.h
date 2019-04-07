@@ -81,6 +81,7 @@ typedef t_list* Lista;
 typedef FILE* File;
 typedef int32_t Entero;
 typedef t_bitarray* Bitmap;
+struct sockaddr_in miDireccionSocket;
 
 //--------------------------------------- Estructuras -------------------------------------
 
@@ -110,16 +111,21 @@ typedef struct {
 
 //--------------------------------------- Funciones para Socket -------------------------------------
 
-void socketConfigurar(Conexion* conexion, String ip, String puerto);
-int socketCrear(Conexion* conexion, String ip, String puerto);
-void socketConectar(Conexion* conexion, Socket unSocket);
-void socketBindear(Conexion* conexion, Socket unSocket);
-void socketEscuchar(Socket unSocket, int ClientesEnEspera);
-int socketAceptar(Socket unSocket, int idEsperada);
+//void socketConfigurar(Conexion* conexion, String ip, int puerto, t_log* logger);
+//int socketCrear(Conexion* conexion, String ip, int puerto, t_log* logger);
+
+Socket nuevoSocket(t_log* logger);
+int conectarSocket(int fd_socket, const char* ipDestino, int puerto,t_log* logger);
+//void socketConectar(Conexion* conexion, Socket unSocket);
+struct sockaddr_in asociarSocket(int fd_socket, int puerto,t_log* logger);
+//void socketBindear(Conexion* conexion, Socket unSocket);
+void socketEscuchar(Socket unSocket, int ClientesEnEspera,t_log* logger);
+int aceptarConexionSocket(int fd_socket,t_log* logger);
+int socketAceptar(Socket unSocket, int idEsperada,t_log* logger);
 void socketRedireccionar(Socket unSocket);
 void socketSelect(Socket cantidadSockets, ListaSockets* listaSockets,int);
 int socketRecibir(Socket socketEmisor, Puntero buffer, int tamanioBuffer);
-int socketEnviar(Socket socketReceptor, Puntero mensaje, int tamanioMensaje);
+int socketEnviar(Socket socketReceptor, Puntero mensaje, int tamanioMensaje,t_log* logger);
 void socketCerrar(Socket unSocket);
 bool socketSonIguales(Socket unSocket, Socket otroSocket);
 bool socketSonDistintos(Socket unSocket, Socket otroSocket);
@@ -138,7 +144,7 @@ void listaSocketsLimpiar(ListaSockets* listaSockets);
 //--------------------------------------- Funciones para Mensaje -------------------------------------
 
 void* mensajeCrear(int operacion, Puntero dato, int tamanioDato);
-int mensajeEnviar(int socketReceptor, Entero operacion, void* dato, Entero tamanioDato);
+int mensajeEnviar(int socketReceptor, Entero operacion, void* dato, Entero tamanioDato, t_log* logger);
 bool mensajeOperacionIgualA(Mensaje* mensaje, int operacion);
 Mensaje* mensajeRecibir(Socket socketEmisor);
 void mensajeDestruir(Mensaje* mensaje);
@@ -265,11 +271,11 @@ void stringLimpiar(String string, int tamanioString);
 
 //--------------------------------------- Funciones de HandShake-------------------------------------
 
-int handShakeRecepcionExitosa(Socket unSocket, int idEsperada);
-int handShakeEnvioExitoso(Socket unSocket, int idProceso);
+int handShakeRecepcionExitosa(Socket unSocket, int idEsperada,t_log* logger);
+int handShakeEnvioExitoso(Socket unSocket, int idProceso,t_log* logger);
 void handShakeError(Socket unSocket);
-int handShakeRecepcionFallida(Socket unSocket, int idEsperada);
-int handShakeEnvioFallido(Socket unSocket, int idProceso);
+int handShakeRecepcionFallida(Socket unSocket, int idEsperada,t_log* logger);
+int handShakeEnvioFallido(Socket unSocket, int idProceso,t_log* logger);
 bool handShakeRealizado(Mensaje* mensaje);
 bool handShakeAceptado(Mensaje* mensaje);
 bool handShakeIdsIguales(int idEnviada, int idEsperada);

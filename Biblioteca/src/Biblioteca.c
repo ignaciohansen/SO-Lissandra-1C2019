@@ -12,20 +12,105 @@
 
 //--------------------------------------- Funciones para Socket -------------------------------------
 
-void socketConfigurar(Conexion* conexion, String ip, String puerto) {
+/*void socketConfigurar(Conexion* conexion, String ip, String puerto,t_log* logger) {
+	
 	struct addrinfo hints;
+	
+	log_info(logger,"1");
+
 	memset(&hints, NULO, sizeof(hints));
+	
+	log_info(logger,"2");
+
 	hints.ai_family = AF_UNSPEC;		// No importa si uso IPv4 o IPv6
+	
+	log_info(logger,"3");
+	
 	hints.ai_flags = AI_PASSIVE;		// Asigna el address del localhost: 127.0.0.1
+	
+	log_info(logger,"4");
+
 	hints.ai_socktype = SOCK_STREAM;	// Indica que usaremos el protocolo TCP
+	log_info(logger,"5");
+
 	getaddrinfo(ip, puerto, &hints, &conexion->informacion); // Carga en serverInfo los datos de la conexion
+	
 }
 
-Socket socketCrear(Conexion* conexion, String ip, String puerto) {
-	socketConfigurar(conexion, ip, puerto);
+/*Socket socketCrear(Conexion* conexion, String ip, String puerto, t_log* logger) {
+	log_info(logger,"Por llamar a socketConfigurar");
+	socketConfigurar(conexion, ip, puerto,logger);
+	log_info(logger,"Despues de socketConfigurar");
 	Socket unSocket = socket(conexion->informacion->ai_family, conexion->informacion->ai_socktype, conexion->informacion->ai_protocol);
 	socketError(unSocket, "socket");
 	return unSocket;
+}*/
+
+Socket nuevoSocket(t_log* logger){
+
+	log_info(logger,"En funcion nuevoSocket en el Proyecto Biblioteca, por llamar a funcion Socket()");
+
+	int fileDescriptor = socket(AF_INET, SOCK_STREAM, 0);
+	
+	if (fileDescriptor == ERROR){
+
+		log_error(logger,"Socket nos devolvio -1, no se pudo crear");
+
+		return fileDescriptor;		
+	} 
+
+	log_info(logger,"Por retornar el socket creado: %d", fileDescriptor);
+
+	return fileDescriptor;
+}
+
+int conectarSocket(int fd_socket, const char* ipDestino, int puerto,t_log* logger){
+	
+	struct sockaddr_in direccionServidor;
+
+	direccionServidor.sin_family = AF_INET;
+
+	direccionServidor.sin_port = htons(puerto);
+
+	direccionServidor.sin_addr.s_addr = inet_addr(ipDestino);
+
+	memset(&(direccionServidor.sin_zero), '\0', 8);
+
+	int resultadoConnect = connect(fd_socket, (struct sockaddr *) &direccionServidor, sizeof(struct sockaddr));
+
+	if (resultadoConnect == ERROR) {
+		
+		log_info(logger,"[SOCKETS] No se pudo realizar la conexión entre el socket y el servidor.");
+		
+		return ERROR;
+
+	} 
+
+	log_info(logger, "El resultado de connect es: %d",resultadoConnect);
+	
+	return resultadoConnect;
+	
+}
+
+struct sockaddr_in asociarSocket(int fd_socket, int puerto,t_log* logger){
+	
+	log_info(logger,"En funcion asociarSocket()");
+	
+	miDireccionSocket.sin_family = AF_INET;
+	miDireccionSocket.sin_port = htons(puerto);
+	miDireccionSocket.sin_addr.s_addr = 0; // Con htons(INADDR_ANY) (o bien, 0) usa la dirección IP de la máquina actual
+	memset(&(miDireccionSocket.sin_zero), '\0', 8); // Rellena con ceros el resto de la estructura
+
+// Si el puerto ya está siendo utilizado, lanzamos un error
+	int enUso = 1;
+	int puertoYaAsociado = setsockopt(fd_socket, SOL_SOCKET, SO_REUSEADDR, (char*) &enUso, sizeof(enUso));
+	if (puertoYaAsociado == ERROR) printf("[SOCKETS] El puerto a asociar ya está siendo utilizado.\n");
+
+// Ya comprobado el error de puerto, llamamos a bind
+	int retornoBind = bind(fd_socket, (struct sockaddr *) &miDireccionSocket, sizeof(struct sockaddr));
+	if (retornoBind == ERROR) printf("[SOCKETS] No se pudo asociar el socket al puerto.\n");
+
+	return miDireccionSocket;
 }
 
 void socketConectar(Conexion* conexion, Socket unSocket) {
@@ -34,23 +119,56 @@ void socketConectar(Conexion* conexion, Socket unSocket) {
 	freeaddrinfo(conexion->informacion);
 }
 
-void socketBindear(Conexion* conexion, Socket unSocket) {
+/*void socketBindear(Conexion* conexion, Socket unSocket) {
 	int estado = bind(unSocket, conexion->informacion->ai_addr, conexion->informacion->ai_addrlen);
 	socketError(estado, "bind");
 	freeaddrinfo(conexion->informacion);
-}
+}*/
 
-void socketEscuchar(Socket unSocket, int clientesEsperando) {
+void socketEscuchar(Socket unSocket, int clientesEsperando,t_log* logger) {
+	
+	log_info(logger,"En funcion socketEscuchar");
+	
 	int estado = listen(unSocket, clientesEsperando);
-	socketError(estado, "listen");
+	
+	if(estado == ERROR){
+
+		log_error(logger, "Error al poner el Socket en escucha");
+
+		return;
+	}
+
+	log_info(logger,"El Socket ya esta en escucha");
 }
 
-Socket socketAceptar(Socket unSocket, int idEsperada) {
+int aceptarConexionSocket(int fd_socket,t_log* logger) {
+
+	log_info(logger,"En funcion aceptarConexion");
+
+	int addres_size = sizeof(struct sockaddr_in);
+
+	struct sockaddr_storage unCliente; // sino: struct sockaddr_in unCliente;
+
+	//unsigned int addres_size = sizeof(unCliente);
+
+	log_info(logger,"Por llamar a accept");
+
+	int fdCliente = accept(fd_socket, (struct sockaddr*) &unCliente, &addres_size);
+
+	if(fdCliente == ERROR) log_error(logger,"[SOCKETS] No se pudo aceptar la conexión entrante.");
+
+	log_info(logger,"Se acepto la conexion %d", fdCliente);
+
+	return fdCliente;
+}
+
+
+Socket socketAceptar(Socket unSocket, int idEsperada,t_log* logger) {
 	Conexion conexion;
 	conexion.tamanioAddress = sizeof(SockAddrIn);
 	Socket nuevoSocket = accept(unSocket, (SockAddr)&conexion.address, &conexion.tamanioAddress);
 	if(nuevoSocket != ERROR)
-		if(handShakeRecepcionFallida(nuevoSocket, idEsperada))
+		if(handShakeRecepcionFallida(nuevoSocket, idEsperada,logger))
 			handShakeError(nuevoSocket);
 	return nuevoSocket;
 }
@@ -82,8 +200,12 @@ int socketRecibir(Socket socketEmisor, Puntero buffer, int tamanioBuffer) {
 	return estado;
 }
 
-int socketEnviar(Socket socketReceptor, Puntero mensaje, int tamanioMensaje) {
+int socketEnviar(Socket socketReceptor, Puntero mensaje, int tamanioMensaje,t_log* logger) {
+
+	log_info(logger,"En funcion socketEnviar %d, %s, %d,",socketReceptor,mensaje,tamanioMensaje);
+
 	int estado = send(socketReceptor, mensaje, tamanioMensaje, NULO);
+
 	if(estado == ERROR)
 		perror("send");
 	return estado;
@@ -112,7 +234,7 @@ void socketError(int estado, String error) {
 	}
 }
 
-Socket socketCrearListener(String ip, String puerto) {
+/*Socket socketCrearListener(String ip, String puerto) {
 	Conexion conexion;
 	conexion.tamanioAddress = sizeof(conexion.address);
 	Socket listener = socketCrear(&conexion, ip, puerto);
@@ -129,7 +251,7 @@ Socket socketCrearCliente(String ip, String puerto, int idProceso) {
 	if(handShakeEnvioFallido(unSocket, idProceso))
 		handShakeError(unSocket);
 	return unSocket;
-}
+}*/
 
 //--------------------------------------- Funciones para ListaSockets-------------------------------------
 
@@ -159,9 +281,9 @@ void* mensajeCrear(int32_t operacion, void* dato, int32_t tamanioDato){
 	return buffer;
 }
 
-int mensajeEnviar(int socketReceptor, int32_t operacion, void* dato, int32_t tamanioDato) {
+int mensajeEnviar(int socketReceptor, int32_t operacion, void* dato, int32_t tamanioDato,t_log* logger) {
 	void* buffer = mensajeCrear(operacion, dato, tamanioDato);
-	int resultado = socketEnviar(socketReceptor, buffer, sizeof(Header)+tamanioDato);
+	int resultado = socketEnviar(socketReceptor, buffer, sizeof(Header)+tamanioDato,logger);
 	free(buffer);
 	return resultado;
 }
@@ -218,21 +340,21 @@ bool mensajeDesconexion(Mensaje* mensaje) {
 
 //--------------------------------------- Funciones de HandShake-------------------------------------
 
-int handShakeEnvioExitoso(Socket unSocket, int32_t idProceso) {
+int handShakeEnvioExitoso(Socket unSocket, int32_t idProceso,t_log* logger) {
 	int32_t id = idProceso;
-	mensajeEnviar(unSocket, HANDSHAKE, &id, sizeof(int32_t));
+	mensajeEnviar(unSocket, HANDSHAKE, &id, sizeof(int32_t),logger);
 	Mensaje* mensaje = mensajeRecibir(unSocket);
 	int estado = handShakeRealizado(mensaje) && handShakeAceptado(mensaje);
 	mensajeDestruir(mensaje);
 	return estado;
 }
 
-int handShakeRecepcionExitosa(Socket unSocket, int idEsperada) {
+int handShakeRecepcionExitosa(Socket unSocket, int idEsperada,t_log* logger) {
 	Mensaje* mensaje = mensajeRecibir(unSocket);
 	int idProceso = (*(int32_t*)mensaje->datos);
 	mensajeDestruir(mensaje);
 	int32_t estado = handShakeIdsIguales(idProceso, idEsperada);
-	mensajeEnviar(unSocket, HANDSHAKE, &estado, sizeof(int32_t));
+	mensajeEnviar(unSocket, HANDSHAKE, &estado, sizeof(int32_t),logger);
 	return estado;
 }
 
@@ -248,12 +370,12 @@ bool handShakeAceptado(Mensaje* mensaje) {
 	return *((int*)mensaje->datos) == true;
 }
 
-int handShakeEnvioFallido(Socket unSocket, int idProceso) {
-	return !handShakeEnvioExitoso(unSocket, idProceso);
+int handShakeEnvioFallido(Socket unSocket, int idProceso,t_log* logger) {
+	return !handShakeEnvioExitoso(unSocket, idProceso, logger);
 }
 
-int handShakeRecepcionFallida(Socket unSocket, int idEsperada) {
-	return !handShakeRecepcionExitosa(unSocket, idEsperada);
+int handShakeRecepcionFallida(Socket unSocket, int idEsperada,t_log* logger) {
+	return !handShakeRecepcionExitosa(unSocket, idEsperada,logger);
 }
 
 void handShakeError(Socket unSocket) {
