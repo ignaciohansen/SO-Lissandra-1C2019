@@ -10,26 +10,39 @@
 void terminar_memoria(t_log* g_log);
 
 int main() {
+    /*
+     * 1) Conectar a LFS, hacer handshake: obtener "tamaño máximo de value" p. admin de paginas
+     * 2) Iniciar la memoria principal
+     * 3) Ejecutar Gossiping
+     */
 
+	// LOGGING
 	log_memoria = archivoLogCrear(LOG_PATH, "Proceso Memoria");
+	log_info(log_memoria, " \n ========== Iniciación de Pool de Memoria ========== \n \n ");
 
-	log_info(log_memoria,
-			"\n ========== Iniciación de Pool de Memoria ========== \n");
-
+	// CONFIG
 	cargarConfiguracion();
 
-	// procesamiento LQL del Pool de Memorias
+	// Lectura desde consola de Query-LQL de "Pool de Memorias"
 	char* comando = lectura_consola();
-
-	// logeo de los indicado en consola
 	log_info(log_memoria,"Se lee de consola la línea: "); log_info(log_memoria,comando);
 
-	comando = stringRemoverVaciosIzquierda(comando);
+	comando = stringRemoverVaciosIzquierda(comando); // depurado
+	switch (true){
+		case stringContiene(comando,"SELECT"):
+		case stringContiene(comando,"SELECT"):
+		case stringContiene(comando,"SELECT"):
+		case stringContiene(comando,"SELECT"):
+		case stringContiene(comando,"SELECT"):
+		case stringContiene(comando,"SELECT"):
+	}
+	/*
 	if (stringContiene(comando,"SELECT")) {
 		log_info(log_memoria,"Se encontró comando SELECT");
 	} else {
 		log_info(log_memoria,"No se encontró ningún comando");
 	}
+	*/
 
 	//terminar_memoria(log_memoria);
 	log_destroy(log_memoria);
