@@ -13,8 +13,61 @@ int main() {
 
 	log_info(log_memoria,
 			"Ya creado el Log, coninuamos cargando la estructura de configuracion.");
-
+	
 	cargarConfiguracion();
+
+	log_info(log_memoria,
+			"Se cargaron los parametros de memoria.");
+
+	socketEscuchaKernel = nuevoSocket(log_memoria);
+
+	if(socketEscuchaKernel == ERROR){
+
+		log_error(log_memoria,"Hubo un problema al querer crear el socket de escucha para memoria. Salimos del Proceso");
+
+		return 0;
+	}
+
+	log_info(log_memoria,
+			"El socket de escucha se creo con exito, con valor %d: .", socketEscuchaKernel);
+
+	log_info(log_memoria,
+			"Por asociar el socket con el puerto de escucha.");
+
+	log_info(log_memoria, "El puerto que vamos a asociar es %d:", arc_config->puerto);
+	
+	asociarSocket(socketEscuchaKernel,arc_config->puerto,log_memoria);
+
+	log_info(log_memoria,
+			"Ya asociado al puerto lo ponemos a la escucha.");
+
+	socketEscuchar(socketEscuchaKernel,10,log_memoria);
+
+	while(1){
+
+		log_info(log_memoria,
+			"En el while esperando conexiones.");
+
+		conexionEntrante = aceptarConexionSocket(socketEscuchaKernel,log_memoria);
+
+		if(conexionEntrante == ERROR){
+
+			log_error(log_memoria,"Se produjo un error al aceptar la conexion, salimos");
+			return -1;
+		}
+
+		buffer = malloc(10*sizeof(char));
+
+		recibiendoMensaje = socketRecibir(conexionEntrante,buffer,10);
+
+		printf("Recibimos por socket %s",buffer);
+
+		log_info(log_memoria,"El mensaje que se recibio fue %s", buffer);
+
+	}
+
+	log_info(log_memoria,
+				"Fin del proceso.");
 
 	return 0;
 
@@ -25,7 +78,7 @@ void cargarConfiguracion() {
 	log_info(log_memoria,
 			"Por reservar memoria para variable de configuracion.");
 
-	t_memoria_config* arc_config = malloc(sizeof(t_memoria_config));
+	arc_config = malloc(sizeof(t_memoria_config));
 
 	t_config* configFile;
 
@@ -195,7 +248,6 @@ void cargarConfiguracion() {
 			log_error(log_memoria,
 					"El archivo de configuracion no tiene el valor del Memory Number");
 		}
-
 
 	}else{
 		
