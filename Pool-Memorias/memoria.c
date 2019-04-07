@@ -7,26 +7,41 @@
 
 #include "memoria.h"
 
+void terminar_memoria(t_log* g_log);
+
 int main() {
 
 	log_memoria = archivoLogCrear(LOG_PATH, "Proceso Memoria");
 
 	log_info(log_memoria,
-			"Ya creado el Log, coninuamos cargando la estructura de configuracion.");
+			"\n ========== Iniciación de Pool de Memoria ========== \n");
 
 	cargarConfiguracion();
 
 	// procesamiento LQL del Pool de Memorias
-	char* comando;
-	comando = lectura_consola();
+	char* comando = lectura_consola();
+
+	// logeo de los indicado en consola
+	log_info(log_memoria,"Se lee de consola la línea: "); log_info(log_memoria,comando);
+
+	comando = stringRemoverVaciosIzquierda(comando);
+	if (stringContiene(comando,"SELECT")) {
+		log_info(log_memoria,"Se encontró comando SELECT");
+	} else {
+		log_info(log_memoria,"No se encontró ningún comando");
+	}
+
+	//terminar_memoria(log_memoria);
+	log_destroy(log_memoria);
+	free(log_memoria);
+	log_memoria = NULL;
 
 	return 0;
 
 }
 
 char* lectura_consola() {
-	char* linea;
-	linea = readline(">");
+	char* linea = (char*)readline(">");
 	return linea;
 }
 
@@ -59,6 +74,12 @@ void cargarConfiguracion() {
 		log_info(log_kernel, "El puerto es: %d", arc_config->puerto_escucha);
 		*/
 	}
+
+void terminar_memoria(t_log* g_log) {
+	log_destroy(g_log);
+	free(g_log);
+	g_log = NULL;
+}
 
 }
 

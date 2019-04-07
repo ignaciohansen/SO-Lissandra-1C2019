@@ -40,6 +40,8 @@ t_memoria_config* configFile;
 
 
 void cargarConfiguracion();
+char* lectura_consola();
+void terminar_memoria(t_log* g_log);
 
 
 #endif /* MEMORIA_H_ */
