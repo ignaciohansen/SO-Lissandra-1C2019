@@ -32,7 +32,7 @@
 #define PATH_KERNEL_CONFIG "KERNEL.txt"
 #define LOG_PATH "logKERNEL.txt"
 
-int socket_CMemoria;
+int socket_CMemoria,tamanio;
 t_log* log_kernel;
 
 //Socket

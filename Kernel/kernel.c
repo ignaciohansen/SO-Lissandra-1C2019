@@ -176,8 +176,6 @@ void consola(){
 	char **comandoSeparado2;
 	char *separador2="\n";
 	char *separator=" ";
-	
-
 
 	while(1){
 
@@ -190,8 +188,16 @@ void consola(){
 		free(linea);
 
 		comandoSeparado=string_split(bufferComando, separator);
+
+		//Tamanio del array
+		for(int i = 0; comandoSeparado[i] != NULL; i++){
+
+			tamanio = i +1;
+		}
 		
-		if(strcmp(comandoSeparado[0],"Select") == 0){
+		log_info(log_kernel, "El tamanio del vector de comandos es: %d", tamanio);
+		
+		if(strcmp(comandoSeparado[0],"select") == 0){
 
 			printf("Se selecciono Select\n");
 			break;
@@ -200,7 +206,6 @@ void consola(){
 			
 			printf("Insert seleccionado\n");
 			break;
-
 		}
 
 		if(strcmp(comandoSeparado[0],"create") == 0){
@@ -233,17 +238,10 @@ void consola(){
 		if(strcmp(comandoSeparado[0],"salir") == 0){
 			break;		
 		}	
-		printf("Nro. de comando mal ingresado. Ingrese 0 para imprimir menu. \n");
+		printf("Comando mal ingresado. \n");
 		log_error(log_kernel,"Opcion mal ingresada por teclado en la consola");
 	}
 }
-
-
-		
-		
-
-
-
 
 void conexionKernel(){
 
