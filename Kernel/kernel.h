@@ -13,6 +13,9 @@
 #include <stdbool.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/file.h>
+#include <sys/stat.h>
+#include <sys/errno.h>
 #include <netdb.h>
 #include <unistd.h>
 #include <errno.h>
@@ -21,6 +24,10 @@
 #include <commons/config.h>
 #include <commons/collections/queue.h>
 #include "../Biblioteca/src/Biblioteca.c"
+#include <readline/readline.h>
+#include <readline/history.h>
+#include <pthread.h>
+
 
 #define PATH_KERNEL_CONFIG "KERNEL.txt"
 #define LOG_PATH "logKERNEL.txt"
@@ -56,7 +63,16 @@ typedef struct {
 
 conexion* estructuraConexion;
 
+/*Elementos de consola*/
+#define MAXSIZE_COMANDO 200
+enum {Select, insert, create, describe, drop, journal, add,run, salir};
+char* linea;
+void consola();
+void menu();
+
 void cargarConfiguracion();
+
+void conexionKernel();
 
 
 #endif /* KERNEL_H_ */

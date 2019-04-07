@@ -20,49 +20,22 @@ int main() {
 				"Devuelta en Main, Funcion cargarConfiguracion() finalizo.");
 
 	log_info(log_kernel,
+				"Creamos thread para Consola");
+
+	pthread_t hiloConsola;
+	pthread_create(&hiloConsola,NULL,(void*) consola,NULL);
+
+	pthread_t hiloConexion;
+	pthread_create(&hiloConexion,NULL,(void*) conexionKernel,NULL);
+
+	pthread_join(hiloConexion,NULL);
+	pthread_join(hiloConsola,NULL);
+
+
+	log_info(log_kernel,
 				"Antes de llamar a socketCrear.");
 	
-	socket_CMemoria = nuevoSocket(log_kernel);
-
-	if(socket_CMemoria == ERROR){
-
-		log_error(log_kernel,"Hubo un problema al querer crear el socket desde Kernel. Salimos del Proceso");
-
-		return 0;
-	}
-
-	log_info(log_kernel,
-				"El Socket creado es: %d .",socket_CMemoria);
-
-	log_info(log_kernel,
-				"por llamar a la funcion connectarSocket() para conectarnos con Memoria");
-
-	log_info(log_kernel,"PRUEBA: %d ",arc_config->puerto_memoria);
-	resultado_Conectar = conectarSocket(socket_CMemoria, arc_config->ip_memoria, arc_config->puerto_memoria,log_kernel);
-
-	if(resultado_Conectar == ERROR){
-
-		log_error(log_kernel,"Hubo un problema al querer Conectarnos con Memoria. Salimos del proceso");
-
-		return 0;
-	}else{
-
-	log_info(log_kernel,
-				"Nos conectamos con exito, el resultado fue %d",resultado_Conectar);
-
-	char* msj = malloc(10*sizeof(char));
-	msj = "PruebaK\n";
 	
-	resultado_sendMsj = socketEnviar(socket_CMemoria,msj,strlen(msj),log_kernel);
-
-	if(resultado_sendMsj == ERROR){
-
-		log_error(log_kernel,"Error al enviar mensaje a memoria. Salimos");
-		return -1;
-	}
-
-	log_info(log_kernel,"El mensaje se envio correctamente");
-	}
 
 	log_info(log_kernel,"Salimoooos");
 
@@ -84,11 +57,7 @@ void cargarConfiguracion() {
 
 	configFile = config_create(PATH_KERNEL_CONFIG);
 
-	imprimirMensajeProceso("CREANDO ARCHIVO CONFIG");
-
 	if (configFile != NULL) {
-
-		imprimirMensajeProceso("SE CREO ARCHIVO CONFIG");
 
 		log_info(log_kernel, "Kernel: Leyendo Archivo de Configuracion...");
 
@@ -196,3 +165,145 @@ void cargarConfiguracion() {
 
 }
 
+void consola(){
+
+	log_info(log_kernel, "En el hilo de consola");	
+
+	menu();
+
+	char bufferComando[MAXSIZE_COMANDO];
+	char **comandoSeparado;
+	char **comandoSeparado2;
+	char *separador2="\n";
+	char *separator=" ";
+	
+
+
+	while(1){
+
+		printf(">");
+
+		fgets(bufferComando,MAXSIZE_COMANDO, stdin);
+
+		add_history(linea);
+
+		free(linea);
+
+		comandoSeparado=string_split(bufferComando, separator);
+		
+		if(strcmp(comandoSeparado[0],"Select") == 0){
+
+			printf("Se selecciono Select\n");
+			break;
+		}
+		if(strcmp(comandoSeparado[0],"insert") == 0){
+			
+			printf("Insert seleccionado\n");
+			break;
+
+		}
+
+		if(strcmp(comandoSeparado[0],"create") == 0){
+			printf("Create seleccionado\n");
+			break;		
+		}
+		
+		if(strcmp(comandoSeparado[0],"describe") == 0){
+			printf("Describe seleccionado\n");
+			break;		
+		}
+		if(strcmp(comandoSeparado[0],"drop") == 0){
+			printf("Drop seleccionado\n");
+			break;		
+		}
+		if(strcmp(comandoSeparado[0],"journal") == 0){
+			printf("Journal seleccionado\n");
+			break;		
+		}
+		if(strcmp(comandoSeparado[0],"add") == 0){
+			printf("add seleccionado\n");
+			break;		
+		}
+
+		if(strcmp(comandoSeparado[0],"run") == 0){
+			printf("Run seleccionado\n");
+			break;		
+		}
+			
+		if(strcmp(comandoSeparado[0],"salir") == 0){
+			break;		
+		}	
+		printf("Nro. de comando mal ingresado. Ingrese 0 para imprimir menu. \n");
+		log_error(log_kernel,"Opcion mal ingresada por teclado en la consola");
+	}
+}
+
+
+		
+		
+
+
+
+
+void conexionKernel(){
+
+	socket_CMemoria = nuevoSocket(log_kernel);
+
+	if(socket_CMemoria == ERROR){
+
+		log_error(log_kernel,"Hubo un problema al querer crear el socket desde Kernel. Salimos del Proceso");
+
+		return;
+	}
+
+	log_info(log_kernel,
+				"El Socket creado es: %d .",socket_CMemoria);
+
+	log_info(log_kernel,
+				"por llamar a la funcion connectarSocket() para conectarnos con Memoria");
+
+	log_info(log_kernel,"PRUEBA: %d ",arc_config->puerto_memoria);
+
+	resultado_Conectar = conectarSocket(socket_CMemoria, arc_config->ip_memoria, arc_config->puerto_memoria,log_kernel);
+
+	if(resultado_Conectar == ERROR){
+
+		log_error(log_kernel,"Hubo un problema al querer Conectarnos con Memoria. Salimos del proceso");
+
+		return;
+	}else{
+
+	log_info(log_kernel,
+				"Nos conectamos con exito, el resultado fue %d",resultado_Conectar);
+
+	char* msj = malloc(10*sizeof(char));
+	msj = "PruebaK\n";
+	
+	resultado_sendMsj = socketEnviar(socket_CMemoria,msj,strlen(msj),log_kernel);
+
+	if(resultado_sendMsj == ERROR){
+
+		log_error(log_kernel,"Error al enviar mensaje a memoria. Salimos");
+		return;
+	}
+
+	log_info(log_kernel,"El mensaje se envio correctamente");
+	}
+}
+
+void menu(){
+
+	printf("Los comandos que se pueden ingresar son: \n"
+		"COMANDOS \n"
+			"Insert \n"
+			"Select \n"
+			"Create \n"
+			"Describe \n"
+			"Drop \n"
+			"Journal  \n"
+			"add \n"
+			"run \n"			
+			"SALIR \n"
+"\n");
+
+}
