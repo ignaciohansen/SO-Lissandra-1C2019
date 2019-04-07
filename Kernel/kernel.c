@@ -25,17 +25,11 @@ int main() {
 	pthread_t hiloConsola;
 	pthread_create(&hiloConsola,NULL,(void*) consola,NULL);
 
-	pthread_t hiloConexion;
-	pthread_create(&hiloConexion,NULL,(void*) conexionKernel,NULL);
+	//pthread_t hiloConexion;
+	//pthread_create(&hiloConexion,NULL,(void*) conexionKernel,NULL);
 
-	pthread_join(hiloConexion,NULL);
+	//pthread_join(hiloConexion,NULL);
 	pthread_join(hiloConsola,NULL);
-
-
-	log_info(log_kernel,
-				"Antes de llamar a socketCrear.");
-	
-	
 
 	log_info(log_kernel,"Salimoooos");
 
@@ -200,7 +194,11 @@ void consola(){
 		if(strcmp(comandoSeparado[0],"select") == 0){
 
 			printf("Se selecciono Select\n");
-			break;
+
+			log_info(log_kernel,"Por llamar a enviarResultado");
+
+			int resultadoEnviarComando = enviarComando(comandoSeparado[0],log_kernel);
+			//break;
 		}
 		if(strcmp(comandoSeparado[0],"insert") == 0){
 			
@@ -240,10 +238,12 @@ void consola(){
 		}	
 		printf("Comando mal ingresado. \n");
 		log_error(log_kernel,"Opcion mal ingresada por teclado en la consola");
-	}
+
+		
+	}	
 }
 
-void conexionKernel(){
+int conexionKernel(){
 
 	socket_CMemoria = nuevoSocket(log_kernel);
 
@@ -251,7 +251,7 @@ void conexionKernel(){
 
 		log_error(log_kernel,"Hubo un problema al querer crear el socket desde Kernel. Salimos del Proceso");
 
-		return;
+		return ERROR;
 	}
 
 	log_info(log_kernel,
@@ -268,13 +268,14 @@ void conexionKernel(){
 
 		log_error(log_kernel,"Hubo un problema al querer Conectarnos con Memoria. Salimos del proceso");
 
-		return;
+		return -1;
 	}else{
 
 	log_info(log_kernel,
 				"Nos conectamos con exito, el resultado fue %d",resultado_Conectar);
+				return socket_CMemoria;
 
-	char* msj = malloc(10*sizeof(char));
+	/*char* msj = malloc(10*sizeof(char));
 	msj = "PruebaK\n";
 	
 	resultado_sendMsj = socketEnviar(socket_CMemoria,msj,strlen(msj),log_kernel);
@@ -285,8 +286,37 @@ void conexionKernel(){
 		return;
 	}
 
-	log_info(log_kernel,"El mensaje se envio correctamente");
+	log_info(log_kernel,"El mensaje se envio correctamente");*/
 	}
+}
+
+int enviarComando(char** comando,t_log* logger){
+
+	log_info(logger,"En funcion enviarComando");
+
+	char* msj = malloc(7*sizeof(char));
+
+	msj = comando;
+
+	log_info(logger,"El mensaje que vamos a enviar es: %s", msj);	
+
+	socket_CMemoria = conexionKernel();
+
+	log_info("Vamos a enviar a memoria por el socket %d", socket_CMemoria);
+
+	resultado_sendMsj = socketEnviar(socket_CMemoria,msj,strlen(msj),log_kernel);
+
+	if(resultado_sendMsj == ERROR){
+
+		log_error(log_kernel,"Error al enviar mensaje a memoria. Salimos");
+
+		return ERROR;
+	}
+
+	log_info(log_kernel,"El mensaje se envio correctamente: %s",msj);
+
+	return 0;
+
 }
 
 void menu(){

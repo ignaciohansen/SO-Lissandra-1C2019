@@ -71,8 +71,8 @@ void consola();
 void menu();
 
 void cargarConfiguracion();
-
-void conexionKernel();
+int enviarComando(char** comando,t_log* logger);
+int conexionKernel();
 
 
 #endif /* KERNEL_H_ */
