@@ -16,16 +16,96 @@ int main() {
 
 void LissandraFSInicioLogYConfig() {
 	pantallaLimpiar();
+	LisandraSetUP();
+
+
+}
+
+/********************************************************************************************
+ * 							SET UP LISANDRA, FILE SYSTEM Y COMPRIMIDOR
+ ********************************************************************************************
+ */
+
+void LisandraSetUP() {
 	imprimirMensajeProceso("Iniciando el modulo LISSANDRA FILE SYSTEM\n");
 	log_lfilesystem = archivoLogCrear(LOG_PATH, "Proceso Lissandra File System");
 
-	log_info(log_lfilesystem,
-				"Ya creado el Log, coninuamos cargando la estructura de configuracion.");
+	imprimirVerde(log_lfilesystem,
+					"LOG CREADO, continuamos cargando la estructura de configuracion.");
 
-	cargarConfiguracion();
+	if(cargarConfiguracion()) {
+		//SI SE CARGO BIEN LA CONFIGURACION ENTONCES PROCESO DE ABRIR UN SERVIDOR
+		imprimirMensajeProceso("Levantando el servidor del proceso Lisandra");
+		abrirServidorLissandra();
+	}
+
+
 }
 
-void cargarConfiguracion() {
+int abrirServidorLissandra() {
+
+	imprimirMensaje(log_lfilesystem, "Creamos un nuevo socket");
+
+	socketEscuchaMemoria = nuevoSocket(log_lfilesystem);
+
+		if(socketEscuchaMemoria == ERROR){
+
+			imprimirError(log_lfilesystem, "Hubo un problema al querer crear el socket de escucha para memoria. Salimos del Proceso");
+
+			return 0;
+		}
+
+		imprimirVerde1(socketEscuchaMemoria, "Se ha creado el socket con exito con valor %d: .", socketEscuchaMemoria);
+
+		imprimirMensaje1(socketEscuchaMemoria,
+				"El socket de escucha se creo con exito, con valor %d: .", socketEscuchaMemoria);
+		imprimirMensaje(socketEscuchaMemoria,
+				"Por asociar el socket con el puerto de escucha.");
+
+		imprimirMensaje1(socketEscuchaMemoria,
+				"El puerto que vamos a asociar es %d:", configFile->puerto_escucha);
+
+
+		asociarSocket(socketEscuchaMemoria,configFile->puerto_escucha,socketEscuchaMemoria);
+
+		imprimirMensaje(socketEscuchaMemoria,
+						"Ya asociado al puerto lo ponemos a la escucha.");
+
+		socketEscuchar(socketEscuchaMemoria,10,socketEscuchaMemoria);
+
+		while(1){
+			imprimirMensaje(socketEscuchaMemoria, "En el while esperando conexiones.");
+
+			conexionEntrante = aceptarConexionSocket(socketEscuchaMemoria,socketEscuchaMemoria);
+
+			if(conexionEntrante == ERROR){
+
+				imprimirError(socketEscuchaMemoria,"Se produjo un error al aceptar la conexion, salimos");
+				return -1;
+			} else {
+				imprimirVerde(socketEscuchaMemoria, "Se ha conectado un cliente");
+			}
+
+			buffer = malloc(10*sizeof(char));
+
+			recibiendoMensaje = socketRecibir(conexionEntrante,buffer,10);
+
+			printf("Recibimos por socket %s",buffer);
+
+
+
+			imprimirMensaje(socketEscuchaMemoria, "Mensaje recibido:");
+			imprimirVerde(socketEscuchaMemoria, buffer);
+		}
+		imprimirMensajeProceso("FIN PROCESO SOCKET");
+		log_info(socketEscuchaMemoria,
+					"Fin del proceso.");
+
+		return 1;
+
+}
+
+bool cargarConfiguracion() {
 
 	log_info(log_lfilesystem,
 			"Por reservar memoria para variable de configuracion.");
@@ -62,8 +142,7 @@ void cargarConfiguracion() {
 			log_info(log_lfilesystem, "El puerto de escucha es: %d", arc_config->puerto_escucha);
 
 		}else {
-			log_error(log_lfilesystem,
-					"El archivo de configuracion no contiene el PUERTO_ESCUCHA");
+			imprimirError(log_lfilesystem, "El archivo de configuracion no contiene el PUERTO_ESCUCHA");
 			ok--;
 
 		}
@@ -79,8 +158,7 @@ void cargarConfiguracion() {
 			log_info(log_lfilesystem, "El puerto de montaje es: %d", arc_config->punto_montaje);
 
 		}else {
-			log_error(log_lfilesystem,
-					"El archivo de configuracion no contiene el PUNTO_MONTAJE");
+			imprimirError(log_lfilesystem, "El archivo de configuracion no contiene el PUNTO_MONTAJE");
 			ok--;
 
 		}
@@ -96,8 +174,7 @@ void cargarConfiguracion() {
 			log_info(log_lfilesystem, "El retardo de respuesta es: %d", arc_config->retardo);
 
 		}else {
-			log_error(log_lfilesystem,
-					"El archivo de configuracion no contiene RETARDO");
+			imprimirError(log_lfilesystem, "El archivo de configuracion no contiene RETARDO");
 			ok--;
 
 		}
@@ -113,7 +190,7 @@ void cargarConfiguracion() {
 			log_info(log_lfilesystem, "El tamaño del valor es: %d", arc_config->tamanio_value);
 
 		}else {
-			imprimirAviso(log_lfilesystem, "El archivo de configuracion no contiene el TAMANIO_VALUE");
+			imprimirError(log_lfilesystem, "El archivo de configuracion no contiene el TAMANIO_VALUE");
 			ok--;
 
 		}
@@ -129,7 +206,7 @@ void cargarConfiguracion() {
 			log_info(log_lfilesystem, "El tiempo de dumpeo es: %d", arc_config->tiempo_dump);
 
 		}else {
-			imprimirAviso(log_lfilesystem, "El archivo de configuracion no contiene el TIEMPO_DUMP");
+			imprimirError(log_lfilesystem, "El archivo de configuracion no contiene el TIEMPO_DUMP");
 			ok--;
 
 		}
@@ -138,10 +215,12 @@ void cargarConfiguracion() {
 		if(ok>0) {
 			imprimirVerde(log_lfilesystem,"Se ha cargado todos los datos del archivo de configuracion");
 		//	log_info(log_lfilesystem, "Se ha cargado todos los datos del archivo de configuracion");
+			return true;
 
 		} else {
 			imprimirError(log_lfilesystem, "ERROR: No Se han cargado todos o algunos los datos del archivo de configuracion\n");
 	//		imprimirMensajeProceso("ERROR: No Se han cargado todos los datos del archivo de configuracion\n");
+			return false;
 		}
 
 	}

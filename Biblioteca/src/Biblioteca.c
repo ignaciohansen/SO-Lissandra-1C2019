@@ -972,6 +972,39 @@ void imprimirVerde(ArchivoLog archivoLog, String mensaje) {
 	log_info(archivoLog, mensaje);
 }
 
+
+void imprimirVerde1(ArchivoLog archivoLog, String mensaje, void* algo1) {
+	printf(VERDE);
+	printf(mensaje, algo1);
+	printf(BLANCO);
+	puts("");
+	log_error(archivoLog, mensaje, algo1);
+}
+
+void imprimirVerde2(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2) {
+	printf(VERDE);
+	printf(mensaje, algo1, algo2);
+	printf(BLANCO);
+	puts("");
+	log_info(archivoLog, mensaje, algo1, algo2);
+}
+
+void imprimirVerde3(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3) {
+	printf(VERDE);
+	printf(mensaje, algo1, algo2, algo3);
+	printf(BLANCO);
+	puts("");
+	log_error(archivoLog, mensaje, algo1, algo2, algo3);
+}
+
+void imprimirVerde4(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3, void* algo4) {
+	printf(VERDE);
+	printf(mensaje, algo1, algo2, algo3, algo4);
+	printf(BLANCO);
+	puts("");
+	log_error(archivoLog, mensaje, algo1, algo2, algo3, algo4);
+}
+
 void imprimirMensajeProceso(String mensaje) {
 	puts("-------------------------------------------------------------------------");
 	puts(mensaje);

@@ -26,9 +26,17 @@ typedef struct{
 }t_lfilesystem_config;
 
 t_lfilesystem_config* configFile;
+char* buffer;
 
+int socketEscuchaMemoria,conexionEntrante,recibiendoMensaje;
 
-void cargarConfiguracion();
+/*--------------------------------------------------------------------------------------------
+ * 									SET UP LISANDRA FILE SYSTEM
+ *--------------------------------------------------------------------------------------------
+ */
+void LisandraSetUP();
+bool cargarConfiguracion();
+void iniciaabrirServidorLissandra();
 
 
 #endif /* LFILESSYSTEM_H_ */
