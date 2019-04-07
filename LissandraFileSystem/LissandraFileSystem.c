@@ -9,18 +9,103 @@
 
 int main() {
 
-	log_lfilesystem = archivoLogCrear(LOG_PATH, "Proceso Lissandra File System");
-
-	log_info(log_memoria,
-			"Ya creado el Log, coninuamos cargando la estructura de configuracion.");
-
-	cargarConfiguracion();
+	LissandraFSInicioLogYConfig();
 
 	return 0;
+}
+
+void LissandraFSInicioLogYConfig() {
+	pantallaLimpiar();
+	LisandraSetUP();
+
 
 }
 
-void cargarConfiguracion() {
+/********************************************************************************************
+ * 							SET UP LISANDRA, FILE SYSTEM Y COMPRIMIDOR
+ ********************************************************************************************
+ */
+
+void LisandraSetUP() {
+	imprimirMensajeProceso("Iniciando el modulo LISSANDRA FILE SYSTEM\n");
+	log_lfilesystem = archivoLogCrear(LOG_PATH, "Proceso Lissandra File System");
+
+	imprimirVerde(log_lfilesystem,
+					"LOG CREADO, continuamos cargando la estructura de configuracion.");
+
+	if(cargarConfiguracion()) {
+		//SI SE CARGO BIEN LA CONFIGURACION ENTONCES PROCESO DE ABRIR UN SERVIDOR
+		imprimirMensajeProceso("Levantando el servidor del proceso Lisandra");
+		abrirServidorLissandra();
+	}
+
+
+}
+
+int abrirServidorLissandra() {
+
+	imprimirMensaje(log_lfilesystem, "Creamos un nuevo socket");
+
+	socketEscuchaMemoria = nuevoSocket(log_lfilesystem);
+
+		if(socketEscuchaMemoria == ERROR){
+
+			imprimirError(log_lfilesystem, "Hubo un problema al querer crear el socket de escucha para memoria. Salimos del Proceso");
+
+			return 0;
+		}
+
+		imprimirVerde1(socketEscuchaMemoria, "Se ha creado el socket con exito con valor %d: .", socketEscuchaMemoria);
+
+		imprimirMensaje1(socketEscuchaMemoria,
+				"El socket de escucha se creo con exito, con valor %d: .", socketEscuchaMemoria);
+		imprimirMensaje(socketEscuchaMemoria,
+				"Por asociar el socket con el puerto de escucha.");
+
+		imprimirMensaje1(socketEscuchaMemoria,
+				"El puerto que vamos a asociar es %d:", configFile->puerto_escucha);
+
+
+		asociarSocket(socketEscuchaMemoria,configFile->puerto_escucha,socketEscuchaMemoria);
+
+		imprimirMensaje(socketEscuchaMemoria,
+						"Ya asociado al puerto lo ponemos a la escucha.");
+
+		socketEscuchar(socketEscuchaMemoria,10,socketEscuchaMemoria);
+
+		while(1){
+			imprimirMensaje(socketEscuchaMemoria, "En el while esperando conexiones.");
+
+			conexionEntrante = aceptarConexionSocket(socketEscuchaMemoria,socketEscuchaMemoria);
+
+			if(conexionEntrante == ERROR){
+
+				imprimirError(socketEscuchaMemoria,"Se produjo un error al aceptar la conexion, salimos");
+				return -1;
+			} else {
+				imprimirVerde(socketEscuchaMemoria, "Se ha conectado un cliente");
+			}
+
+			buffer = malloc(10*sizeof(char));
+
+			recibiendoMensaje = socketRecibir(conexionEntrante,buffer,10);
+
+			printf("Recibimos por socket %s",buffer);
+
+
+
+			imprimirMensaje(socketEscuchaMemoria, "Mensaje recibido:");
+			imprimirVerde(socketEscuchaMemoria, buffer);
+		}
+		imprimirMensajeProceso("FIN PROCESO SOCKET");
+		log_info(socketEscuchaMemoria,
+					"Fin del proceso.");
+
+		return 1;
+
+}
+
+bool cargarConfiguracion() {
 
 	log_info(log_lfilesystem,
 			"Por reservar memoria para variable de configuracion.");
@@ -32,22 +117,203 @@ void cargarConfiguracion() {
 	log_info(log_lfilesystem,
 			"Por crear el archivo de config para levantar archivo con datos.");
 
-	configFile = config_create(PATH_LFILESYSTEM_CONFIG);
+
+	configFile = config_create("../LISANDRAFS.txt");
+
+	if(configFile == NULL)
+	{
+		imprimirMensajeProceso("NO se ha encontrado el archivo de configuracion\n");
+	}
 
 	if (configFile != NULL) {
-		/*
-		 * ESTO NO ESTA PROBADO, PUEDEN MODIFICARLO
-		 *
+		int ok = 1;
+		imprimirMensajeProceso("Se ha encontrado el archivo de configuracion\n");
+
 		log_info(log_lfilesystem, "LissandraFS: Leyendo Archivo de Configuracion...");
 
-		log_info(log_lfilesystem, "Almacenando el puerto");
+		if(config_has_property(configFile,"PUERTO_ESCUCHA")){
 
-		arc_config->puerto_escucha = config_get_int_value(configFile,
-				"puerto_escucha");
+			log_info(log_lfilesystem, "Almacenando el puerto");
 
-		log_info(log_kernel, "El puerto es: %d", arc_config->puerto_escucha);
-		*/
+			//Por lo que dice el texto
+			arc_config->puerto_escucha = config_get_int_value(configFile,
+				"PUERTO_ESCUCHA");
+
+			log_info(log_lfilesystem, "El puerto de escucha es: %d", arc_config->puerto_escucha);
+
+		}else {
+			imprimirError(log_lfilesystem, "El archivo de configuracion no contiene el PUERTO_ESCUCHA");
+			ok--;
+
+		}
+
+		if(config_has_property(configFile,"PUNTO_MONTAJE")){
+
+			log_info(log_lfilesystem, "Almacenando el PUNTO DE MONTAJE");
+
+			//Por lo que dice el texto
+			arc_config->punto_montaje = config_get_int_value(configFile,
+				"PUNTO_MONTAJE");
+
+			log_info(log_lfilesystem, "El puerto de montaje es: %d", arc_config->punto_montaje);
+
+		}else {
+			imprimirError(log_lfilesystem, "El archivo de configuracion no contiene el PUNTO_MONTAJE");
+			ok--;
+
+		}
+
+		if(config_has_property(configFile,"RETARDO")){
+
+			log_info(log_lfilesystem, "Almacenando el retardo");
+
+			//Por lo que dice el texto
+			arc_config->retardo = config_get_int_value(configFile,
+				"RETARDO");
+
+			log_info(log_lfilesystem, "El retardo de respuesta es: %d", arc_config->retardo);
+
+		}else {
+			imprimirError(log_lfilesystem, "El archivo de configuracion no contiene RETARDO");
+			ok--;
+
+		}
+
+		if(config_has_property(configFile,"TAMANIO_VALUE")){
+
+			log_info(log_lfilesystem, "Almacenando el tamaño del valor de una key");
+
+			//Por lo que dice el texto
+			arc_config->tamanio_value = config_get_int_value(configFile,
+				"TAMANIO_VALUE");
+
+			log_info(log_lfilesystem, "El tamaño del valor es: %d", arc_config->tamanio_value);
+
+		}else {
+			imprimirError(log_lfilesystem, "El archivo de configuracion no contiene el TAMANIO_VALUE");
+			ok--;
+
+		}
+
+		if(config_has_property(configFile,"TIEMPO_DUMP")){
+
+			log_info(log_lfilesystem, "Almacenando el puerto");
+
+			//Por lo que dice el texto
+			arc_config->tiempo_dump = config_get_int_value(configFile,
+				"TIEMPO_DUMP");
+
+			log_info(log_lfilesystem, "El tiempo de dumpeo es: %d", arc_config->tiempo_dump);
+
+		}else {
+			imprimirError(log_lfilesystem, "El archivo de configuracion no contiene el TIEMPO_DUMP");
+			ok--;
+
+		}
+
+
+		if(ok>0) {
+			imprimirVerde(log_lfilesystem,"Se ha cargado todos los datos del archivo de configuracion");
+		//	log_info(log_lfilesystem, "Se ha cargado todos los datos del archivo de configuracion");
+			return true;
+
+		} else {
+			imprimirError(log_lfilesystem, "ERROR: No Se han cargado todos o algunos los datos del archivo de configuracion\n");
+	//		imprimirMensajeProceso("ERROR: No Se han cargado todos los datos del archivo de configuracion\n");
+			return false;
+		}
+
 	}
+
+
+}
+
+void consola(){
+
+	log_info(log_lfilesystem, "En el hilo de consola");
+
+	menu();
+
+	char bufferComando[MAXSIZE_COMANDO];
+	char **comandoSeparado;
+	char **comandoSeparado2;
+	char *separador2="\n";
+	char *separator=" ";
+
+	while(1){
+
+		printf(">");
+
+		fgets(bufferComando,MAXSIZE_COMANDO, stdin);
+
+		add_history(linea);
+
+		free(linea);
+
+		comandoSeparado=string_split(bufferComando, separator);
+
+		//Tamanio del array
+		for(int i = 0; comandoSeparado[i] != NULL; i++){
+
+			tamanio = i +1;
+		}
+
+		log_info(log_lfilesystem, "El tamanio del vector de comandos es: %d", tamanio);
+
+		if(strcmp(comandoSeparado[0],"select") == 0){
+
+			printf("Se selecciono Select\n");
+
+			log_info(log_lfilesystem,"Por llamar a enviarResultado");
+
+			// FALTA ADAPTAR ESTA FUNCION //
+
+			//int resultadoEnviarComando = enviarComando(comandoSeparado[0],log_lfilesystem);
+			//break;
+
+			// FALTA ADAPTAR ESTA FUNCION //
+		}
+		if(strcmp(comandoSeparado[0],"insert") == 0){
+
+			printf("Insert seleccionado\n");
+			break;
+		}
+
+		if(strcmp(comandoSeparado[0],"create") == 0){
+			printf("Create seleccionado\n");
+			break;
+		}
+
+		if(strcmp(comandoSeparado[0],"describe") == 0){
+			printf("Describe seleccionado\n");
+			break;
+		}
+		if(strcmp(comandoSeparado[0],"drop") == 0){
+			printf("Drop seleccionado\n");
+			break;
+		}
+
+		if(strcmp(comandoSeparado[0],"salir") == 0){
+			break;
+		}
+		printf("Comando mal ingresado. \n");
+		log_error(log_lfilesystem,"Opcion mal ingresada por teclado en la consola");
+
+
+	}
+}
+
+void menu(){
+
+	printf("Los comandos que se pueden ingresar son: \n"
+		"COMANDOS \n"
+			"Insert \n"
+			"Select \n"
+			"Create \n"
+			"Describe \n"
+			"Drop \n"
+			"SALIR \n"
+"\n");
 
 }
 

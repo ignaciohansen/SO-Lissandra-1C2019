@@ -1,0 +1,1 @@
+[INFO] 00:02:32:251 Proceso Kernel/(5162:5162): Ya creado el Log, coninuamos cargando la estructura de configuracion.
