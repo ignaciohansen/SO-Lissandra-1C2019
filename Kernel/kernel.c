@@ -19,6 +19,53 @@ int main() {
 	log_info(log_kernel,
 				"Devuelta en Main, Funcion cargarConfiguracion() finalizo.");
 
+	log_info(log_kernel,
+				"Antes de llamar a socketCrear.");
+	
+	socket_CMemoria = nuevoSocket(log_kernel);
+
+	if(socket_CMemoria == ERROR){
+
+		log_error(log_kernel,"Hubo un problema al querer crear el socket desde Kernel. Salimos del Proceso");
+
+		return 0;
+	}
+
+	log_info(log_kernel,
+				"El Socket creado es: %d .",socket_CMemoria);
+
+	log_info(log_kernel,
+				"por llamar a la funcion connectarSocket() para conectarnos con Memoria");
+
+	log_info(log_kernel,"PRUEBA: %d ",arc_config->puerto_memoria);
+	resultado_Conectar = conectarSocket(socket_CMemoria, arc_config->ip_memoria, arc_config->puerto_memoria,log_kernel);
+
+	if(resultado_Conectar == ERROR){
+
+		log_error(log_kernel,"Hubo un problema al querer Conectarnos con Memoria. Salimos del proceso");
+
+		return 0;
+	}else{
+
+	log_info(log_kernel,
+				"Nos conectamos con exito, el resultado fue %d",resultado_Conectar);
+
+	char* msj = malloc(10*sizeof(char));
+	msj = "PruebaK\n";
+	
+	resultado_sendMsj = socketEnviar(socket_CMemoria,msj,strlen(msj),log_kernel);
+
+	if(resultado_sendMsj == ERROR){
+
+		log_error(log_kernel,"Error al enviar mensaje a memoria. Salimos");
+		return -1;
+	}
+
+	log_info(log_kernel,"El mensaje se envio correctamente");
+	}
+
+	log_info(log_kernel,"Salimoooos");
+
 	return 0;
 
 }
@@ -28,7 +75,7 @@ void cargarConfiguracion() {
 	log_info(log_kernel,
 			"Por reservar memoria para variable de configuracion.");
 
-	t_kernel_config* arc_config = malloc(sizeof(t_kernel_config));
+	arc_config = malloc(sizeof(t_kernel_config));
 
 	t_config* configFile;
 

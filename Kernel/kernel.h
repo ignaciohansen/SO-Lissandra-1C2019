@@ -10,6 +10,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <unistd.h>
+#include <errno.h>
 #include <commons/log.h>
 #include <commons/string.h>
 #include <commons/config.h>
@@ -19,7 +25,13 @@
 #define PATH_KERNEL_CONFIG "KERNEL.txt"
 #define LOG_PATH "logKERNEL.txt"
 
+int socket_CMemoria;
 t_log* log_kernel;
+
+//Socket
+
+int resultado_Conectar, resultado_sendMsj;
+
 
 typedef struct{
 
@@ -32,8 +44,17 @@ typedef struct{
 	int sleep_ejecucion;
 }t_kernel_config;
 
-t_kernel_config* configFile;
+t_kernel_config* arc_config;
 
+typedef struct {
+	AddrInfo informacion;
+	SockAddrIn address;
+	Socklen tamanioAddress;
+	String port;
+	String ip;
+}conexion;
+
+conexion* estructuraConexion;
 
 void cargarConfiguracion();
 
