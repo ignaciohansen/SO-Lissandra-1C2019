@@ -14,7 +14,8 @@
 #include <commons/string.h>
 #include <commons/config.h>
 #include <commons/collections/queue.h>
-#include "../../Biblioteca/src/Biblioteca.c"
+//#include "../../Biblioteca/src/Biblioteca.c"
+#include "../Biblioteca/src/Biblioteca.c"
 
 #define PATH_MEMORIA_CONFIG "MEMORIA.txt"
 #define LOG_PATH "logMEMORIA.txt"
@@ -25,8 +26,8 @@ typedef struct{
     int puerto;
     char* ip_fs;
     int puerto_fs;
-    char* ip_seeds [];
-    int puerto_seeds [];
+    char* ip_seeds[10];    // esto debe ser flexible
+    int puerto_seeds[10];  // esto debe ser flexible
     int retardo_mem;
     int retardo_fs;
     int tam_mem;

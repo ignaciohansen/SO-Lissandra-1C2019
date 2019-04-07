@@ -16,8 +16,18 @@ int main() {
 
 	cargarConfiguracion();
 
+	// procesamiento LQL del Pool de Memorias
+	char* comando;
+	comando = lectura_consola();
+
 	return 0;
 
+}
+
+char* lectura_consola() {
+	char* linea;
+	linea = readline(">");
+	return linea;
 }
 
 void cargarConfiguracion() {
