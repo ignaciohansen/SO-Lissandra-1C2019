@@ -7,10 +7,49 @@
 
 #include "memoria.h"
 
+void terminar_memoria(t_log* g_log);
+
 int main() {
+    /*
+     * 1) Conectar a LFS, hacer handshake: obtener "tamaño máximo de value" p. admin de paginas
+     * 2) Iniciar la memoria principal
+     * 3) Ejecutar Gossiping
+     */
 
+	// LOGGING
 	log_memoria = archivoLogCrear(LOG_PATH, "Proceso Memoria");
+	log_info(log_memoria, " \n ========== Iniciación de Pool de Memoria ========== \n \n ");
 
+<<<<<<< HEAD
+	// CONFIG
+	cargarConfiguracion();
+
+	// Lectura desde consola de Query-LQL de "Pool de Memorias"
+	char* comando = lectura_consola();
+	log_info(log_memoria,"Se lee de consola la línea: "); log_info(log_memoria,comando);
+
+	comando = stringRemoverVaciosIzquierda(comando); // depurado
+	switch (true){
+		case stringContiene(comando,"SELECT"):
+		case stringContiene(comando,"SELECT"):
+		case stringContiene(comando,"SELECT"):
+		case stringContiene(comando,"SELECT"):
+		case stringContiene(comando,"SELECT"):
+		case stringContiene(comando,"SELECT"):
+	}
+	/*
+	if (stringContiene(comando,"SELECT")) {
+		log_info(log_memoria,"Se encontró comando SELECT");
+	} else {
+		log_info(log_memoria,"No se encontró ningún comando");
+	}
+	*/
+
+	//terminar_memoria(log_memoria);
+	log_destroy(log_memoria);
+	free(log_memoria);
+	log_memoria = NULL;
+=======
 	log_info(log_memoria,
 			"Ya creado el Log, coninuamos cargando la estructura de configuracion.");
 	
@@ -68,9 +107,15 @@ int main() {
 
 	log_info(log_memoria,
 				"Fin del proceso.");
+>>>>>>> 8877cc8822efa0f8fd848b4f4a86cbb7447213b7
 
 	return 0;
 
+}
+
+char* lectura_consola() {
+	char* linea = (char*)readline(">");
+	return linea;
 }
 
 void cargarConfiguracion() {
@@ -254,6 +299,12 @@ void cargarConfiguracion() {
 		log_error(log_memoria,"No se encontro el archivo de configuracion para cargar la estructura de Kernel");
 
 	}
+
+void terminar_memoria(t_log* g_log) {
+	log_destroy(g_log);
+	free(g_log);
+	g_log = NULL;
+}
 
 }
 
