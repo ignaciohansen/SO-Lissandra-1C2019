@@ -231,3 +231,92 @@ bool cargarConfiguracion() {
 
 }
 
+void consola(){
+
+	log_info(log_lfilesystem, "En el hilo de consola");
+
+	menu();
+
+	char bufferComando[MAXSIZE_COMANDO];
+	char **comandoSeparado;
+	char **comandoSeparado2;
+	char *separador2="\n";
+	char *separator=" ";
+
+	while(1){
+
+		printf(">");
+
+		fgets(bufferComando,MAXSIZE_COMANDO, stdin);
+
+		add_history(linea);
+
+		free(linea);
+
+		comandoSeparado=string_split(bufferComando, separator);
+
+		//Tamanio del array
+		for(int i = 0; comandoSeparado[i] != NULL; i++){
+
+			tamanio = i +1;
+		}
+
+		log_info(log_lfilesystem, "El tamanio del vector de comandos es: %d", tamanio);
+
+		if(strcmp(comandoSeparado[0],"select") == 0){
+
+			printf("Se selecciono Select\n");
+
+			log_info(log_lfilesystem,"Por llamar a enviarResultado");
+
+			// FALTA ADAPTAR ESTA FUNCION //
+
+			//int resultadoEnviarComando = enviarComando(comandoSeparado[0],log_lfilesystem);
+			//break;
+
+			// FALTA ADAPTAR ESTA FUNCION //
+		}
+		if(strcmp(comandoSeparado[0],"insert") == 0){
+
+			printf("Insert seleccionado\n");
+			break;
+		}
+
+		if(strcmp(comandoSeparado[0],"create") == 0){
+			printf("Create seleccionado\n");
+			break;
+		}
+
+		if(strcmp(comandoSeparado[0],"describe") == 0){
+			printf("Describe seleccionado\n");
+			break;
+		}
+		if(strcmp(comandoSeparado[0],"drop") == 0){
+			printf("Drop seleccionado\n");
+			break;
+		}
+
+		if(strcmp(comandoSeparado[0],"salir") == 0){
+			break;
+		}
+		printf("Comando mal ingresado. \n");
+		log_error(log_lfilesystem,"Opcion mal ingresada por teclado en la consola");
+
+
+	}
+}
+
+void menu(){
+
+	printf("Los comandos que se pueden ingresar son: \n"
+		"COMANDOS \n"
+			"Insert \n"
+			"Select \n"
+			"Create \n"
+			"Describe \n"
+			"Drop \n"
+			"SALIR \n"
+"\n");
+
+}
+

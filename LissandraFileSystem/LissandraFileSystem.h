@@ -28,7 +28,7 @@ typedef struct{
 t_lfilesystem_config* configFile;
 char* buffer;
 
-int socketEscuchaMemoria,conexionEntrante,recibiendoMensaje;
+int socketEscuchaMemoria,conexionEntrante,recibiendoMensaje,tamanio;
 
 /*--------------------------------------------------------------------------------------------
  * 									SET UP LISANDRA FILE SYSTEM
@@ -37,6 +37,17 @@ int socketEscuchaMemoria,conexionEntrante,recibiendoMensaje;
 void LisandraSetUP();
 bool cargarConfiguracion();
 void iniciaabrirServidorLissandra();
+
+/*--------------------------------------------------------------------------------------------
+ * 									Elementos de consola
+ *--------------------------------------------------------------------------------------------
+ */
+
+#define MAXSIZE_COMANDO 200
+enum {Select, insert, create, describe, drop, salir};
+char* linea;
+void consola();
+void menu();
 
 
 #endif /* LFILESSYSTEM_H_ */
