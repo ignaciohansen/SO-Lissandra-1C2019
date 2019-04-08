@@ -18,7 +18,7 @@ int main() {
 
 	// LOGGING
 	log_memoria = archivoLogCrear(LOG_PATH, "Proceso Memoria");
-	log_info(log_memoria, " \n ========== Iniciación de Pool de Memoria ========== \n \n ");
+	imprimirMensaje(log_memoria, " \n ========== Iniciación de Pool de Memoria ========== \n \n ");
 
 /*
  *
@@ -27,10 +27,13 @@ int main() {
 	cargarConfiguracion();
 
 	// Lectura desde consola de Query-LQL de "Pool de Memorias"
+	/*
 	char* comando = lectura_consola();
 	log_info(log_memoria,"Se lee de consola la línea: "); log_info(log_memoria,comando);
-
+*/
+	/*
 	comando = stringRemoverVaciosIzquierda(comando); // depurado
+
 	switch (true){
 		case stringContiene(comando,"SELECT"):
 		case stringContiene(comando,"SELECT"):
@@ -39,6 +42,7 @@ int main() {
 		case stringContiene(comando,"SELECT"):
 		case stringContiene(comando,"SELECT"):
 	}
+	*/
 	/*
 	if (stringContiene(comando,"SELECT")) {
 		log_info(log_memoria,"Se encontró comando SELECT");
@@ -48,9 +52,9 @@ int main() {
 	*/
 
 	//terminar_memoria(log_memoria);
-	log_destroy(log_memoria);
-	free(log_memoria);
-	log_memoria = NULL;
+//	log_destroy(log_memoria);
+//	free(log_memoria);
+//	log_memoria = NULL;
 
 /*
  *
@@ -62,6 +66,9 @@ int main() {
 
 	log_info(log_memoria,
 			"Se cargaron los parametros de memoria.");
+
+
+	/*
 
 	socketEscuchaKernel = nuevoSocket(log_memoria);
 
@@ -110,11 +117,112 @@ int main() {
 
 	}
 
+
+*/
+	int a = conexionKernel();
+
 	log_info(log_memoria,
 				"Fin del proceso.");
 /*
  *
  */
+
+	return 0;
+
+}
+
+int conexionKernel(){
+
+	imprimirAviso(log_memoria, "INICIAMOS LA CONEXION CON LFS");
+	sockeConexionLF = nuevoSocket(log_memoria);
+
+
+	if(sockeConexionLF == ERROR){
+
+		imprimirError(log_memoria, "ERROR al crear un socket");
+		log_error(log_memoria,"Hubo un problema al querer crear el socket desde Kernel. Salimos del Proceso");
+
+		return ERROR;
+	}
+
+	imprimirVerde(log_memoria, "Se ha creado un socket correctamente");
+
+	log_info(log_memoria,
+				"El Socket creado es: %d .",sockeConexionLF);
+
+	log_info(log_memoria,
+				"por llamar a la funcion connectarSocket() para conectarnos con Memoria");
+
+	log_info(log_memoria,"PRUEBA: %d ",8001);
+
+	int resultado_Conectar = conectarSocket(sockeConexionLF, "0", 8001,log_memoria);
+
+	if(resultado_Conectar == ERROR){
+
+		imprimirError(log_memoria,"Hubo un problema al querer Conectarnos con LFS. Salimos del proceso");
+
+		return -1;
+	}else{
+
+		imprimirVerde1(log_memoria,
+				"Nos conectamos con exito, el resultado fue %d",resultado_Conectar);
+
+
+	char * mensaje = "hola";
+	resultado_sendMsj = socketEnviar(sockeConexionLF,mensaje,strlen(mensaje),log_memoria);
+
+	imprimirMensaje(log_memoria,
+					"Se ha intentado mandar un mensaje al server");
+
+	if(resultado_sendMsj == ERROR){
+
+		imprimirError(log_memoria,"Error al enviar mensaje a LSF. Salimos");
+			return ERROR;
+		}
+
+	imprimirVerde1(log_memoria,"El mensaje se envio correctamente\n\NMENSAJE ENVIADO: %s", mensaje);
+
+	return 10;
+
+	/*char* msj = malloc(10*sizeof(char));
+	msj = "PruebaK\n";
+
+	resultado_sendMsj = socketEnviar(socket_CMemoria,msj,strlen(msj),log_kernel);
+
+	if(resultado_sendMsj == ERROR){
+
+		log_error(log_kernel,"Error al enviar mensaje a memoria. Salimos");
+		return;
+	}
+
+	log_info(log_kernel,"El mensaje se envio correctamente");*/
+	}
+}
+
+int enviarComando(char** comando,t_log* logger){
+
+	log_info(logger,"En funcion enviarComando");
+
+	char* msj = malloc(7*sizeof(char));
+
+	msj = comando;
+
+	log_info(logger,"El mensaje que vamos a enviar es: %s", msj);
+
+	sockeConexionLF = conexionKernel();
+
+	log_info("Vamos a enviar a memoria por el socket %d", sockeConexionLF);
+
+	resultado_sendMsj = socketEnviar(sockeConexionLF,msj,strlen(msj),log_memoria);
+
+	if(resultado_sendMsj == ERROR){
+
+		log_error(log_memoria,"Error al enviar mensaje a memoria. Salimos");
+
+		return ERROR;
+	}
+
+	log_info(log_memoria,"El mensaje se envio correctamente: %s",msj);
 
 	return 0;
 
@@ -307,11 +415,13 @@ void cargarConfiguracion() {
 
 	}
 
+}
+
 void terminar_memoria(t_log* g_log) {
 	log_destroy(g_log);
 	free(g_log);
 	g_log = NULL;
-}
+
 
 }
 

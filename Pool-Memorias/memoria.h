@@ -16,11 +16,12 @@
 #include <commons/collections/queue.h>
 #include "../Biblioteca/src/Biblioteca.c"
 
-#define PATH_MEMORIA_CONFIG "MEMORIA.txt"
+#define PATH_MEMORIA_CONFIG "../MEMORIA.txt"
 #define LOG_PATH "logMEMORIA.txt"
 
 t_log* log_memoria;
 int socketEscuchaKernel,conexionEntrante,recibiendoMensaje;
+int sockeConexionLF, resultado_sendMsj;
 char* buffer;
 
 typedef struct{

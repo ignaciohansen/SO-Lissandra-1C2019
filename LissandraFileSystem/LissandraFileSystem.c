@@ -69,15 +69,28 @@ int abrirServidorLissandra() {
 				"El puerto que vamos a asociar es %i:", puerto_a_escuchar);
 
 
+
+
 		asociarSocket(socketEscuchaMemoria,puerto_a_escuchar,log_lfilesystem);
 
 		imprimirMensaje(log_lfilesystem,
 						"Ya asociado al puerto lo ponemos a la escucha.");
 
 		socketEscuchar(socketEscuchaMemoria,10,log_lfilesystem);
-
-		while(1){
+		int i =1;
+		while(1)
+		{
 			imprimirMensaje(log_lfilesystem, "En el while esperando conexiones.");
+
+			int estado = listen(socketEscuchaMemoria, 10);
+
+				if(estado == ERROR){
+
+					imprimirError(log_lfilesystem, "Error al poner el Socket en escucha");
+
+			return 0;
+				}
+				imprimirVerde(log_lfilesystem, "EL socket ya esta en escucha");
 
 			conexionEntrante = aceptarConexionSocket(socketEscuchaMemoria,log_lfilesystem);
 
@@ -99,6 +112,7 @@ int abrirServidorLissandra() {
 
 			imprimirMensaje(log_lfilesystem, "Mensaje recibido:");
 			imprimirVerde(log_lfilesystem, buffer);
+			i++;
 		}
 		imprimirMensajeProceso("FIN PROCESO SOCKET");
 		log_info(log_lfilesystem,

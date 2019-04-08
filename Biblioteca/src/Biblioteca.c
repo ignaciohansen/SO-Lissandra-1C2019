@@ -133,12 +133,11 @@ void socketEscuchar(Socket unSocket, int clientesEsperando,t_log* logger) {
 	
 	if(estado == ERROR){
 
-		log_error(logger, "Error al poner el Socket en escucha");
+		imprimirError(logger, "Error al poner el Socket en escucha");
 
 		return;
 	}
-
-	log_info(logger,"El Socket ya esta en escucha");
+	imprimirVerde(logger, "EL socket ya esta en escucha");
 }
 
 int aceptarConexionSocket(int fd_socket,t_log* logger) {
