@@ -20,7 +20,9 @@ int main() {
 	log_memoria = archivoLogCrear(LOG_PATH, "Proceso Memoria");
 	log_info(log_memoria, " \n ========== Iniciación de Pool de Memoria ========== \n \n ");
 
-<<<<<<< HEAD
+/*
+ *
+ */
 	// CONFIG
 	cargarConfiguracion();
 
@@ -49,7 +51,10 @@ int main() {
 	log_destroy(log_memoria);
 	free(log_memoria);
 	log_memoria = NULL;
-=======
+
+/*
+ *
+ */
 	log_info(log_memoria,
 			"Ya creado el Log, coninuamos cargando la estructura de configuracion.");
 	
@@ -107,7 +112,9 @@ int main() {
 
 	log_info(log_memoria,
 				"Fin del proceso.");
->>>>>>> 8877cc8822efa0f8fd848b4f4a86cbb7447213b7
+/*
+ *
+ */
 
 	return 0;
 
