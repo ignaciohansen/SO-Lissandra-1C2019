@@ -20,10 +20,62 @@ int main() {
 	log_memoria = archivoLogCrear(LOG_PATH, "Proceso Memoria");
 	log_info(log_memoria, " \n ========== Iniciación de Pool de Memoria ========== \n \n ");
 
-<<<<<<< HEAD
-	// CONFIG
+	log_info(log_memoria, "(1) LOG CREADO. ");
 	cargarConfiguracion();
 
+	log_info(log_memoria,
+		"Se cargaron los parametros de memoria.");
+
+    socketEscuchaKernel = nuevoSocket(log_memoria);
+
+    if(socketEscuchaKernel == ERROR){
+
+	    log_error(log_memoria,"Hubo un problema al querer crear el socket de escucha para memoria. Salimos del Proceso");
+
+	    return 0;
+    }
+
+    log_info(log_memoria, "SOCKET CREADO.Valor: %d.", socketEscuchaKernel);
+
+    log_info(log_memoria, " *** SE VA A ASOCIAR SOCKET CON PUERTO ... *** ");
+
+    log_info(log_memoria, "PUERTO A USAR: %d.", arc_config->puerto);
+    // ASOCIAR
+    asociarSocket( socketEscuchaKernel     // SOCKET
+		     	 , arc_config->puerto      // PUERTO
+				 , log_memoria          ); // LOG
+
+    log_info(log_memoria, " *** PUERTO ASOCIADO A SOCKET EXITOSAMENTE. *** ");
+    // ESCUCHAR
+    socketEscuchar( socketEscuchaKernel    // SOCKET
+		      	  , 10
+				  , log_memoria         ); // LOG
+
+    while(1){
+
+    	log_info(log_memoria," +++ esperando conexiones... +++ ");
+    	conexionEntrante = aceptarConexionSocket(socketEscuchaKernel,log_memoria);
+
+    	if(conexionEntrante == ERROR){
+    		log_error(log_memoria,"ERROR AL CONECTAR.");
+    		return -1;
+    	}
+
+    	buffer = malloc( 10 * sizeof(char) );
+
+    	recibiendoMensaje = socketRecibir(conexionEntrante,buffer,10);
+
+    	printf("Recibimos por socket %s",buffer);
+
+    	log_info(log_memoria,"El mensaje que se recibio fue %s", buffer);
+
+    }
+
+    log_info(log_memoria, "FIN DE PROCESO MEMORIA");
+
+    return 0;
+
+<<<<<<< HEAD
 	// Lectura desde consola de Query-LQL de "Pool de Memorias"
 	char* comando = lectura_consola();
 	log_info(log_memoria,"Se lee de consola la línea: "); log_info(log_memoria,comando);
@@ -49,69 +101,8 @@ int main() {
 	log_destroy(log_memoria);
 	free(log_memoria);
 	log_memoria = NULL;
-=======
-	log_info(log_memoria,
-			"Ya creado el Log, coninuamos cargando la estructura de configuracion.");
-	
-	cargarConfiguracion();
 
-	log_info(log_memoria,
-			"Se cargaron los parametros de memoria.");
-
-	socketEscuchaKernel = nuevoSocket(log_memoria);
-
-	if(socketEscuchaKernel == ERROR){
-
-		log_error(log_memoria,"Hubo un problema al querer crear el socket de escucha para memoria. Salimos del Proceso");
-
-		return 0;
-	}
-
-	log_info(log_memoria,
-			"El socket de escucha se creo con exito, con valor %d: .", socketEscuchaKernel);
-
-	log_info(log_memoria,
-			"Por asociar el socket con el puerto de escucha.");
-
-	log_info(log_memoria, "El puerto que vamos a asociar es %d:", arc_config->puerto);
-	
-	asociarSocket(socketEscuchaKernel,arc_config->puerto,log_memoria);
-
-	log_info(log_memoria,
-			"Ya asociado al puerto lo ponemos a la escucha.");
-
-	socketEscuchar(socketEscuchaKernel,10,log_memoria);
-
-	while(1){
-
-		log_info(log_memoria,
-			"En el while esperando conexiones.");
-
-		conexionEntrante = aceptarConexionSocket(socketEscuchaKernel,log_memoria);
-
-		if(conexionEntrante == ERROR){
-
-			log_error(log_memoria,"Se produjo un error al aceptar la conexion, salimos");
-			return -1;
-		}
-
-		buffer = malloc(10*sizeof(char));
-
-		recibiendoMensaje = socketRecibir(conexionEntrante,buffer,10);
-
-		printf("Recibimos por socket %s",buffer);
-
-		log_info(log_memoria,"El mensaje que se recibio fue %s", buffer);
-
-	}
-
-	log_info(log_memoria,
-				"Fin del proceso.");
->>>>>>> 8877cc8822efa0f8fd848b4f4a86cbb7447213b7
-
-	return 0;
-
-}
+} //// fin............
 
 char* lectura_consola() {
 	char* linea = (char*)readline(">");
