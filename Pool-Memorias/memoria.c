@@ -21,26 +21,49 @@ int main() {
 	log_info(log_memoria, " \n ========== Iniciación de Pool de Memoria ========== \n \n ");
 
 	log_info(log_memoria, "(1) LOG CREADO. ");
+
 	cargarConfiguracion();
+	log_info(log_memoria, " *** CONFIGURACIÓN DE MEMORIA CARGADA. *** ");
 
-	log_info(log_memoria,
-		"Se cargaron los parametros de memoria.");
+	// SECCIÓN DE CONSOLA.
 
-    socketEscuchaKernel = nuevoSocket(log_memoria);
+	// Lectura desde consola de Query-LQL de "Pool de Memorias"
+	char* comando = lectura_consola();
+	log_info(log_memoria,"Se lee de consola la línea: "); log_info(log_memoria,comando);
 
-    if(socketEscuchaKernel == ERROR){
+	comando = stringRemoverVaciosIzquierda(comando); // depurado
+	switch (true) {
+		case stringContiene(comando,"SELECT"):
+		case stringContiene(comando,"SELECT"):
+		case stringContiene(comando,"SELECT"):
+		case stringContiene(comando,"SELECT"):
+		case stringContiene(comando,"SELECT"):
+		case stringContiene(comando,"SELECT"):
+	}
 
-	    log_error(log_memoria,"Hubo un problema al querer crear el socket de escucha para memoria. Salimos del Proceso");
+	// FIN SECCIÓN DE CONSOLA.
 
-	    return 0;
+	/* LA PARTE DESTINADA A COMUNICACIÓN POR RED QUEDA COMENTADA
+	 * SE LA VA A DESCOMENTAR CUANDO:
+	 * (1) TERMINE LA ELABORACIÓN DE CONSOLA.
+	 * (2) SEA CAPAZ DE PROCESAR Queries LQL
+	 * (3) SEA CAPAZ DE MANTENER EL HILO DE CONSOLA Y DE RED EN PARALELO.
+
+
+	// SOCKET
+    socketEscuchaKernel = nuevoSocket(log_memoria);  // CREAR SOCKET
+
+    if(socketEscuchaKernel == ERROR){                // CASO DE ERROR.
+	    log_error(log_memoria," ¡¡¡ ERROR AL CREAR SOCKET. SE TERMINA EL PROCESO. !!! ");
+	    return -1;
     }
 
     log_info(log_memoria, "SOCKET CREADO.Valor: %d.", socketEscuchaKernel);
-
+    // PUERTO
     log_info(log_memoria, " *** SE VA A ASOCIAR SOCKET CON PUERTO ... *** ");
 
     log_info(log_memoria, "PUERTO A USAR: %d.", arc_config->puerto);
-    // ASOCIAR
+    // ASOCIAR "SOCKET" CON "PUERTO".
     asociarSocket( socketEscuchaKernel     // SOCKET
 		     	 , arc_config->puerto      // PUERTO
 				 , log_memoria          ); // LOG
@@ -71,38 +94,19 @@ int main() {
 
     }
 
+    // FIN DE BLOQUE DE RED.
+
+    */
+
     log_info(log_memoria, "FIN DE PROCESO MEMORIA");
+
+	log_destroy   (log_memoria);
+	free          (log_memoria);
+	log_memoria  = NULL        ;
 
     return 0;
 
-<<<<<<< HEAD
-	// Lectura desde consola de Query-LQL de "Pool de Memorias"
-	char* comando = lectura_consola();
-	log_info(log_memoria,"Se lee de consola la línea: "); log_info(log_memoria,comando);
-
-	comando = stringRemoverVaciosIzquierda(comando); // depurado
-	switch (true){
-		case stringContiene(comando,"SELECT"):
-		case stringContiene(comando,"SELECT"):
-		case stringContiene(comando,"SELECT"):
-		case stringContiene(comando,"SELECT"):
-		case stringContiene(comando,"SELECT"):
-		case stringContiene(comando,"SELECT"):
-	}
-	/*
-	if (stringContiene(comando,"SELECT")) {
-		log_info(log_memoria,"Se encontró comando SELECT");
-	} else {
-		log_info(log_memoria,"No se encontró ningún comando");
-	}
-	*/
-
-	//terminar_memoria(log_memoria);
-	log_destroy(log_memoria);
-	free(log_memoria);
-	log_memoria = NULL;
-
-} //// fin............
+} // MAIN.
 
 char* lectura_consola() {
 	char* linea = (char*)readline(">");
