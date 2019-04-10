@@ -28,10 +28,12 @@ int main() {
     // SECCIÓN DE CONSOLA.
 
     // Lectura desde consola de Query-LQL de "Pool de Memorias"
-    char* comando = lectura_consola();
+    char*     comando;
+    comando = lectura_consola();
     log_info(log_memoria,"Se lee de consola la línea: "); log_info(log_memoria,comando);
 
     comando = stringRemoverVaciosIzquierda(comando); // depurado
+    /*
     switch (true) {
         case stringContiene(comando,"SELECT"):
         case stringContiene(comando,"SELECT"):
@@ -40,6 +42,7 @@ int main() {
         case stringContiene(comando,"SELECT"):
         case stringContiene(comando,"SELECT"):
     }
+    */
 
     // FIN SECCIÓN DE CONSOLA.
 

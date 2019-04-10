@@ -54,3 +54,12 @@ dkms.conf
 
 # vsCode
 .vscode
+
+# cosas que molestan en los commits/confrmaciones
+Biblioteca/.settings/language.settings.xml
+Kernel/.cproject
+Kernel/.settings/language.settings.xml
+LissandraFileSystem/.cproject
+LissandraFileSystem/.settings/language.settings.xml
+Pool-Memorias/.cproject
+Pool-Memorias/.settings/language.settings.xml
