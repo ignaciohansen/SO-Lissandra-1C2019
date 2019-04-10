@@ -40,11 +40,11 @@ int main() {
     // SECCIÓN DE CONSOLA.
     // Operaciones: SELECT, INSERT, CREATE, DROP, DESCRIBE.
 
-    char*     comando;
+    String    comando;
     comando = lectura_consola();
     log_info(log_memoria,"Se lee de consola la línea: "); log_info(log_memoria,comando);
 
-    comando = stringRemoverVaciosIzquierda(comando); // depurado
+    stringRemoverVaciosIzquierda(&comando); // depurado
     /*
     switch (true) {
         case stringContiene(comando,"SELECT"):
