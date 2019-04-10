@@ -61,11 +61,12 @@ typedef struct {
 	String ip;
 }conexion;
 
+
 conexion* estructuraConexion;
 
 /*Elementos de consola*/
 #define MAXSIZE_COMANDO 200
-enum {Select, insert, create, describe, drop, journal, add,run, salir};
+
 char* linea;
 void consola();
 void menu();
@@ -73,6 +74,8 @@ void menu();
 void cargarConfiguracion();
 int enviarComando(char** comando,t_log* logger);
 int conexionKernel();
+int buscarComando(char* comandoSeparado,t_log* logger);
+void validarComando(char* comandoSeparado,t_log* logger);
 
 
 #endif /* KERNEL_H_ */

@@ -192,10 +192,19 @@ void socketSelect(int cantidadSockets, ListaSockets* listaSockets, int retry) {
 	}
 }
 
-int socketRecibir(Socket socketEmisor, Puntero buffer, int tamanioBuffer) {
+int socketRecibir(Socket socketEmisor, Puntero buffer, int tamanioBuffer,t_log* logger) {
+	
+	log_info(logger,"ya en funcion socketRecibir de Biblioteca");
+
 	int estado = recv(socketEmisor, buffer, tamanioBuffer, MSG_WAITALL);
-	if(estado == ERROR)
+
+	log_info(logger,"Despues del recv, resultado %d",estado);
+
+	if(estado == ERROR){
 		perror("recv");
+		log_info(logger,"En Error");
+	}
+	log_info(logger,"Por hacer return");
 	return estado;
 }
 
@@ -297,29 +306,29 @@ bool mensajeConexionFinalizada(int bytes) {
 	return bytes == NULO || bytes == ERROR;
 }
 
-void mensajeRevisarConexion(Mensaje* mensaje, Socket socketReceptor, int bytes) {
+void mensajeRevisarConexion(Mensaje* mensaje, Socket socketReceptor, int bytes,t_log* logger) {
 	if(mensajeConexionFinalizada(bytes))
 		mensajeAvisarDesconexion(mensaje);
 	else
-		mensajeObtenerDatos(mensaje, socketReceptor);
+		mensajeObtenerDatos(mensaje, socketReceptor,logger);
 }
 
-void mensajeObtenerDatos(Mensaje* mensaje, Socket socketReceptor) {
+void mensajeObtenerDatos(Mensaje* mensaje, Socket socketReceptor,t_log* logger) {
 	int tamanioDato = mensaje->header.tamanio;
 	if(tamanioDato==0) {
 		mensaje->datos=NULL;
 		return;
 	}
 	mensaje->datos = malloc(tamanioDato);
-	int bytes = socketRecibir(socketReceptor, mensaje->datos, tamanioDato);
+	int bytes = socketRecibir(socketReceptor, mensaje->datos, tamanioDato,logger);
 	if(mensajeConexionFinalizada(bytes))
 		mensajeAvisarDesconexion(mensaje);
 }
 
-Mensaje* mensajeRecibir(int socketReceptor) {
+Mensaje* mensajeRecibir(int socketReceptor,t_log* logger) {
 	Mensaje* mensaje = malloc(sizeof(Mensaje));
-	int bytes = socketRecibir(socketReceptor, &mensaje->header, sizeof(Header));
-	mensajeRevisarConexion(mensaje, socketReceptor, bytes);
+	int bytes = socketRecibir(socketReceptor, &mensaje->header, sizeof(Header),logger);
+	mensajeRevisarConexion(mensaje, socketReceptor, bytes,logger);
 	return mensaje;
 }
 
@@ -342,14 +351,14 @@ bool mensajeDesconexion(Mensaje* mensaje) {
 int handShakeEnvioExitoso(Socket unSocket, int32_t idProceso,t_log* logger) {
 	int32_t id = idProceso;
 	mensajeEnviar(unSocket, HANDSHAKE, &id, sizeof(int32_t),logger);
-	Mensaje* mensaje = mensajeRecibir(unSocket);
+	Mensaje* mensaje = mensajeRecibir(unSocket,logger);
 	int estado = handShakeRealizado(mensaje) && handShakeAceptado(mensaje);
 	mensajeDestruir(mensaje);
 	return estado;
 }
 
 int handShakeRecepcionExitosa(Socket unSocket, int idEsperada,t_log* logger) {
-	Mensaje* mensaje = mensajeRecibir(unSocket);
+	Mensaje* mensaje = mensajeRecibir(unSocket,logger);
 	int idProceso = (*(int32_t*)mensaje->datos);
 	mensajeDestruir(mensaje);
 	int32_t estado = handShakeIdsIguales(idProceso, idEsperada);

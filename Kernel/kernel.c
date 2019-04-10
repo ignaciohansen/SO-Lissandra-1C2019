@@ -17,28 +17,27 @@ int main() {
 	cargarConfiguracion();
 
 	log_info(log_kernel,
-				"Devuelta en Main, Funcion cargarConfiguracion() finalizo.");
+			"Devuelta en Main, Funcion cargarConfiguracion() finalizo.");
 
-	log_info(log_kernel,
-				"Creamos thread para Consola");
+	log_info(log_kernel, "Creamos thread para Consola");
 
 	pthread_t hiloConsola;
-	pthread_create(&hiloConsola,NULL,(void*) consola,NULL);
+	pthread_create(&hiloConsola, NULL, (void*) consola, NULL);
 
 	//pthread_t hiloConexion;
 	//pthread_create(&hiloConexion,NULL,(void*) conexionKernel,NULL);
 
 	//pthread_join(hiloConexion,NULL);
-	pthread_join(hiloConsola,NULL);
+	pthread_join(hiloConsola, NULL);
 
-	log_info(log_kernel,"Salimoooos");
+	log_info(log_kernel, "Salimoooos");
 
 	return 0;
 
 }
 
 void cargarConfiguracion() {
-	
+
 	log_info(log_kernel,
 			"Por reservar memoria para variable de configuracion.");
 
@@ -55,274 +54,356 @@ void cargarConfiguracion() {
 
 		log_info(log_kernel, "Kernel: Leyendo Archivo de Configuracion...");
 
-		if(config_has_property(configFile,"PUERTO_MEMORIA")){
-			
+		if (config_has_property(configFile, "PUERTO_MEMORIA")) {
+
 			log_info(log_kernel, "Almacenando el puerto");
 
 			//Por lo que dice el texto
 			arc_config->puerto_memoria = config_get_int_value(configFile,
-				"PUERTO_MEMORIA");
+					"PUERTO_MEMORIA");
 
-			log_info(log_kernel, "El puerto de la memoria es: %d", arc_config->puerto_memoria);
+			log_info(log_kernel, "El puerto de la memoria es: %d",
+					arc_config->puerto_memoria);
 
-		}else {
+		} else {
 			log_error(log_kernel,
 					"El archivo de configuracion no contiene el PUERTO de la Memoria");
 
 		}
 
-		if(config_has_property(configFile,"IP_MEMORIA")){
+		if (config_has_property(configFile, "IP_MEMORIA")) {
 
 			log_info(log_kernel, "Almacenando la IP de la Memoria");
 
-			arc_config->ip_memoria = config_get_string_value(configFile,"IP_MEMORIA");
+			arc_config->ip_memoria = config_get_string_value(configFile,
+					"IP_MEMORIA");
 
-			log_info(log_kernel, "La Ip de la memoria es: %s", arc_config->ip_memoria);
+			log_info(log_kernel, "La Ip de la memoria es: %s",
+					arc_config->ip_memoria);
 
-
-		}else{
+		} else {
 
 			log_error(log_kernel,
 					"El archivo de configuracion no contiene la IP de la Memoria");
 
 		}
 
-		if(config_has_property(configFile,"QUANTUM")){
+		if (config_has_property(configFile, "QUANTUM")) {
 
 			log_info(log_kernel, "Almancenando el Quantum del planificador");
 
-			arc_config->quantum = config_get_int_value(configFile,"QUANTUM");
+			arc_config->quantum = config_get_int_value(configFile, "QUANTUM");
 
-			log_info(log_kernel, "El Quantum del planificador es: %d", arc_config->quantum);
+			log_info(log_kernel, "El Quantum del planificador es: %d",
+					arc_config->quantum);
 
-
-		}else{
+		} else {
 
 			log_error(log_kernel,
 					"El archivo de configuracion no contiene el Quantum del planificador");
 
 		}
 
-		if(config_has_property(configFile,"MULTIPROCESAMIENTO")){
+		if (config_has_property(configFile, "MULTIPROCESAMIENTO")) {
 
-			log_info(log_kernel,"Almacenando el valor del Multiprocesamiento para el Planificador");
+			log_info(log_kernel,
+					"Almacenando el valor del Multiprocesamiento para el Planificador");
 
-			arc_config->multiprocesamiento = config_get_int_value(configFile,"MULTIPROCESAMIENTO");
+			arc_config->multiprocesamiento = config_get_int_value(configFile,
+					"MULTIPROCESAMIENTO");
 
-			log_info(log_kernel, "El grado de multiprocesamiento del planificador es: %d", arc_config->multiprocesamiento);
+			log_info(log_kernel,
+					"El grado de multiprocesamiento del planificador es: %d",
+					arc_config->multiprocesamiento);
 
-		}else{
+		} else {
 
 			log_error(log_kernel,
 					"El archivo de configuracion no el grado de multiprocesamiento del planificador");
 
 		}
 
-		if(config_has_property(configFile,"METADATA_REFRESH")){
+		if (config_has_property(configFile, "METADATA_REFRESH")) {
 
-			log_info(log_kernel,"Almacenando el valor del Metadata Refresh para el Kernel");
+			log_info(log_kernel,
+					"Almacenando el valor del Metadata Refresh para el Kernel");
 
-			arc_config->metadata_refresh = config_get_int_value(configFile,"METADATA_REFRESH");
+			arc_config->metadata_refresh = config_get_int_value(configFile,
+					"METADATA_REFRESH");
 
-			log_info(log_kernel, "El valor del Metadata Refresh es: %d", arc_config->metadata_refresh);
-		}else{
+			log_info(log_kernel, "El valor del Metadata Refresh es: %d",
+					arc_config->metadata_refresh);
+		} else {
 
 			log_error(log_kernel,
 					"El archivo de configuracion no tiene el valor del Metadata refresh");
-		
+
 		}
 
-		if(config_has_property(configFile,"SLEEP_EJECUCION")){
+		if (config_has_property(configFile, "SLEEP_EJECUCION")) {
 
-			log_info(log_kernel,"Almacenando el valor del Sleep Ejecucion para el Kernel");
+			log_info(log_kernel,
+					"Almacenando el valor del Sleep Ejecucion para el Kernel");
 
-			arc_config->sleep_ejecucion = config_get_int_value(configFile,"SLEEP_EJECUCION");
+			arc_config->sleep_ejecucion = config_get_int_value(configFile,
+					"SLEEP_EJECUCION");
 
-			log_info(log_kernel, "El valor del Sleep Ejecucion es: %d", arc_config->sleep_ejecucion);
-		}else{
+			log_info(log_kernel, "El valor del Sleep Ejecucion es: %d",
+					arc_config->sleep_ejecucion);
+		} else {
 
 			log_error(log_kernel,
 					"El archivo de configuracion no tiene el valor del Sleep Ejecucion");
 
 		}
 
-		
-	}else{
-		
-		log_error(log_kernel,"No se encontro el archivo de configuracion para cargar la estructura de Kernel");
+	} else {
+
+		log_error(log_kernel,
+				"No se encontro el archivo de configuracion para cargar la estructura de Kernel");
 
 	}
 
-	log_info(log_kernel,"Cargamos todo lo que se encontro en el archivo de configuracion. Liberamos la variable config que fue utlizada para navegar el archivo de configuracion");
+	log_info(log_kernel,
+			"Cargamos todo lo que se encontro en el archivo de configuracion. Liberamos la variable config que fue utlizada para navegar el archivo de configuracion");
 
 	free(configFile);
 
 }
 
-void consola(){
+void consola() {
 
-	log_info(log_kernel, "En el hilo de consola");	
+	log_info(log_kernel, "En el hilo de consola");
 
 	menu();
 
 	char bufferComando[MAXSIZE_COMANDO];
 	char **comandoSeparado;
 	char **comandoSeparado2;
-	char *separador2="\n";
-	char *separator=" ";
+	char *separador2 = "\n";
+	char *separator = " ";
+	int comando;
 
-	while(1){
+	while (1) {
 
 		printf(">");
 
-		fgets(bufferComando,MAXSIZE_COMANDO, stdin);
+		fgets(bufferComando, MAXSIZE_COMANDO, stdin);
 
 		add_history(linea);
 
 		free(linea);
 
-		comandoSeparado=string_split(bufferComando, separator);
-
+		//comandoSeparado = string_split(bufferComando, separador2);
+		comandoSeparado = string_split(bufferComando, separator);
+		
+		
 		//Tamanio del array
-		for(int i = 0; comandoSeparado[i] != NULL; i++){
-
-			tamanio = i +1;
-		}
 		
-		log_info(log_kernel, "El tamanio del vector de comandos es: %d", tamanio);
-		
-		if(strcmp(comandoSeparado[0],"select") == 0){
-
-			printf("Se selecciono Select\n");
-
-			log_info(log_kernel,"Por llamar a enviarResultado");
-
-			int resultadoEnviarComando = enviarComando(comandoSeparado[0],log_kernel);
-			//break;
-		}
-		if(strcmp(comandoSeparado[0],"insert") == 0){
+		for (int i = 0; comandoSeparado[i] != NULL; i++) {
 			
-			printf("Insert seleccionado\n");
-			break;
-		}
-
-		if(strcmp(comandoSeparado[0],"create") == 0){
-			printf("Create seleccionado\n");
-			break;		
-		}
-		
-		if(strcmp(comandoSeparado[0],"describe") == 0){
-			printf("Describe seleccionado\n");
-			break;		
-		}
-		if(strcmp(comandoSeparado[0],"drop") == 0){
-			printf("Drop seleccionado\n");
-			break;		
-		}
-		if(strcmp(comandoSeparado[0],"journal") == 0){
-			printf("Journal seleccionado\n");
-			break;		
-		}
-		if(strcmp(comandoSeparado[0],"add") == 0){
-			printf("add seleccionado\n");
-			break;		
-		}
-
-		if(strcmp(comandoSeparado[0],"run") == 0){
-			printf("Run seleccionado\n");
-			break;		
-		}
+			log_info(log_kernel,"En la posicion %d del array esta el valor %s",i,comandoSeparado[i]);
 			
-		if(strcmp(comandoSeparado[0],"salir") == 0){
-			break;		
-		}	
-		printf("Comando mal ingresado. \n");
-		log_error(log_kernel,"Opcion mal ingresada por teclado en la consola");
+			tamanio = i + 1;
+		}
 
+		log_info(log_kernel, "El tamanio del vector de comandos es: %d",
+				tamanio);
+
+		switch (tamanio){
+
+			case 1:
+				{	
+					comandoSeparado = string_split(bufferComando, separador2);
+					log_info(log_kernel,"%s",comandoSeparado[0]);
+					log_info(log_kernel,"%d",strcmp(comandoSeparado[0],"salir"));
+					if(strcmp(comandoSeparado[0],"salir") == 0){
+		 				
+						 printf("Salir seleccionado\n");
+						log_info(log_kernel, "Se selecciono Salir");
+				
+						return;
+		 			}else{
+		 				printf("Comando mal ingresado. \n");
+		 				log_error(log_kernel,
+		 									"Opcion mal ingresada por teclado en la consola");
+
+		 				break;
+		 			}
+
+				}
+			case 2:
+				validarComando(comandoSeparado[0],log_kernel);
+				break;
+			case 3:
+				validarComando(comandoSeparado[0],log_kernel);
+				break;
+			default:
+				{
+				printf("Comando mal ingresado. \n");
+				log_error(log_kernel,
+					"Opcion mal ingresada por teclado en la consola");
+			}
+				break;
+		}
+		//comando = validacionComando(comandoSeparado[0],log_kernel);
+
+		//log_info(log_kernel, "El numero de comando ingresado es %d", comando);	
 		
-	}	
+
+
+		//INTERPRETACION DE COMANDOS ANTERIORES
+		//}
+
+		/*switch(comandoIngresado){
+
+		 case 1:
+		 log_info(log_kernel, "select");
+		 break;
+		 case 2:
+		 log_info(log_kernel, "insert");
+		 break;
+		 default:
+		 printf("Comando mal ingresado. \n");
+		 log_error(log_kernel,"Opcion mal ingresada por teclado en la consola");
+		 break;
+		 }
+
+		 if(strcmp(comandoSeparado[0],"select") == 0){
+
+		 printf("Se selecciono Select\n");
+
+		 log_info(log_kernel,"Por llamar a enviarResultado");
+
+		 int resultadoEnviarComando = enviarComando(comandoSeparado[0],log_kernel);
+		 //break;
+		 }
+		 /*	if(strcmp(comandoSeparado[0],"insert") == 0){
+
+		 printf("Insert seleccionado\n");
+		 break;
+		 }
+
+		 if(strcmp(comandoSeparado[0],"create") == 0){
+		 printf("Create seleccionado\n");
+		 break;
+		 }
+
+		 if(strcmp(comandoSeparado[0],"describe") == 0){
+		 printf("Describe seleccionado\n");
+		 break;
+		 }
+		 if(strcmp(comandoSeparado[0],"drop") == 0){
+		 printf("Drop seleccionado\n");
+		 break;
+		 }
+		 if(strcmp(comandoSeparado[0],"journal") == 0){
+		 printf("Journal seleccionado\n");
+		 break;
+		 }
+		 if(strcmp(comandoSeparado[0],"add") == 0){
+		 printf("add seleccionado\n");
+		 break;
+		 }
+
+		 if(strcmp(comandoSeparado[0],"run") == 0){
+		 printf("Run seleccionado\n");
+		 break;
+		 }
+
+		 if(strcmp(comandoSeparado[0],"salir") == 0){
+		 break;
+		 }
+		 printf("Comando mal ingresado. \n");
+		 log_error(log_kernel,"Opcion mal ingresada por teclado en la consola");
+		 */
+
+	}
 }
 
-int conexionKernel(){
+int conexionKernel() {
 
 	socket_CMemoria = nuevoSocket(log_kernel);
 
-	if(socket_CMemoria == ERROR){
+	if (socket_CMemoria == ERROR) {
 
-		log_error(log_kernel,"Hubo un problema al querer crear el socket desde Kernel. Salimos del Proceso");
+		log_error(log_kernel,
+				"Hubo un problema al querer crear el socket desde Kernel. Salimos del Proceso");
 
 		return ERROR;
 	}
 
-	log_info(log_kernel,
-				"El Socket creado es: %d .",socket_CMemoria);
+	log_info(log_kernel, "El Socket creado es: %d .", socket_CMemoria);
 
 	log_info(log_kernel,
-				"por llamar a la funcion connectarSocket() para conectarnos con Memoria");
+			"por llamar a la funcion connectarSocket() para conectarnos con Memoria");
 
-	log_info(log_kernel,"PRUEBA: %d ",arc_config->puerto_memoria);
+	log_info(log_kernel, "PRUEBA: %d ", arc_config->puerto_memoria);
 
-	resultado_Conectar = conectarSocket(socket_CMemoria, arc_config->ip_memoria, arc_config->puerto_memoria,log_kernel);
+	resultado_Conectar = conectarSocket(socket_CMemoria, arc_config->ip_memoria,
+			arc_config->puerto_memoria, log_kernel);
 
-	if(resultado_Conectar == ERROR){
+	if (resultado_Conectar == ERROR) {
 
-		log_error(log_kernel,"Hubo un problema al querer Conectarnos con Memoria. Salimos del proceso");
+		log_error(log_kernel,
+				"Hubo un problema al querer Conectarnos con Memoria. Salimos del proceso");
 
 		return -1;
-	}else{
+	} else {
 
-	log_info(log_kernel,
-				"Nos conectamos con exito, el resultado fue %d",resultado_Conectar);
-				return socket_CMemoria;
+		log_info(log_kernel, "Nos conectamos con exito, el resultado fue %d",
+				resultado_Conectar);
+		return socket_CMemoria;
 
-	/*char* msj = malloc(10*sizeof(char));
-	msj = "PruebaK\n";
-	
-	resultado_sendMsj = socketEnviar(socket_CMemoria,msj,strlen(msj),log_kernel);
+		/*char* msj = malloc(10*sizeof(char));
+		 msj = "PruebaK\n";
 
-	if(resultado_sendMsj == ERROR){
+		 resultado_sendMsj = socketEnviar(socket_CMemoria,msj,strlen(msj),log_kernel);
 
-		log_error(log_kernel,"Error al enviar mensaje a memoria. Salimos");
-		return;
-	}
+		 if(resultado_sendMsj == ERROR){
 
-	log_info(log_kernel,"El mensaje se envio correctamente");*/
+		 log_error(log_kernel,"Error al enviar mensaje a memoria. Salimos");
+		 return;
+		 }
+
+		 log_info(log_kernel,"El mensaje se envio correctamente");*/
 	}
 }
 
-int enviarComando(char** comando,t_log* logger){
+int enviarComando(char** comando, t_log* logger) {
 
-	log_info(logger,"En funcion enviarComando");
+	log_info(logger, "En funcion enviarComando");
 
-	char* msj = malloc(7*sizeof(char));
+	char* msj = malloc(7 * sizeof(char));
 
 	msj = comando;
 
-	log_info(logger,"El mensaje que vamos a enviar es: %s", msj);	
+	log_info(logger, "El mensaje que vamos a enviar es: %s", msj);
 
 	socket_CMemoria = conexionKernel();
 
 	log_info("Vamos a enviar a memoria por el socket %d", socket_CMemoria);
 
-	resultado_sendMsj = socketEnviar(socket_CMemoria,msj,strlen(msj),log_kernel);
+	resultado_sendMsj = socketEnviar(socket_CMemoria, msj, strlen(msj),
+			log_kernel);
 
-	if(resultado_sendMsj == ERROR){
+	if (resultado_sendMsj == ERROR) {
 
-		log_error(log_kernel,"Error al enviar mensaje a memoria. Salimos");
+		log_error(log_kernel, "Error al enviar mensaje a memoria. Salimos");
 
 		return ERROR;
 	}
 
-	log_info(log_kernel,"El mensaje se envio correctamente: %s",msj);
+	log_info(log_kernel, "El mensaje se envio correctamente: %s", msj);
 
 	return 0;
 
 }
 
-void menu(){
+void menu() {
 
 	printf("Los comandos que se pueden ingresar son: \n"
-		"COMANDOS \n"
+			"COMANDOS \n"
 			"Insert \n"
 			"Select \n"
 			"Create \n"
@@ -330,8 +411,107 @@ void menu(){
 			"Drop \n"
 			"Journal  \n"
 			"add \n"
-			"run \n"			
+			"run \n"
 			"SALIR \n"
-"\n");
+			"\n");
 
+}
+
+int buscarComando(char* comando,t_log* logger) {
+
+	log_info(logger,"Recibimos el comando: %s",comando);
+
+	int i = 0;
+	
+
+	//while (i < salir && strcmp(comandosPermitidos[i], comando)) {
+		
+		//i++;
+	
+	//}
+
+	for (i;i <= salir && strcmp(comandosPermitidos[i], comando);i++) {
+		
+			
+	}	
+
+	log_info(logger,"Se devuelve el valor %d",i);
+
+	return i;
+
+}
+
+void validarComando(char* comando,t_log* logger){
+
+		int resultadoComando = buscarComando(comando,logger);
+
+		switch (resultadoComando) {
+
+			case Select: {
+				printf("Se selecciono Select\n");
+
+				log_info(log_kernel, "Por llamar a enviarResultado");
+
+				int resultadoEnviarComando = enviarComando(comando,log_kernel);
+
+			}
+				break;
+
+			case insert: {
+				printf("Insert seleccionado\n");
+				log_info(log_kernel, "Se selecciono insert");
+
+			}
+				break;
+
+			case create: {
+				printf("Create seleccionado\n");
+				log_info(log_kernel, "Se selecciono Create");
+
+			}
+				break;
+
+			case describe: {
+				printf("Describe seleccionado\n");
+				log_info(log_kernel, "Se selecciono Describe");
+
+			}
+				break;
+
+			case drop: {
+				printf("Drop seleccionado\n");
+				log_info(log_kernel, "Se selecciono Drop");
+
+			}
+				break;
+
+			case journal: {
+				printf("Journal seleccionado\n");
+				log_info(log_kernel, "Se selecciono Journal");
+
+			}
+				break;
+
+			case add: {
+				printf("Add seleccionado\n");
+				log_info(log_kernel, "Se selecciono Add");
+
+			}
+				break;
+			
+			case run: {
+				printf("Run seleccionado\n");
+				log_info(log_kernel, "Se selecciono Run");
+
+			}
+				break;			
+
+			default: {
+				printf("Comando mal ingresado. \n");
+				log_error(log_kernel,
+					"Opcion mal ingresada por teclado en la consola");
+			}
+				break;
+
+		}
 }

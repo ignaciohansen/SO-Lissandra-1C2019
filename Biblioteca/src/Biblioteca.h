@@ -48,15 +48,10 @@
 #define HANDSHAKE 1
 #define ACTIVADO 1
 #define DESACTIVADO 0
-#define ID_FILESYSTEM 1
-#define ID_YAMA 2
-#define ID_MASTER 3
-#define ID_WORKER 4
-#define ID_DATANODE 5
 #define VACIO ""
 #define ESCRITURA "w"
 #define LECTURA "r"
-#define BLOQUE 1048576
+#define COMANDO_SIZE 35
 #define ROJO "\x1b[31m"
 #define AMARILLO "\x1b[33m"
 #define BLANCO "\x1b[0m"
@@ -110,6 +105,34 @@ typedef struct {
 	String ip;
 } Conexion;
 
+const char* comandosPermitidos[] =
+{
+	"select",
+	"insert",
+	"create",
+	"describe",
+	"drop",
+	"journal",
+	"add",
+	"run",
+	"salir"
+	
+};
+
+
+enum comandos{
+	Select = 0,
+	insert,
+	create,
+	describe,
+	drop,
+	journal,
+	add,
+	run,
+	salir
+	
+};
+
 //--------------------------------------- Funciones para Socket -------------------------------------
 
 //void socketConfigurar(Conexion* conexion, String ip, int puerto, t_log* logger);
@@ -125,7 +148,7 @@ int aceptarConexionSocket(int fd_socket,t_log* logger);
 int socketAceptar(Socket unSocket, int idEsperada,t_log* logger);
 void socketRedireccionar(Socket unSocket);
 void socketSelect(Socket cantidadSockets, ListaSockets* listaSockets,int);
-int socketRecibir(Socket socketEmisor, Puntero buffer, int tamanioBuffer);
+int socketRecibir(Socket socketEmisor, Puntero buffer, int tamanioBuffer,t_log* logger);
 int socketEnviar(Socket socketReceptor, Puntero mensaje, int tamanioMensaje,t_log* logger);
 void socketCerrar(Socket unSocket);
 bool socketSonIguales(Socket unSocket, Socket otroSocket);
@@ -147,12 +170,12 @@ void listaSocketsLimpiar(ListaSockets* listaSockets);
 void* mensajeCrear(int operacion, Puntero dato, int tamanioDato);
 int mensajeEnviar(int socketReceptor, Entero operacion, void* dato, Entero tamanioDato, t_log* logger);
 bool mensajeOperacionIgualA(Mensaje* mensaje, int operacion);
-Mensaje* mensajeRecibir(Socket socketEmisor);
+Mensaje* mensajeRecibir(Socket socketEmisor, t_log* logger);
 void mensajeDestruir(Mensaje* mensaje);
 void mensajeAvisarDesconexion(Mensaje* mensaje);
 bool mensajeConexionFinalizada(int bytes);
-void mensajeRevisarConexion(Mensaje* mensaje, Socket socketReceptor, int bytes);
-void mensajeObtenerDatos(Mensaje* mensaje, Socket socketReceptor);
+void mensajeRevisarConexion(Mensaje* mensaje, Socket socketReceptor, int bytes,t_log* logger);
+void mensajeObtenerDatos(Mensaje* mensaje, Socket socketReceptor,t_log* logger);
 bool mensajeDesconexion(Mensaje* mensaje) ;
 
 //--------------------------------------- Funciones para Header -------------------------------------
