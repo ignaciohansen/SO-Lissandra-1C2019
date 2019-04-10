@@ -14,6 +14,18 @@ int main() {
      * 1) Conectar a LFS, hacer handshake: obtener "tamaño máximo de value" p. admin de paginas
      * 2) Iniciar la memoria principal
      * 3) Ejecutar Gossiping
+     * Más requerimientos a seguir:
+     *  * correr concurrentemente : - consola
+     *                              - red.
+     *
+     *  * debe soportar:            - hilos
+     *                              - memoria compartida.
+     *
+     *  * idea: PROCESO PADRE : memoria compartida.
+     *          PROCESOS HIJOS: leen consola y reciben mensajes.
+     *                          los pasan al padre por memoria compartida.
+     *
+     *
      */
 
     // LOGGING
@@ -26,8 +38,8 @@ int main() {
     log_info(log_memoria, " *** CONFIGURACIÓN DE MEMORIA CARGADA. *** ");
 
     // SECCIÓN DE CONSOLA.
+    // Operaciones: SELECT, INSERT, CREATE, DROP, DESCRIBE.
 
-    // Lectura desde consola de Query-LQL de "Pool de Memorias"
     char*     comando;
     comando = lectura_consola();
     log_info(log_memoria,"Se lee de consola la línea: "); log_info(log_memoria,comando);
@@ -222,11 +234,5 @@ void cargarConfiguracion() {
         log_error(log_memoria,"[WARNING] NO HAY ARCHIVO DE CONFIGURACION DE MODULO MEMORIA"); // ERROR: SIN ARCHIVO CONFIGURACION
 
     }
-
-void terminar_memoria(t_log* g_log) {
-    log_destroy(g_log);
-    free(g_log);
-    g_log = NULL;
-}
 
 }
