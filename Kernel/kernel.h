@@ -61,6 +61,13 @@ typedef struct {
 	String ip;
 }conexion;
 
+typedef struct{
+
+	unsigned int idComando;
+	unsigned int header;
+	char** body;	
+}protocolo;
+
 
 conexion* estructuraConexion;
 
@@ -75,7 +82,7 @@ void cargarConfiguracion();
 int enviarComando(char** comando,t_log* logger);
 int conexionKernel();
 int buscarComando(char* comandoSeparado,t_log* logger);
-void validarComando(char* comandoSeparado,t_log* logger);
+void validarComando(char** comandoSeparado,int tamanio,t_log* logger);
 
 
 #endif /* KERNEL_H_ */
