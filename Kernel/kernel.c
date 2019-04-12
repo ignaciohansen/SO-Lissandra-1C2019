@@ -228,10 +228,14 @@ void consola() {
 		 			} else if(strcmp(comandoSeparado[0],"journal") == 0){
 
 						 printf("Journal seleccionado\n");
-
+						 
 						 log_info(log_kernel, "Se selecciono el comando Journal");
 
 							//Enviar Journal a todas las memorias
+
+						int resultadoEnviarComando = enviarComando(comandoSeparado,log_kernel);
+
+
 					 } else if(strcmp(comandoSeparado[0],"metrics") == 0){
 
 						 printf("Metrics seleccionado\n");
@@ -246,7 +250,7 @@ void consola() {
 						 log_error(log_kernel,
 		 									"Opcion mal ingresada por teclado en la consola");
 		 				break;
-		 			}
+		 			}break;
 				}
 			case 2:
 				validarComando(comandoSeparado,tamanio,log_kernel);
@@ -301,7 +305,7 @@ void consola() {
 		 int resultadoEnviarComando = enviarComando(comandoSeparado[0],log_kernel);
 		 //break;
 		 }
-		 /*	if(strcmp(comandoSeparado[0],"insert") == 0){
+		 	if(strcmp(comandoSeparado[0],"insert") == 0){
 
 		 printf("Insert seleccionado\n");
 		 break;
@@ -395,19 +399,19 @@ int conexionKernel() {
 
 int enviarComando(char** comando, t_log* logger) {
 
-	log_info(logger, "En funcion enviarComando");
+	log_info(logger, "En funcion enviarComando: %s");
 
-	char* msj = malloc(7 * sizeof(char));
+	//char* msj = malloc(7 * sizeof(char));
 
-	msj = comando;
+	//msj = comando;
 
-	log_info(logger, "El mensaje que vamos a enviar es: %s", msj);
+	log_info(logger, "El mensaje que vamos a enviar es: %s", comando[0]);
 
 	socket_CMemoria = conexionKernel();
 
 	log_info("Vamos a enviar a memoria por el socket %d", socket_CMemoria);
 
-	resultado_sendMsj = socketEnviar(socket_CMemoria, msj, strlen(msj),
+	resultado_sendMsj = socketEnviar(socket_CMemoria, comando[0], strlen(comando[0]),
 			log_kernel);
 
 	if (resultado_sendMsj == ERROR) {
@@ -417,7 +421,7 @@ int enviarComando(char** comando, t_log* logger) {
 		return ERROR;
 	}
 
-	log_info(log_kernel, "El mensaje se envio correctamente: %s", msj);
+	log_info(log_kernel, "El mensaje se envio correctamente: %s", comando[0]);
 
 	return 0;
 

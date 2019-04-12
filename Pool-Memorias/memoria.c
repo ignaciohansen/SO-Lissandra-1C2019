@@ -93,13 +93,14 @@ int main() {
             log_error(log_memoria,"ERROR AL CONECTAR.");
             return -1;
         }
-        buffer = malloc( 10 * sizeof(char) );
-        recibiendoMensaje = socketRecibir(conexionEntrante,buffer,10);
-        printf("Recibimos por socket %s",buffer);
+        buffer = malloc( 8 * sizeof(char) );
+        recibiendoMensaje = socketRecibir(conexionEntrante,buffer,7,log_memoria);
+        buffer[7] = "\\0";
+        printf("Recibimos por socket: %s\n",buffer);
         log_info(log_memoria,"El mensaje que se recibio fue %s", buffer);
-    }
+    }*/
     // FIN DE BLOQUE DE RED.
-    */
+
 
     log_info(log_memoria, "FIN DE PROCESO MEMORIA");
 

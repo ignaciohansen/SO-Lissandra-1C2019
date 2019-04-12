@@ -143,7 +143,7 @@ void socketEscuchar(Socket unSocket, int clientesEsperando,t_log* logger) {
 int aceptarConexionSocket(int fd_socket,t_log* logger) {
 
 	log_info(logger,"En funcion aceptarConexion");
-	printf("EN funcion aceptarConexion");
+	printf("En funcion aceptarConexion \n");
 	int addres_size = sizeof(struct sockaddr_in);
 
 	struct sockaddr_storage unCliente; // sino: struct sockaddr_in unCliente;
