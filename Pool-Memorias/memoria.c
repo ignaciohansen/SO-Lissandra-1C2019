@@ -70,12 +70,51 @@ int main() {
      * (2) SEA CAPAZ DE PROCESAR Queries LQL
      * (3) SEA CAPAZ DE MANTENER EL HILO DE CONSOLA Y DE RED EN PARALELO.
 
+<<<<<<< HEAD
+
+=======
+    // SOCKET
+    socketEscuchaKernel = nuevoSocket(log_memoria);  // CREAR SOCKET
+    if(socketEscuchaKernel == ERROR){                // CASO DE ERROR.
+        log_error(log_memoria," ¡¡¡ ERROR AL CREAR SOCKET. SE TERMINA EL PROCESO. !!! ");
+        return -1;
+    }
+    log_info(log_memoria, "SOCKET CREADO.Valor: %d.", socketEscuchaKernel);
+
+    // PUERTO
+    log_info(log_memoria, " *** SE VA A ASOCIAR SOCKET CON PUERTO ... *** ");
+    log_info(log_memoria, "PUERTO A USAR: %d.", arc_config->puerto);
+
+    // ASOCIAR "SOCKET" CON "PUERTO".
+    asociarSocket( socketEscuchaKernel     // SOCKET
+                  , arc_config->puerto      // PUERTO
+                 , log_memoria          ); // LOG
+    log_info(log_memoria, " *** PUERTO ASOCIADO A SOCKET EXITOSAMENTE. *** ");
+
+    // ESCUCHAR
+    socketEscuchar( socketEscuchaKernel    // SOCKET
+                    , 10
+                  , log_memoria         ); // LOG
+    while(1){
+        log_info(log_memoria," +++ esperando conexiones... +++ ");
+        conexionEntrante = aceptarConexionSocket(socketEscuchaKernel,log_memoria);
+        if(conexionEntrante == ERROR){
+            log_error(log_memoria,"ERROR AL CONECTAR.");
+            return -1;
+        }
+        buffer = malloc( 8 * sizeof(char) );
+        recibiendoMensaje = socketRecibir(conexionEntrante,buffer,7,log_memoria);
+        buffer[7] = "\\0";
+        printf("Recibimos por socket: %s\n",buffer);
+        log_info(log_memoria,"El mensaje que se recibio fue %s", buffer);
+    }*/
 
     // FIN DE BLOQUE DE RED.
-    */
+
 
     log_info(log_memoria, "FIN DE PROCESO MEMORIA");
 
+    //COMENTO ESTO PORQUE CUANDO LLEGA A ESTA INSTANCIA SE CRASHEA Y TIRA DUMP
  //   log_destroy   (log_memoria);
     free          (log_memoria);
     log_memoria  = NULL        ;

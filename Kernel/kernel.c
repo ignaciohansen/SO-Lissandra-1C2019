@@ -57,8 +57,7 @@ void cargarConfiguracion() {
 		if (config_has_property(configFile, "PUERTO_MEMORIA")) {
 
 			log_info(log_kernel, "Almacenando el puerto");
-
-			//Por lo que dice el texto
+			
 			arc_config->puerto_memoria = config_get_int_value(configFile,
 					"PUERTO_MEMORIA");
 
@@ -193,10 +192,8 @@ void consola() {
 		add_history(linea);
 
 		free(linea);
-
-		//comandoSeparado = string_split(bufferComando, separador2);
-		comandoSeparado = string_split(bufferComando, separator);
-		
+	
+		comandoSeparado = string_split(bufferComando, separator);		
 		
 		//Tamanio del array
 		
@@ -215,36 +212,66 @@ void consola() {
 			case 1:
 				{	
 					comandoSeparado = string_split(bufferComando, separador2);
+					
 					log_info(log_kernel,"%s",comandoSeparado[0]);
+
 					log_info(log_kernel,"%d",strcmp(comandoSeparado[0],"salir"));
+					
 					if(strcmp(comandoSeparado[0],"salir") == 0){
 		 				
-						 printf("Salir seleccionado\n");
+						printf("Salir seleccionado\n");
+						
 						log_info(log_kernel, "Se selecciono Salir");
 				
 						return;
-		 			}else{
+
+		 			} else if(strcmp(comandoSeparado[0],"journal") == 0){
+
+						 printf("Journal seleccionado\n");
+						 
+						 log_info(log_kernel, "Se selecciono el comando Journal");
+
+							//Enviar Journal a todas las memorias
+
+						int resultadoEnviarComando = enviarComando(comandoSeparado,log_kernel);
+
+
+					 } else if(strcmp(comandoSeparado[0],"metrics") == 0){
+
+						 printf("Metrics seleccionado\n");
+
+						 log_info(log_kernel, "Se selecciono el comando Metrics");
+
+							//Se muestra Metricas
+					 }
+					 else{
 		 				printf("Comando mal ingresado. \n");
-		 				log_error(log_kernel,
+		 				
+						 log_error(log_kernel,
 		 									"Opcion mal ingresada por teclado en la consola");
-
 		 				break;
-		 			}
-
+		 			}break;
 				}
 			case 2:
-				validarComando(comandoSeparado[0],log_kernel);
+				validarComando(comandoSeparado,tamanio,log_kernel);
+				
 				break;
+
 			case 3:
-				validarComando(comandoSeparado[0],log_kernel);
+				validarComando(comandoSeparado,tamanio,log_kernel);
+				
 				break;
+
 			default:
 				{
 				printf("Comando mal ingresado. \n");
+				
 				log_error(log_kernel,
 					"Opcion mal ingresada por teclado en la consola");
 			}
+				
 				break;
+
 		}
 		//comando = validacionComando(comandoSeparado[0],log_kernel);
 
@@ -278,7 +305,7 @@ void consola() {
 		 int resultadoEnviarComando = enviarComando(comandoSeparado[0],log_kernel);
 		 //break;
 		 }
-		 /*	if(strcmp(comandoSeparado[0],"insert") == 0){
+		 	if(strcmp(comandoSeparado[0],"insert") == 0){
 
 		 printf("Insert seleccionado\n");
 		 break;
@@ -372,19 +399,19 @@ int conexionKernel() {
 
 int enviarComando(char** comando, t_log* logger) {
 
-	log_info(logger, "En funcion enviarComando");
+	log_info(logger, "En funcion enviarComando: %s");
 
-	char* msj = malloc(7 * sizeof(char));
+	//char* msj = malloc(7 * sizeof(char));
 
-	msj = comando;
+	//msj = comando;
 
-	log_info(logger, "El mensaje que vamos a enviar es: %s", msj);
+	log_info(logger, "El mensaje que vamos a enviar es: %s", comando[0]);
 
 	socket_CMemoria = conexionKernel();
 
 	log_info("Vamos a enviar a memoria por el socket %d", socket_CMemoria);
 
-	resultado_sendMsj = socketEnviar(socket_CMemoria, msj, strlen(msj),
+	resultado_sendMsj = socketEnviar(socket_CMemoria, comando[0], strlen(comando[0]),
 			log_kernel);
 
 	if (resultado_sendMsj == ERROR) {
@@ -394,7 +421,7 @@ int enviarComando(char** comando, t_log* logger) {
 		return ERROR;
 	}
 
-	log_info(log_kernel, "El mensaje se envio correctamente: %s", msj);
+	log_info(log_kernel, "El mensaje se envio correctamente: %s", comando[0]);
 
 	return 0;
 
@@ -441,25 +468,41 @@ int buscarComando(char* comando,t_log* logger) {
 
 }
 
-void validarComando(char* comando,t_log* logger){
+void validarComando(char** comando,int tamanio,t_log* logger){
 
-		int resultadoComando = buscarComando(comando,logger);
+		int resultadoComando = buscarComando(comando[0],logger);
 
 		switch (resultadoComando) {
 
 			case Select: {
 				printf("Se selecciono Select\n");
 
-				log_info(log_kernel, "Por llamar a enviarResultado");
+				log_info(log_kernel, "Se selecciono select");
 
-				int resultadoEnviarComando = enviarComando(comando,log_kernel);
+				if(tamanio == 3){
+					log_info(log_kernel, "Cantidad de parametros correctos ingresados para el comando select");
+					
+					log_info(log_kernel, "Por llamar a enviarResultado");
+
+					int resultadoEnviarComando = enviarComando(comando,log_kernel);
+				}
 
 			}
 				break;
 
 			case insert: {
 				printf("Insert seleccionado\n");
+
 				log_info(log_kernel, "Se selecciono insert");
+
+				if(tamanio == 4){
+					
+					log_info(log_kernel, "Cantidad de parametros correctos ingresados para el comando insert");
+					
+					log_info(log_kernel, "Por llamar a enviarResultado");
+
+					int resultadoEnviarComando = enviarComando(comando,log_kernel);
+				}
 
 			}
 				break;
@@ -468,12 +511,32 @@ void validarComando(char* comando,t_log* logger){
 				printf("Create seleccionado\n");
 				log_info(log_kernel, "Se selecciono Create");
 
+				if(tamanio == 4){
+					
+					log_info(log_kernel, "Cantidad de parametros correctos ingresados para el comando create");
+					
+					log_info(log_kernel, "Por llamar a enviarResultado");
+
+					int resultadoEnviarComando = enviarComando(comando,log_kernel);
+				}
+
+
 			}
 				break;
 
 			case describe: {
 				printf("Describe seleccionado\n");
 				log_info(log_kernel, "Se selecciono Describe");
+
+				if(tamanio == 1){
+					
+					log_info(log_kernel, "Cantidad de parametros correctos ingresados para el comando Describe");
+					
+					log_info(log_kernel, "Por llamar a enviarResultado");
+
+					int resultadoEnviarComando = enviarComando(comando,log_kernel);
+				}
+
 
 			}
 				break;
@@ -482,19 +545,32 @@ void validarComando(char* comando,t_log* logger){
 				printf("Drop seleccionado\n");
 				log_info(log_kernel, "Se selecciono Drop");
 
+				if(tamanio == 2){
+					
+					log_info(log_kernel, "Cantidad de parametros correctos ingresados para el comando Drop");
+					
+					log_info(log_kernel, "Por llamar a enviarResultado");
+
+					int resultadoEnviarComando = enviarComando(comando,log_kernel);
+				}
+
+
+
 			}
 				break;
-
-			case journal: {
-				printf("Journal seleccionado\n");
-				log_info(log_kernel, "Se selecciono Journal");
-
-			}
-				break;
-
+			
 			case add: {
 				printf("Add seleccionado\n");
 				log_info(log_kernel, "Se selecciono Add");
+
+				if(tamanio == 5){
+					
+					log_info(log_kernel, "Cantidad de parametros correctos ingresados para el comando add");
+					
+					log_info(log_kernel, "Por llamar a enviarResultado");
+
+					int resultadoEnviarComando = enviarComando(comando,log_kernel);
+				}
 
 			}
 				break;
@@ -502,6 +578,15 @@ void validarComando(char* comando,t_log* logger){
 			case run: {
 				printf("Run seleccionado\n");
 				log_info(log_kernel, "Se selecciono Run");
+
+				if(tamanio == 2){
+					
+					log_info(log_kernel, "Cantidad de parametros correctos ingresados para el comando run");
+					
+					log_info(log_kernel, "Por llamar a enviarResultado");
+
+					int resultadoEnviarComando = enviarComando(comando,log_kernel);
+				}
 
 			}
 				break;			
