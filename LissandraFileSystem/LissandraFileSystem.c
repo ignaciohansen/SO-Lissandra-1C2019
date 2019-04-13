@@ -48,12 +48,20 @@ int abrirServidorLissandra() {
 
 	socketEscuchaMemoria = nuevoSocket(log_lfilesystem);
 
+	/*socketEscuchaMemoria = socketCrearListener(
+									config_get_string_value(configFile, "IP_FS"),
+									config_get_int_value(configFile, "PUERTO_ESCUCHA"),
+									log_lfilesystem);
+*/
+
 		if(socketEscuchaMemoria == ERROR){
 
 			imprimirError(log_lfilesystem, "Hubo un problema al querer crear el socket de escucha para memoria. Salimos del Proceso");
 
 			return 0;
 		}
+
+
 		configFile = config_create("../LISANDRAFS.txt");
 		int puerto_a_escuchar = config_get_int_value(configFile,
 									"PUERTO_ESCUCHA");
@@ -99,21 +107,37 @@ int abrirServidorLissandra() {
 				imprimirError(log_lfilesystem,"Se produjo un error al aceptar la conexion, salimos");
 				return -1;
 			} else {
-				imprimirVerde(log_lfilesystem, "Se ha conectado un cliente");
+				imprimirVerde(log_lfilesystem, "Se ha conectado un cliente, es:");
+				printf("%i", conexionEntrante);
 			}
+
 
 			buffer = malloc(10*sizeof(char));
 
-			recibiendoMensaje = socketRecibir(conexionEntrante,buffer,10);
+			recibiendoMensaje = socketRecibir(conexionEntrante, buffer, 10,  log_lfilesystem);
 
-			printf("Recibimos por socket %s",buffer);
+			printf("Recibimos por socket %s\n",buffer);
 
 
 
-			imprimirMensaje(log_lfilesystem, "Mensaje recibido:");
+			imprimirMensaje(log_lfilesystem, "Mensaje recibido: \n");
 			imprimirVerde(log_lfilesystem, buffer);
 			i++;
+
+			char* holaMemoria = "Hola memoria";
+
+			int resultado_sendMsj = socketEnviar(conexionEntrante,holaMemoria,strlen(holaMemoria),log_lfilesystem);
+
+			if(resultado_sendMsj == 0) {
+				imprimirError(log_lfilesystem,"Se produjo un error al aceptar la conexion, salimos");
+								return -1;
+			} else {
+				imprimirVerde(log_lfilesystem, "Se ha devuelto el saludo a Memoria");
+			}
+		//	send(conexionEntrante, "Hola memoria", 13, 0);
+
 		}
+
 		imprimirMensajeProceso("FIN PROCESO SOCKET");
 		log_info(log_lfilesystem,
 					"Fin del proceso.");
@@ -147,6 +171,19 @@ bool cargarConfiguracion() {
 		imprimirMensajeProceso("Se ha encontrado el archivo de configuracion\n");
 
 		log_info(log_lfilesystem, "LissandraFS: Leyendo Archivo de Configuracion...");
+
+		if(config_has_property(configFile, "IP_FS")){
+			log_info(log_lfilesystem, "Almacenando IP de LIsandra File Sytem");
+
+						//Por lo que dice el texto
+						arc_config->ip = config_get_int_value(configFile,
+							"IP_FS");
+
+						log_info(log_lfilesystem, "La IP al cual se conectara Lisandra es: %d", arc_config->ip);
+		} else {
+			imprimirError(log_lfilesystem, "El archivo de configuracion no contiene el IP_FS");
+			ok--;
+		}
 
 		if(config_has_property(configFile,"PUERTO_ESCUCHA")){
 

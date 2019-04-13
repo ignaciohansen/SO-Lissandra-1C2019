@@ -10,9 +10,19 @@
 
 #include "Biblioteca.h"
 
+/*
+ * FUNCIONES PARA ABORTAR UN PROCESO
+ */
+
+void abortarProcesoPorUnErrorImportante(t_log* log, char* mensaje){
+	imprimirError1(log, "ERROR: %s", mensaje);
+	abort();
+}
+
+
 //--------------------------------------- Funciones para Socket -------------------------------------
 
-/*void socketConfigurar(Conexion* conexion, String ip, String puerto,t_log* logger) {
+void socketConfigurar(Conexion* conexion, String ip, String puerto,t_log* logger) {
 	
 	struct addrinfo hints;
 	
@@ -37,14 +47,14 @@
 	
 }
 
-/*Socket socketCrear(Conexion* conexion, String ip, String puerto, t_log* logger) {
+Socket socketCrear(Conexion* conexion, String ip, String puerto, t_log* logger) {
 	log_info(logger,"Por llamar a socketConfigurar");
 	socketConfigurar(conexion, ip, puerto,logger);
 	log_info(logger,"Despues de socketConfigurar");
 	Socket unSocket = socket(conexion->informacion->ai_family, conexion->informacion->ai_socktype, conexion->informacion->ai_protocol);
 	socketError(unSocket, "socket");
 	return unSocket;
-}*/
+}
 
 Socket nuevoSocket(t_log* logger){
 
@@ -119,11 +129,11 @@ void socketConectar(Conexion* conexion, Socket unSocket) {
 	freeaddrinfo(conexion->informacion);
 }
 
-/*void socketBindear(Conexion* conexion, Socket unSocket) {
+void socketBindear(Conexion* conexion, Socket unSocket) {
 	int estado = bind(unSocket, conexion->informacion->ai_addr, conexion->informacion->ai_addrlen);
 	socketError(estado, "bind");
 	freeaddrinfo(conexion->informacion);
-}*/
+}
 
 void socketEscuchar(Socket unSocket, int clientesEsperando,t_log* logger) {
 	
@@ -242,24 +252,24 @@ void socketError(int estado, String error) {
 	}
 }
 
-/*Socket socketCrearListener(String ip, String puerto) {
+Socket socketCrearListener(String ip, String puerto, t_log* logger) {
 	Conexion conexion;
 	conexion.tamanioAddress = sizeof(conexion.address);
-	Socket listener = socketCrear(&conexion, ip, puerto);
+	Socket listener = socketCrear(&conexion, ip, puerto, logger);
 	socketRedireccionar(listener);
 	socketBindear(&conexion, listener);
-	socketEscuchar(listener, LISTEN);
+	socketEscuchar(listener, LISTEN, logger);
 	return listener;
 }
 
-Socket socketCrearCliente(String ip, String puerto, int idProceso) {
+Socket socketCrearCliente(String ip, String puerto, int idProceso, t_log* logger) {
 	Conexion conexion;
-	Socket unSocket = socketCrear(&conexion, ip, puerto);
+	Socket unSocket = socketCrear(&conexion, ip, puerto, logger);
 	socketConectar(&conexion, unSocket);
-	if(handShakeEnvioFallido(unSocket, idProceso))
+	if(handShakeEnvioFallido(unSocket, idProceso, logger))
 		handShakeError(unSocket);
 	return unSocket;
-}*/
+}
 
 //--------------------------------------- Funciones para ListaSockets-------------------------------------
 

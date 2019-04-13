@@ -18,11 +18,15 @@
 
 #define PATH_MEMORIA_CONFIG "../MEMORIA.txt"
 #define LOG_PATH "logMEMORIA.txt"
+#define MAXSIZE_COMANDO 200
+#define ERROR -1
 
 t_log* log_memoria;
 int socketEscuchaKernel,conexionEntrante,recibiendoMensaje;
 int sockeConexionLF, resultado_sendMsj;
-char* buffer;
+int tamanio;
+char* buffer, linea;
+
 
 typedef struct{
     int puerto;
@@ -33,7 +37,8 @@ typedef struct{
     int puerto_seeds[10];  // esto debe ser flexible
 */
     char* ip_seeds;
-    char** puerto_seeds[10];
+    //SACO EL [10] A PUERTO_SEEDS
+    char** puerto_seeds;
     int retardo_mem;
     int retardo_fs;
     int tam_mem;
@@ -45,9 +50,36 @@ typedef struct{
 t_memoria_config* arc_config;
 
 
+/*---------------------------------------------------
+ * FUNCIONES PARA LA CONFIGURACION Y FINALIZACION
+ ---------------------------------------------------*/
+
 void cargarConfiguracion();
 char* lectura_consola();
 void terminar_memoria(t_log* g_log);
+void inicioLogYConfig();
+
+/*---------------------------------------------------
+ * FUNCIONES PARA LA CONSOLA
+ ---------------------------------------------------*/
+
+void ejecutarHiloConsola();
+void consola();
+void menu();
+void validarComando(char*,t_log*);
+int buscarComando(char*,t_log*);
+int enviarComando(char**, t_log*);
+
+/*---------------------------------------------------
+ * FUNCIONES PARA LAS CONEXIONES
+ *---------------------------------------------------*/
+
+void crearConexionesConOtrosProcesos();
+void levantarServidor();
+void conectarConServidorLisandraFileSystem();
+void crearHIloEscucharKernel();
+void escucharConexionKernel();
+void crearHIloEscuchaLFS();
 
 
 #endif /* MEMORIA_H_ */

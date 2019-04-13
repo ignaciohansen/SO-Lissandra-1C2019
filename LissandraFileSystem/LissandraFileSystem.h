@@ -15,7 +15,7 @@
 t_log* log_lfilesystem;
 
 typedef struct{
-
+	char* ip;
 	int puerto_escucha;
 	char* punto_montaje;
 	int retardo;
@@ -28,7 +28,7 @@ typedef struct{
 t_lfilesystem_config* configFile;
 char* buffer;
 
-int socketEscuchaMemoria,conexionEntrante,recibiendoMensaje,tamanio;
+int socketEscuchaMemoria, conexionEntrante, recibiendoMensaje,tamanio;
 
 /*--------------------------------------------------------------------------------------------
  * 									SET UP LISANDRA FILE SYSTEM
@@ -44,7 +44,7 @@ void iniciaabrirServidorLissandra();
  */
 
 #define MAXSIZE_COMANDO 200
-enum {Select, insert, create, describe, drop, salir};
+//enum {Select, insert, create, describe, drop, salir};
 char* linea;
 void consola();
 void menu();

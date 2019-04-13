@@ -133,6 +133,10 @@ enum comandos{
 	
 };
 
+//FUNCIONES PARA ABORTAR UN PROCESO
+void abortarProcesoPorUnError(t_log log, char* mensaje);
+
+
 //--------------------------------------- Funciones para Socket -------------------------------------
 
 //void socketConfigurar(Conexion* conexion, String ip, int puerto, t_log* logger);
@@ -155,8 +159,8 @@ bool socketSonIguales(Socket unSocket, Socket otroSocket);
 bool socketSonDistintos(Socket unSocket, Socket otroSocket);
 bool socketEsMayor(Socket unSocket, Socket otroSocket);
 void socketError(int estado, String error);
-Socket socketCrearListener(String ip, String puerto);
-Socket socketCrearCliente(String ip, String puerto, int idProceso);
+Socket socketCrearListener(String ip, String puerto, t_log* logger);
+Socket socketCrearCliente(String ip, String puerto, int idProceso, t_log* logger);
 
 //--------------------------------------- Funciones para ListaSocket -------------------------------------
 
