@@ -62,9 +62,9 @@ int abrirServidorLissandra() {
 		}
 
 
-		configFile = config_create("../LISANDRAFS.txt");
-		int puerto_a_escuchar = config_get_int_value(configFile,
-									"PUERTO_ESCUCHA");
+		log_info(log_lfilesystem, "Por asociar un puerto al socket");
+
+		int puerto_a_escuchar = configFile->puerto_escucha;
 
 		imprimirVerde1(log_lfilesystem, "Se ha creado el socket con exito con valor %d: .", socketEscuchaMemoria);
 
@@ -75,9 +75,6 @@ int abrirServidorLissandra() {
 
 		imprimirMensaje1(log_lfilesystem,
 				"El puerto que vamos a asociar es %i:", puerto_a_escuchar);
-
-
-
 
 		asociarSocket(socketEscuchaMemoria,puerto_a_escuchar,log_lfilesystem);
 
@@ -108,13 +105,12 @@ int abrirServidorLissandra() {
 				return -1;
 			} else {
 				imprimirVerde(log_lfilesystem, "Se ha conectado un cliente, es:");
-				printf("%i", conexionEntrante);
+				printf("%i\n\n", conexionEntrante);
 			}
 
+			buffer = malloc(sizeof(char));
 
-			buffer = malloc(10*sizeof(char));
-
-			recibiendoMensaje = socketRecibir(conexionEntrante, buffer, 10,  log_lfilesystem);
+			recibiendoMensaje = socketRecibir(conexionEntrante, buffer, 13,  &log_lfilesystem);
 
 			printf("Recibimos por socket %s\n",buffer);
 
@@ -124,9 +120,21 @@ int abrirServidorLissandra() {
 			imprimirVerde(log_lfilesystem, buffer);
 			i++;
 
+		/*
+		 	log_info(log_lfilesystem, "Por liberar el buffer");
+			free(buffer);
+			log_info(log_lfilesystem, "buffer liberado");
+			*/
+
+
+			/**
 			char* holaMemoria = "Hola memoria";
 
+
+			log_info(log_lfilesystem, "POr enviar un mensaje a Memoria");
 			int resultado_sendMsj = socketEnviar(conexionEntrante,holaMemoria,strlen(holaMemoria),log_lfilesystem);
+			log_info(log_lfilesystem, "Mensaje enviado");
+
 
 			if(resultado_sendMsj == 0) {
 				imprimirError(log_lfilesystem,"Se produjo un error al aceptar la conexion, salimos");
@@ -134,6 +142,21 @@ int abrirServidorLissandra() {
 			} else {
 				imprimirVerde(log_lfilesystem, "Se ha devuelto el saludo a Memoria");
 			}
+*/
+			char* mensajeValorValue = stringConvertirEntero(configFile->tamanio_value);
+//			strcpy(mensajeMAXVALUE, stringConvertirEntero(configFile->tamanio_value));
+
+		//	strcpy(mensajeMAXVALUE, stringConvertirEntero(10));
+			int res = socketEnviar(conexionEntrante,mensajeValorValue, 3,log_lfilesystem);
+
+			if(res == 0) {
+				imprimirError(log_lfilesystem,"Se produjo un error al aceptar la conexion, salimos");
+				return -1;
+			} else {
+				imprimirVerde(log_lfilesystem, "Se ha enviado el MAX VALUE a Memoria");
+			}
+
+		//	free(buffer);
 		//	send(conexionEntrante, "Hola memoria", 13, 0);
 
 		}
@@ -151,49 +174,50 @@ bool cargarConfiguracion() {
 	log_info(log_lfilesystem,
 			"Por reservar memoria para variable de configuracion.");
 
-	t_lfilesystem_config* arc_config = malloc(sizeof(t_lfilesystem_config));
+	configFile = malloc(sizeof(t_lfilesystem_config));
 
-	t_config* configFile;
+	t_config* archivoCOnfig;
 
 	log_info(log_lfilesystem,
 			"Por crear el archivo de config para levantar archivo con datos.");
 
 
-	configFile = config_create("../LISANDRAFS.txt");
+	archivoCOnfig = config_create("LISANDRAFS.txt");
 
-	if(configFile == NULL)
+	if(archivoCOnfig == NULL)
 	{
 		imprimirMensajeProceso("NO se ha encontrado el archivo de configuracion\n");
+		log_info(log_lfilesystem, "NO se ha encontrado el archivo de configuracion");
 	}
 
-	if (configFile != NULL) {
+	if (archivoCOnfig != NULL) {
 		int ok = 1;
 		imprimirMensajeProceso("Se ha encontrado el archivo de configuracion\n");
 
 		log_info(log_lfilesystem, "LissandraFS: Leyendo Archivo de Configuracion...");
 
-		if(config_has_property(configFile, "IP_FS")){
+		if(config_has_property(archivoCOnfig, "IP_FS")){
 			log_info(log_lfilesystem, "Almacenando IP de LIsandra File Sytem");
 
 						//Por lo que dice el texto
-						arc_config->ip = config_get_int_value(configFile,
+			configFile->ip = config_get_int_value(archivoCOnfig,
 							"IP_FS");
 
-						log_info(log_lfilesystem, "La IP al cual se conectara Lisandra es: %d", arc_config->ip);
+						log_info(log_lfilesystem, "La IP al cual se conectara Lisandra es: %d", configFile->ip);
 		} else {
 			imprimirError(log_lfilesystem, "El archivo de configuracion no contiene el IP_FS");
 			ok--;
 		}
 
-		if(config_has_property(configFile,"PUERTO_ESCUCHA")){
+		if(config_has_property(archivoCOnfig,"PUERTO_ESCUCHA")){
 
 			log_info(log_lfilesystem, "Almacenando el puerto");
 
 			//Por lo que dice el texto
-			arc_config->puerto_escucha = config_get_int_value(configFile,
+			configFile->puerto_escucha = config_get_int_value(archivoCOnfig,
 				"PUERTO_ESCUCHA");
 
-			log_info(log_lfilesystem, "El puerto de escucha es: %d", arc_config->puerto_escucha);
+			log_info(log_lfilesystem, "El puerto de escucha es: %d", configFile->puerto_escucha);
 
 		}else {
 			imprimirError(log_lfilesystem, "El archivo de configuracion no contiene el PUERTO_ESCUCHA");
@@ -201,15 +225,15 @@ bool cargarConfiguracion() {
 
 		}
 
-		if(config_has_property(configFile,"PUNTO_MONTAJE")){
+		if(config_has_property(archivoCOnfig,"PUNTO_MONTAJE")){
 
 			log_info(log_lfilesystem, "Almacenando el PUNTO DE MONTAJE");
 
 			//Por lo que dice el texto
-			arc_config->punto_montaje = config_get_int_value(configFile,
+			configFile->punto_montaje = config_get_int_value(archivoCOnfig,
 				"PUNTO_MONTAJE");
 
-			log_info(log_lfilesystem, "El puerto de montaje es: %d", arc_config->punto_montaje);
+			log_info(log_lfilesystem, "El puerto de montaje es: %d", configFile->punto_montaje);
 
 		}else {
 			imprimirError(log_lfilesystem, "El archivo de configuracion no contiene el PUNTO_MONTAJE");
@@ -217,15 +241,15 @@ bool cargarConfiguracion() {
 
 		}
 
-		if(config_has_property(configFile,"RETARDO")){
+		if(config_has_property(archivoCOnfig,"RETARDO")){
 
 			log_info(log_lfilesystem, "Almacenando el retardo");
 
 			//Por lo que dice el texto
-			arc_config->retardo = config_get_int_value(configFile,
+			configFile->retardo = config_get_int_value(archivoCOnfig,
 				"RETARDO");
 
-			log_info(log_lfilesystem, "El retardo de respuesta es: %d", arc_config->retardo);
+			log_info(log_lfilesystem, "El retardo de respuesta es: %d", configFile->retardo);
 
 		}else {
 			imprimirError(log_lfilesystem, "El archivo de configuracion no contiene RETARDO");
@@ -233,15 +257,14 @@ bool cargarConfiguracion() {
 
 		}
 
-		if(config_has_property(configFile,"TAMANIO_VALUE")){
+		if(config_has_property(archivoCOnfig,"TAMANIO_VALUE")){
 
 			log_info(log_lfilesystem, "Almacenando el tamaño del valor de una key");
 
 			//Por lo que dice el texto
-			arc_config->tamanio_value = config_get_int_value(configFile,
-				"TAMANIO_VALUE");
+			configFile->tamanio_value = config_get_int_value(archivoCOnfig,"TAMANIO_VALUE");
 
-			log_info(log_lfilesystem, "El tamaño del valor es: %d", arc_config->tamanio_value);
+			log_info(log_lfilesystem, "El tamaño del valor es: %d", configFile->tamanio_value);
 
 		}else {
 			imprimirError(log_lfilesystem, "El archivo de configuracion no contiene el TAMANIO_VALUE");
@@ -249,15 +272,15 @@ bool cargarConfiguracion() {
 
 		}
 
-		if(config_has_property(configFile,"TIEMPO_DUMP")){
+		if(config_has_property(archivoCOnfig,"TIEMPO_DUMP")){
 
 			log_info(log_lfilesystem, "Almacenando el puerto");
 
 			//Por lo que dice el texto
-			arc_config->tiempo_dump = config_get_int_value(configFile,
+			configFile->tiempo_dump = config_get_int_value(archivoCOnfig,
 				"TIEMPO_DUMP");
 
-			log_info(log_lfilesystem, "El tiempo de dumpeo es: %d", arc_config->tiempo_dump);
+			log_info(log_lfilesystem, "El tiempo de dumpeo es: %d", configFile->tiempo_dump);
 
 		}else {
 			imprimirError(log_lfilesystem, "El archivo de configuracion no contiene el TIEMPO_DUMP");

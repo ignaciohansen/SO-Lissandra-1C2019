@@ -26,7 +26,7 @@ typedef struct{
 }t_lfilesystem_config;
 
 t_lfilesystem_config* configFile;
-char* buffer;
+char** buffer;
 
 int socketEscuchaMemoria, conexionEntrante, recibiendoMensaje,tamanio;
 

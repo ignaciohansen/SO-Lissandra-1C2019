@@ -47,7 +47,9 @@ int main() {
 
 	crearConexionesConOtrosProcesos();
 
-  //  ejecutarHiloConsola();
+    ejecutarHiloConsola();
+
+    armarMemoriaPrincipal();
 
 
     // depurado
@@ -134,6 +136,71 @@ void inicioLogYConfig() {
 }
 
 /*-----------------------------------------------------------------------------
+ * MEMORIA PRINCIPAL
+ *-----------------------------------------------------------------------------*/
+
+void armarMemoriaPrincipal(){
+
+}
+
+
+/*-----------------------------------------------------------------------------
+ * MODIFICAR CONFIGURACION
+ *-----------------------------------------------------------------------------*/
+
+void modificarTiempoRetardoMemoria(int nuevoCampo) {
+	arc_config->retardo_mem = nuevoCampo;
+}
+
+void modificarTiempoRetardoFileSystem(int nuevoCampo) {
+	arc_config->retardo_fs = nuevoCampo;
+}
+
+void modificarTiempoRetardoGossiping(int nuevoCampo) {
+	arc_config->retardo_gossiping = nuevoCampo;
+}
+
+void modificarTiempoRetardoJournal(int nuevoCampo) {
+	arc_config->retardo_journal = nuevoCampo;
+}
+
+void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar) {
+	t_config* configFile;
+	configFile = config_create(PATH_MEMORIA_CONFIG);
+	if(configFile == ERROR){
+		log_error(log_memoria, "[MODIFICAR TIEMPO RETARDO]NO se abrio el archivo de configuracion");
+		imprimirError(log_memoria, "NO se abrio el archivo de configuracion para MODIFICAR TIEMPO RETARDO");
+		return;
+	} else {
+		if(config_has_property(configFile, campoAModificar)) {
+			log_info(log_memoria, "[MODIFICAR TIEMPO RETARDO]Modificando el campo '%s' con el nuevo valor %d", campoAModificar, nuevoCampo);
+			config_set_value(configFile, campoAModificar, nuevoCampo);
+			log_info(log_memoria, "[MODIFICAR TIEMPO RETARDO][Hecho] Se ha modificando el campo '%s' con el nuevo valor %d", campoAModificar, nuevoCampo);
+			log_info(log_memoria, "[MODIFICAR TIEMPO RETARDO]Guardar nuevo dato en la estructura Config del modulo");
+			if(strcmp(campoAModificar, "RETARDO_MEM")) {
+				modificarTiempoRetardoMemoria(nuevoCampo);
+			}
+			if(strcmp(campoAModificar, "RETARDO_JOURNAL")) {
+				modificarTiempoRetardoJournal(nuevoCampo);
+			}
+			if(strcmp(campoAModificar, "RETARDO_GOSSIPING")) {
+				modificarTiempoRetardoGossiping(nuevoCampo);
+			}
+			if(strcmp(campoAModificar, "RETARDO_FS")) {
+				modificarTiempoRetardoFileSystem(nuevoCampo);
+			}
+			log_info(log_memoria, "[MODIFICAR TIEMPO RETARDO]Se ha guardado el nuevo dato: '%s'-> %d", campoAModificar, nuevoCampo);
+
+		} else {
+			imprimirError(log_memoria, "[MODIFICAR TIEMPO RETARDO] NO existe ese campo al que se quiere modificar algo");
+			return;
+		}
+
+	}
+}
+
+
+/*-----------------------------------------------------------------------------
  * FUNCIONALIDADES PARA LA CONEXION ENTRE PROCESOS
  *-----------------------------------------------------------------------------*/
 
@@ -176,7 +243,7 @@ void conectarConServidorLisandraFileSystem() {
 					"Nos conectamos con exito, el resultado fue %d",resultado_Conectar);
 
 
-		char * mensaje = "hola LIsandra File System, soy MEMORIA";
+		char * mensaje = "hola Lisandra";
 		resultado_sendMsj = socketEnviar(sockeConexionLF,mensaje,strlen(mensaje),log_memoria);
 
 		log_info(log_memoria,
@@ -189,16 +256,40 @@ void conectarConServidorLisandraFileSystem() {
 
 		imprimirVerde1(log_memoria,"El mensaje se envio correctamente\n\nMENSAJE ENVIADO: %s", mensaje);
 
-		buffer = malloc(10*sizeof(char));
+		buffer = malloc(sizeof(char));
 
-		recibiendoMensaje = socketRecibir(sockeConexionLF, buffer, 10,  log_memoria);
+		/*
+		recibiendoMensaje = socketRecibir(sockeConexionLF, buffer, 13,  log_memoria);
 
 		if(resultado_sendMsj == ERROR){
-			abortarProcesoPorUnErrorImportante(log_memoria, "Error al enviar mensaje a LSF. Salimos");
+			imprimirError(log_memoria, "Error al recibir mensaje de LSF. salimos");
+			return;
 		}
 
-		imprimirVerde1(log_memoria,"Se ha recibido un mensaje de LISANDRA\n\nMENSAJE RECIBIDO: %s", buffer);
 
+		imprimirVerde1(log_memoria,"Se ha recibido un mensaje de LISANDRA\n\nMENSAJE RECIBIDO: %s", buffer);
+		 */
+
+		recibiendoMensaje = socketRecibir(sockeConexionLF, buffer, 3,  log_memoria);
+
+				if(resultado_sendMsj == ERROR){
+					imprimirError(log_memoria, "Error al recibir mensaje de LSF. salimos");
+					return;
+				}
+
+		imprimirVerde1(log_memoria,"Se ha recibido el mensaje MAX VALUE de LISANDRA\n\nMENSAJE RECIBIDO: %s", buffer);
+
+
+		//GUARDO ESTE VALOR QUE VA A SER IMPORTANTE PARA ARMAR LAS TABLAS
+		log_info(log_memoria, "Guardando el valor MAX_VALUE_KEY: %s", buffer);
+
+		arc_config->max_value_key = atoi(buffer);
+
+		log_info(log_memoria, "max_value_key guardado: %i", arc_config->max_value_key);
+
+		log_info(log_memoria, "Por liberar BUFFER");
+		free(buffer);
+		log_info(log_memoria, "BUFFER liberado");
 
 	//	return;
 
@@ -243,7 +334,7 @@ void crearHIloEscucharKernel() {
 	hiloCrear(&hiloEscucharKernel, (void*)escucharConexionKernel, NULL);
 
 	// NO SE SI DEBE ESTAR ASI, LO DEJO POR SI ACASO
-	hiloEsperar(hiloEscucharKernel);
+	pthread_detach(hiloEscucharKernel);
 }
 
 void escucharConexionKernel() {
@@ -271,6 +362,7 @@ void escucharConexionKernel() {
  *-----------------------------------------------------------------------------*/
 
 void ejecutarHiloConsola(){
+
 	pthread_t hiloConsola;
 
 	log_info(log_memoria, "Inicializando HILO CONSOLA");
@@ -278,7 +370,7 @@ void ejecutarHiloConsola(){
 	pthread_create(&hiloConsola, NULL, (void*) consola, NULL);
 
 	//DUDAS RESPECTO A ESTE HILO, SI PONGO ESTO EMPIEZA A EJECUTAR Y NO PERMITIRA QUE OTROS ENTREN O QUE?
-	pthread_join(hiloConsola, NULL);
+	pthread_detach(hiloConsola);
 }
 
 char* lectura_consola() {
@@ -599,6 +691,8 @@ void cargarConfiguracion() {
         }else {
             log_error(log_memoria, "[ERROR] NO HAY PUERTO CONFIGURADO");
         } // PUERTO
+
+    	t_config* configFile;
 
         if(config_has_property(configFile,"IP_FS")){
 

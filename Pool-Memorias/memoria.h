@@ -45,10 +45,42 @@ typedef struct{
     int retardo_journal;
     int retardo_gossiping;
     int memory_number;
+
+    //NUEVO CAMPO AÑADIDO, MAXIMO VALOR EN BYTE DE LA KEY
+    //ESTA SOLO SE OBTIENE A PARTIR DE CONECTAR CON FS
+    int max_value_key;
 }t_memoria_config;
+
+
+
+typedef struct {
+	long timestamp;
+	int key;
+	char* value;
+}valor_pagina;
+
+typedef struct {
+	int numero;
+	valor_pagina* pagina;
+	bool flag;
+}pagina;
+
+typedef struct {
+	int tamanio_segmento;
+	int base_segmento_en_memoria;
+	pagina* pagina;
+}segmento;
+
+typedef struct {
+	int tamanioMemoria;
+}memoria_principal;
 
 t_memoria_config* arc_config;
 
+/*---------------------------------------------------
+ * FUNCIONES PARA MEMORIA PRINCIPAL
+ ---------------------------------------------------*/
+void armarMemoriaPrincipal();
 
 /*---------------------------------------------------
  * FUNCIONES PARA LA CONFIGURACION Y FINALIZACION
@@ -81,6 +113,21 @@ void crearHIloEscucharKernel();
 void escucharConexionKernel();
 void crearHIloEscuchaLFS();
 
+
+
+/*---------------------------------------------------
+ * MODIFICAR TIEMPO DE RETARDO DE CONFIGURACION
+ *---------------------------------------------------*/
+
+void modificarTiempoRetardoMemoria(int nuevoCampo);
+
+void modificarTiempoRetardoFileSystem(int nuevoCampo);
+
+void modificarTiempoRetardoGossiping(int nuevoCampo);
+
+void modificarTiempoRetardoJournal(int nuevoCampo);
+
+void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
 
 #endif /* MEMORIA_H_ */
 
