@@ -1,8 +1,24 @@
 /*
- * kernel.c
+ * LISTA DE FUNCIONES
  *
- *  Created on: 4 abr. 2019
- *      Author: utnso
+ * int main()
+ * void inicioLogYConfig()
+ * void crearConexionesConOtrosProcesos()
+ * void conectarConServidorLisandraFileSystem()
+ * void levantarServidor()
+ * void crearHIloEscucharKernel()
+ * void escucharConexionKernel()
+ * void ejecutarHiloConsola()
+ * char* lectura_consola()
+ * void consola()
+ * void menu()
+ * void validarComando(char* comando,t_log* logger)
+ * int enviarComando(char** comando, t_log* logger)
+ * int buscarComando(char* comando,t_log* logger)
+ * void cargarConfiguracion()
+ *
+ *
+ *
  */
 
 #include "memoria.h"
