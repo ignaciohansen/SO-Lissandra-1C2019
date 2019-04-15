@@ -1,8 +1,26 @@
 /*
- * kernel.c
+ * LISTA DE FUNCIONES
  *
- *  Created on: 4 abr. 2019
- *      Author: utnso
+ * int main()
+ * void inicioLogYConfig()
+ * void crearConexionesConOtrosProcesos()
+ * void conectarConServidorLisandraFileSystem()
+ * void levantarServidor()
+ * void crearHIloEscucharKernel()
+ * void escucharConexionKernel()
+ * void ejecutarHiloConsola()
+ * char* lectura_consola()
+ * void consola()
+ * void menu()
+ * void validarComando(char* comando,t_log* logger)
+ * int enviarComando(char** comando, t_log* logger)
+ * int buscarComando(char* comando,t_log* logger)
+ * void cargarConfiguracion()
+ *
+ * Comentarios de acceso rápido.
+ *
+ * ## Acá IP de LFS Hardcodeada (#001#)
+ *
  */
 
 #include "memoria.h"
@@ -72,9 +90,6 @@ int main() {
      * (2) SEA CAPAZ DE PROCESAR Queries LQL
      * (3) SEA CAPAZ DE MANTENER EL HILO DE CONSOLA Y DE RED EN PARALELO.
 
-<<<<<<< HEAD
-
-=======
     // SOCKET
     socketEscuchaKernel = nuevoSocket(log_memoria);  // CREAR SOCKET
     if(socketEscuchaKernel == ERROR){                // CASO DE ERROR.
@@ -113,13 +128,15 @@ int main() {
 
     // FIN DE BLOQUE DE RED.
 
+	if (log_memoria != NULL) {
 
-    log_info(log_memoria, ">>>>>>>>>>>>>>>FIN DE PROCESO MEMORIA<<<<<<<<<<<<<<<");
+		log_info(log_memoria, ">>>>>>>>>>>>>>>FIN DE PROCESO MEMORIA<<<<<<<<<<<<<<<");
+		log_destroy   (log_memoria);
+		log_memoria  = NULL        ;
 
-    //COMENTO ESTO PORQUE CUANDO LLEGA A ESTA INSTANCIA SE CRASHEA Y TIRA DUMP
- //   log_destroy   (log_memoria);
-    free          (log_memoria);
-    log_memoria  = NULL        ;
+	}
+
+
 
     return 0;
 
@@ -211,50 +228,50 @@ void crearConexionesConOtrosProcesos(){
 }
 
 void conectarConServidorLisandraFileSystem() {
-	imprimirAviso(log_memoria, "INICIAMOS LA CONEXION CON LFS");
+	imprimirAviso(log_memoria, "[CONEXION LSF]INICIAMOS LA CONEXION CON LFS");
 		sockeConexionLF = nuevoSocket(log_memoria);
 
 
 		if(sockeConexionLF == ERROR){
 
-			imprimirError(log_memoria, "ERROR al crear un socket");
+			imprimirError(log_memoria, "[CONEXION LSF]ERROR al crear un socket");
 			abortarProcesoPorUnErrorImportante(log_memoria, "NO se creo el socket con LisandraFS. Salimos del Proceso");
 		}
 
-		imprimirVerde(log_memoria, "Se ha creado un socket correctamente");
+		imprimirVerde(log_memoria, "[CONEXION LSF]Se ha creado un socket correctamente");
 
 		log_info(log_memoria,
-					"El Socket creado es: %d .",sockeConexionLF);
+					"[CONEXION LSF]El Socket creado es: %d .",sockeConexionLF);
 
 		log_info(log_memoria,
-					"por llamar a la funcion connectarSocket() para conectarnos con Memoria");
+					"[CONEXION LSF]por llamar a la funcion connectarSocket() para conectarnos con Memoria");
 
-		log_info(log_memoria,"PRUEBA: %d ",arc_config->puerto_fs);
+		log_info(log_memoria,"[CONEXION LSF]PRUEBA: %d ",arc_config->puerto_fs);
 
-		int resultado_Conectar = conectarSocket(sockeConexionLF, "0", arc_config->puerto_fs,log_memoria);
+		char* ipLFS = "127.0.0.1";
+		int resultado_Conectar = conectarSocket(sockeConexionLF, ipLFS, arc_config->puerto_fs,log_memoria); // ## Acá IP de LFS Hardcodeada (#001#)
 
 		if(resultado_Conectar == ERROR){
-			abortarProcesoPorUnErrorImportante(log_memoria, "Hubo un problema al querer Conectarnos con LFS. Salimos del proceso");
-
+			abortarProcesoPorUnErrorImportante(log_memoria, "[CONEXION LSF]Hubo un problema al querer Conectarnos con LFS. Salimos del proceso");
 
 		}else{
 
 			imprimirVerde1(log_memoria,
-					"Nos conectamos con exito, el resultado fue %d",resultado_Conectar);
+					"[CONEXION LSF]Nos conectamos con exito, el resultado fue %d",resultado_Conectar);
 
 
 		char * mensaje = "hola Lisandra";
 		resultado_sendMsj = socketEnviar(sockeConexionLF,mensaje,strlen(mensaje),log_memoria);
 
 		log_info(log_memoria,
-						"Se ha intentado mandar un mensaje al server");
+						"[CONEXION LSF]Se ha intentado mandar un mensaje al server");
 
 		if(resultado_sendMsj == ERROR){
-			abortarProcesoPorUnErrorImportante(log_memoria, "Error al enviar mensaje a LSF. Salimos");
+			abortarProcesoPorUnErrorImportante(log_memoria, "[CONEXION LSF]Error al enviar mensaje a LSF. Salimos");
 
 		}
 
-		imprimirVerde1(log_memoria,"El mensaje se envio correctamente\n\nMENSAJE ENVIADO: %s", mensaje);
+		imprimirVerde1(log_memoria,"[CONEXION LSF]El mensaje se envio correctamente\n\nMENSAJE ENVIADO: %s", mensaje);
 
 		buffer = malloc(sizeof(char));
 
@@ -273,23 +290,23 @@ void conectarConServidorLisandraFileSystem() {
 		recibiendoMensaje = socketRecibir(sockeConexionLF, buffer, 3,  log_memoria);
 
 				if(resultado_sendMsj == ERROR){
-					imprimirError(log_memoria, "Error al recibir mensaje de LSF. salimos");
+					imprimirError(log_memoria, "[CONEXION LSF]Error al recibir mensaje de LSF. salimos");
 					return;
 				}
 
-		imprimirVerde1(log_memoria,"Se ha recibido el mensaje MAX VALUE de LISANDRA\n\nMENSAJE RECIBIDO: %s", buffer);
+		imprimirVerde1(log_memoria,"[CONEXION LSF]Se ha recibido el mensaje MAX VALUE de LISANDRA\n\nMENSAJE RECIBIDO: %s", buffer);
 
 
 		//GUARDO ESTE VALOR QUE VA A SER IMPORTANTE PARA ARMAR LAS TABLAS
-		log_info(log_memoria, "Guardando el valor MAX_VALUE_KEY: %s", buffer);
+		log_info(log_memoria, "[CONEXION LSF]Guardando el valor MAX_VALUE_KEY: %s", buffer);
 
 		arc_config->max_value_key = atoi(buffer);
 
-		log_info(log_memoria, "max_value_key guardado: %i", arc_config->max_value_key);
+		log_info(log_memoria, "[CONEXION LSF]max_value_key guardado: %i", arc_config->max_value_key);
 
-		log_info(log_memoria, "Por liberar BUFFER");
+		log_info(log_memoria, "[CONEXION LSF]Por liberar BUFFER");
 		free(buffer);
-		log_info(log_memoria, "BUFFER liberado");
+		log_info(log_memoria, "[CONEXION LSF]BUFFER liberado");
 
 	//	return;
 
@@ -692,8 +709,6 @@ void cargarConfiguracion() {
         }else {
             log_error(log_memoria, "[ERROR] NO HAY PUERTO CONFIGURADO");
         } // PUERTO
-
-
 
         if(config_has_property(configFile,"IP_FS")){
 
