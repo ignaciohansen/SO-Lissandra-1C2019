@@ -88,9 +88,6 @@ int main() {
      * (2) SEA CAPAZ DE PROCESAR Queries LQL
      * (3) SEA CAPAZ DE MANTENER EL HILO DE CONSOLA Y DE RED EN PARALELO.
 
-<<<<<<< HEAD
-
-=======
     // SOCKET
     socketEscuchaKernel = nuevoSocket(log_memoria);  // CREAR SOCKET
     if(socketEscuchaKernel == ERROR){                // CASO DE ERROR.
@@ -129,13 +126,14 @@ int main() {
 
     // FIN DE BLOQUE DE RED.
 
+	if (log_memoria != NULL) {
 
-    log_info(log_memoria, "FIN DE PROCESO MEMORIA");
+		log_info(log_memoria, "FIN DE PROCESO MEMORIA");
+		log_destroy   (log_memoria);
+		log_memoria  = NULL        ;
 
-    //COMENTO ESTO PORQUE CUANDO LLEGA A ESTA INSTANCIA SE CRASHEA Y TIRA DUMP
- //   log_destroy   (log_memoria);
-    free          (log_memoria);
-    log_memoria  = NULL        ;
+	}
+
 
     return 0;
 
@@ -707,8 +705,6 @@ void cargarConfiguracion() {
         }else {
             log_error(log_memoria, "[ERROR] NO HAY PUERTO CONFIGURADO");
         } // PUERTO
-
-    	t_config* configFile;
 
         if(config_has_property(configFile,"IP_FS")){
 
