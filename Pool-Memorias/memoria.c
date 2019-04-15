@@ -114,7 +114,7 @@ int main() {
     // FIN DE BLOQUE DE RED.
 
 
-    log_info(log_memoria, "FIN DE PROCESO MEMORIA");
+    log_info(log_memoria, ">>>>>>>>>>>>>>>FIN DE PROCESO MEMORIA<<<<<<<<<<<<<<<");
 
     //COMENTO ESTO PORQUE CUANDO LLEGA A ESTA INSTANCIA SE CRASHEA Y TIRA DUMP
  //   log_destroy   (log_memoria);
@@ -365,12 +365,13 @@ void ejecutarHiloConsola(){
 
 	pthread_t hiloConsola;
 
-	log_info(log_memoria, "Inicializando HILO CONSOLA");
+	log_info(log_memoria, "[HILO CONSOLA]Inicializando HILO CONSOLA");
 
 	pthread_create(&hiloConsola, NULL, (void*) consola, NULL);
-
+	log_info(log_memoria, "[HILO CONSOLA]Se crea HILO CONSOLA");
 	//DUDAS RESPECTO A ESTE HILO, SI PONGO ESTO EMPIEZA A EJECUTAR Y NO PERMITIRA QUE OTROS ENTREN O QUE?
 	pthread_detach(hiloConsola);
+	log_info(log_memoria, "[HILO CONSOLA]HILO CONSOLA en ejecucion");
 }
 
 char* lectura_consola() {
@@ -692,7 +693,7 @@ void cargarConfiguracion() {
             log_error(log_memoria, "[ERROR] NO HAY PUERTO CONFIGURADO");
         } // PUERTO
 
-    	t_config* configFile;
+
 
         if(config_has_property(configFile,"IP_FS")){
 
