@@ -17,7 +17,9 @@
  * int buscarComando(char* comando,t_log* logger)
  * void cargarConfiguracion()
  *
+ * Comentarios de acceso rápido.
  *
+ * ## Acá IP de LFS Hardcodeada (#001#)
  *
  */
 
@@ -245,11 +247,11 @@ void conectarConServidorLisandraFileSystem() {
 
 		log_info(log_memoria,"PRUEBA: %d ",arc_config->puerto_fs);
 
-		int resultado_Conectar = conectarSocket(sockeConexionLF, "0", arc_config->puerto_fs,log_memoria);
+		char* ipLFS = "127.0.0.1";
+		int resultado_Conectar = conectarSocket(sockeConexionLF, ipLFS, arc_config->puerto_fs,log_memoria); // ## Acá IP de LFS Hardcodeada (#001#)
 
 		if(resultado_Conectar == ERROR){
 			abortarProcesoPorUnErrorImportante(log_memoria, "Hubo un problema al querer Conectarnos con LFS. Salimos del proceso");
-
 
 		}else{
 
