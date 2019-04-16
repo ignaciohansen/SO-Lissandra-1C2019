@@ -25,8 +25,8 @@ t_log* log_memoria;
 int socketEscuchaKernel,conexionEntrante,recibiendoMensaje;
 int sockeConexionLF, resultado_sendMsj;
 int tamanio;
-char* buffer, linea;
-
+char* linea;
+t_header* buffer;
 
 typedef struct{
     int puerto;

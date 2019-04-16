@@ -61,12 +61,7 @@ typedef struct {
 	String ip;
 }conexion;
 
-typedef struct{
-
-	unsigned int idComando;
-	unsigned int header;
-	char** body;	
-}protocolo;
+t_header* protocoloHeader;
 
 
 conexion* estructuraConexion;
@@ -75,12 +70,14 @@ conexion* estructuraConexion;
 #define MAXSIZE_COMANDO 200
 
 char* linea;
+int confirmacionRecibida;
 void consola();
 void menu();
 
 void cargarConfiguracion();
 int enviarComando(char** comando,t_log* logger);
 int conexionKernel();
+int enviarMensaje(int comando, int tamanio,char* mensaje, t_log* logger);
 int buscarComando(char* comandoSeparado,t_log* logger);
 void validarComando(char** comandoSeparado,int tamanio,t_log* logger);
 

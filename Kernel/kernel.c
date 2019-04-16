@@ -380,31 +380,14 @@ int conexionKernel() {
 
 		log_info(log_kernel, "Nos conectamos con exito, el resultado fue %d",
 				resultado_Conectar);
-		return socket_CMemoria;
-
-		/*char* msj = malloc(10*sizeof(char));
-		 msj = "PruebaK\n";
-
-		 resultado_sendMsj = socketEnviar(socket_CMemoria,msj,strlen(msj),log_kernel);
-
-		 if(resultado_sendMsj == ERROR){
-
-		 log_error(log_kernel,"Error al enviar mensaje a memoria. Salimos");
-		 return;
-		 }
-
-		 log_info(log_kernel,"El mensaje se envio correctamente");*/
+		return socket_CMemoria;		
 	}
 }
 
 int enviarComando(char** comando, t_log* logger) {
 
 	log_info(logger, "En funcion enviarComando: %s");
-
-	//char* msj = malloc(7 * sizeof(char));
-
-	//msj = comando;
-
+	
 	log_info(logger, "El mensaje que vamos a enviar es: %s", comando[0]);
 
 	socket_CMemoria = conexionKernel();
@@ -549,9 +532,18 @@ void validarComando(char** comando,int tamanio,t_log* logger){
 					
 					log_info(log_kernel, "Cantidad de parametros correctos ingresados para el comando Drop");
 					
-					log_info(log_kernel, "Por llamar a enviarResultado");
+					log_info(log_kernel, "Por llamar a enviarComando");
+					
+					mensaje = malloc(string_length(comando[1])+1);
+					
+					strcpy(mensaje,comando[1]);
 
-					int resultadoEnviarComando = enviarComando(comando,log_kernel);
+					log_info(log_kernel,"Queriamos mandar esto: %s", comando[1]);
+					log_info(log_kernel,"Y se mando esto: %s",mensaje);
+
+					//int resultadoEnviarComando = enviarComando(comando,log_kernel);
+
+					int resultadoEnviarComando = enviarMensaje(drop,tamanio,mensaje,log_kernel);
 				}
 
 
@@ -599,4 +591,58 @@ void validarComando(char** comando,int tamanio,t_log* logger){
 				break;
 
 		}
+}
+
+int enviarMensaje(int comando,int tamanio, char* mensaje, t_log* logger){
+
+	log_info(logger,"En funcion enviarMensaje.");
+
+	t_header* headerParaEnviar = malloc(sizeof(t_header));
+
+	log_info(logger,"Por guardar en la estructura del Header, el comando: %d", comando);
+	headerParaEnviar->comando = comando;
+
+	log_info(logger,"Por guardar en la estructura del Header, la cantidad de argumentos: %d", tamanio);
+	headerParaEnviar->cantArgumentos = tamanio - 1;//Le restamos uno ya esta suma tiene en cuenta el comando
+	
+	log_info(logger,"Conectamos por socket con la memoria.");
+	socket_CMemoria = conexionKernel();	
+
+	int tamanioMensaje = string_length(mensaje) + 1;
+	log_info(logger,"El tamanio del mensaje que se va a mandar es de: %d", tamanioMensaje);
+	headerParaEnviar->tamanio = tamanioMensaje;
+	
+	log_info(logger,"tamanio del header a enviar: %d",sizeof(t_header));
+	
+	resultado_sendMsj = socketEnviar(socket_CMemoria, headerParaEnviar, sizeof(t_header),
+			log_kernel);
+
+	if (resultado_sendMsj == ERROR) {
+
+		log_error(log_kernel, "Error al enviar mensaje a memoria. Salimos");
+
+		return ERROR;
+	}
+
+	log_info(log_kernel, "El mensaje se envio correctamente");
+
+	//confirmacionRecibida = malloc(sizeof(int));
+	log_info(log_kernel,"Preparados para recibir %d",sizeof(confirmacionRecibida));
+	int recibiendoMensaje = socketRecibir(socket_CMemoria,&confirmacionRecibida,sizeof(confirmacionRecibida),log_kernel);
+
+	log_info(logger,"Lo que llego fue: %d", confirmacionRecibida);
+
+	if(confirmacionRecibida == sizeof(t_header)){
+
+		log_info(logger,"La confirmacion que llego fue correcta, se procedera a enviar el body");
+		printf("La confirmacion que llego fue correcta, se procedera a enviar el body. \n");
+	}else{
+		log_info(logger,"La confirmacion que llego no es correcta, no se enviar el body");
+		printf("La confirmacion que llego no es correcta, no se envia el body. \n");
+
+	}
+
+
+	return 0;
+
 }

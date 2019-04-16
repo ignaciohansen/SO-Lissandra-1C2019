@@ -78,6 +78,7 @@ typedef FILE* File;
 typedef int32_t Entero;
 typedef t_bitarray* Bitmap;
 struct sockaddr_in miDireccionSocket;
+char* mensaje;
 
 //--------------------------------------- Estructuras -------------------------------------
 
@@ -104,6 +105,12 @@ typedef struct {
 	String port;
 	String ip;
 } Conexion;
+
+typedef struct{
+	int unsigned comando;
+	int unsigned tamanio;
+	int unsigned cantArgumentos;
+}t_header;
 
 const char* comandosPermitidos[] =
 {

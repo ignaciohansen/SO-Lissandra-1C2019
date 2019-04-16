@@ -112,19 +112,39 @@ int main() {
     socketEscuchar( socketEscuchaKernel    // SOCKET
                     , 10
                   , log_memoria         ); // LOG
-    while(1){
+     while(1){
         log_info(log_memoria," +++ esperando conexiones... +++ ");
         conexionEntrante = aceptarConexionSocket(socketEscuchaKernel,log_memoria);
         if(conexionEntrante == ERROR){
             log_error(log_memoria,"ERROR AL CONECTAR.");
             return -1;
         }
-        buffer = malloc( 8 * sizeof(char) );
-        recibiendoMensaje = socketRecibir(conexionEntrante,buffer,7,log_memoria);
-        buffer[7] = "\\0";
-        printf("Recibimos por socket: %s\n",buffer);
-        log_info(log_memoria,"El mensaje que se recibio fue %s", buffer);
-    }*/
+        buffer = malloc(sizeof(t_header));
+        recibiendoMensaje = socketRecibir(conexionEntrante,buffer,sizeof(t_header),log_memoria);
+
+        printf("Recibimos por socket el comando: %d\n",buffer->comando);
+        log_info(log_memoria,"El mensaje que se recibio fue con el comando %d", buffer->comando);
+
+		printf("Recibimos por socket el tamanio que vendra en el body: %d\n",buffer->tamanio);
+        log_info(log_memoria,"Recibimos un tamanio que vendra en el body de: %d", buffer->tamanio);
+
+		printf("Recibimos por socket la cantidad de argumentos que vendran en el body: %d\n",buffer->cantArgumentos);
+        log_info(log_memoria,"Recibimos la cantidad de argumentos que vendran en el body de: %d", buffer->cantArgumentos);
+
+		log_info(log_memoria,"El valor de retorno de la funcion que recibio el mensaje fue: %d",recibiendoMensaje);
+		log_info(log_memoria,"El tamanio de la estructura t_header es: %d",sizeof(t_header));
+		if(recibiendoMensaje == sizeof(t_header)){
+
+			log_info(log_memoria,"Por enviar confirmacion a Kernel de que recibimos correctamente");
+
+			log_info(log_memoria,"El tamanio de la confirmacion que enviamos es de: %d",sizeof(recibiendoMensaje));
+			int resultadoEnvio = socketEnviar(conexionEntrante,&recibiendoMensaje,sizeof(recibiendoMensaje),log_memoria);
+
+			log_info(log_memoria,"despues de socketEnviar");
+		}
+    }
+
+*/
 
     // FIN DE BLOQUE DE RED.
 
