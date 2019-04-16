@@ -55,7 +55,7 @@ typedef struct{
 
 typedef struct {
 	long timestamp;
-	int key;
+	int16_t key;
 	char* value;
 }valor_pagina;
 
@@ -68,12 +68,15 @@ typedef struct {
 typedef struct {
 	int tamanio_segmento;
 	int base_segmento_en_memoria;
-	pagina* pagina;
+	pagina* pagina []; //DEBE SER LISTA DE PAGINAS
 }segmento;
 
 typedef struct {
 	int tamanioMemoria;
+	segmento* segmentoMemoria[];
 }memoria_principal;
+
+memoria_principal* memoria;
 
 t_memoria_config* arc_config;
 

@@ -63,9 +63,9 @@ int main() {
     stringRemoverVaciosIzquierda(&comando);
     */
 
-	crearConexionesConOtrosProcesos();
+//	crearConexionesConOtrosProcesos();
 
-    ejecutarHiloConsola();
+ //   ejecutarHiloConsola();
 
     armarMemoriaPrincipal();
 
@@ -146,10 +146,10 @@ void inicioLogYConfig() {
 	log_memoria = archivoLogCrear(LOG_PATH, "Proceso Memoria");
 	log_info(log_memoria, " \n ========== Iniciación de Pool de Memoria ========== \n \n ");
 
-	log_info(log_memoria, "(1) LOG CREADO. ");
+	log_info(log_memoria, "[LOGYCONFIG](1) LOG CREADO. ");
 
 	cargarConfiguracion();
-	log_info(log_memoria, " *** CONFIGURACIÓN DE MEMORIA CARGADA. *** ");
+	log_info(log_memoria, "[LOGYCONFIG] *** CONFIGURACIÓN DE MEMORIA CARGADA. *** ");
 }
 
 /*-----------------------------------------------------------------------------
@@ -157,6 +157,34 @@ void inicioLogYConfig() {
  *-----------------------------------------------------------------------------*/
 
 void armarMemoriaPrincipal(){
+
+	log_info(log_memoria, "[ARMAR MEMORIA] Armo la memoria, guardo su tamaño");
+	memoria = malloc(sizeof(int)*arc_config->tam_mem);
+	log_info(log_memoria, "[ARMAR MEMORIA] Se ha creado la memoria");
+	if(memoria == NULL){
+		log_info(log_memoria, "[ARMAR MEMORIA] NO se ha creado la memoria");
+		abortarProcesoPorUnErrorImportante(log_memoria, "[ARMAR MEMORIA] NO se ha guardado correctamente el tamaño a memoria");
+	}
+	log_info(log_memoria, "[ARMAR MEMORIA] Se ha creado la memoria");
+
+	log_info(log_memoria, "[ARMAR MEMORIA] Guardo tamaño de memoria: %d", sizeof(int)*arc_config->tam_mem);
+	//ESTO ES PARA SABER CUANTA MEMORIA REAL TIENE DISPONIBLE MEMORIA SIN CONTAR LO ADMINISTRATIVO
+	memoria->tamanioMemoria = sizeof(int)*arc_config->tam_mem - sizeof(int)*sizeof(arc_config->tam_mem);
+	log_info(log_memoria, "[ARMAR MEMORIA] Tamaño de memoria guardada, MEMORIA REAL: %d", memoria->tamanioMemoria);
+
+	/*	NO SE SI ESTO ESTA BIEN
+	log_info(log_memoria, "[ARMAR MEMORIA] Inicializo la tabla de segmentos, comienza en NULL");
+	memoria->segmentoMemoria = [];
+	log_info(log_memoria, "[ARMAR MEMORIA] Tabla de segmentos inicializada");
+	*/
+
+	imprimirVerde(log_memoria, "[ARMAR MEMORIA] Memoria inicializada de forma correcta");
+
+
+	//Esto esta solo para probar si anda esto o no.
+	log_info(log_memoria, "[LIBERAR MEMORIA] Por liberar memoria");
+	free(memoria);
+	log_info(log_memoria, "[LIBERAR MEMORIA] memoria Liberada");
 
 }
 
@@ -186,7 +214,7 @@ void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar) {
 	configFile = config_create(PATH_MEMORIA_CONFIG);
 	if(configFile == ERROR){
 		log_error(log_memoria, "[MODIFICAR TIEMPO RETARDO]NO se abrio el archivo de configuracion");
-		imprimirError(log_memoria, "NO se abrio el archivo de configuracion para MODIFICAR TIEMPO RETARDO");
+		imprimirError(log_memoria, "[MODIFICAR TIEMPO RETARDO]NO se abrio el archivo de configuracion para MODIFICAR TIEMPO RETARDO");
 		return;
 	} else {
 		if(config_has_property(configFile, campoAModificar)) {
@@ -246,10 +274,11 @@ void conectarConServidorLisandraFileSystem() {
 		log_info(log_memoria,
 					"[CONEXION LSF]por llamar a la funcion connectarSocket() para conectarnos con Memoria");
 
+		log_info(log_memoria,"[CONEXION LSF]PUERTO A CONECTAR: %d ",arc_config->puerto_fs);
 		log_info(log_memoria,"[CONEXION LSF]PRUEBA: %d ",arc_config->puerto_fs);
-
 		char* ipLFS = "127.0.0.1";
-		int resultado_Conectar = conectarSocket(sockeConexionLF, ipLFS, arc_config->puerto_fs,log_memoria); // ## Acá IP de LFS Hardcodeada (#001#)
+		int resultado_Conectar = conectarSocket(sockeConexionLF, ipLFS, arc_config->puerto_fs,log_memoria);
+		// ## Acá IP de LFS Hardcodeada (#001#)
 
 		if(resultado_Conectar == ERROR){
 			abortarProcesoPorUnErrorImportante(log_memoria, "[CONEXION LSF]Hubo un problema al querer Conectarnos con LFS. Salimos del proceso");
@@ -325,33 +354,36 @@ void levantarServidor() {
 	// SOCKET
 	    socketEscuchaKernel = nuevoSocket(log_memoria);  // CREAR SOCKET
 	    if(socketEscuchaKernel == ERROR){                // CASO DE ERROR.
-	        log_error(log_memoria," ¡¡¡ ERROR AL CREAR SOCKET. SE TERMINA EL PROCESO. !!! ");
+	        log_error(log_memoria,"[LEVANTAR SERVER] ¡¡¡ ERROR AL CREAR SOCKET. SE TERMINA EL PROCESO. !!! ");
 	        abortarProcesoPorUnErrorImportante(log_memoria, "NO se crea el socket correctamente");
 
 	    }
 
-	    log_info(log_memoria, "SOCKET CREADO.Valor: %d.", socketEscuchaKernel);
+	    log_info(log_memoria, "[LEVANTAR SERVER]SOCKET CREADO.Valor: %d.", socketEscuchaKernel);
 
 	    // PUERTO
-	    log_info(log_memoria, " *** SE VA A ASOCIAR SOCKET CON PUERTO ... *** ");
-	    log_info(log_memoria, "PUERTO A USAR: %d.", arc_config->puerto);
+	    log_info(log_memoria, "[LEVANTAR SERVER] *** SE VA A ASOCIAR SOCKET CON PUERTO ... *** ");
+	    log_info(log_memoria, "[LEVANTAR SERVER]PUERTO A USAR: %d.", arc_config->puerto);
 
 	    // ASOCIAR "SOCKET" CON "PUERTO".
 	    asociarSocket( socketEscuchaKernel     // SOCKET
 	                  , arc_config->puerto      // PUERTO
 	                 , log_memoria          ); // LOG
-	    log_info(log_memoria, " *** PUERTO ASOCIADO A SOCKET EXITOSAMENTE. *** ");
+	    log_info(log_memoria, "[LEVANTAR SERVER] *** PUERTO ASOCIADO A SOCKET EXITOSAMENTE. *** ");
 
 	    // ESCUCHAR
 	    crearHIloEscucharKernel();
+	    log_info(log_memoria, "[LEVANTAR SERVER] *** HILO CREADO PARA ESCUCHA PERMANENTE *** ");
 }
 
 void crearHIloEscucharKernel() {
 	pthread_t hiloEscucharKernel;
+	log_info(log_memoria, "[HILO SERVER] *** HILO CREADO PARA ESCUCHA PERMANENTE *** ");
 	hiloCrear(&hiloEscucharKernel, (void*)escucharConexionKernel, NULL);
 
 	// NO SE SI DEBE ESTAR ASI, LO DEJO POR SI ACASO
 	pthread_detach(hiloEscucharKernel);
+	log_info(log_memoria, "[HILO SERVER] ESCUCHANDO A LOS CLIENTES");
 }
 
 void escucharConexionKernel() {
