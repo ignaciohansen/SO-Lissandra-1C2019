@@ -122,6 +122,7 @@ const char* comandosPermitidos[] =
 	"journal",
 	"add",
 	"run",
+	"metrics",
 	"salir"
 	
 };
@@ -136,6 +137,7 @@ enum comandos{
 	journal,
 	add,
 	run,
+	metrics,
 	salir
 	
 };
