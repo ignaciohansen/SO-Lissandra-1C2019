@@ -26,7 +26,10 @@ int socketEscuchaKernel,conexionEntrante,recibiendoMensaje;
 int sockeConexionLF, resultado_sendMsj;
 int tamanio;
 char* linea;
+char* argumentosComando;
+char** argumentosParseados;
 t_header* buffer;
+
 
 typedef struct{
     int puerto;

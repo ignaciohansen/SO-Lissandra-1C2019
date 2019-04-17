@@ -56,6 +56,7 @@
 #define AMARILLO "\x1b[33m"
 #define BLANCO "\x1b[0m"
 #define VERDE "\x1b[32m"
+#define SEPARADOR "|"
 
 //--------------------------------------- Definiciones -------------------------------------
 

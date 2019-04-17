@@ -141,6 +141,29 @@ int main() {
 			int resultadoEnvio = socketEnviar(conexionEntrante,&recibiendoMensaje,sizeof(recibiendoMensaje),log_memoria);
 
 			log_info(log_memoria,"despues de socketEnviar");
+
+			argumentosComando = malloc(buffer->tamanio);
+
+			recibiendoMensaje = socketRecibir(conexionEntrante,argumentosComando,buffer->tamanio,log_memoria);
+
+			log_info(log_memoria, "Recibimos el/los argumentos: %s",argumentosComando);
+			printf("Recibimos el/los argumentos: %s \n",argumentosComando);
+
+			log_info(log_memoria, "Por parsear los argumentos.");
+
+			argumentosParseados = string_split(argumentosComando, SEPARADOR);
+
+			log_info(log_memoria, "Parseando queda: %s",argumentosParseados[0]);
+			printf("Parseando queda: %s \n",argumentosParseados[0]);
+
+			log_info(log_memoria, "Parseando queda: %s",argumentosParseados[1]);
+			printf("Parseando queda: %s \n",argumentosParseados[1]);
+
+			log_info(log_memoria,"Fin de parseo");
+			printf("Fin de parseo. \n");
+
+
+
 		}
     }
 
