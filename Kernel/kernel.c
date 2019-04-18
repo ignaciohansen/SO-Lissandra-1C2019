@@ -199,6 +199,7 @@ void consola() {
 
 		//Tamanio del array
 		
+		
 		for (int i = 0; comandoSeparado[i] != NULL; i++) {
 			
 			log_info(log_kernel,"En la posicion %d del array esta el valor %s",i,comandoSeparado[i]);
@@ -274,79 +275,7 @@ void consola() {
 				
 				break;
 
-		}
-		//comando = validacionComando(comandoSeparado[0],log_kernel);
-
-		//log_info(log_kernel, "El numero de comando ingresado es %d", comando);	
-		
-
-
-		//INTERPRETACION DE COMANDOS ANTERIORES
-		//}
-
-		/*switch(comandoIngresado){
-
-		 case 1:
-		 log_info(log_kernel, "select");
-		 break;
-		 case 2:
-		 log_info(log_kernel, "insert");
-		 break;
-		 default:
-		 printf("Comando mal ingresado. \n");
-		 log_error(log_kernel,"Opcion mal ingresada por teclado en la consola");
-		 break;
-		 }
-
-		 if(strcmp(comandoSeparado[0],"select") == 0){
-
-		 printf("Se selecciono Select\n");
-
-		 log_info(log_kernel,"Por llamar a enviarResultado");
-
-		 int resultadoEnviarComando = enviarComando(comandoSeparado[0],log_kernel);
-		 //break;
-		 }
-		 	if(strcmp(comandoSeparado[0],"insert") == 0){
-
-		 printf("Insert seleccionado\n");
-		 break;
-		 }
-
-		 if(strcmp(comandoSeparado[0],"create") == 0){
-		 printf("Create seleccionado\n");
-		 break;
-		 }
-
-		 if(strcmp(comandoSeparado[0],"describe") == 0){
-		 printf("Describe seleccionado\n");
-		 break;
-		 }
-		 if(strcmp(comandoSeparado[0],"drop") == 0){
-		 printf("Drop seleccionado\n");
-		 break;
-		 }
-		 if(strcmp(comandoSeparado[0],"journal") == 0){
-		 printf("Journal seleccionado\n");
-		 break;
-		 }
-		 if(strcmp(comandoSeparado[0],"add") == 0){
-		 printf("add seleccionado\n");
-		 break;
-		 }
-
-		 if(strcmp(comandoSeparado[0],"run") == 0){
-		 printf("Run seleccionado\n");
-		 break;
-		 }
-
-		 if(strcmp(comandoSeparado[0],"salir") == 0){
-		 break;
-		 }
-		 printf("Comando mal ingresado. \n");
-		 log_error(log_kernel,"Opcion mal ingresada por teclado en la consola");
-		 */
-
+		}		
 	}
 }
 
@@ -424,6 +353,7 @@ void menu() {
 			"Journal  \n"
 			"add \n"
 			"run \n"
+			"metrics \n"
 			"SALIR \n"
 			"\n");
 
@@ -457,6 +387,10 @@ void validarComando(char** comando,int tamanio,t_log* logger){
 
 		int resultadoComando = buscarComando(comando[0],logger);
 
+		int tamanioCadena = 0;
+
+		
+
 		switch (resultadoComando) {
 
 			case Select: {
@@ -470,6 +404,8 @@ void validarComando(char** comando,int tamanio,t_log* logger){
 					log_info(log_kernel, "Por llamar a enviarComando");
 
 					mensaje = malloc(string_length(comando[1])+1);
+
+					log_info(log_kernel,"El tamanio de la cadena a guardar es: %d",tamanioCadena);					
 
 					strcpy(mensaje,comando[1]);	
 
@@ -501,9 +437,11 @@ void validarComando(char** comando,int tamanio,t_log* logger){
 					
 					log_info(log_kernel, "Cantidad de parametros correctos ingresados para el comando insert");
 					
-					log_info(log_kernel, "Por llamar a enviarResultado");
+					log_info(log_kernel, "Por llamar a enviarMensaje");
 
-					int resultadoEnviarComando = enviarComando(comando,log_kernel);
+					mensaje = malloc(string_length(comando[1])+1);
+
+					int resultadoEnviarComando = enviarMensaje(insert,tamanio,mensaje,log_kernel);
 				}
 
 			}

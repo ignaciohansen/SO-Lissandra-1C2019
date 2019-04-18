@@ -81,6 +81,7 @@ typedef t_bitarray* Bitmap;
 struct sockaddr_in miDireccionSocket;
 char* mensaje;
 
+
 //--------------------------------------- Estructuras -------------------------------------
 
 typedef struct __attribute__((packed)){

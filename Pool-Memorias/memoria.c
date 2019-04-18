@@ -90,7 +90,7 @@ int main() {
      * (2) SEA CAPAZ DE PROCESAR Queries LQL
      * (3) SEA CAPAZ DE MANTENER EL HILO DE CONSOLA Y DE RED EN PARALELO.
 
-    // SOCKET
+    // SOCKET 
     socketEscuchaKernel = nuevoSocket(log_memoria);  // CREAR SOCKET
     if(socketEscuchaKernel == ERROR){                // CASO DE ERROR.
         log_error(log_memoria," ¡¡¡ ERROR AL CREAR SOCKET. SE TERMINA EL PROCESO. !!! ");
