@@ -247,6 +247,14 @@ void consola() {
 
 							//Se muestra Metricas
 					 }
+					 else if(strcmp(comandoSeparado[0],"describe") == 0){
+
+						 printf("Describe seleccionado\n");
+
+						 log_info(log_kernel, "Se selecciono el comando Describe");
+
+							//Se muestra el describe para todas las tablas
+					 }
 					 else{
 		 				printf("Comando mal ingresado. \n");
 		 				
@@ -261,6 +269,16 @@ void consola() {
 				break;
 
 			case 3:
+				validarComando(comandoSeparado,tamanio,log_kernel);
+				
+				break;
+			
+			case 4:
+				validarComando(comandoSeparado,tamanio,log_kernel);
+				
+				break;
+
+			case 5:
 				validarComando(comandoSeparado,tamanio,log_kernel);
 				
 				break;
@@ -356,7 +374,6 @@ void menu() {
 			"metrics \n"
 			"SALIR \n"
 			"\n");
-
 }
 
 int buscarComando(char* comando,t_log* logger) {
@@ -364,16 +381,8 @@ int buscarComando(char* comando,t_log* logger) {
 	log_info(logger,"Recibimos el comando: %s",comando);
 
 	int i = 0;
-	
 
-	//while (i < salir && strcmp(comandosPermitidos[i], comando)) {
-		
-		//i++;
-	
-	//}
-
-	for (i;i <= salir && strcmp(comandosPermitidos[i], comando);i++) {
-		
+	for (i;i <= salir && strcmp(comandosPermitidos[i], comando);i++) {		
 			
 	}	
 
@@ -387,9 +396,7 @@ void validarComando(char** comando,int tamanio,t_log* logger){
 
 		int resultadoComando = buscarComando(comando[0],logger);
 
-		int tamanioCadena = 0;
-
-		
+		int tamanioCadena = 0;		
 
 		switch (resultadoComando) {
 
@@ -402,25 +409,16 @@ void validarComando(char** comando,int tamanio,t_log* logger){
 					log_info(log_kernel, "Cantidad de parametros correctos ingresados para el comando select");
 					
 					log_info(log_kernel, "Por llamar a enviarComando");
-
-					mensaje = malloc(string_length(comando[1])+1);
+										
+					mensaje = malloc(string_length(comando[1])+string_length(comando[2])+1);
 
 					log_info(log_kernel,"El tamanio de la cadena a guardar es: %d",tamanioCadena);					
 
 					strcpy(mensaje,comando[1]);	
 
-					log_info(log_kernel,"Por concatenar la cadena: %s ,con el separador",mensaje);
-
-					string_append(&mensaje,&SEPARADOR);
-
-					log_info(log_kernel,"Ahora la cadena es %s",mensaje);
+					log_info(log_kernel,"En mensaje ya tengo: %s",mensaje);					
 					
-					string_append(&mensaje,comando[2]);
-
-					log_info(log_kernel,"Ahora la cadena es %s, con el ultimo argumento",mensaje);
-
-					log_info(log_kernel,"Queriamos mandar esto: %s", mensaje);
-					log_info(log_kernel,"Y se mando esto: %s",mensaje);
+					armarMensajeBody(tamanio,mensaje,comando);												
 
 					int resultadoEnviarComando = enviarMensaje(Select,tamanio,mensaje,log_kernel);
 				}
@@ -433,31 +431,51 @@ void validarComando(char** comando,int tamanio,t_log* logger){
 
 				log_info(log_kernel, "Se selecciono insert");
 
-				if(tamanio == 4){
+				if(tamanio == 4 || tamanio == 5){
 					
 					log_info(log_kernel, "Cantidad de parametros correctos ingresados para el comando insert");
 					
 					log_info(log_kernel, "Por llamar a enviarMensaje");
 
-					mensaje = malloc(string_length(comando[1])+1);
+					if(tamanio == 4){
+
+						mensaje = malloc(string_length(comando[1])+string_length(comando[2])+string_length(comando[3])+2);
+						log_info(log_kernel,"Por guardar memoria para 3 argumentos");
+					}else{
+						mensaje = malloc(string_length(comando[1])+string_length(comando[2])+string_length(comando[3])+string_length(comando[4])+3);
+						log_info(log_kernel,"Por guardar memoria para 4 argumentos");
+					}
+					
+					log_info(log_kernel,"Por copiar el primer parametro del comando");
+
+					strcpy(mensaje,comando[1]);	
+
+					log_info(log_kernel,"En mensaje ya tengo: %s",mensaje);					
+					
+					armarMensajeBody(tamanio,mensaje,comando);
+					}				
 
 					int resultadoEnviarComando = enviarMensaje(insert,tamanio,mensaje,log_kernel);
-				}
-
-			}
+				}			
 				break;
 
 			case create: {
 				printf("Create seleccionado\n");
 				log_info(log_kernel, "Se selecciono Create");
 
-				if(tamanio == 4){
+				if(tamanio == 5){
 					
 					log_info(log_kernel, "Cantidad de parametros correctos ingresados para el comando create");
 					
+					mensaje = malloc(string_length(comando[1])+string_length(comando[2])+string_length(comando[3])+string_length(comando[4])+3);
+					
+					strcpy(mensaje,comando[1]);	
+
+					armarMensajeBody(tamanio,mensaje,comando);
+
 					log_info(log_kernel, "Por llamar a enviarResultado");
 
-					int resultadoEnviarComando = enviarComando(comando,log_kernel);
+					int resultadoEnviarComando = enviarMensaje(create,tamanio,mensaje,log_kernel);
 				}
 
 
@@ -468,13 +486,20 @@ void validarComando(char** comando,int tamanio,t_log* logger){
 				printf("Describe seleccionado\n");
 				log_info(log_kernel, "Se selecciono Describe");
 
-				if(tamanio == 1){
+				if(tamanio == 2){
 					
 					log_info(log_kernel, "Cantidad de parametros correctos ingresados para el comando Describe");
 					
-					log_info(log_kernel, "Por llamar a enviarResultado");
+					mensaje = malloc(string_length(comando[1]));
+					
+					strcpy(mensaje,comando[1]);	
 
-					int resultadoEnviarComando = enviarComando(comando,log_kernel);
+					log_info(log_kernel,"En mensaje ya tengo: %s y es de tamanio: %d",mensaje,string_length(mensaje));	
+
+					log_info(log_kernel, "Por llamar a enviarMensaje");
+
+					int resultadoEnviarComando = enviarMensaje(describe,tamanio,mensaje,log_kernel);					
+					
 				}
 
 
@@ -488,10 +513,8 @@ void validarComando(char** comando,int tamanio,t_log* logger){
 				if(tamanio == 2){
 					
 					log_info(log_kernel, "Cantidad de parametros correctos ingresados para el comando Drop");
-					
-					log_info(log_kernel, "Por llamar a enviarComando");
-					
-					mensaje = malloc(string_length(comando[1])+1);
+														
+					mensaje = malloc(string_length(comando[1]));
 					
 					strcpy(mensaje,comando[1]);
 
@@ -514,9 +537,8 @@ void validarComando(char** comando,int tamanio,t_log* logger){
 					
 					log_info(log_kernel, "Cantidad de parametros correctos ingresados para el comando add");
 					
-					log_info(log_kernel, "Por llamar a enviarResultado");
-
-					int resultadoEnviarComando = enviarComando(comando,log_kernel);
+					printf("Cantidad de parametros correctos ingresados para el comando add \n");
+					
 				}
 
 			}
@@ -530,9 +552,8 @@ void validarComando(char** comando,int tamanio,t_log* logger){
 					
 					log_info(log_kernel, "Cantidad de parametros correctos ingresados para el comando run");
 					
-					log_info(log_kernel, "Por llamar a enviarResultado");
-
-					int resultadoEnviarComando = enviarComando(comando,log_kernel);
+					printf("Cantidad de parametros correctos ingresados para el comando run \n");
+					
 				}
 
 			}
@@ -562,10 +583,9 @@ int enviarMensaje(int comando,int tamanio, char* mensaje, t_log* logger){
 	
 	log_info(logger,"Conectamos por socket con la memoria.");
 	socket_CMemoria = conexionKernel();	
-
-	int tamanioMensaje = string_length(mensaje);
-	log_info(logger,"El tamanio del mensaje que se va a mandar es de: %d", tamanioMensaje);
-	headerParaEnviar->tamanio = tamanioMensaje;
+	
+	log_info(logger,"El tamanio del mensaje que se va a mandar es de: %d", string_length(mensaje));
+	headerParaEnviar->tamanio = string_length(mensaje);
 	
 	log_info(logger,"tamanio del header a enviar: %d",sizeof(t_header));
 	
@@ -588,9 +608,9 @@ int enviarMensaje(int comando,int tamanio, char* mensaje, t_log* logger){
 
 	if(confirmacionRecibida == sizeof(t_header)){
 
-		log_info(logger,"La confirmacion que llego fue correcta, se procedera a enviar el body");
-		printf("La confirmacion que llego fue correcta, se procedera a enviar el body. \n");
-
+		log_info(logger,"La confirmacion que llego fue correcta, se procedera a enviar el body: %s con tamanio: %d",mensaje,strlen(mensaje));
+		printf("La confirmacion que llego fue correcta, se procedera a enviar el body: %s\n",mensaje);
+		
 		resultado_sendMsj = socketEnviar(socket_CMemoria,mensaje,strlen(mensaje),log_kernel);
 
 		if(resultado_sendMsj == strlen(mensaje)){
@@ -611,4 +631,21 @@ int enviarMensaje(int comando,int tamanio, char* mensaje, t_log* logger){
 
 	return 0;
 
+}
+
+void armarMensajeBody(int tamanio,char* mensaje,char** comando){
+
+	log_info(log_kernel,"En funcion armarMensajeBody");
+	
+	for(int i = 2; tamanio > i ;i++){					
+
+		string_append(&mensaje,&SEPARADOR);
+						
+		string_append(&mensaje,comando[i]);	
+
+		log_info(log_kernel,"Armando mensaje..: %s",mensaje);
+
+	}
+
+	log_info(log_kernel,"Finalizo el armado con el mensaje Final: %s",mensaje);
 }

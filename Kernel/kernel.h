@@ -78,8 +78,8 @@ void cargarConfiguracion();
 int enviarComando(char** comando,t_log* logger);
 int conexionKernel();
 int enviarMensaje(int comando, int tamanio,char* mensaje, t_log* logger);
+void armarMensajeBody(int tamanio,char* mensaje,char** comando);
 int buscarComando(char* comandoSeparado,t_log* logger);
 void validarComando(char** comandoSeparado,int tamanio,t_log* logger);
-
 
 #endif /* KERNEL_H_ */

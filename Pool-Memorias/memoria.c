@@ -140,29 +140,29 @@ int main() {
 			log_info(log_memoria,"El tamanio de la confirmacion que enviamos es de: %d",sizeof(recibiendoMensaje));
 			int resultadoEnvio = socketEnviar(conexionEntrante,&recibiendoMensaje,sizeof(recibiendoMensaje),log_memoria);
 
-			log_info(log_memoria,"despues de socketEnviar");
-
+			log_info(log_memoria,"Por hacer un malloc de: %d para guardar el body. ",buffer->tamanio);
 			argumentosComando = malloc(buffer->tamanio);
+			
+			memset(argumentosComando,'\0',buffer->tamanio);
 
 			recibiendoMensaje = socketRecibir(conexionEntrante,argumentosComando,buffer->tamanio,log_memoria);
 
 			log_info(log_memoria, "Recibimos el/los argumentos: %s",argumentosComando);
-			printf("Recibimos el/los argumentos: %s \n",argumentosComando);
+			printf("Recibimos el/los argumentos: %s \n",argumentosComando);			
 
 			log_info(log_memoria, "Por parsear los argumentos.");
 
 			argumentosParseados = string_split(argumentosComando, SEPARADOR);
 
-			log_info(log_memoria, "Parseando queda: %s",argumentosParseados[0]);
-			printf("Parseando queda: %s \n",argumentosParseados[0]);
+			for (int i = 0; argumentosParseados[i] != NULL; i++) {
+			
+				log_info(log_memoria, "Parseando queda en la posicion %i: el valor: %s",i,argumentosParseados[i]);
+				printf("Parseando queda en la posicion %i: el valor: %s \n",i,argumentosParseados[i]);
 
-			log_info(log_memoria, "Parseando queda: %s",argumentosParseados[1]);
-			printf("Parseando queda: %s \n",argumentosParseados[1]);
+			}
 
 			log_info(log_memoria,"Fin de parseo");
 			printf("Fin de parseo. \n");
-
-
 
 		}
     }
