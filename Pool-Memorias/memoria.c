@@ -24,6 +24,7 @@
  */
 
 #include "memoria.h"
+//#include "administrarMemoria.c"
 
 void terminar_memoria(t_log* g_log);
 
@@ -881,4 +882,174 @@ void cargarConfiguracion() {
 
     }
 
+}
+
+/*
+ * FUNCIONES PARA LA ADMINISTRACION DE MEMORIA
+ */
+
+segmento * segmento_crear(char* path,  char* nombreTabla,pagina* pag) {
+	segmento * segmentoNuevo = malloc(sizeof(segmento));
+	segmentoNuevo->path_tabla = path;
+	segmentoNuevo->pagina=pag;
+	segmentoNuevo->siguienteSegmento=NULL;
+	segmentoNuevo->nombreTabla=nombreTabla;
+	segmentoNuevo->tamanio_segmento = sizeof(segmentoNuevo);
+	return segmentoNuevo;
+}
+
+pagina * pagina_crear(valor_pagina* valor, int numero) {
+	pagina* pag = malloc(sizeof(pagina));
+	pag->numero=numero;
+	pag->flag=false;
+	pag->valor_pagina=valor;
+	pag->siguientePagina = NULL;
+	return pag;
+}
+
+valor_pagina * valor_pagina_crear(int timestamp, int16_t key, char * valor){
+	valor_pagina * var = malloc(sizeof(valor_pagina));
+	var->key = key;
+	var->value = valor;
+
+	//NO SE SI ESTA BIEN ESTO
+	if(timestamp==0) {
+		var->timestamp = (unsigned)time(NULL);
+	} else {
+		var->timestamp = timestamp;
+	}
+
+	return var;
+}
+
+/*
+bool chequear_si_memoria_tiene_espacio(int espacioAOcupar){
+	return (memoria->tamanioMemoria) > (espacioAOcupar + memoria->);
+}
+*/
+
+void segmento_agregar_pagina(segmento* seg, pagina* pag) {
+	pagina* aux = seg->pagina;
+	if(chequear_si_memoria_tiene_espacio(sizeof(pagina)+sizeof(valor_pagina))){
+		//HAY ESPACIO SUFICIENTE
+		pag->siguientePagina = aux;
+		pag->numero = (seg->pagina->numero)+1;
+		seg->pagina = pag;
+		seg->tamanio_segmento += sizeof(pag);
+	}
+
+
+	//SE SUPONE QUE LA PAGINA YA TIENE LOS VALORES
+	//CARGADOS
+
+
+}
+
+//SE PUEDE MODIFICAR ESTO
+bool chequear_si_memoria_tiene_espacio(int tamanio) {
+	return memoria->tamanioMemoria > tamanio;
+}
+
+void pagina_agregar_valores(pagina* pag, valor_pagina* valor) {
+	pag->valor_pagina=valor;
+}
+
+//ESTE SE USA PARA AQUELLOS VALORES QUE YA SE LOS IDENTIFICO
+void valores_reemplazar_items(valor_pagina* valor_pag, int timestamp, char* valor){
+	valor_pag->timestamp=timestamp;
+	valor_pag->key=valor;
+}
+
+void pagina_poner_estado_modificado(pagina* pag) {
+	pag->flag=true;
+}
+
+/*
+int segmento_agregar_inicio_pagina(segmento* seg, pagina* pag){
+
+}
+*/
+
+
+/*
+int segmento_esta_vacio(segmento* seg){
+
+	return
+}
+*/
+
+void limpiar_memoria(memoria_principal* mem){
+	segmento* segmentoTemporal;
+	while(mem->segmentoMemoria!=NULL){
+		segmentoTemporal= mem->segmentoMemoria->siguienteSegmento;
+		limpiar_segmento(&(mem->segmentoMemoria));
+		mem->segmentoMemoria= segmentoTemporal;
+	}
+
+
+//	mem->memoriaDisponible = mem->tamanioMemoria;
+}
+
+int limpiar_segmento(segmento * seg) {
+	int cantidadLiberada=0;
+	cantidadLiberada+=limpiar_paginas(&seg->pagina);
+	cantidadLiberada+=sizeof(seg);
+	free(seg);
+	return cantidadLiberada;
+}
+
+int limpiar_paginas(pagina* pag){
+	pagina* otraPagina;
+	int cantidadLiberada =0;
+	while(pag!= NULL ){
+		otraPagina=pag->siguientePagina;
+		cantidadLiberada +=limpiar_valores_pagina(&(pag->valor_pagina));
+		cantidadLiberada += sizeof(pag);
+		free(pag);
+		pag = otraPagina;
+	}
+	return cantidadLiberada;
+}
+
+int limpiar_valores_pagina(valor_pagina* valores){
+	int cantidadLiberada = sizeof(valores);
+	free(valores);
+	return cantidadLiberada;
+}
+
+int buscar_tabla_especifica(char* nombreTablaABuscar, segmento* segmentoBuscado) {
+	segmento* segTemporal;
+	memoria_principal* memTemporal = memoria;
+	while(memTemporal->segmentoMemoria!=NULL){
+		//EMPIEZO A BUSCAR
+		if(strcmp(
+			memTemporal->segmentoMemoria->nombreTabla,
+				nombreTablaABuscar))
+		{
+			//SE ENCONTRO LA TABLA BUSCADA
+			segmentoBuscado = memTemporal->segmentoMemoria;
+			return 1;
+		}
+		segTemporal = memTemporal->segmentoMemoria->siguienteSegmento;
+		memTemporal->segmentoMemoria = segTemporal;
+		//SE SIGUE BUSCANDO
+	}
+	return -1;
+}
+
+//ESTO SE HACE SIEMPRE DESPUES DE QUE BUSCA LA TABLA
+//Y SOLO SI SE ENCUNETRA
+int obtener_valores(int16_t key, segmento* segmentoHost, valor_pagina* valorADevolver) {
+	pagina* otraPagina;
+	segmento* otroSegmento = segmentoHost;
+	while(otroSegmento->pagina!=NULL){
+		if(key==otroSegmento->pagina->valor_pagina->key){
+			//SE ENCONTRO LA COSA ESTA
+			valorADevolver = otraPagina->valor_pagina;
+			return 1;
+		}
+		otraPagina = otroSegmento->pagina->siguientePagina;
+		otroSegmento->pagina = otraPagina;
+	}
+	return -1;
 }
