@@ -859,6 +859,7 @@ void cargarConfiguracion() {
  * FUNCIONES PARA LA ADMINISTRACION DE MEMORIA
  */
 
+
 segmento * segmento_crear(char* path,  char* nombreTabla,pagina* pag) {
 	segmento * segmentoNuevo = malloc(sizeof(segmento));
 	segmentoNuevo->path_tabla = path;

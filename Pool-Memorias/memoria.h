@@ -130,6 +130,7 @@ void crearHIloEscuchaLFS();
  * MODIFICAR TIEMPO DE RETARDO DE CONFIGURACION
  *---------------------------------------------------*/
 
+
 void modificarTiempoRetardoMemoria(int nuevoCampo);
 
 void modificarTiempoRetardoFileSystem(int nuevoCampo);
