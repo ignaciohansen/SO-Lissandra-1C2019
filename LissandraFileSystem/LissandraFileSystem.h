@@ -8,6 +8,9 @@
 #include <commons/config.h>
 #include <commons/collections/queue.h>
 #include "../Biblioteca/src/Biblioteca.c"
+#include <readline/readline.h>
+#include <readline/history.h>
+#include <pthread.h>
 
 #define PATH_LFILESYSTEM_CONFIG "../LissandraFileSystem/Default/LFILESSYSTEM_CONFIG.txt"
 #define LOG_PATH "logLFILESSYSTEM.txt"
