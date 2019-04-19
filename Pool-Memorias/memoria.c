@@ -54,33 +54,13 @@ int main() {
     // SECCIÓN DE CONSOLA.
     // Operaciones: SELECT, INSERT, CREATE, DROP, DESCRIBE.
 
-	/*
-    String    comando;
-    comando = lectura_consola();
-    log_info(log_memoria,"Se lee de consola la línea: ");
-    log_info(log_memoria,comando);
 
-    stringRemoverVaciosIzquierda(&comando);
-    */
+	crearConexionesConOtrosProcesos();
 
-//	crearConexionesConOtrosProcesos();
-
- //   ejecutarHiloConsola();
+    ejecutarHiloConsola();
 
     armarMemoriaPrincipal();
 
-
-    // depurado
-    /*
-    switch (true) {
-        case stringContiene(comando,"SELECT"):
-        case stringContiene(comando,"SELECT"):
-        case stringContiene(comando,"SELECT"):
-        case stringContiene(comando,"SELECT"):
-        case stringContiene(comando,"SELECT"):
-        case stringContiene(comando,"SELECT"):
-    }
-    */
 
     // FIN SECCIÓN DE CONSOLA.
 
