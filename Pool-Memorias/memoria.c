@@ -49,20 +49,11 @@ int main() {
     // LOGGING
 	inicioLogYConfig();
 
-
-
-    // SECCIÓN DE CONSOLA.
-    // Operaciones: SELECT, INSERT, CREATE, DROP, DESCRIBE.
-
-
-	crearConexionesConOtrosProcesos();
+	crearConexionesConOtrosProcesos(); // conecta con LFS y puede que con kernel.
 
     ejecutarHiloConsola();
 
     armarMemoriaPrincipal();
-
-
-    // FIN SECCIÓN DE CONSOLA.
 
     /* LA PARTE DESTINADA A COMUNICACIÓN POR RED QUEDA COMENTADA
      * SE LA VA A DESCOMENTAR CUANDO:
@@ -300,7 +291,7 @@ void conectarConServidorLisandraFileSystem() {
 		log_info(log_memoria,"[CONEXION LSF]PUERTO A CONECTAR: %d ",arc_config->puerto_fs);
 		log_info(log_memoria,"[CONEXION LSF]PRUEBA: %d ",arc_config->puerto_fs);
 		char* ipLFS = "127.0.0.1";
-		int resultado_Conectar = conectarSocket(sockeConexionLF, ipLFS, arc_config->puerto_fs,log_memoria);
+		int resultado_Conectar = conectarSocket(sockeConexionLF, "0", arc_config->puerto_fs,log_memoria);
 		// ## Acá IP de LFS Hardcodeada (#001#)
 
 		if(resultado_Conectar == ERROR){
