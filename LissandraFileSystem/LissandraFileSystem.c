@@ -6,6 +6,7 @@
  */
 
 #include "LissandraFileSystem.h"
+#include "commons/string.h"
 
 int main() {
 
@@ -92,8 +93,12 @@ int abrirServidorLissandra() {
 				imprimirError(log_lfilesystem,"Se produjo un error al aceptar la conexion, salimos");
 				return -1;
 			} else {
-				imprimirVerde(log_lfilesystem, "Se ha conectado un cliente, es:");
-				printf("%i\n\n", conexionEntrante);
+				char* msg = string_new();
+				string_append(&msg   , "Connection number "     );
+				string_append(&msg   , stringConvertirEntero(i) );
+				string_append(&msg   , " established."          );
+				imprimirVerde(log_lfilesystem, msg);
+
 			}
 
 			buffer = malloc(sizeof(char));

@@ -152,8 +152,8 @@ void socketEscuchar(Socket unSocket, int clientesEsperando,t_log* logger) {
 
 int aceptarConexionSocket(int fd_socket,t_log* logger) {
 
-	log_info(logger,"En funcion aceptarConexion");
-	printf("En funcion aceptarConexion \n");
+	log_info(logger,"[BIBLIO] (+) FUNCTION aceptarConexionSocket"); // BEGIN
+	// printf("En funcion aceptarConexion \n");
 	int addres_size = sizeof(struct sockaddr_in);
 
 	struct sockaddr_storage unCliente; // sino: struct sockaddr_in unCliente;
@@ -164,10 +164,13 @@ int aceptarConexionSocket(int fd_socket,t_log* logger) {
 
 	int fdCliente = accept(fd_socket, (struct sockaddr*) &unCliente, &addres_size);
 
-	if(fdCliente == ERROR) log_error(logger,"[SOCKETS] No se pudo aceptar la conexión entrante.");
+	if(fdCliente == ERROR) {
+		log_error(logger,"[SOCKETS] No se pudo aceptar la conexión entrante.");
+	} else {
+		log_info(logger,"Se acepto la conexion %d", fdCliente);
+	} // int fdCliente
 
-	log_info(logger,"Se acepto la conexion %d", fdCliente);
-
+	log_info(logger,"[BIBLIO] (-) FUNCTION aceptarConexionSocket"); // BEGIN
 	return fdCliente;
 }
 
