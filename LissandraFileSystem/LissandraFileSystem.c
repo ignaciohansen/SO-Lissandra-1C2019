@@ -55,10 +55,8 @@ int abrirServidorLissandra() {
 */
 
 		if(socketEscuchaMemoria == ERROR){
-
 			imprimirError(log_lfilesystem, "Hubo un problema al querer crear el socket de escucha para memoria. Salimos del Proceso");
-
-			return 0;
+			return -1;
 		}
 
 
