@@ -147,6 +147,9 @@ enum comandos{
 //FUNCIONES PARA ABORTAR UN PROCESO
 void abortarProcesoPorUnError(t_log log, char* mensaje);
 
+//--------------------------------------- Funcion timestamp -------------------------------------
+
+long timestamp(void);
 
 //--------------------------------------- Funciones para Socket -------------------------------------
 
