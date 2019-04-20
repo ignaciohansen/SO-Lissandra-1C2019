@@ -84,7 +84,7 @@ int abrirServidorLissandra() {
 		int i =1;
 		while(1){
 
-			imprimirMensaje(log_lfilesystem, "\n ====== LFS: waiting for connections ====== \n"");
+			imprimirMensaje(log_lfilesystem, " \n ====== LFS: waiting for connections ====== \n ");
 
 			conexionEntrante = aceptarConexionSocket(socketEscuchaMemoria,log_lfilesystem);
 
