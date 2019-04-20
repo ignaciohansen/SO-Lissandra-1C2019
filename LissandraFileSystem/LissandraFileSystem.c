@@ -97,7 +97,7 @@ int abrirServidorLissandra() {
 	log_info(log_lfilesystem, "[DEBUG] Despues de crear puntero."  );
 
 	log_info(log_lfilesystem, "[DEBUG] Antes de recibir mensaje."  );
-	recibiendoMensaje = socketRecibir(conexionEntrante, buffer, 13,  &log_lfilesystem);
+	recibiendoMensaje = socketRecibir(conexionEntrante, buffer, 13,  log_lfilesystem);
 	log_info(log_lfilesystem, "[DEBUG] Despues de recibir mensaje.");
 
 	char* msg = string_new();
