@@ -304,18 +304,25 @@ void conectarConServidorLisandraFileSystem() {
 					"[CONEXION LSF]Nos conectamos con exito, el resultado fue %d",resultado_Conectar);
 
 
-		char * mensaje = "hola Lisandra";
-		resultado_sendMsj = socketEnviar(sockeConexionLF,mensaje,strlen(mensaje),log_memoria);
+			char * mensaje = "hola Lisandra";
 
-		log_info(log_memoria,
-						"[CONEXION LSF]Se ha intentado mandar un mensaje al server");
+			resultado_sendMsj = socketEnviar(sockeConexionLF,mensaje,strlen(mensaje),log_memoria);
 
-		if(resultado_sendMsj == ERROR){
-			abortarProcesoPorUnErrorImportante(log_memoria, "[CONEXION LSF]Error al enviar mensaje a LSF. Salimos");
+			log_info(log_memoria, "[CONEXION LSF]Se ha intentado mandar un mensaje al server");
 
-		}
+			if(resultado_sendMsj == ERROR){
+					abortarProcesoPorUnErrorImportante(log_memoria, "[CONEXION LSF]Error al enviar mensaje a LSF. Salimos");
+			}
 
-		imprimirVerde1(log_memoria,"[CONEXION LSF]El mensaje se envio correctamente\n\nMENSAJE ENVIADO: %s", mensaje);
+			imprimirVerde1(log_memoria,"[CONEXION LSF]El mensaje se envio correctamente\n\nMENSAJE ENVIADO: %s", mensaje);
+
+			while (1) {
+
+
+				mensaje = readline(">");
+
+			} // while (1)
+
 
 		buffer = malloc(sizeof(char));
 
