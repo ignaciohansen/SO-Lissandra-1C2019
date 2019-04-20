@@ -553,6 +553,8 @@ void validarComando(char** comando,int tamanio,t_log* logger){
 					log_info(log_kernel, "Cantidad de parametros correctos ingresados para el comando run");
 					
 					printf("Cantidad de parametros correctos ingresados para el comando run \n");
+
+					comandoRun(comando[1]);
 					
 				}
 
@@ -648,4 +650,46 @@ void armarMensajeBody(int tamanio,char* mensaje,char** comando){
 	}
 
 	log_info(log_kernel,"Finalizo el armado con el mensaje Final: %s",mensaje);
+}
+
+void comandoRun(char* path){
+
+
+	fd = fopen(path,"r");
+
+	if(fd == NULL){
+
+		log_info(log_kernel,"El archivo pasado por path no se encontró");
+		printf("El archivo %s No existe\n",path);
+
+		free(path);
+		return;
+	}else{
+
+		log_info(log_kernel,"El archivo se encontró con exito. Vamos a leerlo");
+		printf("El archivo buscado en la dirección %s existe. Vamos a leerlo\n",path);
+
+		while(!feof(fd)){
+
+			log_info(log_kernel, "Dentro del while.");
+
+			char bufferPath[MAXSIZE_COMANDO];
+
+			fgets(bufferPath, MAXSIZE_COMANDO, fd);
+
+			strtok(bufferPath, "\n");
+
+			printf("Se leyo del archivo: %s\n",bufferPath);
+
+			log_info(log_kernel,"Se leyo del archivo: %s",bufferPath);
+			
+		}
+
+		log_info(log_kernel,"Fuera del while principal");
+
+		fclose(fd);
+		free(path);
+
+		return;
+	}
 }
