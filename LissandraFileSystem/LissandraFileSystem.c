@@ -60,45 +60,35 @@ int abrirServidorLissandra() {
 		}
 
 
-		log_info(log_lfilesystem, "Por asociar un puerto al socket");
+		log_info(log_lfilesystem, "\n ========== LFS Listening ========== \n");
 
 		int puerto_a_escuchar = configFile->puerto_escucha;
 
-		imprimirVerde1(log_lfilesystem, "Se ha creado el socket con exito con valor %d: .", socketEscuchaMemoria);
+		imprimirVerde1  (log_lfilesystem      ,"Se ha creado el socket con exito con valor %d: .", socketEscuchaMemoria);
 
-		imprimirMensaje1(log_lfilesystem,
-				"El socket de escucha se creo con exito, con valor %d: .", socketEscuchaMemoria);
-		imprimirMensaje(log_lfilesystem,
-				"Por asociar el socket con el puerto de escucha.");
+		imprimirMensaje1(log_lfilesystem      ,"El puerto que vamos a asociar es %i:", puerto_a_escuchar);
 
-		imprimirMensaje1(log_lfilesystem,
-				"El puerto que vamos a asociar es %i:", puerto_a_escuchar);
+		asociarSocket   (socketEscuchaMemoria ,puerto_a_escuchar,log_lfilesystem);
 
-		asociarSocket(socketEscuchaMemoria,puerto_a_escuchar,log_lfilesystem);
+		imprimirMensaje (log_lfilesystem      , "Asociado. OK!");
 
-		imprimirMensaje(log_lfilesystem,
-						"Ya asociado al puerto lo ponemos a la escucha.");
+		socketEscuchar  (socketEscuchaMemoria ,10 ,log_lfilesystem);
 
-		socketEscuchar(socketEscuchaMemoria,10,log_lfilesystem);
+		int estado = listen(socketEscuchaMemoria, 10);
+
+		if(estado == ERROR){
+			imprimirError(log_lfilesystem, "Error al poner el Socket en escucha");
+			return -1;
+		}
+
 		int i =1;
-		while(1)
-		{
-			imprimirMensaje(log_lfilesystem, "En el while esperando conexiones.");
+		while(1){
 
-			int estado = listen(socketEscuchaMemoria, 10);
-
-				if(estado == ERROR){
-
-					imprimirError(log_lfilesystem, "Error al poner el Socket en escucha");
-
-			return 0;
-				}
-				imprimirVerde(log_lfilesystem, "EL socket ya esta en escucha");
+			imprimirMensaje(log_lfilesystem, "\n ====== LFS: waiting for connections ====== \n"");
 
 			conexionEntrante = aceptarConexionSocket(socketEscuchaMemoria,log_lfilesystem);
 
 			if(conexionEntrante == ERROR){
-
 				imprimirError(log_lfilesystem,"Se produjo un error al aceptar la conexion, salimos");
 				return -1;
 			} else {
@@ -157,11 +147,10 @@ int abrirServidorLissandra() {
 		//	free(buffer);
 		//	send(conexionEntrante, "Hola memoria", 13, 0);
 
-		}
+		} // while(1)
 
 		imprimirMensajeProceso("FIN PROCESO SOCKET");
-		log_info(log_lfilesystem,
-					"Fin del proceso.");
+		log_info(log_lfilesystem, "Fin del proceso.");
 
 		return 1;
 
