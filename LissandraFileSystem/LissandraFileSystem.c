@@ -45,73 +45,68 @@ void LisandraSetUP() {
 
 int abrirServidorLissandra() {
 
-	imprimirMensaje(log_lfilesystem, "Creamos un nuevo socket");
-
 	socketEscuchaMemoria = nuevoSocket(log_lfilesystem);
 
-	/*socketEscuchaMemoria = socketCrearListener(
-									config_get_string_value(configFile, "IP_FS"),
-									config_get_int_value(configFile, "PUERTO_ESCUCHA"),
-									log_lfilesystem);
-*/
-
-		if(socketEscuchaMemoria == ERROR){
-			imprimirError(log_lfilesystem, "Hubo un problema al querer crear el socket de escucha para memoria. Salimos del Proceso");
-			return -1;
-		}
+	if(socketEscuchaMemoria == ERROR){
+		imprimirError(log_lfilesystem, "Hubo un problema al querer crear el socket de escucha para memoria. Salimos del Proceso");
+		return -1;
+	}
 
 
-		log_info(log_lfilesystem, "\n ========== LFS Listening ========== \n");
+	log_info(log_lfilesystem, "\n ========== LFS Listening ========== \n");
 
-		int puerto_a_escuchar = configFile->puerto_escucha;
+	int puerto_a_escuchar = configFile->puerto_escucha;
 
-		imprimirVerde1  (log_lfilesystem      ,"Se ha creado el socket con exito con valor %d: .", socketEscuchaMemoria);
+	imprimirVerde1  (log_lfilesystem      ,"Se ha creado el socket con exito con valor %d: .", socketEscuchaMemoria);
 
-		imprimirMensaje1(log_lfilesystem      ,"El puerto que vamos a asociar es %i:", puerto_a_escuchar);
+	imprimirMensaje1(log_lfilesystem      ,"El puerto que vamos a asociar es %i:", puerto_a_escuchar);
 
-		asociarSocket   (socketEscuchaMemoria ,puerto_a_escuchar,log_lfilesystem);
+	asociarSocket   (socketEscuchaMemoria ,puerto_a_escuchar,log_lfilesystem);
 
-		imprimirMensaje (log_lfilesystem      , "Asociado. OK!");
+	imprimirMensaje (log_lfilesystem      , "Asociado. OK!");
 
-		socketEscuchar  (socketEscuchaMemoria ,10 ,log_lfilesystem);
+	socketEscuchar  (socketEscuchaMemoria ,10 ,log_lfilesystem);
 
-		int estado = listen(socketEscuchaMemoria, 10);
+	int estado = listen(socketEscuchaMemoria, 10);
 
-		if(estado == ERROR){
-			imprimirError(log_lfilesystem, "Error al poner el Socket en escucha");
-			return -1;
-		}
+	if(estado == ERROR){
+		imprimirError(log_lfilesystem, "Error al poner el Socket en escucha");
+		return -1;
+	}
 
-		int i =1;
-		while(1){
+	int i =1;
+	while(1){
 
-			imprimirMensaje(log_lfilesystem, " \n ====== LFS: waiting for connections ====== \n ");
+	imprimirMensaje(log_lfilesystem, " \n ====== LFS: waiting for connections ====== \n ");
 
-			conexionEntrante = aceptarConexionSocket(socketEscuchaMemoria,log_lfilesystem);
+	conexionEntrante = aceptarConexionSocket(socketEscuchaMemoria,log_lfilesystem);
 
-			if(conexionEntrante == ERROR){
-				imprimirError(log_lfilesystem,"Se produjo un error al aceptar la conexion, salimos");
-				return -1;
-			} else {
-				char* msg = string_new();
-				string_append(&msg   , "Connection number "     );
-				string_append(&msg   , stringConvertirEntero(i) );
-				string_append(&msg   , " established."          );
-				imprimirVerde(log_lfilesystem, msg);
+	if(conexionEntrante == ERROR){
+		imprimirError(log_lfilesystem,"Se produjo un error al aceptar la conexion, salimos");
+		return -1;
+	} else {
+		char* msg = string_new();
+		string_append(&msg   , "Connection number "     );
+		string_append(&msg   , stringConvertirEntero(i) );
+		string_append(&msg   , " established."          );
+		imprimirVerde(log_lfilesystem, msg);
+		free(msg);
+	}
+	log_info(log_lfilesystem, "[DEBUG] Antes de crear puntero."  );
+	Puntero buffer = (void*)string_new(); // malloc(sizeof(char)*100);
+	log_info(log_lfilesystem, "[DEBUG] Despues de crear puntero."  );
 
-			}
+	log_info(log_lfilesystem, "[DEBUG] Antes de recibir mensaje."  );
+	recibiendoMensaje = socketRecibir(conexionEntrante, buffer, 13,  &log_lfilesystem);
+	log_info(log_lfilesystem, "[DEBUG] Despues de recibir mensaje.");
 
-			buffer = malloc(sizeof(char));
-
-			recibiendoMensaje = socketRecibir(conexionEntrante, buffer, 13,  &log_lfilesystem);
-
-			printf("Recibimos por socket %s\n",buffer);
-
-
-
-			imprimirMensaje(log_lfilesystem, "Mensaje recibido: \n");
-			imprimirVerde(log_lfilesystem, buffer);
-			i++;
+	char* msg = string_new();
+	string_append(&msg,"Mensaje recibido: \"");
+	string_append(&msg,buffer                );
+	string_append(&msg,"\"."                 );
+	imprimirVerde(log_lfilesystem, msg);
+	free(buffer);
+	i++;
 
 		/*
 		 	log_info(log_lfilesystem, "Por liberar el buffer");
