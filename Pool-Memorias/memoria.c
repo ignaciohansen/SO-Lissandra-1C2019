@@ -266,8 +266,25 @@ void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar) {
 
 void crearConexionesConOtrosProcesos(){
 
-	conectarConServidorLisandraFileSystem();
-//	levantarServidor();
+	log_info(log_memoria, "[HILOS] (+)");
+
+	pthread_t hiloClienteLFS;
+	pthread_create(&hiloClienteLFS, NULL, (void*) conectarConServidorLisandraFileSystem, NULL);
+
+	pthread_detach(hiloClienteLFS);
+	log_info(log_memoria, "[HILOS] LANZADO CLIENTE LFS");
+
+	pthread_t hiloServidorKernel;
+	pthread_create(&hiloServidorKernel, NULL, (void*) levantarServidor, NULL);
+
+	pthread_detach(hiloServidorKernel);
+
+	log_info(log_memoria, "[HILOS] LANZADO  SERVIDOR KERNEL");
+
+	//conectarConServidorLisandraFileSystem();
+	//levantarServidor();
+	log_info(log_memoria, "[HILOS] (-)");
+	while(1);
 }
 
 void conectarConServidorLisandraFileSystem() {
@@ -306,7 +323,7 @@ void conectarConServidorLisandraFileSystem() {
 
 			char * mensaje = "hola Lisandra";
 
-			resultado_sendMsj = socketEnviar(sockeConexionLF,mensaje,strlen(mensaje),log_memoria);
+			resultado_sendMsj = socketEnviar(sockeConexionLF,mensaje,strlen(mensaje) +1,log_memoria);
 
 			log_info(log_memoria, "[CONEXION LSF]Se ha intentado mandar un mensaje al server");
 
@@ -374,28 +391,81 @@ void conectarConServidorLisandraFileSystem() {
 
 void levantarServidor() {
 	// SOCKET
-	    socketEscuchaKernel = nuevoSocket(log_memoria);  // CREAR SOCKET
+	socketEscuchaKernel = nuevoSocket(log_memoria);  // CREAR SOCKET
 	    if(socketEscuchaKernel == ERROR){                // CASO DE ERROR.
-	        log_error(log_memoria,"[LEVANTAR SERVER] ¡¡¡ ERROR AL CREAR SOCKET. SE TERMINA EL PROCESO. !!! ");
-	        abortarProcesoPorUnErrorImportante(log_memoria, "NO se crea el socket correctamente");
-
+	        log_error(log_memoria," ¡¡¡ ERROR AL CREAR SOCKET. SE TERMINA EL PROCESO. !!! ");
+	        return;
 	    }
-
-	    log_info(log_memoria, "[LEVANTAR SERVER]SOCKET CREADO.Valor: %d.", socketEscuchaKernel);
+	    log_info(log_memoria, "SOCKET CREADO.Valor: %d.", socketEscuchaKernel);
 
 	    // PUERTO
-	    log_info(log_memoria, "[LEVANTAR SERVER] *** SE VA A ASOCIAR SOCKET CON PUERTO ... *** ");
-	    log_info(log_memoria, "[LEVANTAR SERVER]PUERTO A USAR: %d.", arc_config->puerto);
+	    log_info(log_memoria, " *** SE VA A ASOCIAR SOCKET CON PUERTO ... *** ");
+	    log_info(log_memoria, "PUERTO A USAR: %d.", arc_config->puerto);
 
 	    // ASOCIAR "SOCKET" CON "PUERTO".
 	    asociarSocket( socketEscuchaKernel     // SOCKET
 	                  , arc_config->puerto      // PUERTO
 	                 , log_memoria          ); // LOG
-	    log_info(log_memoria, "[LEVANTAR SERVER] *** PUERTO ASOCIADO A SOCKET EXITOSAMENTE. *** ");
+	    log_info(log_memoria, " *** PUERTO ASOCIADO A SOCKET EXITOSAMENTE. *** ");
 
 	    // ESCUCHAR
-	    crearHIloEscucharKernel();
-	    log_info(log_memoria, "[LEVANTAR SERVER] *** HILO CREADO PARA ESCUCHA PERMANENTE *** ");
+	    socketEscuchar( socketEscuchaKernel    // SOCKET
+	                    , 10
+	                  , log_memoria         ); // LOG
+	     while(1){
+	        log_info(log_memoria," +++ esperando conexiones... +++ ");
+	        conexionEntrante = aceptarConexionSocket(socketEscuchaKernel,log_memoria);
+	        if(conexionEntrante == ERROR){
+	            log_error(log_memoria,"ERROR AL CONECTAR.");
+	            return;
+	        }
+	        buffer = malloc(sizeof(t_header));
+	        recibiendoMensaje = socketRecibir(conexionEntrante,buffer,sizeof(t_header),log_memoria);
+
+	        printf("Recibimos por socket el comando: %d\n",buffer->comando);
+	        log_info(log_memoria,"El mensaje que se recibio fue con el comando %d", buffer->comando);
+
+			printf("Recibimos por socket el tamanio que vendra en el body: %d\n",buffer->tamanio);
+	        log_info(log_memoria,"Recibimos un tamanio que vendra en el body de: %d", buffer->tamanio);
+
+			printf("Recibimos por socket la cantidad de argumentos que vendran en el body: %d\n",buffer->cantArgumentos);
+	        log_info(log_memoria,"Recibimos la cantidad de argumentos que vendran en el body de: %d", buffer->cantArgumentos);
+
+			log_info(log_memoria,"El valor de retorno de la funcion que recibio el mensaje fue: %d",recibiendoMensaje);
+			log_info(log_memoria,"El tamanio de la estructura t_header es: %d",sizeof(t_header));
+			if(recibiendoMensaje == sizeof(t_header)){
+
+				log_info(log_memoria,"Por enviar confirmacion a Kernel de que recibimos correctamente");
+
+				log_info(log_memoria,"El tamanio de la confirmacion que enviamos es de: %d",sizeof(recibiendoMensaje));
+				int resultadoEnvio = socketEnviar(conexionEntrante,&recibiendoMensaje,sizeof(recibiendoMensaje),log_memoria);
+
+				log_info(log_memoria,"Por hacer un malloc de: %d para guardar el body. ",buffer->tamanio);
+				argumentosComando = malloc(buffer->tamanio);
+
+				memset(argumentosComando,'\0',buffer->tamanio);
+
+				recibiendoMensaje = socketRecibir(conexionEntrante,argumentosComando,buffer->tamanio,log_memoria);
+
+				log_info(log_memoria, "Recibimos el/los argumentos: %s",argumentosComando);
+				printf("Recibimos el/los argumentos: %s \n",argumentosComando);
+
+				log_info(log_memoria, "Por parsear los argumentos.");
+
+				argumentosParseados = string_split(argumentosComando, SEPARADOR);
+
+				for (int i = 0; argumentosParseados[i] != NULL; i++) {
+
+					log_info(log_memoria, "Parseando queda en la posicion %i: el valor: %s",i,argumentosParseados[i]);
+					printf("Parseando queda en la posicion %i: el valor: %s \n",i,argumentosParseados[i]);
+
+				}
+
+				log_info(log_memoria,"Fin de parseo");
+				printf("Fin de parseo. \n");
+
+			}
+	    }
 }
 
 void crearHIloEscucharKernel() {
