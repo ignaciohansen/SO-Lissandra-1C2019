@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/sem.h>
 #include <commons/log.h>
 #include <commons/string.h>
 #include <commons/config.h>
@@ -24,7 +25,7 @@
 t_log* log_memoria;
 int socketEscuchaKernel,conexionEntrante,recibiendoMensaje;
 int sockeConexionLF, resultado_sendMsj;
-int tamanio;
+int tamanio, limpiandoMemoria;
 char* linea;
 char* argumentosComando;
 char** argumentosParseados;
@@ -56,31 +57,45 @@ typedef struct{
 
 typedef struct {
 	int tamanioMemoria;
-	struct nodoSegmento* segmentoMemoria;
+	struct unidad_memoria* unidad;
 } memoria_principal;
 
+
+//ESTO YA FUE DEFINIDO, SE LLAMA VALOR_PAGINA QUE ESTA MAS ABAJO
+/*
 typedef struct pagina { //unidad de memoria
 	long     timestamp;
 	int      key;
 	char[15] value;
 } pagina_memoria;
+*/
 
+//ESTAMOS REPITIENDO ESTRUCTURAS AQUI
+/*
 typedef struct pagina_t {
 		int   nro_pagina;
 		char* nombreTabla;
 		char* path_tabla;
 		bool  modif;
 		//DEBE SER LISTA DE PAGINAS
-		struct pagina_memoria* puntero_pagina;
+		struct nodo_valor* puntero_pagina;
 		// struct nodoSegmento* siguienteSegmento;
 }reg_tabla_pagina;
+*/
+
+typedef struct unidad_memoria {
+	int nroSegmento;
+	int nroPagina;
+	bool flagModificado;
+	struct unidad_memoria* siguienteUnidad;
+}unidad_memoria;
 
 typedef struct nodoSegmento{
 		int   nro_segmento;
 		char* nombreTabla;
 		char* path_tabla;
 		//DEBE SER LISTA DE PAGINAS
-		struct reg_tabla_pagina* reg_pagina;
+		struct tabla_paginas* reg_pagina;
 		struct nodoSegmento* siguienteSegmento;
 }segmento;
 
@@ -90,17 +105,19 @@ typedef struct nodoSegmento{
 		char* value;
 	}valor_pagina;
 
-	typedef struct paginas{
-			int numero;
-			struct nodo_valor* valor_pagina;
-			struct paginas* siguientePagina;
-			bool flag;
-		}pagina;
+	typedef struct tabla_paginas{
+		int numero;
+		struct nodo_valor* valor_pagina;
+		struct tabla_paginas* siguientePagina;
+		bool flag;
+	}pagina;
 
 
 memoria_principal* memoria;
 
 t_memoria_config* arc_config;
+
+segmento* tablaSegmentos;
 
 /*---------------------------------------------------
  * FUNCIONES PARA MEMORIA PRINCIPAL
@@ -139,6 +156,12 @@ void escucharConexionKernel();
 void crearHIloEscuchaLFS();
 
 
+/*---------------------------------------------------
+ * PROCESO JOURNAL
+ *---------------------------------------------------*/
+
+void JOURNAL(pagina* paginaAPasar, char* path_tabla);
+void pasar_valores_modificados_a_Lisandra(segmento* elSegmento, unidad_memoria* unidad_de_memoria);
 
 /*---------------------------------------------------
  * MODIFICAR TIEMPO DE RETARDO DE CONFIGURACION
@@ -155,11 +178,19 @@ void modificarTiempoRetardoJournal(int nuevoCampo);
 
 void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
 
-/*
+/*---------------------------------------------------
+ * FUNCIONES OBTENER VALORES MEDIANTE UNA KEY
+ *---------------------------------------------------*/
+int obtener_valores(int16_t key, unidad_memoria* unidadExtra);
+
+/*---------------------------------------------------
  * FUNCIONES PARA ADMINISTRAR LA MEMORIA
- */
-/**
-	* @NAME: list_create
+ *---------------------------------------------------*/
+
+	segmento* buscarSegmentoPorNumero(int numeroABuscar);
+	pagina* buscarPaginaPorNumero(int numeroABuscar, segmento* seg);
+	int limpiarUnidad(unidad_memoria* unidad_de_memoria);
+	/* @NAME: list_create
 	* @DESC: Crea una lista
 	*/
 	segmento * segmento_crear(char* path,  char* nombreTabla,pagina* pag);
@@ -251,7 +282,7 @@ void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
 	int buscar_tabla_especifica(char* nombreTablaABuscar, segmento* segmentoBuscado);
 
 
-	int obtener_valores(int16_t key, segmento* segmentoHost, valor_pagina* valorADevolver);
+//	int obtener_valores(int16_t key, segmento* segmentoHost, valor_pagina* valorADevolver);
 	int buscar_tabla_especifica(char* nombreTablaABuscar, segmento* segmentoBuscado);
 
 	/**
