@@ -195,8 +195,10 @@ void armarMemoriaPrincipal(){
 
 	imprimirVerde(log_memoria, "[ARMAR MEMORIA] Memoria inicializada de forma correcta");
 
+	// CREACION DE ESTRUCTURAS.
 
-	//Esto esta solo para probar si anda esto o no.
+
+	//LIBERA LA RAM.
 	log_info(log_memoria, "[LIBERAR MEMORIA] Por liberar memoria");
 	free(memoria);
 	log_info(log_memoria, "[LIBERAR MEMORIA] memoria Liberada");
@@ -284,7 +286,7 @@ void crearConexionesConOtrosProcesos(){
 	//conectarConServidorLisandraFileSystem();
 	//levantarServidor();
 	log_info(log_memoria, "[HILOS] (-)");
-	while(1);
+	// while(1);
 }
 
 void conectarConServidorLisandraFileSystem() {
@@ -934,7 +936,7 @@ void cargarConfiguracion() {
 
 /*
  * FUNCIONES PARA LA ADMINISTRACION DE MEMORIA
- */
+
 
 
 segmento * segmento_crear(char* path,  char* nombreTabla,pagina* pag) {
@@ -970,7 +972,7 @@ valor_pagina * valor_pagina_crear(int timestamp, int16_t key, char * valor){
 
 	return var;
 }
-
+ */
 /*
 bool chequear_si_memoria_tiene_espacio(int espacioAOcupar){
 	return (memoria->tamanioMemoria) > (espacioAOcupar + memoria->);

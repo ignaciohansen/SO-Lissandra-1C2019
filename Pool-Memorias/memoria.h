@@ -57,18 +57,32 @@ typedef struct{
 typedef struct {
 	int tamanioMemoria;
 	struct nodoSegmento* segmentoMemoria;
-}memoria_principal;
+} memoria_principal;
+
+typedef struct pagina { //unidad de memoria
+	long     timestamp;
+	int      key;
+	char[15] value;
+} pagina_memoria;
+
+typedef struct pagina_t {
+		int   nro_pagina;
+		char* nombreTabla;
+		char* path_tabla;
+		bool  modif;
+		//DEBE SER LISTA DE PAGINAS
+		struct pagina_memoria* puntero_pagina;
+		// struct nodoSegmento* siguienteSegmento;
+}reg_tabla_pagina;
 
 typedef struct nodoSegmento{
-		int tamanio_segmento;
+		int   nro_segmento;
 		char* nombreTabla;
 		char* path_tabla;
 		//DEBE SER LISTA DE PAGINAS
-
-		struct paginas* pagina;
+		struct reg_tabla_pagina* reg_pagina;
 		struct nodoSegmento* siguienteSegmento;
-
-	}segmento;
+}segmento;
 
 	typedef struct nodo_valor{
 		long timestamp;
