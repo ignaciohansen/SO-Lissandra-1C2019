@@ -1111,7 +1111,7 @@ segmento* buscarSegmentoPorNumero(int numeroABuscar){
 	segmento* segmentoAux = tablaSegmentos;
 	bool encontrado = false;
 	log_info(log_memoria, "[BUSCANDO SEGMENTO X NRO] En Buscar segmento por numero");
-	while(1){
+	while(segmentoAux!=NULL){
 		//SI O SI LO VA A ENCONTRAR PORQUE NO PUEDE ESTAR EN MEMORIA Y NO EXISTIR EN LA TABLA
 		log_info(log_memoria, "[BUSCANDO SEGMENTO X NRO] Buscando segmento");
 		if(segmentoAux->nro_segmento == numeroABuscar){
@@ -1122,23 +1122,29 @@ segmento* buscarSegmentoPorNumero(int numeroABuscar){
 			segmentoAux = segmentoAux->siguienteSegmento;
 		}
 	}
+	//NO LO ENCONTRO, DEVUELVO NULL
+	log_info(log_memoria, "[BUSCANDO SEGMENTO X NRO] NO se encontro el segmento buscado");
+	return NULL;
 }
 
 pagina* buscarPaginaPorNumero(int numeroABuscar, segmento* seg){
 	pagina* paginaAux = seg->reg_pagina;
 	bool encontrado = false;
 	log_info(log_memoria, "[BUSCANDO PAGINA X NRO] En Buscar pagina por numero");
-	while(1){
+	while(paginaAux!=NULL){
 		//SI O SI LO VA A ENCONTRAR PORQUE NO PUEDE ESTAR EN MEMORIA Y NO EXISTIR EN LA TABLA
-		log_info(log_memoria, "[BUSCANDO SEGMENTO X NRO] Buscando pagina");
+		log_info(log_memoria, "[BUSCANDO PAGINA X NRO] Buscando pagina");
 		if(paginaAux->numero == numeroABuscar){
-			log_info(log_memoria, "[BUSCANDO SEGMENTO X NRO] PAGINA ENCONTRADO");
+			log_info(log_memoria, "[BUSCANDO PAGINA X NRO] PAGINA ENCONTRADO");
 			return paginaAux;
 		} else {
-			log_info(log_memoria, "[BUSCANDO SEGMENTO X NRO] No se encontro, paso a la siguiente pagina");
+			log_info(log_memoria, "[BUSCANDO PAGINA X NRO] No se encontro, paso a la siguiente pagina");
 			paginaAux = paginaAux->siguientePagina;
 		}
 	}
+	//NO LO ENCONTRO, DEVUELVO NULL
+	log_info(log_memoria, "[BUSCANDO PAGINA X NRO] NO se encontro la pagina buscado");
+	return NULL;
 }
 
 int limpiar_segmento(segmento * seg) {
@@ -1202,19 +1208,48 @@ int buscar_tabla_especifica(char* nombreTablaABuscar, segmento* segmentoBuscado)
 }
 */
 
+segmento* buscarSegmentoPorNombreTabla(char* nombreTabla){
+	segmento* todoSegmento = tablaSegmentos;
+	log_info(log_memoria, "[BUSCANDO KEY] Buscando el segmento referido para la tabla %s", nombreTabla);
+	while(todoSegmento!=NULL){
+		if(strcmp(todoSegmento->nombreTabla, nombreTabla)){
+			//SE ENCONTRO EL SEGMENTO BUSCADO
+			log_info(log_memoria, "[BUSCANDO SEGMENTO X NOMBRETABLA] Se encontro el segmento buscado");
+			return todoSegmento;
+		}
+	}
+	log_info(log_memoria, "[BUSCANDO KEY] NO se encontro el segmento buscado");
+	return NULL;
+}
 
-bool buscarKeyEnRegistro(unidad_memoria* unidadAAnalizar, unidad_memoria** unidadADevolver, int16_t key){
-	bool condicion = false;
+
+bool buscarKeyEnRegistro(char* nombreTabla, unidad_memoria* unidadAAnalizar, valor_pagina** unidadADevolver, int16_t key){
+	log_info(log_memoria, "[BUSCANDO KEY] Buscando 1 segmento");
 
 	segmento* nuevoSegmento = buscarSegmentoPorNumero(unidadAAnalizar->nroSegmento);
+//	segmento* nuevoSegmento = buscarSegmentoPorNombreTabla(nombreTabla);
+	pagina* pagAux = nuevoSegmento->reg_pagina;
 
+	log_info(log_memoria, "[BUSCANDO KEY] Obtengo el segmento del registro");
 
-	return condicion;
+	if(nuevoSegmento!= NULL) {
+		log_info(log_memoria, "[BUSCANDO KEY] Procedo a buscar entre sus paginas si esta la key");
+		while(pagAux!=NULL) {
+			if(pagAux->valor_pagina->key == key){
+				log_info(log_memoria, "[BUSCANDO KEY] KEY ENCONTRADA");
+				unidadAAnalizar = pagAux->valor_pagina;
+				return true;
+			}
+			pagAux = pagAux->siguientePagina;
+		}
+	}
+	log_info(log_memoria, "[BUSCANDO KEY] NO se encontro la key para este segmento");
+	return false;
 }
 
 //ESTO SE HACE SIEMPRE DESPUES DE QUE BUSCA LA TABLA
 //Y SOLO SI SE ENCUNETRA
-int obtener_valores(int16_t key, unidad_memoria* unidadExtra) {
+int obtener_valores(char* nombreTabla, int16_t key, valor_pagina* unidadExtra) {
 	valor_pagina* valor_pag;
 	memoria_principal* memoriaAuxiliar = memoria;
 	log_info(log_memoria, "[BUSCANDO VALORES] Empiezo a buscar el valor con key %d", key);
@@ -1225,7 +1260,8 @@ int obtener_valores(int16_t key, unidad_memoria* unidadExtra) {
 
 	while(memoriaAuxiliar->unidad!=NULL){
 		unidadExtra = memoriaAuxiliar->unidad->siguienteUnidad;
-		encontrado = buscarKeyEnRegistro(memoriaAuxiliar->unidad, &unidadExtra, key);
+	//	encontrado = buscarKeyEnRegistro(nombreTabla, unidadAAnalizar, unidadADevolver, key)
+		encontrado = buscarKeyEnRegistro(nombreTabla, memoriaAuxiliar->unidad, &unidadExtra, key);
 		if(encontrado){
 			//SE ENCONTRO LA UNIDAD BUSCADA
 			return 1;

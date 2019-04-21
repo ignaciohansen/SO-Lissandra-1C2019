@@ -181,13 +181,14 @@ void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
 /*---------------------------------------------------
  * FUNCIONES OBTENER VALORES MEDIANTE UNA KEY
  *---------------------------------------------------*/
-int obtener_valores(int16_t key, unidad_memoria* unidadExtra);
+int obtener_valores(char* nombreTabla, int16_t key, valor_pagina* unidadExtra);
 
 /*---------------------------------------------------
  * FUNCIONES PARA ADMINISTRAR LA MEMORIA
  *---------------------------------------------------*/
 
 	segmento* buscarSegmentoPorNumero(int numeroABuscar);
+	segmento* buscarSegmentoPorNombreTabla(char* nombreTabla);
 	pagina* buscarPaginaPorNumero(int numeroABuscar, segmento* seg);
 	int limpiarUnidad(unidad_memoria* unidad_de_memoria);
 	/* @NAME: list_create
