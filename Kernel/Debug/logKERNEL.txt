@@ -1,20 +1,20 @@
-[INFO] 22:01:07:780 Proceso Kernel/(5923:5923): Ya creado el Log, continuamos cargando la estructura de configuracion, llamando a la funcion.
-[INFO] 22:01:07:780 Proceso Kernel/(5923:5923): Por reservar memoria para variable de configuracion.
-[INFO] 22:01:07:780 Proceso Kernel/(5923:5923): Por crear el archivo de config para levantar archivo con datos.
-[INFO] 22:01:07:780 Proceso Kernel/(5923:5923): Kernel: Leyendo Archivo de Configuracion...
-[INFO] 22:01:07:780 Proceso Kernel/(5923:5923): Almacenando el puerto
-[INFO] 22:01:07:780 Proceso Kernel/(5923:5923): El puerto de la memoria es: 8001
-[INFO] 22:01:07:780 Proceso Kernel/(5923:5923): Almacenando la IP de la Memoria
-[INFO] 22:01:07:780 Proceso Kernel/(5923:5923): La Ip de la memoria es: "192.168.1.2"
-[INFO] 22:01:07:780 Proceso Kernel/(5923:5923): Almancenando el Quantum del planificador
-[INFO] 22:01:07:780 Proceso Kernel/(5923:5923): El Quantum del planificador es: 4
-[INFO] 22:01:07:780 Proceso Kernel/(5923:5923): Almacenando el valor del Multiprocesamiento para el Planificador
-[INFO] 22:01:07:780 Proceso Kernel/(5923:5923): El grado de multiprocesamiento del planificador es: 3
-[INFO] 22:01:07:780 Proceso Kernel/(5923:5923): Almacenando el valor del Metadata Refresh para el Kernel
-[INFO] 22:01:07:780 Proceso Kernel/(5923:5923): El valor del Metadata Refresh es: 10000
-[INFO] 22:01:07:780 Proceso Kernel/(5923:5923): Almacenando el valor del Sleep Ejecucion para el Kernel
-[INFO] 22:01:07:780 Proceso Kernel/(5923:5923): El valor del Sleep Ejecucion es: 5000
-[INFO] 22:01:07:780 Proceso Kernel/(5923:5923): Cargamos todo lo que se encontro en el archivo de configuracion. Liberamos la variable config que fue utlizada para navegar el archivo de configuracion
-[INFO] 22:01:07:780 Proceso Kernel/(5923:5923): Devuelta en Main, Funcion cargarConfiguracion() finalizo.
-[INFO] 22:01:07:780 Proceso Kernel/(5923:5923): Creamos Socket para conectarnos con memoria.
-[INFO] 22:01:07:780 Proceso Kernel/(5923:5923): Reservamos memoria exitosamente para la conexion.
+[INFO] 12:43:16:922 Proceso Kernel/(3230:3230): Ya creado el Log, continuamos cargando la estructura de configuracion, llamando a la funcion.
+[INFO] 12:43:16:923 Proceso Kernel/(3230:3230): Por reservar memoria para variable de configuracion.
+[INFO] 12:43:16:923 Proceso Kernel/(3230:3230): Por crear el archivo de config para levantar archivo con datos.
+[INFO] 12:43:16:923 Proceso Kernel/(3230:3230): Kernel: Leyendo Archivo de Configuracion...
+[INFO] 12:43:16:923 Proceso Kernel/(3230:3230): Almacenando el puerto
+[INFO] 12:43:16:923 Proceso Kernel/(3230:3230): El puerto de la memoria es: 8001
+[INFO] 12:43:16:923 Proceso Kernel/(3230:3230): Almacenando la IP de la Memoria
+[INFO] 12:43:16:923 Proceso Kernel/(3230:3230): La Ip de la memoria es: "127.0.0.1"
+[INFO] 12:43:16:923 Proceso Kernel/(3230:3230): Almancenando el Quantum del planificador
+[INFO] 12:43:16:923 Proceso Kernel/(3230:3230): El Quantum del planificador es: 4
+[INFO] 12:43:16:923 Proceso Kernel/(3230:3230): Almacenando el valor del Multiprocesamiento para el Planificador
+[INFO] 12:43:16:923 Proceso Kernel/(3230:3230): El grado de multiprocesamiento del planificador es: 3
+[INFO] 12:43:16:923 Proceso Kernel/(3230:3230): Almacenando el valor del Metadata Refresh para el Kernel
+[INFO] 12:43:16:923 Proceso Kernel/(3230:3230): El valor del Metadata Refresh es: 10000
+[INFO] 12:43:16:923 Proceso Kernel/(3230:3230): Almacenando el valor del Sleep Ejecucion para el Kernel
+[INFO] 12:43:16:923 Proceso Kernel/(3230:3230): El valor del Sleep Ejecucion es: 5000
+[INFO] 12:43:16:923 Proceso Kernel/(3230:3230): Cargamos todo lo que se encontro en el archivo de configuracion. Liberamos la variable config que fue utlizada para navegar el archivo de configuracion
+[INFO] 12:43:16:923 Proceso Kernel/(3230:3230): Devuelta en Main, Funcion cargarConfiguracion() finalizo.
+[INFO] 12:43:16:923 Proceso Kernel/(3230:3230): Creamos Socket para conectarnos con memoria.
+[INFO] 12:43:16:923 Proceso Kernel/(3230:3230): Reservamos memoria exitosamente para la conexion.
