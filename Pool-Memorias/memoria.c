@@ -196,7 +196,13 @@ void armarMemoriaPrincipal(){
 	imprimirVerde(log_memoria, "[ARMAR MEMORIA] Memoria inicializada de forma correcta");
 
 	// CREACION DE ESTRUCTURAS.
+	segmento* p_segmento_inicio;
+	segmento* p_segmento_fin   ;
+	p_segmento_inicio = malloc(sizeof(p_segmento_inicio));
+	p_segmento_fin    = p_segmento_inicio;
 
+	p_segmento_inicio->nro_segmento = 1;
+	p_segmento_inicio->pagina       =
 
 	//LIBERA LA RAM.
 	log_info(log_memoria, "[LIBERAR MEMORIA] Por liberar memoria");
