@@ -178,11 +178,7 @@ void consola() {
 
 	char bufferComando[MAXSIZE_COMANDO];
 	char **comandoSeparado;
-	char **comandoSeparado2;
-	char *separador2 = "\n";
-	char *separator = " ";
-	int comando;
-
+	
 	while (1) {
 
 		printf(">");
@@ -197,12 +193,16 @@ void consola() {
 	
 		comandoSeparado = string_split(bufferComando, separator);
 
-		//Tamanio del array
+		validarLinea(comandoSeparado,log_kernel);
 		
-		
-		for (int i = 0; comandoSeparado[i] != NULL; i++) {
+	}
+}
+
+void validarLinea(char** lineaIngresada,t_log* logger){
+
+	for (int i = 0; lineaIngresada[i] != NULL; i++) {
 			
-			log_info(log_kernel,"En la posicion %d del array esta el valor %s",i,comandoSeparado[i]);
+			log_info(log_kernel,"En la posicion %d del array esta el valor %s",i,lineaIngresada[i]);
 			
 			tamanio = i + 1;
 		}
@@ -214,13 +214,14 @@ void consola() {
 
 			case 1:
 				{	
-					comandoSeparado = string_split(bufferComando, separador2);
+					log_info(log_kernel,"Entramos al Case 1");
+					lineaSeparada = string_split(lineaIngresada, separador2);
 					
-					log_info(log_kernel,"%s",comandoSeparado[0]);
+					log_info(log_kernel,"%s",lineaIngresada[0]);
 
-					log_info(log_kernel,"%d",strcmp(comandoSeparado[0],"salir"));
+					log_info(log_kernel,"%d",strcmp(lineaIngresada[0],"salir"));
 					
-					if(strcmp(comandoSeparado[0],"salir") == 0){
+					if(strcmp(lineaIngresada[0],"salir") == 0){
 		 				
 						printf("Salir seleccionado\n");
 						
@@ -228,7 +229,7 @@ void consola() {
 				
 						return;
 
-		 			} else if(strcmp(comandoSeparado[0],"journal") == 0){
+		 			} else if(strcmp(lineaIngresada[0],"journal") == 0){
 
 						 printf("Journal seleccionado\n");
 						 
@@ -236,10 +237,10 @@ void consola() {
 
 							//Enviar Journal a todas las memorias
 
-						int resultadoEnviarComando = enviarComando(comandoSeparado,log_kernel);
+						//int resultadoEnviarComando = enviarComando(comandoSeparado,log_kernel);
 
 
-					 } else if(strcmp(comandoSeparado[0],"metrics") == 0){
+					 } else if(strcmp(lineaIngresada[0],"metrics") == 0){
 
 						 printf("Metrics seleccionado\n");
 
@@ -247,7 +248,7 @@ void consola() {
 
 							//Se muestra Metricas
 					 }
-					 else if(strcmp(comandoSeparado[0],"describe") == 0){
+					 else if(strcmp(lineaIngresada[0],"describe") == 0){
 
 						 printf("Describe seleccionado\n");
 
@@ -264,22 +265,22 @@ void consola() {
 		 			}break;
 				}
 			case 2:
-				validarComando(comandoSeparado,tamanio,log_kernel);
+				validarComando(lineaIngresada,tamanio,log_kernel);
 				
 				break;
 
 			case 3:
-				validarComando(comandoSeparado,tamanio,log_kernel);
+				validarComando(lineaIngresada,tamanio,log_kernel);
 				
 				break;
 			
 			case 4:
-				validarComando(comandoSeparado,tamanio,log_kernel);
+				validarComando(lineaIngresada,tamanio,log_kernel);
 				
 				break;
 
 			case 5:
-				validarComando(comandoSeparado,tamanio,log_kernel);
+				validarComando(lineaIngresada,tamanio,log_kernel);
 				
 				break;
 
@@ -293,8 +294,7 @@ void consola() {
 				
 				break;
 
-		}		
-	}
+		}	
 }
 
 int conexionKernel() {
@@ -331,32 +331,6 @@ int conexionKernel() {
 				resultado_Conectar);
 		return socket_CMemoria;		
 	}
-}
-
-int enviarComando(char** comando, t_log* logger) {
-
-	log_info(logger, "En funcion enviarComando: %s");
-	
-	log_info(logger, "El mensaje que vamos a enviar es: %s", comando[0]);
-
-	socket_CMemoria = conexionKernel();
-
-	log_info("Vamos a enviar a memoria por el socket %d", socket_CMemoria);
-
-	resultado_sendMsj = socketEnviar(socket_CMemoria, comando[0], strlen(comando[0]),
-			log_kernel);
-
-	if (resultado_sendMsj == ERROR) {
-
-		log_error(log_kernel, "Error al enviar mensaje a memoria. Salimos");
-
-		return ERROR;
-	}
-
-	log_info(log_kernel, "El mensaje se envio correctamente: %s", comando[0]);
-
-	return 0;
-
 }
 
 void menu() {
@@ -554,7 +528,7 @@ void validarComando(char** comando,int tamanio,t_log* logger){
 					
 					printf("Cantidad de parametros correctos ingresados para el comando run \n");
 
-					comandoRun(comando[1]);
+					comandoRun(comando[1],logger);
 					
 				}
 
@@ -652,7 +626,7 @@ void armarMensajeBody(int tamanio,char* mensaje,char** comando){
 	log_info(log_kernel,"Finalizo el armado con el mensaje Final: %s",mensaje);
 }
 
-void comandoRun(char* path){
+void comandoRun(char* path,t_log* logger){
 
 
 	fd = fopen(path,"r");
@@ -681,7 +655,13 @@ void comandoRun(char* path){
 
 			printf("Se leyo del archivo: %s\n",bufferPath);
 
+			log_info(log_kernel,"El tamanio de la cadena es: %d",string_length(bufferPath));
+
 			log_info(log_kernel,"Se leyo del archivo: %s",bufferPath);
+
+			lineaSeparada = string_split(bufferPath, separator);
+
+			validarLinea(lineaSeparada,logger);
 			
 		}
 

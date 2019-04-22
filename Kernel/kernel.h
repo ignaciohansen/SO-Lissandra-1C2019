@@ -70,8 +70,12 @@ conexion* estructuraConexion;
 #define MAXSIZE_COMANDO 200
 
 char* linea;
+char** lineaSeparada;
+int comando;
 int confirmacionRecibida;
 FILE* fd;
+char *separador2 = "\n";
+char *separator = " ";
 
 
 void consola();
@@ -85,6 +89,7 @@ int enviarMensaje(int comando, int tamanio,char* mensaje, t_log* logger);
 void armarMensajeBody(int tamanio,char* mensaje,char** comando);
 int buscarComando(char* comandoSeparado,t_log* logger);
 void validarComando(char** comandoSeparado,int tamanio,t_log* logger);
-void comandoRun(char* path);
+void comandoRun(char* path,t_log* logger);
+void validarLinea(char** lineaIngresada,t_log* logger);
 
 #endif /* KERNEL_H_ */
