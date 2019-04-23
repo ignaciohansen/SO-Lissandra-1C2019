@@ -181,19 +181,28 @@ void consola() {
 	
 	while (1) {
 
-		printf(">");
+		//printf(">");
 
-		fgets(bufferComando, MAXSIZE_COMANDO, stdin);
+		linea = readline(">");
 
-		strtok(bufferComando, "\n");
+		if(linea){
+			add_history(linea);
+		}
+
+		if(!strncmp(linea,"exit",4)){
+			free(linea);
+			break;
+		}
+
+		//fgets(bufferComando, MAXSIZE_COMANDO, stdin); -> Implementacion anterior
+
+		strtok(linea, "\n");				
 		
-		add_history(linea);
-
-		free(linea);
-	
-		comandoSeparado = string_split(bufferComando, separator);
+		comandoSeparado = string_split(linea, separator);
 
 		validarLinea(comandoSeparado,log_kernel);
+
+		free(linea);
 		
 	}
 }
