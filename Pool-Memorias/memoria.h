@@ -86,7 +86,7 @@ typedef struct pagina_t {
 typedef struct unidad_memoria {
 	int nroSegmento;
 	int nroPagina;
-	bool flagModificado;
+	struct pagina * punteroAPagina;
 	struct unidad_memoria* siguienteUnidad;
 }unidad_memoria;
 
@@ -99,18 +99,18 @@ typedef struct nodoSegmento{
 		struct nodoSegmento* siguienteSegmento;
 }segmento;
 
-	typedef struct nodo_valor{
+	typedef struct pagina{
 		long timestamp;
 		int16_t key;
 		char* value;
-	}valor_pagina;
+	}pagina;
 
 	typedef struct tabla_paginas{
 		int numero;
-		struct nodo_valor* valor_pagina;
+		struct pagina* valor_pagina;
 		struct tabla_paginas* siguientePagina;
 		bool flag;
-	}pagina;
+	}tabla_pagina;
 
 
 memoria_principal* memoria;
@@ -181,7 +181,7 @@ void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
 /*---------------------------------------------------
  * FUNCIONES OBTENER VALORES MEDIANTE UNA KEY
  *---------------------------------------------------*/
-int obtener_valores(char* nombreTabla, int16_t key, valor_pagina* unidadExtra);
+int obtener_valores(char* nombreTabla, int16_t key, unidad_memoria* unidadExtra);
 
 /*---------------------------------------------------
  * FUNCIONES PARA ADMINISTRAR LA MEMORIA
@@ -189,14 +189,14 @@ int obtener_valores(char* nombreTabla, int16_t key, valor_pagina* unidadExtra);
 
 	segmento* buscarSegmentoPorNumero(int numeroABuscar);
 	segmento* buscarSegmentoPorNombreTabla(char* nombreTabla);
-	pagina* buscarPaginaPorNumero(int numeroABuscar, segmento* seg);
+	tabla_pagina* buscarPaginaPorNumero(int numeroABuscar, segmento* seg);
 	int limpiarUnidad(unidad_memoria* unidad_de_memoria);
 	/* @NAME: list_create
 	* @DESC: Crea una lista
 	*/
 	segmento * segmento_crear(char* path,  char* nombreTabla,pagina* pag);
-	pagina * pagina_crear(valor_pagina* pag, int numero);
-	valor_pagina * valor_pagina_crear(int time, int16_t key, char * valor);
+	tabla_pagina * pagina_crear(pagina* pag, int numero);
+	pagina * valor_pagina_crear(long timestamp, int16_t key, char * valor);
 
 	/**
 	* @NAME: list_destroy
@@ -205,8 +205,8 @@ int obtener_valores(char* nombreTabla, int16_t key, valor_pagina* unidadExtra);
 	*/
 
 	void segmento_destruir(segmento*);
-	void pagina_destruir(pagina*);
-	void valor_destruir(valor_pagina*);
+	void pagina_destruir(tabla_pagina*);
+	void valor_destruir(pagina*);
 
 
 	bool chequear_si_memoria_tiene_espacio(int espacioAOcupar);
@@ -224,18 +224,18 @@ int obtener_valores(char* nombreTabla, int16_t key, valor_pagina* unidadExtra);
 	* @DESC: Agrega un elemento al final de la lista
 	*/
 
-	void segmento_agregar_pagina(segmento*, pagina*);
-	void pagina_agregar_valores(pagina*, valor_pagina*);
-	void pagina_poner_estado_modificado(pagina* pag);
+	void segmento_agregar_pagina(segmento*, tabla_pagina*);
+	void pagina_agregar_valores(tabla_pagina*, pagina*);
+	void pagina_poner_estado_modificado(tabla_pagina* pag);
 
 	/*
 	 * AGREGAR NUEVO ELEMENTO AL PRINCIPIO DE TODO
 	 */
-	int segmento_agregar_inicio_pagina(segmento*, pagina*);
-	int pagina_agregar_inicio_valores(pagina*, valor_pagina*);
+	int segmento_agregar_inicio_pagina(segmento*, tabla_pagina*);
+	int pagina_agregar_inicio_valores(tabla_pagina*, pagina*);
 
 
-	void valores_reemplazar_items(valor_pagina* valor_pag, int timestamp, char* valor);
+	void valores_reemplazar_items(pagina* valor_pag, int timestamp, char* valor);
 	/**
 	* @NAME: list_remove
 	* @DESC: Remueve un elemento de la lista de
@@ -254,9 +254,9 @@ int obtener_valores(char* nombreTabla, int16_t key, valor_pagina* unidadExtra);
 	//QUE FUE LIBERADO
 	void limpiar_memoria(memoria_principal* mem);
 	int limpiar_segmento(segmento * seg);
-	int limpiar_valores_pagina(valor_pagina* val);
-	int limpiar_paginas(pagina* pag);
-	int limpiar_valores_pagina(valor_pagina* valores);
+	int limpiar_valores_pagina(pagina* val);
+	int limpiar_paginas(tabla_pagina* pag);
+	int limpiar_valores_pagina(pagina* valores);
 
 	/**
 	* @NAME: list_clean

@@ -977,12 +977,15 @@ void pasar_valores_modificados_a_Lisandra(segmento* elSegmento, unidad_memoria* 
 		}
 	}
 	log_info(log_memoria, "[VERIFICAR SI PASO VALORES A LFS] Se ha encontrado la pagina referida");
+
+	/* DEBE REVISAR LA MEMORIA PARA BUSCAR EL FLAG DE MODIFICADO
 	if(unidad_de_memoria->flagModificado){
 		//LA PAGINA FUE MODIFICADA, PROCEDO A HACER 1 JOURNAL
 		log_info(log_memoria, "[VERIFICAR SI PASO VALORES A LFS] La pagina fue modificada, hago JOURNAL");
 		JOURNAL(unaPagina, elSegmento->path_tabla);
 		log_info(log_memoria, "[VERIFICAR SI PASO VALORES A LFS] Se ha hecho 1 journal");
 	}
+	*/
 	log_info(log_memoria, "[VERIFICAR SI PASO VALORES A LFS] No esta modificada la pagina, asi que no hago nada aqui");
 }
 
@@ -1001,8 +1004,8 @@ segmento * segmento_crear(char* path,  char* nombreTabla, pagina* pag) {
 	return segmentoNuevo;
 }
 
-pagina * pagina_crear(valor_pagina* valor, int numero) {
-	pagina* pag = malloc(sizeof(pagina));
+tabla_pagina * pagina_crear(pagina* valor, int numero) {
+	tabla_pagina* pag = malloc(sizeof(tabla_pagina));
 	pag->numero=numero;
 	pag->flag=false;
 	pag->valor_pagina=valor;
@@ -1010,16 +1013,16 @@ pagina * pagina_crear(valor_pagina* valor, int numero) {
 	return pag;
 }
 
-valor_pagina * valor_pagina_crear(int timestamp, int16_t key, char * valor){
-	valor_pagina * var = malloc(sizeof(valor_pagina));
+pagina * valor_pagina_crear(long timestampNuevo, int16_t key, char * valor){
+	pagina * var = malloc(sizeof(pagina));
 	var->key = key;
 	var->value = valor;
 
 	//NO SE SI ESTA BIEN ESTO
-	if(timestamp==0) {
-		var->timestamp = (unsigned)time(NULL);
+	if(timestampNuevo==0) {
+		var->timestamp = timestamp();
 	} else {
-		var->timestamp = timestamp;
+		var->timestamp = timestampNuevo;
 	}
 
 	return var;
@@ -1031,8 +1034,10 @@ bool chequear_si_memoria_tiene_espacio(int espacioAOcupar){
 }
 */
 
-void segmento_agregar_pagina(segmento* seg, pagina* pag) {
-	pagina* aux = seg->reg_pagina;
+void segmento_agregar_pagina(segmento* seg, tabla_pagina* pag) {
+	tabla_pagina* aux = seg->reg_pagina;
+
+	/* ESTO HAY QUE CAMBIARLO
 	if(chequear_si_memoria_tiene_espacio(sizeof(pagina)+sizeof(valor_pagina))){
 		//HAY ESPACIO SUFICIENTE
 		pag->siguientePagina = aux;
@@ -1041,6 +1046,7 @@ void segmento_agregar_pagina(segmento* seg, pagina* pag) {
 		//ESTE ATRIBUTO YA NO EXISTE
 	//	seg->tamanio_segmento += sizeof(pag);
 	}
+	*/
 	//SE SUPONE QUE LA PAGINA YA TIENE LOS VALORES
 	//CARGADO
 }
@@ -1050,17 +1056,17 @@ bool chequear_si_memoria_tiene_espacio(int tamanio) {
 	return memoria->tamanioMemoria > tamanio;
 }
 
-void pagina_agregar_valores(pagina* pag, valor_pagina* valor) {
+void pagina_agregar_valores(tabla_pagina* pag, pagina* valor) {
 	pag->valor_pagina=valor;
 }
 
 //ESTE SE USA PARA AQUELLOS VALORES QUE YA SE LOS IDENTIFICO
-void valores_reemplazar_items(valor_pagina* valor_pag, int timestamp, char* valor){
+void valores_reemplazar_items(pagina* valor_pag, int timestamp, char* valor){
 	valor_pag->timestamp=timestamp;
 	valor_pag->key=valor;
 }
 
-void pagina_poner_estado_modificado(pagina* pag) {
+void pagina_poner_estado_modificado(tabla_pagina* pag) {
 	pag->flag=true;
 }
 
@@ -1127,8 +1133,8 @@ segmento* buscarSegmentoPorNumero(int numeroABuscar){
 	return NULL;
 }
 
-pagina* buscarPaginaPorNumero(int numeroABuscar, segmento* seg){
-	pagina* paginaAux = seg->reg_pagina;
+tabla_pagina* buscarPaginaPorNumero(int numeroABuscar, segmento* seg){
+	tabla_pagina* paginaAux = seg->reg_pagina;
 	bool encontrado = false;
 	log_info(log_memoria, "[BUSCANDO PAGINA X NRO] En Buscar pagina por numero");
 	while(paginaAux!=NULL){
@@ -1158,8 +1164,8 @@ int limpiar_segmento(segmento * seg) {
 	return cantidadLiberada;
 }
 
-int limpiar_paginas(pagina* pag){
-	pagina* otraPagina;
+int limpiar_paginas(tabla_pagina* pag){
+	tabla_pagina* otraPagina;
 	int cantidadLiberada =0;
 	log_info(log_memoria, "[LIMPIAR PAGINAS] En limpiar tabla de paginas");
 	while(pag!= NULL ){
@@ -1167,7 +1173,7 @@ int limpiar_paginas(pagina* pag){
 		otraPagina=pag->siguientePagina;
 
 //		cantidadLiberada +=limpiar_valores_pagina(&(pag->valor_pagina));
-		cantidadLiberada += sizeof(pag) + sizeof(pag->valor_pagina);
+	//	cantidadLiberada += sizeof(pag) + sizeof(pag->valor_pagina);
 		log_info(log_memoria, "[LIMPIAR PAGINAS] Liberando el valor de dicha pagina");
 		free(pag->valor_pagina);
 		log_info(log_memoria, "[LIMPIAR PAGINAS] Se ha liberado con exito el valor");
@@ -1223,12 +1229,12 @@ segmento* buscarSegmentoPorNombreTabla(char* nombreTabla){
 }
 
 
-bool buscarKeyEnRegistro(char* nombreTabla, unidad_memoria* unidadAAnalizar, valor_pagina** unidadADevolver, int16_t key){
+bool buscarKeyEnRegistro(char* nombreTabla, unidad_memoria* unidadAAnalizar, pagina** unidadADevolver, int16_t key){
 	log_info(log_memoria, "[BUSCANDO KEY] Buscando 1 segmento");
 
 	segmento* nuevoSegmento = buscarSegmentoPorNumero(unidadAAnalizar->nroSegmento);
 //	segmento* nuevoSegmento = buscarSegmentoPorNombreTabla(nombreTabla);
-	pagina* pagAux = nuevoSegmento->reg_pagina;
+	tabla_pagina* pagAux = nuevoSegmento->reg_pagina;
 
 	log_info(log_memoria, "[BUSCANDO KEY] Obtengo el segmento del registro");
 
@@ -1249,8 +1255,8 @@ bool buscarKeyEnRegistro(char* nombreTabla, unidad_memoria* unidadAAnalizar, val
 
 //ESTO SE HACE SIEMPRE DESPUES DE QUE BUSCA LA TABLA
 //Y SOLO SI SE ENCUNETRA
-int obtener_valores(char* nombreTabla, int16_t key, valor_pagina* unidadExtra) {
-	valor_pagina* valor_pag;
+int obtener_valores(char* nombreTabla, int16_t key, unidad_memoria* unidadExtra) {
+	pagina* valor_pag;
 	memoria_principal* memoriaAuxiliar = memoria;
 	log_info(log_memoria, "[BUSCANDO VALORES] Empiezo a buscar el valor con key %d", key);
 
