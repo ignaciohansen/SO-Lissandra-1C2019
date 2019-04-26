@@ -28,17 +28,15 @@
 #include <readline/history.h>
 #include <pthread.h>
 
-
 #define PATH_KERNEL_CONFIG "KERNEL.txt"
 #define LOG_PATH "logKERNEL.txt"
 
-int socket_CMemoria,tamanio;
+int socket_CMemoria,tamanio,countPID;
 t_log* log_kernel;
 
 //Socket
 
 int resultado_Conectar, resultado_sendMsj;
-
 
 typedef struct{
 
@@ -63,7 +61,6 @@ typedef struct {
 
 t_header* protocoloHeader;
 
-
 conexion* estructuraConexion;
 
 /*Elementos de consola*/
@@ -76,10 +73,49 @@ int confirmacionRecibida;
 FILE* fd;
 char *separador2 = "\n";
 char *separator = " ";
-
-
 void consola();
 void menu();
+
+/*
+ * PCB
+ * */
+typedef struct{
+
+	int pid;
+	int estado;
+	int progamCounter;
+	int comando;
+	int argumentos;
+	t_list* stack;
+}t_pcb;
+
+t_pcb* crearPcb(int comando, int parametros);
+
+
+/*
+ * Planificador
+ * */
+
+void inicializarListasPlanificador();
+void encolarProcesoNuevo(t_pcb* procesoNuevo);
+
+pthread_mutex_t mutexColaNuevos;
+pthread_mutex_t mutexColaListos;
+pthread_mutex_t mutexColaExit;
+pthread_mutex_t mutexColaEjecucion;
+
+t_list* colaNuevos;
+t_list* colaListos;
+t_list* colaExit;
+t_list* colaEjecucion;
+
+enum estados{
+
+	nuevo = 0,
+	ejecucion,
+	listo,
+	exiT
+};
 
 
 void cargarConfiguracion();

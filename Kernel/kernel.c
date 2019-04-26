@@ -16,6 +16,8 @@ int main() {
 
 	cargarConfiguracion();
 
+	countPID = 0;
+
 	log_info(log_kernel,
 			"Devuelta en Main, Funcion cargarConfiguracion() finalizo.");
 
@@ -389,20 +391,38 @@ void validarComando(char** comando,int tamanio,t_log* logger){
 				log_info(log_kernel, "Se selecciono select");
 
 				if(tamanio == 3){
+
 					log_info(log_kernel, "Cantidad de parametros correctos ingresados para el comando select");
 					
-					log_info(log_kernel, "Por llamar a enviarComando");
+					countPID++;
+
+					log_info(log_kernel,"Aumentamos al variable PID para este comando, queda en: %d",countPID);
+					log_info(log_kernel,"Por crear el PCB");
+					t_pcb* proceso;
+					proceso = crearPcb(Select,tamanio);
+					/*
+					 * VER CUANDO SINCRONIZAR! ..
+					 * */
+
+					inicializarListasPlanificador();
+
+					list_add(colaNuevos,proceso);
+
+					log_info(log_kernel,"PCB encolado ==> PID: %d", proceso->pid);
 										
 					mensaje = malloc(string_length(comando[1])+string_length(comando[2])+1);
 
 					log_info(log_kernel,"El tamanio de la cadena a guardar es: %d",tamanioCadena);					
 
-					strcpy(mensaje,comando[1]);	
+					strcpy(mensaje,comando[1]);
+					strcpy(mensaje,comando[2]);
 
 					log_info(log_kernel,"En mensaje ya tengo: %s",mensaje);					
 					
 					armarMensajeBody(tamanio,mensaje,comando);												
 
+
+					log_info(log_kernel, "Por llamar a enviarMensaje");
 					int resultadoEnviarComando = enviarMensaje(Select,tamanio,mensaje,log_kernel);
 				}
 
@@ -682,3 +702,37 @@ void comandoRun(char* path,t_log* logger){
 		return;
 	}
 }
+
+void inicializarListasPlanificador(){
+
+	colaNuevos = list_create();
+	colaListos = list_create();
+	colaExit = list_create();
+	colaEjecucion = list_create();
+}
+
+t_pcb* crearPcb(int comando, int parametros){
+
+	log_info(log_kernel,"Creando PCB ==> PID: %d", countPID);
+
+	t_pcb* pcbProceso = malloc(sizeof(t_pcb));
+
+	pcbProceso->pid = countPID;
+	pcbProceso->comando = comando;
+	pcbProceso->argumentos = parametros - 1;
+	pcbProceso->estado = 0; //Estadp en la cola new porque recien se crea
+
+	return pcbProceso;
+}
+
+
+
+
+
+
+
+
+
+
+
+
