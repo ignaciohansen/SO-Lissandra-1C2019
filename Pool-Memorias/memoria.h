@@ -25,12 +25,28 @@
 t_log* log_memoria;
 int socketEscuchaKernel,conexionEntrante,recibiendoMensaje;
 int sockeConexionLF, resultado_sendMsj;
+int tablaPaginaArmada;
+short memoriaArmada;
 int tamanio, limpiandoMemoria;
 char* linea;
 char* argumentosComando;
 char** argumentosParseados;
 t_header* buffer;
 
+/*---------------------------------------------------------------------------------
+ * 								MUTEX Y SEMAFOROS
+ ----------------------------------------------------------------------------------*/
+
+Mutex memoria_mutex_paginas_disponibles;
+Mutex mutex_segmento_en_modificacion;
+Mutex mutex_tabla_pagina_en_modificacion;
+int cantPaginasDisponibles, cantPaginasTotales;
+
+
+void* bloque_memoria;
+void* tabla_paginada;
+
+int max_valor_key;
 
 typedef struct{
     int puerto;
@@ -57,67 +73,53 @@ typedef struct{
 
 typedef struct {
 	int tamanioMemoria;
-	struct unidad_memoria* unidad;
+	short tamanioPagina;
+//	short cantPaginasDisponibles;
+	short paginasTotales;
 } memoria_principal;
 
+typedef struct pagina{
+	short nroPosicion;
+	long timestamp;
+	int16_t key;
+	char* value;
+}pagina;
 
-//ESTO YA FUE DEFINIDO, SE LLAMA VALOR_PAGINA QUE ESTA MAS ABAJO
-/*
-typedef struct pagina { //unidad de memoria
-	long     timestamp;
-	int      key;
-	char[15] value;
-} pagina_memoria;
-*/
-
-//ESTAMOS REPITIENDO ESTRUCTURAS AQUI
-/*
-typedef struct pagina_t {
-		int   nro_pagina;
-		char* nombreTabla;
+typedef struct nodoSegmento{
 		char* path_tabla;
-		bool  modif;
-		//DEBE SER LISTA DE PAGINAS
-		struct nodo_valor* puntero_pagina;
-		// struct nodoSegmento* siguienteSegmento;
-}reg_tabla_pagina;
-*/
+		int* tablaPaginasAsociadas;
+		/* NO ES NECESARIO TENER UN PUNTERO A LA TABLA PAGINA
+		 * SINO QUE NECESITO TAN SOLO SABER SU POSICION
+		//  ser lista de tabla paginas? No se
+		//struct tabla_paginas* reg_pagina;
+		 * */
+		struct nodoSegmento* siguienteSegmento;
+}segmento;
 
+/*EL NUMERO DE PAGINA YA ME LO DA SU POSICION EN EL BLOQUE
+ * DE TABLA PAGINAS
+ */
+typedef struct tabla_paginas{
+//	int numero;
+//	struct pagina* valor_pagina;
+//	struct tabla_paginas* siguientePagina;
+	int16_t key;
+	int posicion;
+	bool flag;
+}tabla_pagina;
+
+/* ESTA ESTRUCTURA ESTA DE MAS
 typedef struct unidad_memoria {
 	int nroSegmento;
 	int nroPagina;
 	struct pagina * punteroAPagina;
 	struct unidad_memoria* siguienteUnidad;
 }unidad_memoria;
-
-typedef struct nodoSegmento{
-		int   nro_segmento;
-		char* nombreTabla;
-		char* path_tabla;
-		//DEBE SER LISTA DE PAGINAS
-		struct tabla_paginas* reg_pagina;
-		struct nodoSegmento* siguienteSegmento;
-}segmento;
-
-	typedef struct pagina{
-		long timestamp;
-		int16_t key;
-		char* value;
-	}pagina;
-
-	typedef struct tabla_paginas{
-		int numero;
-		struct pagina* valor_pagina;
-		struct tabla_paginas* siguientePagina;
-		bool flag;
-	}tabla_pagina;
-
+*/
 
 memoria_principal* memoria;
-
-t_memoria_config* arc_config;
-
 segmento* tablaSegmentos;
+t_memoria_config* arc_config;
 
 /*---------------------------------------------------
  * FUNCIONES PARA MEMORIA PRINCIPAL
@@ -132,6 +134,7 @@ void cargarConfiguracion();
 char* lectura_consola();
 void terminar_memoria(t_log* g_log);
 void inicioLogYConfig();
+void liberar_todo_por_cierre_de_modulo();
 
 /*---------------------------------------------------
  * FUNCIONES PARA LA CONSOLA
@@ -161,7 +164,8 @@ void crearHIloEscuchaLFS();
  *---------------------------------------------------*/
 
 void JOURNAL(pagina* paginaAPasar, char* path_tabla);
-void pasar_valores_modificados_a_Lisandra(segmento* elSegmento, unidad_memoria* unidad_de_memoria);
+
+//void pasar_valores_modificados_a_Lisandra(segmento* elSegmento, unidad_memoria* unidad_de_memoria);
 
 /*---------------------------------------------------
  * MODIFICAR TIEMPO DE RETARDO DE CONFIGURACION
@@ -181,7 +185,8 @@ void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
 /*---------------------------------------------------
  * FUNCIONES OBTENER VALORES MEDIANTE UNA KEY
  *---------------------------------------------------*/
-int obtener_valores(char* nombreTabla, int16_t key, unidad_memoria* unidadExtra);
+
+//int obtener_valores(char* nombreTabla, int16_t key, unidad_memoria* unidadExtra);
 
 /*---------------------------------------------------
  * FUNCIONES PARA ADMINISTRAR LA MEMORIA
@@ -190,14 +195,17 @@ int obtener_valores(char* nombreTabla, int16_t key, unidad_memoria* unidadExtra)
 	segmento* buscarSegmentoPorNumero(int numeroABuscar);
 	segmento* buscarSegmentoPorNombreTabla(char* nombreTabla);
 	tabla_pagina* buscarPaginaPorNumero(int numeroABuscar, segmento* seg);
-	int limpiarUnidad(unidad_memoria* unidad_de_memoria);
+
+//	int limpiarUnidad(unidad_memoria* unidad_de_memoria);
 	/* @NAME: list_create
 	* @DESC: Crea una lista
 	*/
-	segmento * segmento_crear(char* path,  char* nombreTabla,pagina* pag);
-	tabla_pagina * pagina_crear(pagina* pag, int numero);
-	pagina * valor_pagina_crear(long timestamp, int16_t key, char * valor);
-
+	segmento * segmento_crear(char* pathNombreTabla, int nroPagina);
+	int * tabla_pagina_crear(int16_t key, long timestampNuevo, char* valor, bool flag_modificado);
+//	pagina * pagina_crear(long timestamp, int16_t key, char * valor);
+	pagina* pagina_crear(long timestampNuevo, int16_t key, char * valor, char* nombreTabla);
+	//EL DE ABAJO CREA LA UNIDAD, EL DE ARRIBA DESPUES MANDA A BUSCAR EL SEGMENTO
+	pagina* crear_pagina(long timestampNUevo, int16_t key, char * valor);
 	/**
 	* @NAME: list_destroy
 	* @DESC: Destruye una lista sin liberar
@@ -205,8 +213,8 @@ int obtener_valores(char* nombreTabla, int16_t key, unidad_memoria* unidadExtra)
 	*/
 
 	void segmento_destruir(segmento*);
-	void pagina_destruir(tabla_pagina*);
-	void valor_destruir(pagina*);
+	void tabla_pagina_destruir(tabla_pagina*);
+	void pagina_destruir(pagina*);
 
 
 	bool chequear_si_memoria_tiene_espacio(int espacioAOcupar);
@@ -293,7 +301,16 @@ int obtener_valores(char* nombreTabla, int16_t key, unidad_memoria* unidadExtra)
 
 	int segmento_esta_vacio(segmento *);
 
+/*
+ * NUEVAS FUNCIONES
+ */
+	void aniadirNuevaPaginaASegmento(pagina* nuevaPag, char* nombreTabla);
+	void LRU(pagina* paginaCreada);
+	int buscarKeyPorTablaPagina(int posicionABuscar, int16_t keyBuscada);
+	pagina* actualizarPosicionAPagina(pagina* unaPagina, int nuevaPos);
 
+	String obtenerNombreTablaDePath(String path);
+	void aniadirNuevaPosicionAArray(segmento** seg, int posNueva);
 #endif /* MEMORIA_H_ */
 
 
