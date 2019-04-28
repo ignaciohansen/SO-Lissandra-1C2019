@@ -66,3 +66,4 @@ Pool-Memorias/.settings/language.settings.xml
 Biblioteca/.settings/language.settings.xml
 Kernel/.settings/language.settings.xml
 LissandraFileSystem/.settings/language.settings.xml
+*.xml
