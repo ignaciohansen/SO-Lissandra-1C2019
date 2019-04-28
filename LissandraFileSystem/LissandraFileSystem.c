@@ -28,11 +28,12 @@ void LissandraFSInicioLogYConfig() {
  */
 
 void LisandraSetUP() {
+
 	imprimirMensajeProceso("Iniciando el modulo LISSANDRA FILE SYSTEM\n");
+
 	log_lfilesystem = archivoLogCrear(LOG_PATH, "Proceso Lissandra File System");
 
-	imprimirVerde(log_lfilesystem,
-					"LOG CREADO, continuamos cargando la estructura de configuracion.");
+	imprimirVerde(log_lfilesystem, "[LOG CREADO] continuamos cargando la estructura de configuracion.");
 
 	if(cargarConfiguracion()) {
 		//SI SE CARGO BIEN LA CONFIGURACION ENTONCES PROCESO DE ABRIR UN SERVIDOR
@@ -75,7 +76,7 @@ int abrirServidorLissandra() {
 	}
 
 	int i =1;
-	while(1){
+	while(1){ // recibe mensajes y responde
 
 	imprimirMensaje(log_lfilesystem, " \n ====== LFS: waiting for connections ====== \n ");
 
@@ -92,6 +93,7 @@ int abrirServidorLissandra() {
 		imprimirVerde(log_lfilesystem, msg);
 		free(msg);
 	}
+
 	log_info(log_lfilesystem, "[DEBUG] Antes de crear puntero."  );
 	Puntero buffer = (void*)string_new(); // malloc(sizeof(char)*100);
 	log_info(log_lfilesystem, "[DEBUG] Despues de crear puntero."  );

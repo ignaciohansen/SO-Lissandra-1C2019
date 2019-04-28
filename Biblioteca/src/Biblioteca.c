@@ -228,17 +228,17 @@ void socketSelect(int cantidadSockets, ListaSockets* listaSockets, int retry) {
 
 int socketRecibir(Socket socketEmisor, Puntero buffer, int tamanioBuffer,t_log* logger) {
 	
-	log_info(logger,"ya en funcion socketRecibir de Biblioteca");
+	log_info(logger,"[socketRecibir] (+)");
 
-	int estado = recv(socketEmisor, buffer, tamanioBuffer, MSG_WAITALL);
+	// int estado = recv(socketEmisor, buffer, tamanioBuffer, MSG_WAITALL); // Obliga a recibir "tamanioBuffer" Bytes
+	int estado = recv(socketEmisor, buffer, tamanioBuffer, 0);
 
-	log_info(logger,"Despues del recv, resultado %d",estado);
-
-	if(estado == ERROR){
+	// if(estado == ERROR){
+	if( estado <= 0 ) {
 		perror("recv");
-		log_info(logger,"En Error");
+		log_info(logger,"[ERROR] Cliente/Memoria desconectado.");
 	}
-	log_info(logger,"Por hacer return");
+	log_info(logger,"[socketRecibir] (-)");
 	return estado;
 }
 

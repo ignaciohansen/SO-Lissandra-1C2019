@@ -1,51 +1,9 @@
-/*
- * LISTA DE FUNCIONES
- *
- * int main()
- * void inicioLogYConfig()
- * void crearConexionesConOtrosProcesos()
- * void conectarConServidorLisandraFileSystem()
- * void levantarServidor()
- * void crearHIloEscucharKernel()
- * void escucharConexionKernel()
- * void ejecutarHiloConsola()
- * char* lectura_consola()
- * void consola()
- * void menu()
- * void validarComando(char* comando,t_log* logger)
- * int enviarComando(char** comando, t_log* logger)
- * int buscarComando(char* comando,t_log* logger)
- * void cargarConfiguracion()
- *
- * Comentarios de acceso rápido.
- *
- * ## Acá IP de LFS Hardcodeada (#001#)
- *
- */
 
 #include "memoria.h"
-//#include "administrarMemoria.c"
 
 void terminar_memoria(t_log* g_log);
 
 int main() {
-    /*
-     * 1) Conectar a LFS, hacer handshake: obtener "tamaño máximo de value" p. admin de paginas
-     * 2) Iniciar la memoria principal
-     * 3) Ejecutar Gossiping
-     * Más requerimientos a seguir:
-     *  * correr concurrentemente : - consola
-     *                              - red.
-     *
-     *  * debe soportar:            - hilos
-     *                              - memoria compartida.
-     *
-     *  * idea: PROCESO PADRE : memoria compartida.
-     *          PROCESOS HIJOS: leen consola y reciben mensajes.
-     *                          los pasan al padre por memoria compartida.
-     *
-     *
-     */
 
     // LOGGING
 	inicioLogYConfig();
@@ -55,93 +13,6 @@ int main() {
     ejecutarHiloConsola();
 
     armarMemoriaPrincipal();
-
-    /* LA PARTE DESTINADA A COMUNICACIÓN POR RED QUEDA COMENTADA
-     * SE LA VA A DESCOMENTAR CUANDO:
-     * (1) TERMINE LA ELABORACIÓN DE CONSOLA.
-     * (2) SEA CAPAZ DE PROCESAR Queries LQL
-     * (3) SEA CAPAZ DE MANTENER EL HILO DE CONSOLA Y DE RED EN PARALELO.
-
-    // SOCKET 
-    socketEscuchaKernel = nuevoSocket(log_memoria);  // CREAR SOCKET
-    if(socketEscuchaKernel == ERROR){                // CASO DE ERROR.
-        log_error(log_memoria," ¡¡¡ ERROR AL CREAR SOCKET. SE TERMINA EL PROCESO. !!! ");
-        return -1;
-    }
-    log_info(log_memoria, "SOCKET CREADO.Valor: %d.", socketEscuchaKernel);
-
-    // PUERTO
-    log_info(log_memoria, " *** SE VA A ASOCIAR SOCKET CON PUERTO ... *** ");
-    log_info(log_memoria, "PUERTO A USAR: %d.", arc_config->puerto);
-
-    // ASOCIAR "SOCKET" CON "PUERTO".
-    asociarSocket( socketEscuchaKernel     // SOCKET
-                  , arc_config->puerto      // PUERTO
-                 , log_memoria          ); // LOG
-    log_info(log_memoria, " *** PUERTO ASOCIADO A SOCKET EXITOSAMENTE. *** ");
-
-    // ESCUCHAR
-    socketEscuchar( socketEscuchaKernel    // SOCKET
-                    , 10
-                  , log_memoria         ); // LOG
-     while(1){
-        log_info(log_memoria," +++ esperando conexiones... +++ ");
-        conexionEntrante = aceptarConexionSocket(socketEscuchaKernel,log_memoria);
-        if(conexionEntrante == ERROR){
-            log_error(log_memoria,"ERROR AL CONECTAR.");
-            return -1;
-        }
-        buffer = malloc(sizeof(t_header));
-        recibiendoMensaje = socketRecibir(conexionEntrante,buffer,sizeof(t_header),log_memoria);
-
-        printf("Recibimos por socket el comando: %d\n",buffer->comando);
-        log_info(log_memoria,"El mensaje que se recibio fue con el comando %d", buffer->comando);
-
-		printf("Recibimos por socket el tamanio que vendra en el body: %d\n",buffer->tamanio);
-        log_info(log_memoria,"Recibimos un tamanio que vendra en el body de: %d", buffer->tamanio);
-
-		printf("Recibimos por socket la cantidad de argumentos que vendran en el body: %d\n",buffer->cantArgumentos);
-        log_info(log_memoria,"Recibimos la cantidad de argumentos que vendran en el body de: %d", buffer->cantArgumentos);
-
-		log_info(log_memoria,"El valor de retorno de la funcion que recibio el mensaje fue: %d",recibiendoMensaje);
-		log_info(log_memoria,"El tamanio de la estructura t_header es: %d",sizeof(t_header));
-		if(recibiendoMensaje == sizeof(t_header)){
-
-			log_info(log_memoria,"Por enviar confirmacion a Kernel de que recibimos correctamente");
-
-			log_info(log_memoria,"El tamanio de la confirmacion que enviamos es de: %d",sizeof(recibiendoMensaje));
-			int resultadoEnvio = socketEnviar(conexionEntrante,&recibiendoMensaje,sizeof(recibiendoMensaje),log_memoria);
-
-			log_info(log_memoria,"Por hacer un malloc de: %d para guardar el body. ",buffer->tamanio);
-			argumentosComando = malloc(buffer->tamanio);
-			
-			memset(argumentosComando,'\0',buffer->tamanio);
-
-			recibiendoMensaje = socketRecibir(conexionEntrante,argumentosComando,buffer->tamanio,log_memoria);
-
-			log_info(log_memoria, "Recibimos el/los argumentos: %s",argumentosComando);
-			printf("Recibimos el/los argumentos: %s \n",argumentosComando);			
-
-			log_info(log_memoria, "Por parsear los argumentos.");
-
-			argumentosParseados = string_split(argumentosComando, SEPARADOR);
-
-			for (int i = 0; argumentosParseados[i] != NULL; i++) {
-			
-				log_info(log_memoria, "Parseando queda en la posicion %i: el valor: %s",i,argumentosParseados[i]);
-				printf("Parseando queda en la posicion %i: el valor: %s \n",i,argumentosParseados[i]);
-
-			}
-
-			log_info(log_memoria,"Fin de parseo");
-			printf("Fin de parseo. \n");
-
-		}
-    }
-
-*/
-
-    // FIN DE BLOQUE DE RED.
 
     liberar_todo_por_cierre_de_modulo();
     return 0;

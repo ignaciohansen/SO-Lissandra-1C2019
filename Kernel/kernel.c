@@ -35,6 +35,7 @@ int main() {
 	pthread_join(hiloConsola, NULL);
 
 	mostrarQueries(log_kernel, list_queries);
+	list_destroy(list_queries); // FREE de la lista de queries;
 
 	log_info(log_kernel, "Salimoooos");
 
@@ -218,12 +219,29 @@ void consola() {
 	}
 }
 
+void menu() {
+
+	printf("Los comandos que se pueden ingresar son: \n"
+			"COMANDOS \n"
+			"Insert \n"
+			"Select \n"
+			"Create \n"
+			"Describe \n"
+			"Drop \n"
+			"Journal  \n"
+			"add \n"
+			"run \n"
+			"metrics \n"
+			"SALIR \n"
+			"\n");
+}
+
 void validarLinea(char** lineaIngresada,t_log* logger){
 
 	for (int i = 0; lineaIngresada[i] != NULL; i++) {
-			
+
 			log_info(log_kernel,"En la posicion %d del array esta el valor %s",i,lineaIngresada[i]);
-			
+
 			tamanio = i + 1;
 		}
 
@@ -233,26 +251,26 @@ void validarLinea(char** lineaIngresada,t_log* logger){
 		switch (tamanio){
 
 			case 1:
-				{	
+				{
 					log_info(log_kernel,"Entramos al Case 1");
 					lineaSeparada = string_split(lineaIngresada, separador2);
-					
+
 					log_info(log_kernel,"%s",lineaIngresada[0]);
 
 					log_info(log_kernel,"%d",strcmp(lineaIngresada[0],"salir"));
-					
+
 					if(strcmp(lineaIngresada[0],"salir") == 0){
-		 				
+
 						printf("Salir seleccionado\n");
-						
+
 						log_info(log_kernel, "Se selecciono Salir");
-				
+
 						return;
 
 		 			} else if(strcmp(lineaIngresada[0],"journal") == 0){
 
 						 printf("Journal seleccionado\n");
-						 
+
 						 log_info(log_kernel, "Se selecciono el comando Journal");
 
 							//Enviar Journal a todas las memorias
@@ -278,7 +296,7 @@ void validarLinea(char** lineaIngresada,t_log* logger){
 					 }
 					 else{
 		 				printf("Comando mal ingresado. \n");
-		 				
+
 						 log_error(log_kernel,
 		 									"Opcion mal ingresada por teclado en la consola");
 		 				break;
@@ -286,38 +304,38 @@ void validarLinea(char** lineaIngresada,t_log* logger){
 				}
 			case 2:
 				validarComando(lineaIngresada,tamanio,log_kernel);
-				
+
 				break;
 
 			case 3:
 				validarComando(lineaIngresada,tamanio,log_kernel);
-				
+
 				break;
-			
+
 			case 4:
 				validarComando(lineaIngresada,tamanio,log_kernel);
-				
+
 				break;
 
 			case 5:
 				validarComando(lineaIngresada,tamanio,log_kernel);
-				
+
 				break;
 
 			default:
 				{
 				printf("Comando mal ingresado. \n");
-				
+
 				log_error(log_kernel,
 					"Opcion mal ingresada por teclado en la consola");
 			}
-				
+
 				break;
 
-		}	
+		}
 }
 
-int conexionKernel() {
+int conexionKernel() { // función que retorn el nro del socket listo para escuchar.
 
 	socket_CMemoria = nuevoSocket(log_kernel);
 
@@ -347,28 +365,12 @@ int conexionKernel() {
 		return -1;
 	} else {
 
-		log_info(log_kernel, "Nos conectamos con exito, el resultado fue %d",
-				resultado_Conectar);
+		log_info(log_kernel, "Nos conectamos con exito, el resultado fue %d",resultado_Conectar);
 		return socket_CMemoria;		
 	}
-}
+} // int conexionKernel()
 
-void menu() {
 
-	printf("Los comandos que se pueden ingresar son: \n"
-			"COMANDOS \n"
-			"Insert \n"
-			"Select \n"
-			"Create \n"
-			"Describe \n"
-			"Drop \n"
-			"Journal  \n"
-			"add \n"
-			"run \n"
-			"metrics \n"
-			"SALIR \n"
-			"\n");
-}
 
 int buscarComando(char* comando,t_log* logger) {
 
