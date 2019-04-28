@@ -204,8 +204,10 @@ void consola() {
 
 		strtok(linea, "\n");
 
+		char* lineaCopia = calloc(1,sizeof(linea)+1);
+		strncpy(lineaCopia,linea,sizeof(linea)+1);
 		// AÑADE LA LINEA A LA LISTA PRINCIPAL
-		list_add(list_queries, (void*) linea);
+		list_add(list_queries, (void*) lineaCopia);
 		
 		comandoSeparado = string_split(linea, separator);
 
