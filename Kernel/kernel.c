@@ -335,7 +335,7 @@ void validarLinea(char** lineaIngresada,t_log* logger){
 		}
 }
 
-int conexionKernel() { // función que retorn el nro del socket listo para escuchar.
+int conexionKernel() { // Retorn socket por el cual se envían los mensajes.
 
 	socket_CMemoria = nuevoSocket(log_kernel);
 
@@ -349,22 +349,19 @@ int conexionKernel() { // función que retorn el nro del socket listo para escuc
 
 	log_info(log_kernel, "El Socket creado es: %d .", socket_CMemoria);
 
-	log_info(log_kernel,
-			"por llamar a la funcion connectarSocket() para conectarnos con Memoria");
+	log_info(log_kernel, "por llamar a la funcion connectarSocket() para conectarnos con Memoria");
 
 	log_info(log_kernel, "PRUEBA: %d ", arc_config->puerto_memoria);
 
-	resultado_Conectar = conectarSocket(socket_CMemoria, arc_config->ip_memoria,
-			arc_config->puerto_memoria, log_kernel);
+	resultado_Conectar = conectarSocket( socket_CMemoria
+			                           , arc_config->ip_memoria
+			                           , arc_config->puerto_memoria
+									   , log_kernel);
 
 	if (resultado_Conectar == ERROR) {
-
-		log_error(log_kernel,
-				"Hubo un problema al querer Conectarnos con Memoria. Salimos del proceso");
-
+		log_error(log_kernel, "Hubo un problema al querer Conectarnos con Memoria. Salimos del proceso");
 		return -1;
 	} else {
-
 		log_info(log_kernel, "Nos conectamos con exito, el resultado fue %d",resultado_Conectar);
 		return socket_CMemoria;		
 	}

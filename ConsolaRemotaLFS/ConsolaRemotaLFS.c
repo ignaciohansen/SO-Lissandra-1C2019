@@ -9,7 +9,9 @@
 
 int main() {
 
+	log_cremota = archivoLogCrear(LOG_PATH, "Consola remota para LFS.");
 	cargarConfiguracion();
+	conexionConsolaRemota();
 	menu();
 	consola();
 
@@ -21,14 +23,11 @@ void cargarConfiguracion() {
 
 	t_config* configFile;
 
-	log_info(log_cremota,
-			"Por crear el archivo de config para levantar archivo con datos.");
-
 	configFile = config_create(PATH_CREMOTA_CONFIG);
 
 	if (configFile != NULL) {
 
-		log_info(log_cremota, "Kernel: Leyendo Archivo de Configuracion...");
+		log_info(log_cremota, "Consola Remota: Leyendo Archivo de Configuracion...");
 
 		if (config_has_property(configFile, "PUERTO_SERVIDOR")) {
 
@@ -65,39 +64,61 @@ void cargarConfiguracion() {
 
 	} // if (configFile != NULL)
 
-	log_info(log_cremota,"Cargamos todo lo que se encontro en el archivo de configuracion. Liberamos la variable config que fue utlizada para navegar el archivo de configuracion");
+	log_info(log_cremota,"Configuración cargada. Se libera variable de configuración temporal.");
 
 	free(configFile);
 
 }
 
+int conexionConsolaRemota() { // función que retorna el nro del socket listo para escuchar.
+
+	socketCRemota = nuevoSocket(log_cremota);
+
+	if (socketCRemota == ERROR) {
+		log_error(log_cremota,"[ERROR] Hubo un problema al querer crear el socket . Salimos del Proceso");
+		return ERROR;
+	}
+
+	log_info(log_cremota, "PRUEBA: %d ", crem_config->puerto_servidor);
+
+	socketAsociadoCRemota = conectarSocket( socketCRemota
+			                        , crem_config->ip_servidor
+									, crem_config->puerto_servidor
+									, log_cremota);
+
+	if (socketAsociadoCRemota == ERROR) {
+		log_error(log_cremota, "[ERROR] Hubo un problema al intentar conectar la consola remot. Salimos del proceso.");
+		return -1;
+	} else {
+
+		log_info(log_cremota, "[OK] Consola remota conectada. Puerto: %d.", socketAsociadoCRemota);
+		return socketCRemota;
+	}
+} // int conexionConsolaRemota()
+
 void menu() {
 
 	printf("Los comandos que se pueden ingresar son: \n"
-			"COMANDOS \n"
-			"Insert \n"
-			"Select \n"
-			"Create \n"
-			"Describe \n"
-			"Drop \n"
-			"Journal  \n"
-			"add \n"
-			"run \n"
-			"metrics \n"
-			"SALIR \n"
+			"COMANDOS \n\n"
+			"Insert \t"
+			"Select \t"
+			"Create \t"
+			"Describe \t"
+			"Drop \t\n"
+			"Journal\t"
+			"add \t"
+			"run \t"
+			"metrics \n\n"
+			"SALIR \t"
 			"\n");
 }
 
 void consola() {
 
-	menu();
-
 	char bufferComando[MAXSIZE_COMANDO];
 	char **comandoSeparado;
 
 	while (1) {
-
-		//printf(">");
 
 		linea = readline(">");
 
@@ -110,17 +131,26 @@ void consola() {
 			break;
 		}
 
-		//fgets(bufferComando, MAXSIZE_COMANDO, stdin); -> Implementacion anterior
-
 		strtok(linea, "\n");
 
-		// comandoSeparado = string_split(linea, separator);
+		// (+) Realización del envio
+		sendedMsgStatus = socketEnviar( socketCRemota
+				                      , linea
+									  , sizeof(linea)
+				                      , log_cremota);
 
-		// validarLinea(comandoSeparado,log_kernel);
+		if (sendedMsgStatus == ERROR) {
+			log_error(log_cremota, "Error al enviar mensaje a memoria. Salimos");
+		} else {
+			log_info(log_cremota, "El mensaje se envio correctamente");
+		}
+		// (-) Realización del envio
 
 		free(linea);
 
-	}
-}
+	} // while(1)
+
+} // void consola()
+
 
 

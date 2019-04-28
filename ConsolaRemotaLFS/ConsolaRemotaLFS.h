@@ -38,11 +38,11 @@
 #define PATH_CREMOTA_CONFIG "../CREMOTA.txt"
 #define LOG_PATH "LOG_CREMOTA.txt"
 
-int socketCRemota,msgSize,countPID;
+int socketCRemota,socketAsociadoCRemota,msgSize,sendedMsgStatus;
 t_log* log_cremota;
 
 //Socket
-int sended, sendResult;
+int sendResult;
 
 typedef struct{
 
