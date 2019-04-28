@@ -10,17 +10,15 @@
 
 int main() {
 
-	LissandraFSInicioLogYConfig();
+	pantallaLimpiar();
+	LisandraSetUP(); // CONFIGURACIÓN Y SETEO SOCKET
+
+
 
 	return 0;
 }
 
-void LissandraFSInicioLogYConfig() {
-	pantallaLimpiar();
-	LisandraSetUP();
 
-
-}
 
 /********************************************************************************************
  * 							SET UP LISANDRA, FILE SYSTEM Y COMPRIMIDOR
@@ -49,114 +47,26 @@ int abrirServidorLissandra() {
 	socketEscuchaMemoria = nuevoSocket(log_lfilesystem);
 
 	if(socketEscuchaMemoria == ERROR){
-		imprimirError(log_lfilesystem, "Hubo un problema al querer crear el socket de escucha para memoria. Salimos del Proceso");
+		imprimirError (log_lfilesystem, "[ERROR] Fallo al crear Socket.");
 		return -1;
+	} else {
+		imprimirVerde1(log_lfilesystem, "[OK] Se ha creado el socket nro.: %d.", socketEscuchaMemoria);
+
 	}
-
-
-	log_info(log_lfilesystem, "\n ========== LFS Listening ========== \n");
 
 	int puerto_a_escuchar = configFile->puerto_escucha;
 
-	imprimirVerde1  (log_lfilesystem      ,"Se ha creado el socket con exito con valor %d: .", socketEscuchaMemoria);
-
-	imprimirMensaje1(log_lfilesystem      ,"El puerto que vamos a asociar es %i:", puerto_a_escuchar);
+	imprimirMensaje1(log_lfilesystem      ,"[PUERTO] Asociando a puerto: %i.", puerto_a_escuchar);
 
 	asociarSocket   (socketEscuchaMemoria ,puerto_a_escuchar,log_lfilesystem);
 
-	imprimirMensaje (log_lfilesystem      , "Asociado. OK!");
+	imprimirMensaje (log_lfilesystem      , "[OK] Asociado.");
 
 	socketEscuchar  (socketEscuchaMemoria ,10 ,log_lfilesystem);
 
-	int estado = listen(socketEscuchaMemoria, 10);
+	return 1;
 
-	if(estado == ERROR){
-		imprimirError(log_lfilesystem, "Error al poner el Socket en escucha");
-		return -1;
-	}
-
-	int i =1;
-	while(1){ // recibe mensajes y responde
-
-	imprimirMensaje(log_lfilesystem, " \n ====== LFS: waiting for connections ====== \n ");
-
-	conexionEntrante = aceptarConexionSocket(socketEscuchaMemoria,log_lfilesystem);
-
-	if(conexionEntrante == ERROR){
-		imprimirError(log_lfilesystem,"Se produjo un error al aceptar la conexion, salimos");
-		return -1;
-	} else {
-		char* msg = string_new();
-		string_append(&msg   , "Connection number "     );
-		string_append(&msg   , stringConvertirEntero(i) );
-		string_append(&msg   , " established."          );
-		imprimirVerde(log_lfilesystem, msg);
-		free(msg);
-	}
-
-	log_info(log_lfilesystem, "[DEBUG] Antes de crear puntero."  );
-	Puntero buffer = (void*)string_new(); // malloc(sizeof(char)*100);
-	log_info(log_lfilesystem, "[DEBUG] Despues de crear puntero."  );
-
-	log_info(log_lfilesystem, "[DEBUG] Antes de recibir mensaje."  );
-	recibiendoMensaje = socketRecibir(conexionEntrante, buffer, 13,  log_lfilesystem);
-	log_info(log_lfilesystem, "[DEBUG] Despues de recibir mensaje.");
-
-	char* msg = string_new();
-	string_append(&msg,"Mensaje recibido: \"");
-	string_append(&msg,buffer                );
-	string_append(&msg,"\"."                 );
-	imprimirVerde(log_lfilesystem, msg);
-	free(buffer);
-	i++;
-
-		/*
-		 	log_info(log_lfilesystem, "Por liberar el buffer");
-			free(buffer);
-			log_info(log_lfilesystem, "buffer liberado");
-			*/
-
-
-			/**
-			char* holaMemoria = "Hola memoria";
-
-
-			log_info(log_lfilesystem, "POr enviar un mensaje a Memoria");
-			int resultado_sendMsj = socketEnviar(conexionEntrante,holaMemoria,strlen(holaMemoria),log_lfilesystem);
-			log_info(log_lfilesystem, "Mensaje enviado");
-
-
-			if(resultado_sendMsj == 0) {
-				imprimirError(log_lfilesystem,"Se produjo un error al aceptar la conexion, salimos");
-								return -1;
-			} else {
-				imprimirVerde(log_lfilesystem, "Se ha devuelto el saludo a Memoria");
-			}
-*/
-			char* mensajeValorValue = stringConvertirEntero(configFile->tamanio_value);
-//			strcpy(mensajeMAXVALUE, stringConvertirEntero(configFile->tamanio_value));
-
-		//	strcpy(mensajeMAXVALUE, stringConvertirEntero(10));
-			int res = socketEnviar(conexionEntrante,mensajeValorValue, 3,log_lfilesystem);
-
-			if(res == 0) {
-				imprimirError(log_lfilesystem,"Se produjo un error al aceptar la conexion, salimos");
-				return -1;
-			} else {
-				imprimirVerde(log_lfilesystem, "Se ha enviado el MAX VALUE a Memoria");
-			}
-
-		//	free(buffer);
-		//	send(conexionEntrante, "Hola memoria", 13, 0);
-
-		} // while(1)
-
-		imprimirMensajeProceso("FIN PROCESO SOCKET");
-		log_info(log_lfilesystem, "Fin del proceso.");
-
-		return 1;
-
-}
+} // int abrirServidorLissandra()
 
 bool cargarConfiguracion() {
 

@@ -230,7 +230,9 @@ int socketRecibir(Socket socketEmisor, Puntero buffer, int tamanioBuffer,t_log* 
 	
 	log_info(logger,"[socketRecibir] (+)");
 
-	// int estado = recv(socketEmisor, buffer, tamanioBuffer, MSG_WAITALL); // Obliga a recibir "tamanioBuffer" Bytes
+	// MSG_WAITALL - Obliga a recibir "tamanioBuffer" Bytes
+	// 0           - no obliga a esperar la recepción de todos los bytes
+	// int estado = recv(socketEmisor, buffer, tamanioBuffer, MSG_WAITALL);
 	int estado = recv(socketEmisor, buffer, tamanioBuffer, 0);
 
 	// if(estado == ERROR){
