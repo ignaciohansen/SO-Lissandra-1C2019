@@ -15,7 +15,7 @@
 #define PATH_LFILESYSTEM_CONFIG "../LissandraFileSystem/Default/LFILESSYSTEM_CONFIG.txt"
 #define LOG_PATH "logLFILESSYSTEM.txt"
 
-t_log* log_lfilesystem;
+t_log* logger;
 
 typedef struct{
 	char* ip;
@@ -52,5 +52,10 @@ char* linea;
 void consola();
 void menu();
 
+/*--------------------------------------------------------------------------------------------
+ * 									Elementos de escucha
+ *--------------------------------------------------------------------------------------------
+ */
+void listenSomeLQL();
 
 #endif /* LFILESSYSTEM_H_ */

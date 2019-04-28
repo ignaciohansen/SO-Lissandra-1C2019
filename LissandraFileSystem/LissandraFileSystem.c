@@ -13,7 +13,8 @@ int main() {
 	pantallaLimpiar();
 	LisandraSetUP(); // CONFIGURACIÓN Y SETEO SOCKET
 
-
+	pthread_t* hiloListening;
+	pthread_create(&hiloListening, NULL,(void*) listenSomeLQL, NULL);
 
 	return 0;
 }
@@ -29,9 +30,9 @@ void LisandraSetUP() {
 
 	imprimirMensajeProceso("Iniciando el modulo LISSANDRA FILE SYSTEM\n");
 
-	log_lfilesystem = archivoLogCrear(LOG_PATH, "Proceso Lissandra File System");
+	logger = archivoLogCrear(LOG_PATH, "Proceso Lissandra File System");
 
-	imprimirVerde(log_lfilesystem, "[LOG CREADO] continuamos cargando la estructura de configuracion.");
+	imprimirVerde(logger, "[LOG CREADO] continuamos cargando la estructura de configuracion.");
 
 	if(cargarConfiguracion()) {
 		//SI SE CARGO BIEN LA CONFIGURACION ENTONCES PROCESO DE ABRIR UN SERVIDOR
@@ -44,25 +45,25 @@ void LisandraSetUP() {
 
 int abrirServidorLissandra() {
 
-	socketEscuchaMemoria = nuevoSocket(log_lfilesystem);
+	socketEscuchaMemoria = nuevoSocket(logger);
 
 	if(socketEscuchaMemoria == ERROR){
-		imprimirError (log_lfilesystem, "[ERROR] Fallo al crear Socket.");
+		imprimirError (logger, "[ERROR] Fallo al crear Socket.");
 		return -1;
 	} else {
-		imprimirVerde1(log_lfilesystem, "[OK] Se ha creado el socket nro.: %d.", socketEscuchaMemoria);
+		imprimirVerde1(logger, "[OK] Se ha creado el socket nro.: %d.", socketEscuchaMemoria);
 
 	}
 
 	int puerto_a_escuchar = configFile->puerto_escucha;
 
-	imprimirMensaje1(log_lfilesystem      ,"[PUERTO] Asociando a puerto: %i.", puerto_a_escuchar);
+	imprimirMensaje1(logger      ,"[PUERTO] Asociando a puerto: %i.", puerto_a_escuchar);
 
-	asociarSocket   (socketEscuchaMemoria ,puerto_a_escuchar,log_lfilesystem);
+	asociarSocket   (socketEscuchaMemoria ,puerto_a_escuchar,logger);
 
-	imprimirMensaje (log_lfilesystem      , "[OK] Asociado.");
+	imprimirMensaje (logger      , "[OK] Asociado.");
 
-	socketEscuchar  (socketEscuchaMemoria ,10 ,log_lfilesystem);
+	socketEscuchar  (socketEscuchaMemoria ,10 ,logger);
 
 	return 1;
 
@@ -70,14 +71,14 @@ int abrirServidorLissandra() {
 
 bool cargarConfiguracion() {
 
-	log_info(log_lfilesystem,
+	log_info(logger,
 			"Por reservar memoria para variable de configuracion.");
 
 	configFile = malloc(sizeof(t_lfilesystem_config));
 
 	t_config* archivoCOnfig;
 
-	log_info(log_lfilesystem,
+	log_info(logger,
 			"Por crear el archivo de config para levantar archivo con datos.");
 
 
@@ -86,115 +87,115 @@ bool cargarConfiguracion() {
 	if(archivoCOnfig == NULL)
 	{
 		imprimirMensajeProceso("NO se ha encontrado el archivo de configuracion\n");
-		log_info(log_lfilesystem, "NO se ha encontrado el archivo de configuracion");
+		log_info(logger, "NO se ha encontrado el archivo de configuracion");
 	}
 
 	if (archivoCOnfig != NULL) {
 		int ok = 1;
 		imprimirMensajeProceso("Se ha encontrado el archivo de configuracion\n");
 
-		log_info(log_lfilesystem, "LissandraFS: Leyendo Archivo de Configuracion...");
+		log_info(logger, "LissandraFS: Leyendo Archivo de Configuracion...");
 
 		if(config_has_property(archivoCOnfig, "IP_FS")){
-			log_info(log_lfilesystem, "Almacenando IP de LIsandra File Sytem");
+			log_info(logger, "Almacenando IP de LIsandra File Sytem");
 
 						//Por lo que dice el texto
 			configFile->ip = config_get_int_value(archivoCOnfig,
 							"IP_FS");
 
-						log_info(log_lfilesystem, "La IP al cual se conectara Lisandra es: %d", configFile->ip);
+						log_info(logger, "La IP al cual se conectara Lisandra es: %d", configFile->ip);
 		} else {
-			imprimirError(log_lfilesystem, "El archivo de configuracion no contiene el IP_FS");
+			imprimirError(logger, "El archivo de configuracion no contiene el IP_FS");
 			ok--;
 		}
 
 		if(config_has_property(archivoCOnfig,"PUERTO_ESCUCHA")){
 
-			log_info(log_lfilesystem, "Almacenando el puerto");
+			log_info(logger, "Almacenando el puerto");
 
 			//Por lo que dice el texto
 			configFile->puerto_escucha = config_get_int_value(archivoCOnfig,
 				"PUERTO_ESCUCHA");
 
-			log_info(log_lfilesystem, "El puerto de escucha es: %d", configFile->puerto_escucha);
+			log_info(logger, "El puerto de escucha es: %d", configFile->puerto_escucha);
 
 		}else {
-			imprimirError(log_lfilesystem, "El archivo de configuracion no contiene el PUERTO_ESCUCHA");
+			imprimirError(logger, "El archivo de configuracion no contiene el PUERTO_ESCUCHA");
 			ok--;
 
 		}
 
 		if(config_has_property(archivoCOnfig,"PUNTO_MONTAJE")){
 
-			log_info(log_lfilesystem, "Almacenando el PUNTO DE MONTAJE");
+			log_info(logger, "Almacenando el PUNTO DE MONTAJE");
 
 			//Por lo que dice el texto
 			configFile->punto_montaje = config_get_int_value(archivoCOnfig,
 				"PUNTO_MONTAJE");
 
-			log_info(log_lfilesystem, "El puerto de montaje es: %d", configFile->punto_montaje);
+			log_info(logger, "El puerto de montaje es: %d", configFile->punto_montaje);
 
 		}else {
-			imprimirError(log_lfilesystem, "El archivo de configuracion no contiene el PUNTO_MONTAJE");
+			imprimirError(logger, "El archivo de configuracion no contiene el PUNTO_MONTAJE");
 			ok--;
 
 		}
 
 		if(config_has_property(archivoCOnfig,"RETARDO")){
 
-			log_info(log_lfilesystem, "Almacenando el retardo");
+			log_info(logger, "Almacenando el retardo");
 
 			//Por lo que dice el texto
 			configFile->retardo = config_get_int_value(archivoCOnfig,
 				"RETARDO");
 
-			log_info(log_lfilesystem, "El retardo de respuesta es: %d", configFile->retardo);
+			log_info(logger, "El retardo de respuesta es: %d", configFile->retardo);
 
 		}else {
-			imprimirError(log_lfilesystem, "El archivo de configuracion no contiene RETARDO");
+			imprimirError(logger, "El archivo de configuracion no contiene RETARDO");
 			ok--;
 
 		}
 
 		if(config_has_property(archivoCOnfig,"TAMANIO_VALUE")){
 
-			log_info(log_lfilesystem, "Almacenando el tamaño del valor de una key");
+			log_info(logger, "Almacenando el tamaño del valor de una key");
 
 			//Por lo que dice el texto
 			configFile->tamanio_value = config_get_int_value(archivoCOnfig,"TAMANIO_VALUE");
 
-			log_info(log_lfilesystem, "El tamaño del valor es: %d", configFile->tamanio_value);
+			log_info(logger, "El tamaño del valor es: %d", configFile->tamanio_value);
 
 		}else {
-			imprimirError(log_lfilesystem, "El archivo de configuracion no contiene el TAMANIO_VALUE");
+			imprimirError(logger, "El archivo de configuracion no contiene el TAMANIO_VALUE");
 			ok--;
 
 		}
 
 		if(config_has_property(archivoCOnfig,"TIEMPO_DUMP")){
 
-			log_info(log_lfilesystem, "Almacenando el puerto");
+			log_info(logger, "Almacenando el puerto");
 
 			//Por lo que dice el texto
 			configFile->tiempo_dump = config_get_int_value(archivoCOnfig,
 				"TIEMPO_DUMP");
 
-			log_info(log_lfilesystem, "El tiempo de dumpeo es: %d", configFile->tiempo_dump);
+			log_info(logger, "El tiempo de dumpeo es: %d", configFile->tiempo_dump);
 
 		}else {
-			imprimirError(log_lfilesystem, "El archivo de configuracion no contiene el TIEMPO_DUMP");
+			imprimirError(logger, "El archivo de configuracion no contiene el TIEMPO_DUMP");
 			ok--;
 
 		}
 
 
 		if(ok>0) {
-			imprimirVerde(log_lfilesystem,"Se ha cargado todos los datos del archivo de configuracion");
-		//	log_info(log_lfilesystem, "Se ha cargado todos los datos del archivo de configuracion");
+			imprimirVerde(logger,"Se ha cargado todos los datos del archivo de configuracion");
+		//	log_info(logger, "Se ha cargado todos los datos del archivo de configuracion");
 			return true;
 
 		} else {
-			imprimirError(log_lfilesystem, "ERROR: No Se han cargado todos o algunos los datos del archivo de configuracion\n");
+			imprimirError(logger, "ERROR: No Se han cargado todos o algunos los datos del archivo de configuracion\n");
 	//		imprimirMensajeProceso("ERROR: No Se han cargado todos los datos del archivo de configuracion\n");
 			return false;
 		}
@@ -206,7 +207,7 @@ bool cargarConfiguracion() {
 
 void consola(){
 
-	log_info(log_lfilesystem, "En el hilo de consola");
+	log_info(logger, "En el hilo de consola");
 
 	menu();
 
@@ -234,17 +235,17 @@ void consola(){
 			tamanio = i +1;
 		}
 
-		log_info(log_lfilesystem, "El tamanio del vector de comandos es: %d", tamanio);
+		log_info(logger, "El tamanio del vector de comandos es: %d", tamanio);
 
 		if(strcmp(comandoSeparado[0],"select") == 0){
 
 			printf("Se selecciono Select\n");
 
-			log_info(log_lfilesystem,"Por llamar a enviarResultado");
+			log_info(logger,"Por llamar a enviarResultado");
 
 			// FALTA ADAPTAR ESTA FUNCION //
 
-			//int resultadoEnviarComando = enviarComando(comandoSeparado[0],log_lfilesystem);
+			//int resultadoEnviarComando = enviarComando(comandoSeparado[0],logger);
 			//break;
 
 			// FALTA ADAPTAR ESTA FUNCION //
@@ -273,7 +274,7 @@ void consola(){
 			break;
 		}
 		printf("Comando mal ingresado. \n");
-		log_error(log_lfilesystem,"Opcion mal ingresada por teclado en la consola");
+		log_error(logger,"Opcion mal ingresada por teclado en la consola");
 
 
 	}
@@ -294,27 +295,27 @@ void menu(){
 }
 
 // LOGGEA todo lo que escucha.
-int listenSomeLQL(t_log* logger) {
+void listenSomeLQL() {
 
 	while(1) {
 
+		imprimirMensaje(logger, " \n ====== LFS Listener: waiting for client connections ====== \n ");
+
+		conexionEntrante = aceptarConexionSocket(socketEscuchaMemoria,logger);
+
+		Puntero buffer = (void*)string_new(); // malloc(sizeof(char)*100);
+
+		recibiendoMensaje = socketRecibir(conexionEntrante, buffer, 25,  logger);
+
+		// buffer[25] = '\0';
+
+		char* msg = string_new();
+		string_append(&msg,"Mensaje recibido: \""); string_append(&msg,buffer ); string_append(&msg,"\"." );
+
+		imprimirVerde(logger, msg);
+
+		free(buffer);
+
 	}
-
-	imprimirMensaje(logger, " \n ====== LFS Listener: waiting for client connections ====== \n ");
-
-	conexionEntrante = aceptarConexionSocket(socketEscuchaMemoria,logger);
-
-	Puntero buffer = (void*)string_new(); // malloc(sizeof(char)*100);
-
-	recibiendoMensaje = socketRecibir(conexionEntrante, buffer, 25,  logger);
-
-	// buffer[25] = '\0';
-
-	char* msg = string_new();
-	string_append(&msg,"Mensaje recibido: \""); string_append(&msg,buffer ); string_append(&msg,"\"." );
-
-	imprimirVerde(logger, msg);
-
-	free(buffer);
 
 }
