@@ -10,13 +10,12 @@
 int main() {
 
 	cargarConfiguracion();
+	menu();
+	consola();
 
 }
 
 void cargarConfiguracion() {
-
-	log_info(log_cremota,
-			"Por reservar memoria para variable de configuracion.");
 
 	crem_config = malloc(sizeof(t_cremota_config));
 
@@ -70,6 +69,58 @@ void cargarConfiguracion() {
 
 	free(configFile);
 
+}
+
+void menu() {
+
+	printf("Los comandos que se pueden ingresar son: \n"
+			"COMANDOS \n"
+			"Insert \n"
+			"Select \n"
+			"Create \n"
+			"Describe \n"
+			"Drop \n"
+			"Journal  \n"
+			"add \n"
+			"run \n"
+			"metrics \n"
+			"SALIR \n"
+			"\n");
+}
+
+void consola() {
+
+	menu();
+
+	char bufferComando[MAXSIZE_COMANDO];
+	char **comandoSeparado;
+
+	while (1) {
+
+		//printf(">");
+
+		linea = readline(">");
+
+		if(linea){
+			add_history(linea);
+		}
+
+		if(!strncmp(linea,"exit",4)){
+			free(linea);
+			break;
+		}
+
+		//fgets(bufferComando, MAXSIZE_COMANDO, stdin); -> Implementacion anterior
+
+		strtok(linea, "\n");
+
+		// comandoSeparado = string_split(linea, separator);
+
+		// validarLinea(comandoSeparado,log_kernel);
+
+		free(linea);
+
+	}
 }
 
 
