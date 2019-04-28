@@ -12,8 +12,8 @@
 #include <readline/history.h>
 #include <pthread.h>
 
-#define PATH_LFILESYSTEM_CONFIG "../LissandraFileSystem/Default/LFILESSYSTEM_CONFIG.txt"
-#define LOG_PATH "logLFILESSYSTEM.txt"
+#define PATH_LFILESYSTEM_CONFIG "../LFS_CONFIG.txt"
+#define LOG_PATH "LOG_LFS.txt"
 
 t_log* logger;
 

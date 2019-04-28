@@ -1,6 +1,0 @@
-[INFO] 22:20:56:224 Proceso Lissandra File System/(4991:4991): LOG CREADO, continuamos cargando la estructura de configuracion.
-[INFO] 22:20:56:228 Proceso Lissandra File System/(4991:4991): Por reservar memoria para variable de configuracion.
-[INFO] 22:20:56:228 Proceso Lissandra File System/(4991:4991): Por crear el archivo de config para levantar archivo con datos.
-[INFO] 22:20:56:250 Proceso Lissandra File System/(4991:4991): Creamos un nuevo socket
-[INFO] 22:20:56:250 Proceso Lissandra File System/(4991:4991): En funcion nuevoSocket en el Proyecto Biblioteca, por llamar a funcion Socket()
-[INFO] 22:20:56:250 Proceso Lissandra File System/(4991:4991): Por retornar el socket creado: 4

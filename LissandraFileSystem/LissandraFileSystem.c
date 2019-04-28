@@ -16,6 +16,8 @@ int main() {
 	pthread_t* hiloListening;
 	pthread_create(&hiloListening, NULL,(void*) listenSomeLQL, NULL);
 
+	pthread_join(hiloListening, NULL);
+
 	return 0;
 }
 
@@ -82,7 +84,7 @@ bool cargarConfiguracion() {
 			"Por crear el archivo de config para levantar archivo con datos.");
 
 
-	archivoCOnfig = config_create("LISANDRAFS.txt");
+	archivoCOnfig = config_create(PATH_LFILESYSTEM_CONFIG);
 
 	if(archivoCOnfig == NULL)
 	{
