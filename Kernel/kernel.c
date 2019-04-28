@@ -6,20 +6,22 @@
  */
 
 #include "kernel.h"
+#include "kernel_aux.h"
 
 int main() {
 
+	// (BEGIN) LISTA COMPARTIDA POR LOS HILOS. ALMACENA LOS QUERYS A EJECUTAR.
+	list_queries = list_create();
+
 	log_kernel = archivoLogCrear(LOG_PATH, "Proceso Kernel");
 
-	log_info(log_kernel,
-			"Ya creado el Log, continuamos cargando la estructura de configuracion, llamando a la funcion.");
+	log_info(log_kernel, "Ya creado el Log, continuamos cargando la estructura de configuracion, llamando a la funcion.");
 
 	cargarConfiguracion();
 
 	countPID = 0;
 
-	log_info(log_kernel,
-			"Devuelta en Main, Funcion cargarConfiguracion() finalizo.");
+	log_info(log_kernel, "Devuelta en Main, Funcion cargarConfiguracion() finalizo.");
 
 	log_info(log_kernel, "Creamos thread para Consola");
 
@@ -31,6 +33,8 @@ int main() {
 
 	//pthread_join(hiloConexion,NULL);
 	pthread_join(hiloConsola, NULL);
+
+	mostrarQueries(log_kernel, list_queries);
 
 	log_info(log_kernel, "Salimoooos");
 
@@ -198,7 +202,10 @@ void consola() {
 
 		//fgets(bufferComando, MAXSIZE_COMANDO, stdin); -> Implementacion anterior
 
-		strtok(linea, "\n");				
+		strtok(linea, "\n");
+
+		// AÑADE LA LINEA A LA LISTA PRINCIPAL
+		list_add(list_queries, (void*) linea);
 		
 		comandoSeparado = string_split(linea, separator);
 

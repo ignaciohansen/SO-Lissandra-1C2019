@@ -7,36 +7,46 @@
 
 #ifndef KERNEL_H_
 #define KERNEL_H_
-
+// STANDARD
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+// SYS
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/errno.h>
+// RED
 #include <netdb.h>
 #include <unistd.h>
 #include <errno.h>
+// COMMONS
 #include <commons/log.h>
 #include <commons/string.h>
 #include <commons/config.h>
 #include <commons/collections/queue.h>
+#include <commons/collections/list.h>
+// BICLIOTECA
 #include "../Biblioteca/src/Biblioteca.c"
+// READLINE
 #include <readline/readline.h>
 #include <readline/history.h>
+// HILOS
 #include <pthread.h>
 
-#define PATH_KERNEL_CONFIG "KERNEL.txt"
-#define LOG_PATH "logKERNEL.txt"
+#define PATH_KERNEL_CONFIG "../KERNEL.txt"
+#define LOG_PATH "LOG_KERNEL.txt"
 
 int socket_CMemoria,tamanio,countPID;
 t_log* log_kernel;
+t_list* list_queries;
 
 //Socket
 
 int resultado_Conectar, resultado_sendMsj;
+
+
 
 typedef struct{
 
@@ -117,15 +127,19 @@ enum estados{
 	exiT
 };
 
+//
+void  cargarConfiguracion();
+int   conexionKernel();
 
-void cargarConfiguracion();
-int enviarComando(char** comando,t_log* logger);
-int conexionKernel();
-int enviarMensaje(int comando, int tamanio,char* mensaje, t_log* logger);
-void armarMensajeBody(int tamanio,char* mensaje,char** comando);
-int buscarComando(char* comandoSeparado,t_log* logger);
-void validarComando(char** comandoSeparado,int tamanio,t_log* logger);
-void comandoRun(char* path,t_log* logger);
-void validarLinea(char** lineaIngresada,t_log* logger);
+// RED
+int   enviarComando(char** comando,t_log* logger);
+int   enviarMensaje(int comando, int tamanio,char* mensaje, t_log* logger);
+void  armarMensajeBody(int tamanio,char* mensaje,char** comando);
+
+// CONSOLA
+int   buscarComando(char* comandoSeparado,t_log* logger);
+void  validarLinea(char** lineaIngresada,t_log* logger);
+void  comandoRun(char* path,t_log* logger);
+void  validarComando(char** comandoSeparado,int tamanio,t_log* logger);
 
 #endif /* KERNEL_H_ */
