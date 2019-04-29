@@ -20,6 +20,17 @@ int main() {
 
 void liberar_todo_por_cierre_de_modulo(){
 	//LIBERA LA RAM.
+	log_info(log_memoria, "[LIBERAR] Empiezo a liberar todos los elementos que se han inicializado");
+	if(aux_pagina!=NULL){
+		log_info(log_memoria, "[LIBERAR] Por liberar aux_pagina");
+		free(aux_pagina);
+		log_info(log_memoria, "[LIBERAR] aux_pagina liberado");
+	}
+	if(aux_tabla_paginas!=NULL){
+		log_info(log_memoria, "[LIBERAR] Por liberar aux_tabla_paginas");
+		free(aux_tabla_paginas);
+		log_info(log_memoria, "[LIBERAR] aux_tabla_paginas");
+	}
 
 	if(memoriaArmada==1){
 		log_info(log_memoria, "[LIBERAR] Por liberar memoria");
@@ -36,10 +47,12 @@ void liberar_todo_por_cierre_de_modulo(){
 		free(arc_config);
 		log_info(log_memoria, "[LIBERAR] Struct configuracion Liberada");
 		if (log_memoria != NULL) {
+			log_info(log_memoria, "[LIBERAR] Liberando log_memoria");
 			log_info(log_memoria, ">>>>>>>>>>>>>>>FIN DE PROCESO MEMORIA<<<<<<<<<<<<<<<");
 			log_destroy   (log_memoria);
 			log_memoria  = NULL;
 		}
+
 }
 
 void inicioLogYConfig() {
@@ -931,31 +944,29 @@ segmento * segmento_crear(char* pathNombreTabla, int nroPagina) {
 //DEVUELVE EL NRO DONDE SE ALOJO LA NUEVA TABLA
 int * tabla_pagina_crear(int16_t key, long timestampNuevo, char* valor, bool flag_modificado) {
 	log_info(log_memoria, "[Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key %d", key);
-	tabla_pagina* tabla_pagina_nueva;
-	pagina* pagina_nueva_a_poner;
-	tabla_pagina_nueva->flag=flag_modificado;
-	tabla_pagina_nueva->key=key;
+	aux_tabla_paginas->flag=flag_modificado;
+	aux_tabla_paginas->key=key;
 	mutexBloquear(&mutex_tabla_pagina_en_modificacion);
 	int posicionLibreAsignada = cantPaginasTotales - cantPaginasDisponibles;
 	log_info(log_memoria, "[Crear Tabla y pagina] La posicion a la cual le voy a asignar es %d", posicionLibreAsignada);
 	log_info(log_memoria, "[Crear Tabla y pagina] Tabla pagina creada y procedo a crear la pagina misma");
-	pagina_nueva_a_poner = crear_pagina(timestampNuevo, key, valor);
-	log_info(log_memoria, "[Crear Tabla y pagina] Pagina creada con: timestamp '%d'; KEY '%d'; y VALOR: '%s'", pagina_nueva_a_poner->timestamp, key, valor);
+	aux_pagina = crear_pagina(timestampNuevo, key, valor);
+	log_info(log_memoria, "[Crear Tabla y pagina] Pagina creada con: timestamp '%d'; KEY '%d'; y VALOR: '%s'", aux_pagina->timestamp, key, valor);
 	//MIENTRAS EST{E BLOQUEADO, NO SE PUEDE QUITAR O PONER NUEVAS PAGINAS
 	log_info(log_memoria, "[Crear Tabla y pagina] Verifico si hay espacio libre en Memoria");
 	if(cantPaginasDisponibles<=0){
 		log_info(log_memoria, "[Crear Tabla y pagina] NO hay espacio libre por lo tanto activo el LRU");
 		//SIGNIFICA QUE LLEGO AL TOPE DE PAGINAS EN MEMORIA
 		//O SEA ESTAN TODAS OCUPADAS, APLICO LRU
-		LRU(pagina_nueva_a_poner);
+		LRU(aux_pagina);
 	} else {
 		log_info(log_memoria, "[Crear Tabla y pagina] Existen '%d' espacios LIBRES", cantPaginasDisponibles);
 		//AUN HAY ESPACIO, GAURDO ESTA NUEVA PAGINA EN ALGUNA POSICION LIBRE
-		tabla_pagina_nueva->posicion=posicionLibreAsignada;
+		aux_tabla_paginas->posicion=posicionLibreAsignada;
 		log_info(log_memoria, "[Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina");
-		pagina_nueva_a_poner = actualizarPosicionAPagina(pagina_nueva_a_poner, posicionLibreAsignada);
+		aux_pagina = actualizarPosicionAPagina(aux_pagina, posicionLibreAsignada);
 		log_info(log_memoria, "[Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion");
-		asignarNuevaTablaAPosicionLibre(tabla_pagina_nueva, posicionLibreAsignada, pagina_nueva_a_poner);
+		asignarNuevaTablaAPosicionLibre(aux_tabla_paginas, posicionLibreAsignada, aux_pagina);
 		log_info(log_memoria, "[Crear Tabla y pagina] ASIGNACION COMPLETADA");
 	}
 	log_info(log_memoria, "[Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion");

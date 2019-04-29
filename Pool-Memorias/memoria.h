@@ -82,7 +82,7 @@ typedef struct pagina{
 	short nroPosicion;
 	long timestamp;
 	int16_t key;
-	char* value;
+	char value[];
 }pagina;
 
 typedef struct nodoSegmento{
@@ -120,6 +120,10 @@ typedef struct unidad_memoria {
 memoria_principal* memoria;
 segmento* tablaSegmentos;
 t_memoria_config* arc_config;
+
+//ESTOS 2 SOLO SE USARAN PARA CARGAR DATOS, NADA MAS
+tabla_pagina* aux_tabla_paginas;
+pagina* aux_pagina;
 
 /*---------------------------------------------------
  * FUNCIONES PARA MEMORIA PRINCIPAL
