@@ -11,7 +11,6 @@ int main() {
 
 	log_cremota = archivoLogCrear(LOG_PATH, "Consola remota para LFS.");
 	cargarConfiguracion();
-	conexionConsolaRemota();
 	menu();
 	consola();
 
@@ -134,9 +133,11 @@ void consola() {
 		strtok(linea, "\n");
 
 		// (+) Realización del envio
+		conexionConsolaRemota();
+
 		sendedMsgStatus = socketEnviar( socketCRemota
 				                      , linea
-									  , sizeof(linea)
+									  , string_length(linea) + 1
 				                      , log_cremota);
 
 		if (sendedMsgStatus == ERROR) {

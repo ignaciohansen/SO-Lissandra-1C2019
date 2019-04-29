@@ -52,7 +52,7 @@ int abrirServidorLissandra() {
 		imprimirError (logger, "[ERROR] Fallo al crear Socket.");
 		return -1;
 	} else {
-		imprimirVerde1(logger, "[OK] Se ha creado el socket nro.: %d.", socketEscuchaMemoria);
+		imprimirVerde1(logger, "[  OK  ] Se ha creado el socket nro.: %d.", socketEscuchaMemoria);
 
 	}
 
@@ -62,7 +62,7 @@ int abrirServidorLissandra() {
 
 	asociarSocket   (socketEscuchaMemoria ,puerto_a_escuchar,logger);
 
-	imprimirMensaje (logger      , "[OK] Asociado.");
+	imprimirMensaje (logger      , "[  OK  ] Asociado.");
 
 	socketEscuchar  (socketEscuchaMemoria ,10 ,logger);
 
@@ -304,13 +304,9 @@ void listenSomeLQL() {
 
 		conexionEntrante = aceptarConexionSocket(socketEscuchaMemoria,logger);
 
-		imprimirMensaje(logger, " \n se conectó alguien \n ");
-
 		Puntero buffer = (void*)string_new(); // malloc(sizeof(char)*100);
 
 		recibiendoMensaje = socketRecibir(conexionEntrante, buffer, 25,  logger);
-
-		// buffer[25] = '\0';
 
 		char* msg = string_new();
 		string_append(&msg,"Mensaje recibido: \""); string_append(&msg,buffer ); string_append(&msg,"\"." );
