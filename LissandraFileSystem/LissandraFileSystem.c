@@ -304,11 +304,16 @@ void listenSomeLQL() {
 
 		conexionEntrante = aceptarConexionSocket(socketEscuchaMemoria,logger);
 
-		Puntero buffer = (void*)string_new(); // malloc(sizeof(char)*100);
+		//Puntero buffer = (void*)string_new(); // malloc(sizeof(char)*100);
+
+		Puntero buffer = malloc(sizeof(char)*100);
 
 		recibiendoMensaje = socketRecibir(conexionEntrante, buffer, 25,  logger);
 
-		char* msg = string_new();
+		//char* msg = string_new();
+
+		char * msg = malloc(sizeof(char)*100);
+		
 		string_append(&msg,"Mensaje recibido: \""); string_append(&msg,buffer ); string_append(&msg,"\"." );
 
 		imprimirVerde(logger, msg);
