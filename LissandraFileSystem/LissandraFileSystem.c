@@ -6,7 +6,15 @@
  */
 
 #include "LissandraFileSystem.h"
-
+/*
+ * REQUERIMIENTOS:
+ *  - verificarExistenciaTabla    ()
+ *  - registro**:escanearTabla    (nombre,key)          // retorna un array de punterosa registros.
+ *              :escaneaBinario   (key)
+ *              :escaneaTemp      (key)
+ *              :escaneaTempc     (key)
+ *  - registro**:escanearMemtable (key)                 // retorna un array de punterosa registros.
+ */
 int main() {
 
 	pantallaLimpiar();
