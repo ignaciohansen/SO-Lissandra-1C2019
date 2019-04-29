@@ -6,7 +6,6 @@
  */
 
 #include "LissandraFileSystem.h"
-#include "commons/string.h"
 
 int main() {
 
@@ -304,6 +303,8 @@ void listenSomeLQL() {
 		imprimirMensaje(logger, " \n ====== LFS Listener: waiting for client connections ====== \n ");
 
 		conexionEntrante = aceptarConexionSocket(socketEscuchaMemoria,logger);
+
+		imprimirMensaje(logger, " \n se conectó alguien \n ");
 
 		Puntero buffer = (void*)string_new(); // malloc(sizeof(char)*100);
 

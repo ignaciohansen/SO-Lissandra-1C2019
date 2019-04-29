@@ -1,16 +1,7 @@
 #ifndef LFILESSYSTEM_H_
 #define LFILESSYSTEM_H_
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <commons/log.h>
-#include <commons/string.h>
-#include <commons/config.h>
-#include <commons/collections/queue.h>
 #include "../Biblioteca/src/Biblioteca.c"
-#include <readline/readline.h>
-#include <readline/history.h>
-#include <pthread.h>
 
 #define PATH_LFILESYSTEM_CONFIG "../LFS_CONFIG.txt"
 #define LOG_PATH "LOG_LFS.txt"
