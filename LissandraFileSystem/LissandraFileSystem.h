@@ -89,7 +89,7 @@ t_metadata_LFS* metadataLFS;
 
 char* tablaAverificar;
 
-int comandoSelect(char* tabla, int key);
+int comandoSelect(char* tabla, char* key);
 
 void obtenerMetadata();
 

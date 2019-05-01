@@ -340,7 +340,7 @@ void validarComando(char** comando,int tamanio,t_log* logger){
 				if(tamanio == 3){
 
 					log_info(logger, "Cantidad de parametros correctos ingresados para el comando select");
-					
+
 					int resultado = comandoSelect(comando[1],comando[2]);
 
 					log_info(logger,"El resultado de la operacion fue: %d", resultado);
@@ -488,30 +488,23 @@ void listenSomeLQL() {
 
 }
 
-int comandoSelect(char* tabla, int key) {
+int comandoSelect(char* tabla, char* key) {
 
-	log_info(logger,"Le voy a pasar a verificarTabla la tabla: %s",tabla);
-	if (!verificarTabla(tabla)) {
-
-		log_info(logger,"No existe la tabla pasada por parametro");
-
-		return 0;
-	}
-
-	log_info(logger,"Existe la tabla pasada por parametro: %s",tabla);
-
-	// obtener el metadata de la tabla
+	verificarTabla(tabla);
 
 	obtenerMetadata();
 	
-	int particiones = determinarParticion(key, metadata->particiones);
+
+	int valorKey = atoi(key);
+
+	log_info(logger,"valorkey: %d ",valorKey);
+	int particiones = determinarParticion(valorKey, metadata->particiones);
 
 	escanearParticion(particiones);
 
-	// escanear particion
 	// ver key con timestamp mas grande
 
-	return key;
+	return valorKey;
 
 }
 
@@ -551,6 +544,18 @@ int verificarTabla(char* tabla) {
 		return 1;
 		fclose(file);
 	}
+
+	log_info(logger,"Le voy a pasar a verificarTabla la tabla: %s",tabla);
+		if (!verificarTabla(tabla)) {
+
+			log_info(logger,"No existe la tabla pasada por parametro");
+
+			return 0;
+		}
+
+		log_info(logger,"Existe la tabla pasada por parametro: %s",tabla);
+
+
 }
 
 void obtenerMetadata() {
@@ -624,9 +629,13 @@ void obtenerMetadata() {
 
 int determinarParticion(int key, int particiones) {
 
-	printf("La tabla sera agregada en la particion %i \n", key % particiones);
+	log_info(logger, "la key es %d",
+				key );
+	log_info(logger, "La particion es %d",
+				 particiones);
+	printf("La tabla sera agregada en la particion %d \n", key % particiones);
 
-	log_info(logger, "La tabla sera agregada en la particion %i",
+	log_info(logger, "La tabla sera agregada en la particion %d",
 			key % particiones);
 
 	return key % particiones;
@@ -647,14 +656,13 @@ char* archivoParticion = malloc(
 		log_info(logger,"Se reservo memoria para concatenar ruta de la tabla con la particion");
 		archivoParticion = string_new();
 		string_append(&archivoParticion,tablaAverificar);
-		log_info(logger, "Primer append");
+
 		string_append(&archivoParticion,"/");
 
 		string_append(&archivoParticion,stringParticion);
-		log_info(logger, "Segundo append");
+
 		string_append(&archivoParticion,".bin");
 
-		log_info(logger, "Abrimos particion %s",archivoParticion);
 
 FILE *file;
 file = fopen(archivoParticion, "r");
