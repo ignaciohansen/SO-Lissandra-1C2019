@@ -3,8 +3,8 @@
 
 #include "../Biblioteca/src/Biblioteca.c"
 
-#define PATH_LFILESYSTEM_CONFIG "LFS_CONFIG.txt"
-#define LOG_PATH "LOG_LFS.txt"
+#define PATH_LFILESYSTEM_CONFIG "../Config/LFS_CONFIG.txt"
+#define LOG_PATH "../Log/LOG_LFS.txt"
 
 t_log* logger;
 

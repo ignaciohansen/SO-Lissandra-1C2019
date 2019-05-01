@@ -17,8 +17,8 @@
 #include <commons/collections/queue.h>
 #include "../Biblioteca/src/Biblioteca.c"
 
-#define PATH_MEMORIA_CONFIG "../MEMORIA.txt"
-#define LOG_PATH "logMEMORIA.txt"
+#define PATH_MEMORIA_CONFIG "../Config/MEMORIA.txt"
+#define LOG_PATH "../Log/logMEMORIA.txt"
 #define MAXSIZE_COMANDO 200
 #define ERROR -1
 

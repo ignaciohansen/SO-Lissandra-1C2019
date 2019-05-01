@@ -35,8 +35,9 @@
 // HILOS
 #include <pthread.h>
 
-#define PATH_KERNEL_CONFIG "../KERNEL.txt"
-#define LOG_PATH "LOG_KERNEL.txt"
+#define PATH_KERNEL_CONFIG "../Config/KERNEL.txt"
+#define LOG_PATH "../Log/LOG_KERNEL.txt"
+
 
 int socket_CMemoria,tamanio,countPID;
 t_log* log_kernel;
