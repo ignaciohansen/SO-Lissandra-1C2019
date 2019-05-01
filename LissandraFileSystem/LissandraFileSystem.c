@@ -506,8 +506,11 @@ int comandoSelect(char* tabla, int key) {
 	
 	int particiones = determinarParticion(key, metadata->particiones);
 
+	escanearParticion(particiones);
+
 	// escanear particion
 	// ver key con timestamp mas grande
+
 	return key;
 
 }
@@ -521,7 +524,7 @@ int comandoSelect(char* tabla, int key) {
 //}
 
 int verificarTabla(char* tabla) {
-	char* tablaAverificar = malloc(
+	 tablaAverificar = malloc(
 			string_length(tabla_Path) + string_length(tabla));
 
 	log_info(logger,"Se reservo memoria para contatenar punto de montaje con la tabla");
@@ -630,4 +633,38 @@ int determinarParticion(int key, int particiones) {
 
 }
 
+void escanearParticion(int particion){
+
+
+char * stringParticion = malloc(sizeof(char));
+
+sprintf(stringParticion, "%d", particion);
+log_info(logger, "resultado de sprintf %s",stringParticion);
+
+char* archivoParticion = malloc(
+				string_length(tablaAverificar) + string_length(stringParticion) + string_length(PATH_BIN));
+
+		log_info(logger,"Se reservo memoria para concatenar ruta de la tabla con la particion");
+		archivoParticion = string_new();
+		string_append(&archivoParticion,tablaAverificar);
+		log_info(logger, "Primer append");
+		string_append(&archivoParticion,"/");
+
+		string_append(&archivoParticion,stringParticion);
+		log_info(logger, "Segundo append");
+		string_append(&archivoParticion,".bin");
+
+		log_info(logger, "Abrimos particion %s",archivoParticion);
+
+FILE *file;
+file = fopen(archivoParticion, "r");
+		if (file == NULL) {
+			//log_error(logger, "No existe la particion");
+			perror("Error");
+		} else {
+			log_info(logger, "Abrimos particion %d",particion);
+			fclose(file);
+		}
+
+}
 
