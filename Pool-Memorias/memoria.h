@@ -80,9 +80,8 @@ typedef struct {
 
 typedef struct pagina{
 	short nroPosicion;
-	long timestamp;
+	unsigned long timestamp;
 	int16_t key;
-	char value[];
 }pagina;
 
 typedef struct nodoSegmento{
@@ -95,6 +94,11 @@ typedef struct nodoSegmento{
 		 * */
 		struct nodoSegmento* siguienteSegmento;
 }segmento;
+
+typedef struct infoPagina{
+	pagina* unaPag;
+	char* value;
+}infoPagina;
 
 /*EL NUMERO DE PAGINA YA ME LO DA SU POSICION EN EL BLOQUE
  * DE TABLA PAGINAS
@@ -125,10 +129,13 @@ t_memoria_config* arc_config;
 tabla_pagina* aux_tabla_paginas;
 pagina* aux_pagina;
 
+
+
 /*---------------------------------------------------
  * FUNCIONES PARA MEMORIA PRINCIPAL
  ---------------------------------------------------*/
 void armarMemoriaPrincipal();
+void* obtenerInfoDePagina(int i, void* informacion);
 
 /*---------------------------------------------------
  * FUNCIONES PARA LA CONFIGURACION Y FINALIZACION
@@ -205,11 +212,11 @@ void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
 	* @DESC: Crea una lista
 	*/
 	segmento * segmento_crear(char* pathNombreTabla, int nroPagina);
-	int * tabla_pagina_crear(int16_t key, long timestampNuevo, char* valor, bool flag_modificado);
+	int tabla_pagina_crear(int16_t key, unsigned long timestampNuevo, char* valor, bool flag_modificado);
 //	pagina * pagina_crear(long timestamp, int16_t key, char * valor);
 	pagina* pagina_crear(long timestampNuevo, int16_t key, char * valor, char* nombreTabla);
 	//EL DE ABAJO CREA LA UNIDAD, EL DE ARRIBA DESPUES MANDA A BUSCAR EL SEGMENTO
-	pagina* crear_pagina(long timestampNUevo, int16_t key, char * valor);
+	pagina* crear_pagina(unsigned long timestampNUevo, int16_t key, char * valor);
 	/**
 	* @NAME: list_destroy
 	* @DESC: Destruye una lista sin liberar

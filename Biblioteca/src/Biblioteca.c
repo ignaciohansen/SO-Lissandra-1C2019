@@ -21,7 +21,7 @@ void abortarProcesoPorUnErrorImportante(t_log* log, char* mensaje){
 
 //--------------------------------------- Funcion timestamp -------------------------------------
 
-long timestamp(void) {
+unsigned long timestamp(void) {
 
     struct timespec tms;
 

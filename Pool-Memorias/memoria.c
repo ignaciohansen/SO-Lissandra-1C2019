@@ -6,17 +6,61 @@ void terminar_memoria(t_log* g_log);
 int main() {
 
     // LOGGING
+	printf("INICIANDO EL MODULO MEMORIA");
 	inicioLogYConfig();
 
-	crearConexionesConOtrosProcesos(); // conecta con LFS y puede que con kernel.
-
-    ejecutarHiloConsola();
-
+//	crearConexionesConOtrosProcesos(); // conecta con LFS y puede que con kernel.
+	printf("HACIENDO MEMORIA");
+	aux_pagina=malloc(sizeof(pagina));
+	aux_tabla_paginas=malloc(sizeof(tabla_pagina));
+//    ejecutarHiloConsola();
     armarMemoriaPrincipal();
 
+
+
+    //ESTE ES SOLO TEST, DESPUES SE BORRA A LA MIERDA
+    max_valor_key=5;
+//    infoPagina* infoPag = malloc(sizeof(infoPag));
+
+    void* informacion = malloc(sizeof(pagina)+max_valor_key);
+    void* extar;// = malloc(sizeof(pagina)+max_valor_key);
+ //   infoPag->value=malloc(max_valor_key);
+
+    int i =0;
+    	int pos;
+
+    	pagina* nuevaPag =malloc(sizeof(pagina));
+    	char stringValor[max_valor_key];
+    	strcpy(stringValor, "h");
+    	for(i=0; i<10; i++){
+    		tabla_pagina_crear(100+i, 0, stringValor, false);
+    	}
+    	strcpy(stringValor, "");
+    	for(i=0; i<10; i++){
+    		extar = obtenerInfoDePagina(i, informacion);
+    		memcpy(stringValor, extar+sizeof(pagina)-1, max_valor_key);
+    		memcpy(nuevaPag, extar, sizeof(pagina));
+    		printf("ALGO %d  %d  %d\n", nuevaPag->nroPosicion, nuevaPag->key, nuevaPag->timestamp);
+    		printf("OTRO %s\n\n", stringValor);
+    	//	printf("TIMESTAMP|NRO|KEY %d|%d|%d\n", nuevaPag->timestamp, nuevaPag->nroPosicion, nuevaPag->key);
+    //		printf("VALUE: %s\n\n", stringValor);
+    	}
+    	free(nuevaPag);
+   // 	free(extar);
+    //	free(nuevaPag);
+    	printf("TERMINADO");
+    	free(informacion);
+
+//    ejecutarHiloConsola();
     liberar_todo_por_cierre_de_modulo();
     return 0;
 } // MAIN.
+
+void* obtenerInfoDePagina(int i, void* informacion){
+	void* algo = informacion;
+	memcpy(algo, bloque_memoria+i*(sizeof(pagina)+max_valor_key), sizeof(pagina)+max_valor_key);
+	return algo;
+}
 
 void liberar_todo_por_cierre_de_modulo(){
 	//LIBERA LA RAM.
@@ -73,7 +117,12 @@ void inicioLogYConfig() {
 void armarMemoriaPrincipal(){
 	tablaPaginaArmada = 0;
 	memoriaArmada =0;
+	int i = 0;
 	log_info(log_memoria, "[ARMAR MEMORIA] Armo el bloque de memoria, guardo su tamaño");
+
+
+	printf("HACIENDO MEMORIA");
+
 	bloque_memoria = malloc(arc_config->tam_mem);
 	log_info(log_memoria, "[ARMAR MEMORIA] Se ha creado la memoria contigua");
 	if(bloque_memoria == NULL){
@@ -84,10 +133,11 @@ void armarMemoriaPrincipal(){
 	log_info(log_memoria, "[ARMAR MEMORIA] Se ha creado la memoria");
 
 	log_info(log_memoria, "[ARMAR MEMORIA] Guardo tamaño de memoria: %d", sizeof(int)*arc_config->tam_mem);
+
 	//ESTO ES PARA SABER CUANTA MEMORIA REAL TIENE DISPONIBLE MEMORIA SIN CONTAR LO ADMINISTRATIVO
 	//USANDO EL SIZEOF(MEMORIA) QUEDO PARADO EN LA BASE DONDE COMENZARA A HABER PAGINAS SIENDO
 	//ESTA LA POSICION 0 o 1
-	memoria->tamanioMemoria = arc_config->tam_mem - sizeof(memoria);
+	int tamanioMemoria = arc_config->tam_mem;
 
 	//CON ESTO CONOCENERE CUANTO DEBERIA MOVERME POR BYTE PARA LLEGAR A UNA POSICION DE PAGINA
 
@@ -97,15 +147,15 @@ void armarMemoriaPrincipal(){
 	arc_config->max_value_key = 4;
 			//HARDCODEADO PERO BUENO, NO SE QUE LE PASA AL CONFIG DE FILESYSTEM
 
-	memoria->tamanioPagina = sizeof(pagina) + arc_config->max_value_key;
-	cantPaginasDisponibles = memoria->tamanioMemoria/memoria->tamanioPagina;
-	memoria->paginasTotales = cantPaginasDisponibles;
+	int tamanioPagina = sizeof(pagina) + arc_config->max_value_key;
+	cantPaginasDisponibles = tamanioMemoria/tamanioPagina;
+//memoria->paginasTotales = cantPaginasDisponibles;
 	cantPaginasTotales = cantPaginasDisponibles;
 	//AQUI SE HAN INICIALIZADO LOS SEMAFOROS DE PAGINAS DISPONIBLES
 
-	log_info(log_memoria, "[ARMAR MEMORIA] Tamaño de memoria guardada, MEMORIA REAL: %d", memoria->tamanioMemoria);
+	log_info(log_memoria, "[ARMAR MEMORIA] Tamaño de memoria guardada, MEMORIA REAL: %d", tamanioMemoria);
 
-	log_info(log_memoria, "[ARMAR MEMORIA] Tamaño de pagina: %d", memoria->tamanioPagina);
+	log_info(log_memoria, "[ARMAR MEMORIA] Tamaño de pagina: %d", tamanioPagina);
 
 	log_info(log_memoria, "[ARMAR MEMORIA] Cantidad maxima de paginas en memoria: %d", cantPaginasDisponibles);
 
@@ -132,6 +182,9 @@ void armarMemoriaPrincipal(){
 
 	mutexIniciar(&memoria_mutex_paginas_disponibles);
 	mutexIniciar(&mutex_tabla_pagina_en_modificacion);
+
+
+	printf("MEMORIA TERMINADA");
 
 	//PONGO ESTOS SEMAFOROS LISTOS PARA EMPEZAR A OPERAR
 	memoriaArmada = 1;
@@ -448,7 +501,7 @@ void ejecutarHiloConsola(){
 	pthread_create(&hiloConsola, NULL, (void*) consola, NULL);
 	log_info(log_memoria, "[HILO CONSOLA]Se crea HILO CONSOLA");
 	//DUDAS RESPECTO A ESTE HILO, SI PONGO ESTO EMPIEZA A EJECUTAR Y NO PERMITIRA QUE OTROS ENTREN O QUE?
-	pthread_detach(hiloConsola);
+	pthread_join(hiloConsola, NULL);
 	log_info(log_memoria, "[HILO CONSOLA]HILO CONSOLA en ejecucion");
 }
 
@@ -942,8 +995,12 @@ segmento * segmento_crear(char* pathNombreTabla, int nroPagina) {
 //
 //ESTA FUNCION ES LLAMADA SOLO CUANDO SE TIENE QUE CREAR UNA NUEVA PAGINA
 //DEVUELVE EL NRO DONDE SE ALOJO LA NUEVA TABLA
-int * tabla_pagina_crear(int16_t key, long timestampNuevo, char* valor, bool flag_modificado) {
+//int * tabla_pagina_crear(int16_t key, long timestampNuevo, char* valor, bool flag_modificado)
+
+int tabla_pagina_crear(int16_t key, unsigned long timestampNuevo, char* valor, bool flag_modificado) {
+	char valor_string[max_valor_key];
 	log_info(log_memoria, "[Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key %d", key);
+
 	aux_tabla_paginas->flag=flag_modificado;
 	aux_tabla_paginas->key=key;
 	mutexBloquear(&mutex_tabla_pagina_en_modificacion);
@@ -951,7 +1008,8 @@ int * tabla_pagina_crear(int16_t key, long timestampNuevo, char* valor, bool fla
 	log_info(log_memoria, "[Crear Tabla y pagina] La posicion a la cual le voy a asignar es %d", posicionLibreAsignada);
 	log_info(log_memoria, "[Crear Tabla y pagina] Tabla pagina creada y procedo a crear la pagina misma");
 	aux_pagina = crear_pagina(timestampNuevo, key, valor);
-	log_info(log_memoria, "[Crear Tabla y pagina] Pagina creada con: timestamp '%d'; KEY '%d'; y VALOR: '%s'", aux_pagina->timestamp, key, valor);
+	strcpy(valor_string, valor);
+	log_info(log_memoria, "[Crear Tabla y pagina] Pagina creada con: timestamp '%d'; KEY '%d'; y VALOR: '%s'", aux_pagina->timestamp, key, valor_string);
 	//MIENTRAS EST{E BLOQUEADO, NO SE PUEDE QUITAR O PONER NUEVAS PAGINAS
 	log_info(log_memoria, "[Crear Tabla y pagina] Verifico si hay espacio libre en Memoria");
 	if(cantPaginasDisponibles<=0){
@@ -966,7 +1024,7 @@ int * tabla_pagina_crear(int16_t key, long timestampNuevo, char* valor, bool fla
 		log_info(log_memoria, "[Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina");
 		aux_pagina = actualizarPosicionAPagina(aux_pagina, posicionLibreAsignada);
 		log_info(log_memoria, "[Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion");
-		asignarNuevaTablaAPosicionLibre(aux_tabla_paginas, posicionLibreAsignada, aux_pagina);
+		asignarNuevaTablaAPosicionLibre(aux_tabla_paginas, posicionLibreAsignada, aux_pagina, valor_string);
 		log_info(log_memoria, "[Crear Tabla y pagina] ASIGNACION COMPLETADA");
 	}
 	log_info(log_memoria, "[Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion");
@@ -979,25 +1037,45 @@ pagina* actualizarPosicionAPagina(pagina* unaPagina, int nuevaPos){
 	return unaPagina;
 }
 
-void asignarNuevaTablaAPosicionLibre(tabla_pagina* tabla_pagina_nueva, int posLibre, pagina* pagina_nueva){
-	memcpy(tabla_paginada+posLibre*sizeof(tabla_pagina), tabla_pagina_nueva, sizeof(tabla_pagina_nueva));
-	memcpy(bloque_memoria+posLibre*sizeof(pagina), pagina_nueva, sizeof(pagina_nueva)+max_valor_key);
+void asignarNuevaTablaAPosicionLibre(tabla_pagina* tabla_pagina_nueva, int posLibre, pagina* pagina_nueva, char valor_a_poner[max_valor_key]){
+	log_info(log_memoria, "[asignarNuevaTablaAPosicionLibre] Por guardar los datos de la tabla pagina, el valor y la nueva pagina en memoria");
+
+	memcpy(tabla_paginada+posLibre*sizeof(tabla_pagina), tabla_pagina_nueva, sizeof(tabla_pagina));
+	log_info(log_memoria, "[asignarNuevaTablaAPosicionLibre] Tabla de pagina guardada");
+
+	memcpy(bloque_memoria+posLibre*(sizeof(pagina)+max_valor_key), pagina_nueva, sizeof(pagina));
+	log_info(log_memoria, "[asignarNuevaTablaAPosicionLibre] Pagina guardada");
+
+	memcpy(bloque_memoria+posLibre*(sizeof(pagina)+max_valor_key)+sizeof(pagina)-1,valor_a_poner, max_valor_key);
+	log_info(log_memoria, "[asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada");
+	log_info(log_memoria, "[asignarNuevaTablaAPosicionLibre] Decremento el semaforo de cantPaginasDisponibles en 1 unidad");
+
 	cantPaginasDisponibles -= 1;
 	log_info(log_memoria, "[asignarNuevaTablaAPosicionLibre] Se han guardado exitosamente los datos\nAhora mismo hay '%d' espacios libres", cantPaginasDisponibles);
+	pagina* pagNew = malloc(sizeof(pagina));
+	char valorString[max_valor_key];
+	memcpy(pagNew, bloque_memoria+posLibre*(sizeof(pagina)+max_valor_key), sizeof(pagina));
+	memcpy(valorString, bloque_memoria+posLibre*(sizeof(pagina)+max_valor_key)+sizeof(pagina)-1, max_valor_key);
+
+	printf("VALORES: POSICION|KEY|TIMESTAMP  %d|%d|%d\n\n", pagNew->nroPosicion, pagNew->key, pagNew->timestamp);
+	printf("VALUE: %s\n\n", valorString);
+	printf("VALOR ORIGINAL %s \nTIMESTAMP: %d\n\n", valor_a_poner, pagina_nueva->timestamp);
+	free(pagNew);
 }
 
-pagina* crear_pagina(long timestampNUevo, int16_t key, char * valor) {
-	pagina* pag_nueva;
-	pag_nueva->nroPosicion = 0;
-	pag_nueva->key = key;
-	strcpy(pag_nueva->value, valor);
+pagina* crear_pagina(unsigned long timestampNUevo, int16_t key, char * valor) {
+	log_info(log_memoria, "[CREANDO PAGINA Y VALOR] Por crear pagina y valor");
+	aux_pagina->nroPosicion = 0;
+	aux_pagina->key = key;
 	//SI TIENE TIMESTAMP EN 0 LE ASIGNAMOS EL ACTUAL
 	if(timestampNUevo <= 0) {
-		pag_nueva->timestamp = timestamp();
+		aux_pagina->timestamp = timestamp();
 	} else {
-		pag_nueva->timestamp = timestampNUevo;
+		aux_pagina->timestamp = timestampNUevo;
 	}
-	return pag_nueva;
+	log_info(log_memoria, "[CREANDO PAGINA Y VALOR]KEY|VALOR|TIMESTAMP: %d|%d|%s", key, aux_pagina->timestamp, valor);
+	log_info(log_memoria, "[CREANDO PAGINA Y VALOR] Pagina creada y tambien su valor");
+	return aux_pagina;
 }
 
 /*
@@ -1032,7 +1110,12 @@ int buscarKeyPorTablaPagina(int posicionABuscar, int16_t keyBuscada) {
 	log_info(log_memoria, "[Buscar Key Por Tabla PAGINA] Busco en la pagina '%d'", posicionABuscar);
 	memcpy(tabla_pagina_aux, tabla_paginada+posicionABuscar*sizeof(tabla_pagina), sizeof(tabla_pagina));
 	//RETORNA LA POSICION DONDE SE ENCUNETRA LA PAGINA SINO DA -1 PASA A LA SIGUIENTE
-	return tabla_pagina_aux->key==keyBuscada?tabla_pagina_aux->posicion:ERROR;
+	if(tabla_pagina_aux->key==keyBuscada){
+		log_info(log_memoria, "[Buscar Key Por Tabla PAGINA] POSICION DE LA PAGINA ENCONTRADA para la key|posicion '%d|%d'", keyBuscada, tabla_pagina_aux->posicion);
+		return tabla_pagina_aux->posicion;
+	}
+	log_info(log_memoria, "[Buscar Key Por Tabla PAGINA] NO SE ENCONTRO LA PAGINA PARA LA KEY EN LA POSICION PARA LA KEY|POSICION %d|%d", keyBuscada, posicionABuscar);
+	return ERROR;
 	/*
 	tabla_pagina* paginas = tabla_pag;
 	tabla_pagina* primero = tabla_pag;
@@ -1070,12 +1153,12 @@ int buscarEntreTodasLasTablaPaginasLaKey(int tablasAsociadasASegmento[], int can
 		posiblePosicion=buscarKeyPorTablaPagina(tablasAsociadasASegmento[i], keyBuscada);
 		if(posiblePosicion>ERROR){
 			nroDePagina = tablasAsociadasASegmento[i];
-			log_info(log_memoria, "[Buscar Key Por Tabla PAGINA] Se encontro la pagina buscada, paso su ubicacion");
+			log_info(log_memoria, "[Buscar Key Por Tabla PAGINA] Se encontro la pagina buscada, KEY|UBICACION: %d|%d", keyBuscada, nroDePagina);
 			return posiblePosicion;
 		}
-		log_info(log_memoria, "[Buscar Key Por Tabla PAGINA] No se la encontro, busco en la siguiente tabla");
+		log_info(log_memoria, "[Buscar Key Por Tabla PAGINA] No se encontro la key %d, busco en la siguiente tabla", keyBuscada);
 	}
-	log_info(log_memoria, "[Buscar Key Por Tabla PAGINA] NO SE ENCONTRO LA KEY, SALIMOS POR ERROR");
+	log_info(log_memoria, "[Buscar Key Por Tabla PAGINA] NO SE ENCONTRO LA KEY '%d', SALIMOS POR ERROR", keyBuscada);
 	//SALIO DEL CICLO POR LO TANTO NO LO ENCONTRO
 	return ERROR;
 }
@@ -1141,29 +1224,41 @@ void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, long timestampNuev
 	mutexBloquear(&mutex_tabla_pagina_en_modificacion);
 	pagina* aux;
 	tabla_pagina* tabla_pag;
-	memcpy(aux, tabla_paginada+posAIr*(sizeof(pagina)+max_valor_key), sizeof(pagina)+max_valor_key);
+	char value_de_pagina [max_valor_key];
+	memcpy(aux, bloque_memoria+posAIr*(sizeof(pagina)+max_valor_key), sizeof(pagina));
+	memcpy(value_de_pagina, bloque_memoria+posAIr*(sizeof(pagina)+max_valor_key)+sizeof(pagina), max_valor_key);
 	log_info(log_memoria, "[Modificar valor pagina] Para la pagina con key '%d';  TIMESTAMP '%d'; VALOR '%s'",
-										aux->key, aux->timestamp, aux->value);
+										aux->key, aux->timestamp, value_de_pagina);
 
 	if(timestampNuevo<=0) {
 		aux->timestamp= timestamp();
 	} else {
 		aux->timestamp = timestampNuevo;
 	}
-	strcpy(aux->value, valorNuevo);
+	strcpy(value_de_pagina, valorNuevo);
 
-	log_info(log_memoria, "[Modificar valor pagina] Pagina modificada con key '%d';  TIMESTAMP '%d'; VALOR '%s'",
-											aux->key, aux->timestamp, aux->value);
+	log_info(log_memoria, "[Modificar valor pagina] Pagina modificada con key '%d' VALORES NUEVOS;  TIMESTAMP '%d'; VALOR '%s'",
+											aux->key, aux->timestamp, value_de_pagina);
 
-	memcpy(tabla_paginada+posAIr*(sizeof(pagina)+max_valor_key), aux, sizeof(pagina)+max_valor_key);
+	log_info(log_memoria, "[MOdificar valor pagina] Guardando los datos actualizados la pagina con key: %d", aux->key);
+	memcpy(bloque_memoria+posAIr*(sizeof(aux)+max_valor_key), aux, sizeof(aux));
+	log_info(log_memoria, "[MOdificar valor pagina] key: '%d', VALOR NUEVO: %s", aux->key, value_de_pagina);
+
+	memcpy(tabla_paginada+posAIr*((sizeof(aux))+max_valor_key)+sizeof(aux), value_de_pagina, max_valor_key);
+	log_info(log_memoria, "[MOdificar valor tabla pagina] Datos actualizados para la pagina con key: %d", aux->key);
+
+	log_info(log_memoria, "[MOdificar valor tabla pagina] Actualizar FLAG de tabla pagina asociada a la key: %d", aux->key);
 
 	memcpy(tabla_pag, tabla_paginada+nroPosicion*sizeof(tabla_pagina), sizeof(tabla_pagina));
 
 	tabla_pag->flag=true;
+	log_info(log_memoria, "[MOdificar valor tabla pagina] FLAG ACTUALIZADO EN MODIFICADO PARA LA TABLA DE LA KEY|NRO DE PAGINA: %d|%d", aux->key, nroPosicion);
+
 	memcpy(tabla_paginada+nroPosicion*sizeof(tabla_pagina),tabla_pag, sizeof(tabla_pagina));
 
-	log_info(log_memoria, "[Modificar valor pagina] Se ham modificado el FLAG de la tabla NRO DE PAGINA '%d'", nroPosicion);
+	log_info(log_memoria, "[Modificar valor pagina] Se ham modificado el FLAG de la tabla KEY|NRO DE PAGINA: %d|%d", aux->key,nroPosicion);
 
+	log_info(log_memoria, "[Modificar valor pagina] Desbloqueo el MUTEX mutex_tabla_pagina_en_modificacion");
 	mutexDesbloquear(&mutex_tabla_pagina_en_modificacion);
 }
 
@@ -1341,6 +1436,7 @@ tabla_pagina* buscarPaginaPorNumero(int numeroABuscar, segmento* seg){
 */
 
 void limpiar_segmento_x_nombre_tabla(char* nombreTabla){
+	//ESTO SE DEBE REVISAR, TIENE ERRORES
 	log_info(log_memoria, "[LIBERAR SEGMENTO] Liberando segmento de la tabla '%s'", nombreTabla);
 	segmento* seg_aux;
 	while(seg_aux->path_tabla){
@@ -1377,11 +1473,13 @@ void vaciar_tabla_paginas_y_memoria(){
 	pag->key=-1;
 	pag->nroPosicion=-1;
 	pag->timestamp=-1;
-	pag->value="";
+	char valor_a_nulo [max_valor_key];
 	log_info(log_memoria, "[LIBERAR PAGINAS] BLOQUEO EL MUTEX mutex_tabla_pagina_en_modificacion");
 	mutexBloquear(&mutex_tabla_pagina_en_modificacion);
 	int i;
+	log_info(log_memoria, "[LIBERANDO TABLA DE PAGINAS] Por liberar toda la tabla de paginas");
 	for(i=0; i<cantPaginasTotales;i++){
+
 		memcpy(tabla_paginada+i*sizeof(tabla_pagina), tabla_pag, sizeof(tabla_pagina));
 	}
 
