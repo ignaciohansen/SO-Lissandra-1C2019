@@ -1,34 +1,35 @@
 #ifndef LFILESSYSTEM_H_
 #define LFILESSYSTEM_H_
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <commons/log.h>
-#include <commons/string.h>
-#include <commons/config.h>
-#include <commons/collections/queue.h>
 #include "../Biblioteca/src/Biblioteca.c"
-#include <readline/readline.h>
-#include <readline/history.h>
-#include <pthread.h>
 
-#define PATH_LFILESYSTEM_CONFIG "../LFS_CONFIG.txt"
+#define PATH_LFILESYSTEM_CONFIG "LFS_CONFIG.txt"
 #define LOG_PATH "LOG_LFS.txt"
 
 t_log* logger;
 
-typedef struct{
-	char* ip;
+typedef struct{	
 	int puerto_escucha;
 	char* punto_montaje;
 	int retardo;
 	int tamanio_value;
 	int tiempo_dump;
-
-
 }t_lfilesystem_config;
 
+typedef struct{
+	char* consistency;
+	int particiones;
+	int compaction_time;
+
+}t_metadata_tabla;
+
+
+
 t_lfilesystem_config* configFile;
+
+t_metadata_tabla* metadata;
+
+
 char** buffer;
 
 int socketEscuchaMemoria, conexionEntrante, recibiendoMensaje,tamanio;
@@ -49,8 +50,18 @@ void iniciaabrirServidorLissandra();
 #define MAXSIZE_COMANDO 200
 //enum {Select, insert, create, describe, drop, salir};
 char* linea;
+char* tabla_Path;
 void consola();
 void menu();
+
+char *separador2 = "\n";
+char *separator = " ";
+//Comandos
+int comandoSelect(char* tabla, int key);
+
+void obtenerMetadata();
+
+int verificarTabla(char* tabla);
 
 /*--------------------------------------------------------------------------------------------
  * 									Elementos de escucha

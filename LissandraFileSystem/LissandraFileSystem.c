@@ -6,18 +6,18 @@
  */
 
 #include "LissandraFileSystem.h"
-#include "commons/string.h"
 
 int main() {
 
 	pantallaLimpiar();
 	LisandraSetUP(); // CONFIGURACIÓN Y SETEO SOCKET
 
-	pthread_t* hiloListening;
-	pthread_create(&hiloListening, NULL,(void*) listenSomeLQL, NULL);
+	//pthread_t* hiloListening;
+	//pthread_create(&hiloListening, NULL,(void*) listenSomeLQL, NULL);
 
-	pthread_join(hiloListening, NULL);
+	//pthread_join(hiloListening, NULL);
 
+	consola();
 	return 0;
 }
 
@@ -53,7 +53,7 @@ int abrirServidorLissandra() {
 		imprimirError (logger, "[ERROR] Fallo al crear Socket.");
 		return -1;
 	} else {
-		imprimirVerde1(logger, "[OK] Se ha creado el socket nro.: %d.", socketEscuchaMemoria);
+		imprimirVerde1(logger, "[  OK  ] Se ha creado el socket nro.: %d.", socketEscuchaMemoria);
 
 	}
 
@@ -63,7 +63,7 @@ int abrirServidorLissandra() {
 
 	asociarSocket   (socketEscuchaMemoria ,puerto_a_escuchar,logger);
 
-	imprimirMensaje (logger      , "[OK] Asociado.");
+	imprimirMensaje (logger      , "[  OK  ] Asociado.");
 
 	socketEscuchar  (socketEscuchaMemoria ,10 ,logger);
 
@@ -97,20 +97,7 @@ bool cargarConfiguracion() {
 		imprimirMensajeProceso("Se ha encontrado el archivo de configuracion\n");
 
 		log_info(logger, "LissandraFS: Leyendo Archivo de Configuracion...");
-
-		if(config_has_property(archivoCOnfig, "IP_FS")){
-			log_info(logger, "Almacenando IP de LIsandra File Sytem");
-
-						//Por lo que dice el texto
-			configFile->ip = config_get_int_value(archivoCOnfig,
-							"IP_FS");
-
-						log_info(logger, "La IP al cual se conectara Lisandra es: %d", configFile->ip);
-		} else {
-			imprimirError(logger, "El archivo de configuracion no contiene el IP_FS");
-			ok--;
-		}
-
+		
 		if(config_has_property(archivoCOnfig,"PUERTO_ESCUCHA")){
 
 			log_info(logger, "Almacenando el puerto");
@@ -129,13 +116,27 @@ bool cargarConfiguracion() {
 
 		if(config_has_property(archivoCOnfig,"PUNTO_MONTAJE")){
 
-			log_info(logger, "Almacenando el PUNTO DE MONTAJE");
+			log_info(logger, "Almacenando el PUNTO DE MONTAJE: %s",config_get_string_value(archivoCOnfig,
+				"PUNTO_MONTAJE"));
 
-			//Por lo que dice el texto
-			configFile->punto_montaje = config_get_int_value(archivoCOnfig,
-				"PUNTO_MONTAJE");
+			//Por lo que dice el texto		
+			
+			configFile->punto_montaje = config_get_string_value(archivoCOnfig,"PUNTO_MONTAJE");
 
-			log_info(logger, "El puerto de montaje es: %d", configFile->punto_montaje);
+			log_info(logger, "El punto de montaje es: %d", configFile->punto_montaje);
+
+			tabla_Path = malloc(string_length(configFile->punto_montaje)+8);
+
+			tabla_Path = string_duplicate(configFile->punto_montaje);
+
+			log_info(logger,"La variabla tabla_path queda con: %s",tabla_Path);
+
+			strtok(tabla_Path, "\"");
+			strtok(tabla_Path, "\"");
+
+			string_append(&tabla_Path,"/Tables/");
+
+			log_info(logger,"Y ahora la variabla tabla_path queda con: %s",tabla_Path);
 
 		}else {
 			imprimirError(logger, "El archivo de configuracion no contiene el PUNTO_MONTAJE");
@@ -207,7 +208,7 @@ bool cargarConfiguracion() {
 
 }
 
-void consola(){
+void consola() {
 
 	log_info(logger, "En el hilo de consola");
 
@@ -215,70 +216,32 @@ void consola(){
 
 	char bufferComando[MAXSIZE_COMANDO];
 	char **comandoSeparado;
-	char **comandoSeparado2;
-	char *separador2="\n";
-	char *separator=" ";
+	
+	while (1) {
 
-	while(1){
+		//printf(">");
 
-		printf(">");
+		linea = readline(">");
 
-		fgets(bufferComando,MAXSIZE_COMANDO, stdin);
+		if(linea){
+			add_history(linea);
+		}
 
-		add_history(linea);
+		if(!strncmp(linea,"exit",4)){
+			free(linea);
+			break;
+		}
+
+		//fgets(bufferComando, MAXSIZE_COMANDO, stdin); -> Implementacion anterior
+
+		strtok(linea, "\n");
+		
+		comandoSeparado = string_split(linea, separator);
+
+		validarLinea(comandoSeparado,logger);
 
 		free(linea);
-
-		comandoSeparado=string_split(bufferComando, separator);
-
-		//Tamanio del array
-		for(int i = 0; comandoSeparado[i] != NULL; i++){
-
-			tamanio = i +1;
-		}
-
-		log_info(logger, "El tamanio del vector de comandos es: %d", tamanio);
-
-		if(strcmp(comandoSeparado[0],"select") == 0){
-
-			printf("Se selecciono Select\n");
-
-			log_info(logger,"Por llamar a enviarResultado");
-
-			// FALTA ADAPTAR ESTA FUNCION //
-
-			//int resultadoEnviarComando = enviarComando(comandoSeparado[0],logger);
-			//break;
-
-			// FALTA ADAPTAR ESTA FUNCION //
-		}
-		if(strcmp(comandoSeparado[0],"insert") == 0){
-
-			printf("Insert seleccionado\n");
-			break;
-		}
-
-		if(strcmp(comandoSeparado[0],"create") == 0){
-			printf("Create seleccionado\n");
-			break;
-		}
-
-		if(strcmp(comandoSeparado[0],"describe") == 0){
-			printf("Describe seleccionado\n");
-			break;
-		}
-		if(strcmp(comandoSeparado[0],"drop") == 0){
-			printf("Drop seleccionado\n");
-			break;
-		}
-
-		if(strcmp(comandoSeparado[0],"salir") == 0){
-			break;
-		}
-		printf("Comando mal ingresado. \n");
-		log_error(logger,"Opcion mal ingresada por teclado en la consola");
-
-
+		
 	}
 }
 
@@ -296,6 +259,206 @@ void menu(){
 
 }
 
+void validarLinea(char** lineaIngresada,t_log* logger){
+
+	for (int i = 0; lineaIngresada[i] != NULL; i++) {
+
+			log_info(logger,"En la posicion %d del array esta el valor %s",i,lineaIngresada[i]);
+
+			tamanio = i + 1;
+		}
+
+		log_info(logger, "El tamanio del vector de comandos es: %d",
+				tamanio);
+
+		switch (tamanio){
+
+			case 1:
+				{
+					if(strcmp(lineaIngresada[0],"describe") == 0){
+
+						 printf("Describe seleccionado\n");
+
+						 
+
+						
+					 }
+					 else{
+		 				printf("Comando mal ingresado. \n");
+
+						 log_error(logger,
+		 									"Opcion mal ingresada por teclado en la consola");
+		 				break;
+		 			}break;
+				}
+			case 2:
+				validarComando(lineaIngresada,tamanio,logger);
+
+				break;
+
+			case 3:
+				validarComando(lineaIngresada,tamanio,logger);
+
+				break;
+
+			case 4:
+				validarComando(lineaIngresada,tamanio,logger);
+
+				break;
+
+			case 5:
+				validarComando(lineaIngresada,tamanio,logger);
+
+				break;
+
+			default:
+				{
+				printf("Comando mal ingresado. \n");
+
+				log_error(logger,
+					"Opcion mal ingresada por teclado en la consola");
+			}
+
+				break;
+
+		}
+}
+
+void validarComando(char** comando,int tamanio,t_log* logger){
+
+		int resultadoComando = buscarComando(comando[0],logger);
+
+		int tamanioCadena = 0;		
+
+		switch (resultadoComando) {
+
+			case Select: {
+				printf("Se selecciono Select\n");
+
+				log_info(logger, "Se selecciono select");
+
+				if(tamanio == 3){
+
+					log_info(logger, "Cantidad de parametros correctos ingresados para el comando select");
+					
+					int resultado = comandoSelect(comando[1],comando[2]);
+
+					log_info(logger,"El resultado de la operacion fue: %d", resultado);
+
+
+				}
+
+			}
+				break;
+
+			case insert: {
+				printf("Insert seleccionado\n");
+
+				log_info(logger, "Se selecciono insert");
+
+				if(tamanio == 4 || tamanio == 5){
+					
+					
+
+					if(tamanio == 4){
+
+						
+					}else{
+						
+					}
+					
+					
+					}				
+
+					
+				}			
+				break;
+
+			case create: {
+				printf("Create seleccionado\n");
+				log_info(logger, "Se selecciono Create");
+
+
+
+
+
+			}
+				break;
+
+			case describe: {
+				printf("Describe seleccionado\n");
+				log_info(logger, "Se selecciono Describe");
+
+				if(tamanio == 2){
+					
+					log_info(logger, "Cantidad de parametros correctos ingresados para el comando Describe");
+					
+					mensaje = malloc(string_length(comando[1]));
+					
+					strcpy(mensaje,comando[1]);	
+
+					log_info(logger,"En mensaje ya tengo: %s y es de tamanio: %d",mensaje,string_length(mensaje));	
+
+					log_info(logger, "Por llamar a enviarMensaje");
+
+
+					
+				}
+
+
+			}
+				break;
+
+			case drop: {
+				printf("Drop seleccionado\n");
+				log_info(logger, "Se selecciono Drop");
+
+				if(tamanio == 2){
+					
+					log_info(logger, "Cantidad de parametros correctos ingresados para el comando Drop");
+														
+					mensaje = malloc(string_length(comando[1]));
+					
+					strcpy(mensaje,comando[1]);
+
+					log_info(logger,"Queriamos mandar esto: %s", comando[1]);
+					log_info(logger,"Y se mando esto: %s",mensaje);
+
+
+				}
+
+
+
+			}
+				break;	
+			
+			
+			default: {
+				printf("Comando mal ingresado. \n");
+				log_error(logger,
+					"Opcion mal ingresada por teclado en la consola");
+			}
+				break;
+
+		}
+}
+
+int buscarComando(char* comando,t_log* logger) {
+
+	log_info(logger,"Recibimos el comando: %s",comando);
+
+	int i = 0;
+
+	for (i;i <= salir && strcmp(comandosPermitidos[i], comando);i++) {		
+			
+	}	
+
+	log_info(logger,"Se devuelve el valor %d",i);
+
+	return i;
+
+}
+
 // LOGGEA todo lo que escucha.
 void listenSomeLQL() {
 
@@ -305,13 +468,16 @@ void listenSomeLQL() {
 
 		conexionEntrante = aceptarConexionSocket(socketEscuchaMemoria,logger);
 
-		Puntero buffer = (void*)string_new(); // malloc(sizeof(char)*100);
+		//Puntero buffer = (void*)string_new(); // malloc(sizeof(char)*100);
+
+		Puntero buffer = malloc(sizeof(char)*100);
 
 		recibiendoMensaje = socketRecibir(conexionEntrante, buffer, 25,  logger);
 
-		// buffer[25] = '\0';
+		//char* msg = string_new();
 
-		char* msg = string_new();
+		char * msg = malloc(sizeof(char)*100);
+
 		string_append(&msg,"Mensaje recibido: \""); string_append(&msg,buffer ); string_append(&msg,"\"." );
 
 		imprimirVerde(logger, msg);
@@ -321,3 +487,147 @@ void listenSomeLQL() {
 	}
 
 }
+
+int comandoSelect(char* tabla, int key) {
+
+	log_info(logger,"Le voy a pasar a verificarTabla la tabla: %s",tabla);
+	if (!verificarTabla(tabla)) {
+
+		log_info(logger,"No existe la tabla pasada por parametro");
+
+		return 0;
+	}
+
+	log_info(logger,"Existe la tabla pasada por parametro: %s",tabla);
+
+	// obtener el metadata de la tabla
+
+	obtenerMetadata();
+	
+	int particiones = determinarParticion(key, metadata->particiones);
+
+	// escanear particion
+	// ver key con timestamp mas grande
+	return key;
+
+}
+
+//void insert(char* tabla, int key,char* value){
+// verificarTabla(tabla);
+// obtener el metadata de la tabla
+// verificar si existe lista a dumpear
+//
+
+//}
+
+int verificarTabla(char* tabla) {
+	char* tablaAverificar = malloc(
+			string_length(tabla_Path) + string_length(tabla));
+
+	log_info(logger,"Se reservo memoria para contatenar punto de montaje con la tabla");
+	tablaAverificar = string_new();
+
+	log_info(logger,"%s",tablaAverificar);
+	string_append(&tablaAverificar,tabla_Path);	
+	log_info(logger,"Concatenamos: %s a tablaAVerificar",tabla_Path);
+	log_info(logger,"tablaAVerificar queda en: %s",tablaAverificar);
+
+	string_append(&tablaAverificar, tabla);
+	log_info(logger,"Concatenamos: %s a tablaAVerificar",tabla);
+	log_info(logger,"tablaAVerificar queda en: %s",tablaAverificar);
+
+	log_info(logger,"La direccion de la tabla que se quiere verificar es: %s",tablaAverificar);
+	FILE *file;
+
+	file = fopen(tablaAverificar, "r");
+	if (file == NULL) {
+		log_error(logger, "No existe la tabla");
+		return 0;
+		perror("Error");
+	} else {
+		return 1;
+		fclose(file);
+	}
+}
+
+void obtenerMetadata() {
+
+	metadata = malloc(sizeof(t_metadata_tabla));
+
+	t_config* metadataFile;
+
+	metadataFile = config_create("metadata.bin");
+
+	if (metadataFile != NULL) {
+
+		log_info(logger, "LFS: Leyendo metadata...");
+
+		if (config_has_property(metadataFile, "CONSISTENCY")) {
+
+			log_info(logger, "Almacenando consistencia");
+
+			metadata->consistency = config_get_int_value(metadataFile,
+					"CONSISTENCY");
+
+			log_info(logger, "La consistencia  es: %d",
+					metadata->consistency);
+		} else {
+			log_error(logger,
+					"El metadata no contiene la consistencia");
+
+		}
+		if (config_has_property(metadataFile, "PARTITIONS")) {
+
+			log_info(logger, "Almacenando particiones");
+
+			metadata->particiones = config_get_int_value(metadataFile,
+					"PARTITIONS");
+
+			log_info(logger, "Las particiones son : %d",
+					metadata->particiones);
+		} else {
+			log_error(logger, "El metadata no contiene particiones");
+
+		}
+		if (config_has_property(metadataFile, "COMPACTION_TIME")) {
+
+			log_info(logger, "Almacenando consistencia");
+
+			metadata->compaction_time = config_get_int_value(metadataFile,
+					"COMPACTION_TIME");
+
+			log_info(logger, "el tiempo de compactacion es: %d",
+					metadata->compaction_time);
+		} else {
+			log_error(logger,
+					"El metadata no contiene el tiempo de compactacion");
+
+		}
+	} else {
+
+		log_error(logger,
+				"No se encontro el metadata para cargar la estructura");
+
+	}
+
+	log_info(logger,
+			"Cargamos todo lo que se encontro en el metadata. Liberamos la variable metadataFile que fue utlizada para navegar el metadata");
+
+	free(metadataFile);
+
+}
+
+// el metadata se lee como un archivo de configuracion?
+
+int determinarParticion(int key, int particiones) {
+
+	printf("La tabla sera agregada en la particion %i \n", key % particiones);
+
+	log_info(logger, "La tabla sera agregada en la particion %i",
+			key % particiones);
+
+	return key % particiones;
+
+}
+
+

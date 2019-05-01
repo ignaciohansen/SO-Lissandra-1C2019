@@ -168,7 +168,7 @@ void socketEscuchar(Socket unSocket, int clientesEsperando,t_log* logger) {
 
 		return;
 	}
-	imprimirVerde(logger, "EL socket ya esta en escucha");
+	imprimirVerde(logger, "[  OK  ] Given socket is now listening.");
 }
 
 int aceptarConexionSocket(int fd_socket,t_log* logger) {
@@ -194,7 +194,6 @@ int aceptarConexionSocket(int fd_socket,t_log* logger) {
 	log_info(logger,"[BIBLIO] (-) FUNCTION aceptarConexionSocket"); // BEGIN
 	return fdCliente;
 }
-
 
 Socket socketAceptar(Socket unSocket, int idEsperada,t_log* logger) {
 	Conexion conexion;

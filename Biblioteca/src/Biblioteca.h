@@ -27,6 +27,7 @@
 #include "commons/config.h"
 #include "commons/log.h"
 #include "commons/string.h"
+#include <commons/collections/queue.h>
 #include "commons/collections/list.h"
 #include "commons/temporal.h"
 #include "commons/bitarray.h"
@@ -36,6 +37,8 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <fcntl.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 
 //--------------------------------------- Constantes -------------------------------------
 

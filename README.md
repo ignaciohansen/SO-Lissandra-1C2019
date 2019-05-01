@@ -5,7 +5,12 @@ Ayudante: Maxi Felice
 
 # Kernel
 
-# LFS
+# LFS Sistema de archivos. Persistencia de Datos.
+
+ - Tiene la función de recepción de queries funcionando. Recibe cualquier query.
+ - Falta que sea capaz de procesarla.
+
+ (*) Se le pueden enviar queries usando el proyecto: Consola Remota LFS.
 
 # "Pool de Memoria"
 Iniciado: Domingo 07/04/2019
@@ -29,16 +34,6 @@ Requerimientos:
  (*) Requerimiento de cátedra: 
    -    Inicializar TODO una sola vez. (Usar una sola vez el MALLOC)
 
-DUDAS: 13/04/2019
-POOL DE MEMORIAS:
-	
-EL pool de memorias en el archivo config de Memoria tienen sus propias IPs y tambien puertos. 
-A todo esto, significa que tendran que correr como procesos apartes (Modulos)?
-
-
-MULTITHREADS
-
-Uso de pthread_join pero mejor usar pthread_detacth
 
 
 # Biblioteca
