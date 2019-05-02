@@ -10,16 +10,21 @@
 int main() {
 
 	pantallaLimpiar();
+
+	sem_init(&semaforoQueries,0,1);
 	list_queries = list_create();
+
 	LisandraSetUP(); // CONFIGURACIÓN Y SETEO SOCKET
 
-	pthread_t* hiloListening,hiloConsola;
+	pthread_t* hiloListening,hiloConsola,hiloEjecutor;
 	pthread_create(&hiloListening, NULL,(void*) listenSomeLQL, NULL);
 	pthread_create(&hiloConsola  , NULL,(void*) consola, NULL);
+	//pthread_create(&hiloEjecutor , NULL,(void*) consola, NULL);
 
 	pthread_join(hiloListening, NULL);
 	pthread_join(hiloConsola  , NULL);
 
+	sem_destroy(&semaforoQueries);
 	// consola();
 	return 0;
 }
@@ -228,7 +233,9 @@ void consola() {
 
 		if(linea){
 			add_history(linea);
+			sem_wait(&semaforoQueries);
 			list_add(list_queries,linea);
+			sem_post(&semaforoQueries);
 		}
 
 		if(!strncmp(linea,"exit",4)){
@@ -481,6 +488,10 @@ void listenSomeLQL() {
 		//char* msg = string_new();
 
 		char * msg = malloc(sizeof(char)*100);
+
+		sem_wait(&semaforoQueries);
+		list_add(list_queries, msg);
+		sem_post(&semaforoQueries);
 
 		string_append(&msg,"Mensaje recibido: \""); string_append(&msg,buffer ); string_append(&msg,"\"." );
 
