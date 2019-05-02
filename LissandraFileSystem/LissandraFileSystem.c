@@ -473,6 +473,9 @@ int buscarComando(char* comando,t_log* logger) {
 // LOGGEA todo lo que escucha.
 void listenSomeLQL() {
 
+	char bufferComando[MAXSIZE_COMANDO];
+	char **comandoSeparado;
+
 	while(1) {
 
 		imprimirMensaje(logger, " \n ====== LFS Listener: waiting for client connections ====== \n ");
@@ -493,10 +496,14 @@ void listenSomeLQL() {
 		list_add(list_queries, msg);
 		sem_post(&semaforoQueries);
 
+		comandoSeparado = string_split(msg, separator);
+
+		validarLinea(comandoSeparado,logger);
+
 		string_append(&msg,"Mensaje recibido: \""); string_append(&msg,buffer ); string_append(&msg,"\"." );
 
 		imprimirVerde(logger, msg);
-
+		// liberar ¿msg?
 		free(buffer);
 
 	}
