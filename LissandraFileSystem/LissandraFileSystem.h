@@ -2,6 +2,7 @@
 #define LFILESSYSTEM_H_
 
 #include "../Biblioteca/src/Biblioteca.c"
+#include <commons/collections/list.h>
 
 #define PATH_BIN ".bin"
 #define PATH_LFILESYSTEM_CONFIG "../Config/LFS_CONFIG.txt"
@@ -22,6 +23,7 @@ typedef struct{
 
 
 t_lfilesystem_config* configFile;
+t_list* list_queries;
 
 
 char** buffer;

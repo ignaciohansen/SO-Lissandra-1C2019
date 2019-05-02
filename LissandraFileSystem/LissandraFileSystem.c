@@ -10,14 +10,17 @@
 int main() {
 
 	pantallaLimpiar();
+	list_queries = list_create();
 	LisandraSetUP(); // CONFIGURACIÓN Y SETEO SOCKET
 
-	//pthread_t* hiloListening;
-	//pthread_create(&hiloListening, NULL,(void*) listenSomeLQL, NULL);
+	pthread_t* hiloListening,hiloConsola;
+	pthread_create(&hiloListening, NULL,(void*) listenSomeLQL, NULL);
+	pthread_create(&hiloConsola  , NULL,(void*) consola, NULL);
 
-	//pthread_join(hiloListening, NULL);
+	pthread_join(hiloListening, NULL);
+	pthread_join(hiloConsola  , NULL);
 
-	consola();
+	// consola();
 	return 0;
 }
 
@@ -225,6 +228,7 @@ void consola() {
 
 		if(linea){
 			add_history(linea);
+			list_add(list_queries,linea);
 		}
 
 		if(!strncmp(linea,"exit",4)){
