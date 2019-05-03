@@ -10,14 +10,22 @@
 int main() {
 
 	pantallaLimpiar();
+
+	sem_init(&semaforoQueries,0,1);
+	list_queries = list_create();
+
 	LisandraSetUP(); // CONFIGURACIÓN Y SETEO SOCKET
 
-	//pthread_t* hiloListening;
-	//pthread_create(&hiloListening, NULL,(void*) listenSomeLQL, NULL);
+	pthread_t* hiloListening,hiloConsola,hiloEjecutor;
+	pthread_create(&hiloListening, NULL,(void*) listenSomeLQL, NULL);
+	pthread_create(&hiloConsola  , NULL,(void*) consola, NULL);
+	//pthread_create(&hiloEjecutor , NULL,(void*) consola, NULL);
 
-	//pthread_join(hiloListening, NULL);
+	pthread_join(hiloListening, NULL);
+	pthread_join(hiloConsola  , NULL);
 
-	consola();
+	sem_destroy(&semaforoQueries);
+	// consola();
 	return 0;
 }
 
@@ -225,6 +233,9 @@ void consola() {
 
 		if(linea){
 			add_history(linea);
+			sem_wait(&semaforoQueries);
+			list_add(list_queries,linea);
+			sem_post(&semaforoQueries);
 		}
 
 		if(!strncmp(linea,"exit",4)){
@@ -340,7 +351,7 @@ void validarComando(char** comando,int tamanio,t_log* logger){
 				if(tamanio == 3){
 
 					log_info(logger, "Cantidad de parametros correctos ingresados para el comando select");
-					
+
 					int resultado = comandoSelect(comando[1],comando[2]);
 
 					log_info(logger,"El resultado de la operacion fue: %d", resultado);
@@ -462,6 +473,9 @@ int buscarComando(char* comando,t_log* logger) {
 // LOGGEA todo lo que escucha.
 void listenSomeLQL() {
 
+	char bufferComando[MAXSIZE_COMANDO];
+	char **comandoSeparado;
+
 	while(1) {
 
 		imprimirMensaje(logger, " \n ====== LFS Listener: waiting for client connections ====== \n ");
@@ -478,37 +492,41 @@ void listenSomeLQL() {
 
 		char * msg = malloc(sizeof(char)*100);
 
+		sem_wait(&semaforoQueries);
+		list_add(list_queries, msg);
+		sem_post(&semaforoQueries);
+
+		comandoSeparado = string_split(msg, separator);
+
+		validarLinea(comandoSeparado,logger);
+
 		string_append(&msg,"Mensaje recibido: \""); string_append(&msg,buffer ); string_append(&msg,"\"." );
 
 		imprimirVerde(logger, msg);
-
+		// liberar ¿msg?
 		free(buffer);
 
 	}
 
 }
 
-int comandoSelect(char* tabla, int key) {
+int comandoSelect(char* tabla, char* key) {
 
-	log_info(logger,"Le voy a pasar a verificarTabla la tabla: %s",tabla);
-	if (!verificarTabla(tabla)) {
-
-		log_info(logger,"No existe la tabla pasada por parametro");
-
-		return 0;
-	}
-
-	log_info(logger,"Existe la tabla pasada por parametro: %s",tabla);
-
-	// obtener el metadata de la tabla
+	verificarTabla(tabla);
 
 	obtenerMetadata();
 	
-	int particiones = determinarParticion(key, metadata->particiones);
 
-	// escanear particion
+	int valorKey = atoi(key);
+
+	log_info(logger,"valorkey: %d ",valorKey);
+	int particiones = determinarParticion(valorKey, metadata->particiones);
+
+	escanearParticion(particiones);
+
 	// ver key con timestamp mas grande
-	return key;
+
+	return valorKey;
 
 }
 
@@ -521,7 +539,7 @@ int comandoSelect(char* tabla, int key) {
 //}
 
 int verificarTabla(char* tabla) {
-	char* tablaAverificar = malloc(
+	 tablaAverificar = malloc(
 			string_length(tabla_Path) + string_length(tabla));
 
 	log_info(logger,"Se reservo memoria para contatenar punto de montaje con la tabla");
@@ -548,6 +566,18 @@ int verificarTabla(char* tabla) {
 		return 1;
 		fclose(file);
 	}
+
+	log_info(logger,"Le voy a pasar a verificarTabla la tabla: %s",tabla);
+		if (!verificarTabla(tabla)) {
+
+			log_info(logger,"No existe la tabla pasada por parametro");
+
+			return 0;
+		}
+
+		log_info(logger,"Existe la tabla pasada por parametro: %s",tabla);
+
+
 }
 
 void obtenerMetadata() {
@@ -621,13 +651,50 @@ void obtenerMetadata() {
 
 int determinarParticion(int key, int particiones) {
 
-	printf("La tabla sera agregada en la particion %i \n", key % particiones);
+	log_info(logger, "la key es %d",
+				key );
+	log_info(logger, "La particion es %d",
+				 particiones);
+	printf("La tabla sera agregada en la particion %d \n", key % particiones);
 
-	log_info(logger, "La tabla sera agregada en la particion %i",
+	log_info(logger, "La tabla sera agregada en la particion %d",
 			key % particiones);
 
 	return key % particiones;
 
 }
 
+void escanearParticion(int particion){
+
+
+char * stringParticion = malloc(sizeof(char));
+
+sprintf(stringParticion, "%d", particion);
+log_info(logger, "resultado de sprintf %s",stringParticion);
+
+char* archivoParticion = malloc(
+				string_length(tablaAverificar) + string_length(stringParticion) + string_length(PATH_BIN));
+
+		log_info(logger,"Se reservo memoria para concatenar ruta de la tabla con la particion");
+		archivoParticion = string_new();
+		string_append(&archivoParticion,tablaAverificar);
+
+		string_append(&archivoParticion,"/");
+
+		string_append(&archivoParticion,stringParticion);
+
+		string_append(&archivoParticion,".bin");
+
+
+FILE *file;
+file = fopen(archivoParticion, "r");
+		if (file == NULL) {
+			//log_error(logger, "No existe la particion");
+			perror("Error");
+		} else {
+			log_info(logger, "Abrimos particion %d",particion);
+			fclose(file);
+		}
+
+}
 

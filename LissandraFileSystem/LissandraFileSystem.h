@@ -2,9 +2,14 @@
 #define LFILESSYSTEM_H_
 
 #include "../Biblioteca/src/Biblioteca.c"
+#include <commons/collections/list.h>
 
-#define PATH_LFILESYSTEM_CONFIG "LFS_CONFIG.txt"
-#define LOG_PATH "LOG_LFS.txt"
+#define PATH_BIN ".bin"
+#define PATH_LFILESYSTEM_CONFIG "../Config/LFS_CONFIG.txt"
+#define LOG_PATH "../Log/LOG_LFS.txt"
+#include <stdio.h>
+
+#define atoa(x) #x
 
 t_log* logger;
 
@@ -16,18 +21,9 @@ typedef struct{
 	int tiempo_dump;
 }t_lfilesystem_config;
 
-typedef struct{
-	char* consistency;
-	int particiones;
-	int compaction_time;
-
-}t_metadata_tabla;
-
-
 
 t_lfilesystem_config* configFile;
-
-t_metadata_tabla* metadata;
+t_list* list_queries;
 
 
 char** buffer;
@@ -56,12 +52,6 @@ void menu();
 
 char *separador2 = "\n";
 char *separator = " ";
-//Comandos
-int comandoSelect(char* tabla, int key);
-
-void obtenerMetadata();
-
-int verificarTabla(char* tabla);
 
 /*--------------------------------------------------------------------------------------------
  * 									Elementos de escucha
@@ -70,3 +60,43 @@ int verificarTabla(char* tabla);
 void listenSomeLQL();
 
 #endif /* LFILESSYSTEM_H_ */
+
+/*--------------------------------------------------------------------------------------------
+ * 									Estructura metadatas
+ *--------------------------------------------------------------------------------------------
+ */
+
+typedef struct{
+	char* consistency;
+	int particiones;
+	int compaction_time;
+
+}t_metadata_tabla;
+
+t_metadata_tabla* metadata;
+
+typedef struct{
+	int blocks;
+	int block_size;
+	char* magic_number;
+
+}t_metadata_LFS;
+
+t_metadata_LFS* metadataLFS;
+
+sem_t semaforoQueries;
+
+/*--------------------------------------------------------------------------------------------
+ * 									Elementos de comandos
+ *--------------------------------------------------------------------------------------------
+ */
+
+char* tablaAverificar;
+
+int comandoSelect(char* tabla, char* key);
+
+void obtenerMetadata();
+
+int verificarTabla(char* tabla);
+
+void escanearParticion(int particion);

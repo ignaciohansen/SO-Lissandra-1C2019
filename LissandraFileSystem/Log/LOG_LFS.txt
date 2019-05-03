@@ -1,0 +1,45 @@
+[INFO] 14:37:11:322 Proceso Lissandra File System/(4574:4574): [LOG CREADO] continuamos cargando la estructura de configuracion.
+[INFO] 14:37:11:322 Proceso Lissandra File System/(4574:4574): Por reservar memoria para variable de configuracion.
+[INFO] 14:37:11:322 Proceso Lissandra File System/(4574:4574): Por crear el archivo de config para levantar archivo con datos.
+[INFO] 14:37:11:322 Proceso Lissandra File System/(4574:4574): LissandraFS: Leyendo Archivo de Configuracion...
+[INFO] 14:37:11:322 Proceso Lissandra File System/(4574:4574): Almacenando el puerto
+[INFO] 14:37:11:322 Proceso Lissandra File System/(4574:4574): El puerto de escucha es: 8001
+[INFO] 14:37:11:322 Proceso Lissandra File System/(4574:4574): Almacenando el PUNTO DE MONTAJE: "/mnt/lfs"
+[INFO] 14:37:11:322 Proceso Lissandra File System/(4574:4574): El punto de montaje es: 134958016
+[INFO] 14:37:11:322 Proceso Lissandra File System/(4574:4574): La variabla tabla_path queda con: "/mnt/lfs"
+[INFO] 14:37:11:322 Proceso Lissandra File System/(4574:4574): Y ahora la variabla tabla_path queda con: "/mnt/lfs/Tables/
+[INFO] 14:37:11:322 Proceso Lissandra File System/(4574:4574): Almacenando el retardo
+[INFO] 14:37:11:322 Proceso Lissandra File System/(4574:4574): El retardo de respuesta es: 600
+[INFO] 14:37:11:322 Proceso Lissandra File System/(4574:4574): Almacenando el tamaño del valor de una key
+[INFO] 14:37:11:322 Proceso Lissandra File System/(4574:4574): El tamaño del valor es: 4
+[INFO] 14:37:11:322 Proceso Lissandra File System/(4574:4574): Almacenando el puerto
+[INFO] 14:37:11:322 Proceso Lissandra File System/(4574:4574): El tiempo de dumpeo es: 5000
+[INFO] 14:37:11:322 Proceso Lissandra File System/(4574:4574): Se ha cargado todos los datos del archivo de configuracion
+[INFO] 14:37:11:322 Proceso Lissandra File System/(4574:4574): En funcion nuevoSocket en el Proyecto Biblioteca, por llamar a funcion Socket()
+[INFO] 14:37:11:322 Proceso Lissandra File System/(4574:4574): Por retornar el socket creado: 4
+[ERROR] 14:37:11:322 Proceso Lissandra File System/(4574:4574): [  OK  ] Se ha creado el socket nro.: 4.
+[INFO] 14:37:11:322 Proceso Lissandra File System/(4574:4574): [PUERTO] Asociando a puerto: 8001.
+[INFO] 14:37:11:322 Proceso Lissandra File System/(4574:4574): En funcion asociarSocket()
+[INFO] 14:37:11:322 Proceso Lissandra File System/(4574:4574): [  OK  ] Asociado.
+[INFO] 14:37:11:323 Proceso Lissandra File System/(4574:4574): En funcion socketEscuchar
+[INFO] 14:37:11:323 Proceso Lissandra File System/(4574:4574): [  OK  ] Given socket is now listening.
+[INFO] 14:37:11:323 Proceso Lissandra File System/(4574:4574): En el hilo de consola
+[INFO] 14:37:14:718 Proceso Lissandra File System/(4574:4574): En la posicion 0 del array esta el valor select
+[INFO] 14:37:14:718 Proceso Lissandra File System/(4574:4574): En la posicion 1 del array esta el valor tablaA
+[INFO] 14:37:14:718 Proceso Lissandra File System/(4574:4574): En la posicion 2 del array esta el valor 3
+[INFO] 14:37:14:718 Proceso Lissandra File System/(4574:4574): El tamanio del vector de comandos es: 3
+[INFO] 14:37:14:718 Proceso Lissandra File System/(4574:4574): Recibimos el comando: select
+[INFO] 14:37:14:718 Proceso Lissandra File System/(4574:4574): Se devuelve el valor 0
+[INFO] 14:37:14:718 Proceso Lissandra File System/(4574:4574): Se selecciono select
+[INFO] 14:37:14:718 Proceso Lissandra File System/(4574:4574): Cantidad de parametros correctos ingresados para el comando select
+[INFO] 14:37:14:718 Proceso Lissandra File System/(4574:4574): Le voy a pasar a verificarTabla la tabla: tablaA
+[INFO] 14:37:14:718 Proceso Lissandra File System/(4574:4574): Se reservo memoria para contatenar punto de montaje con la tabla
+[INFO] 14:37:14:718 Proceso Lissandra File System/(4574:4574): 
+[INFO] 14:37:14:718 Proceso Lissandra File System/(4574:4574): Concatenamos: "/mnt/lfs/Tables/ a tablaAVerificar
+[INFO] 14:37:14:718 Proceso Lissandra File System/(4574:4574): tablaAVerificar queda en: "/mnt/lfs/Tables/
+[INFO] 14:37:14:718 Proceso Lissandra File System/(4574:4574): Concatenamos: tablaA a tablaAVerificar
+[INFO] 14:37:14:718 Proceso Lissandra File System/(4574:4574): tablaAVerificar queda en: "/mnt/lfs/Tables/tablaA
+[INFO] 14:37:14:719 Proceso Lissandra File System/(4574:4574): La direccion de la tabla que se quiere verificar es: "/mnt/lfs/Tables/tablaA
+[ERROR] 14:37:14:719 Proceso Lissandra File System/(4574:4574): No existe la tabla
+[INFO] 14:37:14:719 Proceso Lissandra File System/(4574:4574): No existe la tabla pasada por parametro
+[INFO] 14:37:14:719 Proceso Lissandra File System/(4574:4574): El resultado de la operacion fue: 0
