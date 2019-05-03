@@ -80,9 +80,18 @@ typedef struct {
 
 typedef struct pagina{
 	short nroPosicion;
-	unsigned long timestamp;
-	int16_t key;
+	long timestamp;
+	u_int16_t key;
 }pagina;
+
+typedef struct tabla_paginas{
+//	int numero;
+//	struct pagina* valor_pagina;
+//	struct tabla_paginas* siguientePagina;
+	u_int16_t key;
+	int posicion;
+	bool flag;
+}tabla_pagina;
 
 typedef struct nodoSegmento{
 		char* path_tabla;
@@ -95,22 +104,17 @@ typedef struct nodoSegmento{
 		struct nodoSegmento* siguienteSegmento;
 }segmento;
 
+/* NO SE SI ESTE SIRVE PARA ALGO
 typedef struct infoPagina{
 	pagina* unaPag;
 	char* value;
 }infoPagina;
+*/
 
 /*EL NUMERO DE PAGINA YA ME LO DA SU POSICION EN EL BLOQUE
  * DE TABLA PAGINAS
  */
-typedef struct tabla_paginas{
-//	int numero;
-//	struct pagina* valor_pagina;
-//	struct tabla_paginas* siguientePagina;
-	int16_t key;
-	int posicion;
-	bool flag;
-}tabla_pagina;
+
 
 /* ESTA ESTRUCTURA ESTA DE MAS
 typedef struct unidad_memoria {
@@ -322,6 +326,8 @@ void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
 
 	String obtenerNombreTablaDePath(String path);
 	void aniadirNuevaPosicionAArray(segmento** seg, int posNueva);
+
+	void pasarValoresALisandra(char* datos)
 #endif /* MEMORIA_H_ */
 
 

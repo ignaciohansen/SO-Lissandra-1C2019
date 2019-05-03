@@ -21,24 +21,8 @@ void abortarProcesoPorUnErrorImportante(t_log* log, char* mensaje){
 
 //--------------------------------------- Funcion timestamp -------------------------------------
 
-unsigned long timestamp(void) {
-
-    struct timespec tms;
-
-    if (clock_gettime(CLOCK_REALTIME,&tms)) {
-        return -1;
-    }
-	/* seconds, multiplied with 1 million */
-	int64_t micros = tms.tv_sec * 1000000;
-	/* Add full microseconds */
-	micros += tms.tv_nsec/1000;
-	/* round up if necessary */
-	if (tms.tv_nsec % 1000 >= 500) {
-		++micros;
-	}
-	// printf("Microseconds: %"PRId64"\n",micros);
-
-    return micros;
+long timestamp(void) {
+	return (unsigned)time(NULL);
 }
 
 //--------------------------------------- Funciones para Socket -------------------------------------

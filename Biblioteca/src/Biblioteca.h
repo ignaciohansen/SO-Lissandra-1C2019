@@ -152,7 +152,7 @@ void abortarProcesoPorUnError(t_log log, char* mensaje);
 
 //--------------------------------------- Funcion timestamp -------------------------------------
 
-unsigned long timestamp(void);
+long timestamp(void);
 
 //--------------------------------------- Funciones para Socket -------------------------------------
 

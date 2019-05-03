@@ -19,7 +19,7 @@ int main() {
 
 
     //ESTE ES SOLO TEST, DESPUES SE BORRA A LA MIERDA
-    max_valor_key=5;
+    max_valor_key=15;
 //    infoPagina* infoPag = malloc(sizeof(infoPag));
 
     void* informacion = malloc(sizeof(pagina)+max_valor_key);
@@ -31,7 +31,7 @@ int main() {
 
     	pagina* nuevaPag =malloc(sizeof(pagina));
     	char stringValor[max_valor_key];
-    	strcpy(stringValor, "h");
+    	strcpy(stringValor, "hola gente");
     	for(i=0; i<10; i++){
     		tabla_pagina_crear(100+i, 0, stringValor, false);
     	}
@@ -48,6 +48,7 @@ int main() {
     	free(nuevaPag);
    // 	free(extar);
     //	free(nuevaPag);
+    //	free(stringValor);
     	printf("TERMINADO");
     	free(informacion);
 
@@ -585,6 +586,7 @@ void consola() {
 			}
 				break;
 		}
+		/*
 		//comando = validacionComando(comandoSeparado[0],log_kernel);
 
 		//log_info(log_kernel, "El numero de comando ingresado es %d", comando);
@@ -617,7 +619,7 @@ void consola() {
 		 int resultadoEnviarComando = enviarComando(comandoSeparado[0],log_kernel);
 		 //break;
 		 }
-		 /*	if(strcmp(comandoSeparado[0],"insert") == 0){
+		 	if(strcmp(comandoSeparado[0],"insert") == 0){
 
 		 printf("Insert seleccionado\n");
 		 break;
@@ -939,36 +941,11 @@ void JOURNAL(pagina* paginaAPasar, char* pathTabla) {
 
 	log_info(log_memoria, "[JOURNAL] JOURNAL HECHO, LISANDRA LA HA RECIBIDO BIEN");
 }
-/*
-void pasar_valores_modificados_a_Lisandra(segmento* elSegmento, unidad_memoria* unidad_de_memoria){
-	//DEBO IDENTIFICAR PRIMERO LA PAGINA QUE QUIERO PASAR LA INFORMACION
-	pagina* unaPagina;
-	int i=0;
-	log_info(log_memoria, "[VERIFICAR SI PASO VALORES A LFS] En pasar_valores_modificados_a_Lisandra");
-	log_info(log_memoria, "[VERIFICAR SI PASO VALORES A LFS] Me pongo a buscar la pagina referida a unidad de memoria");
-	while(i==0){
-		unaPagina = elSegmento->reg_pagina->siguientePagina;
-		if(elSegmento->reg_pagina->numero == unidad_de_memoria->nroPagina) {
-			//SE ENCONTROLA PAGINA BUSCADA
-			unaPagina = elSegmento->reg_pagina;
-			i++;
-		} else {
-			elSegmento->reg_pagina = unaPagina;
-		}
-	}
-	log_info(log_memoria, "[VERIFICAR SI PASO VALORES A LFS] Se ha encontrado la pagina referida");
 
-	/* DEBE REVISAR LA MEMORIA PARA BUSCAR EL FLAG DE MODIFICADO
-	if(unidad_de_memoria->flagModificado){
-		//LA PAGINA FUE MODIFICADA, PROCEDO A HACER 1 JOURNAL
-		log_info(log_memoria, "[VERIFICAR SI PASO VALORES A LFS] La pagina fue modificada, hago JOURNAL");
-		JOURNAL(unaPagina, elSegmento->path_tabla);
-		log_info(log_memoria, "[VERIFICAR SI PASO VALORES A LFS] Se ha hecho 1 journal");
-	}
+//PROTOTIPO
+void pasarValoresALisandra(char* datos){
 
-	log_info(log_memoria, "[VERIFICAR SI PASO VALORES A LFS] No esta modificada la pagina, asi que no hago nada aqui");
 }
-*/
 /*-----------------------------------------------------
  * FUNCIONES PARA LA ADMINISTRACION DE MEMORIA
  *-----------------------------------------------------*/
@@ -1067,6 +1044,7 @@ pagina* crear_pagina(unsigned long timestampNUevo, int16_t key, char * valor) {
 	log_info(log_memoria, "[CREANDO PAGINA Y VALOR] Por crear pagina y valor");
 	aux_pagina->nroPosicion = 0;
 	aux_pagina->key = key;
+//	aux_pagina->timestamp = timestamp();
 	//SI TIENE TIMESTAMP EN 0 LE ASIGNAMOS EL ACTUAL
 	if(timestampNUevo <= 0) {
 		aux_pagina->timestamp = timestamp();
@@ -1077,32 +1055,6 @@ pagina* crear_pagina(unsigned long timestampNUevo, int16_t key, char * valor) {
 	log_info(log_memoria, "[CREANDO PAGINA Y VALOR] Pagina creada y tambien su valor");
 	return aux_pagina;
 }
-
-/*
-pagina* pagina_crear(long timestampNuevo, int16_t key, char * valor, char* nombreTabla){
-	//DEBO CHEQUEAR PRIMERO SI NO SE OCUPARON TODAS LAS PAGINAS
-	pagina* nuevaPag = crear_pagina(timestampNuevo, key, valor);
-	log_info(log_memoria, "[CREAR PAGINA] Veo de crear una pagina o reemplazar 1");
-	mutexBloquear(&memoria_mutex_paginas_disponibles);
-	if(memoria->cantPaginasDisponibles>0){
-		mutexDesbloquear(&memoria_mutex_paginas_disponibles);
-		log_info(log_memoria, "[CREAR PAGINA] Hay espacio, creo una pagina, pongo en el siguiente bloque libre");
-		int posicionAPoner = memoria->paginasTotales - memoria->cantPaginasDisponibles;
-
-		memcpy(memoria + sizeof(memoria) + posicionAPoner*memoria->tamanioPagina, &nuevaPag, memoria->tamanioPagina);
-		log_info(log_memoria, "[CREAR PAGINA] Se ha guardado la nueva pagina, procedo a crear Segmento y tabla de pagina");
-
-		aniadirNuevaPaginaASegmento(&nuevaPag, nombreTabla);
-	} else {
-		mutexDesbloquear(&memoria_mutex_paginas_disponibles);
-		log_info(log_memoria, "[CREAR PAGINA] NO hay espacio, ejecuto LRU");
-		LRU(&nuevaPag);
-
-	}
-
-	return nuevaPag;
-}
-*/
 
 //void buscarKeyPorTablaPagina(tabla_pagina* tabla_pag, pagina* pag, bool aniadirSiNoHay, bool modificar) {
 int buscarKeyPorTablaPagina(int posicionABuscar, int16_t keyBuscada) {
@@ -1116,31 +1068,6 @@ int buscarKeyPorTablaPagina(int posicionABuscar, int16_t keyBuscada) {
 	}
 	log_info(log_memoria, "[Buscar Key Por Tabla PAGINA] NO SE ENCONTRO LA PAGINA PARA LA KEY EN LA POSICION PARA LA KEY|POSICION %d|%d", keyBuscada, posicionABuscar);
 	return ERROR;
-	/*
-	tabla_pagina* paginas = tabla_pag;
-	tabla_pagina* primero = tabla_pag;
-	tabla_pagina* anterior;
-			while(paginas!=NULL){
-				//BUSCO EN SU REGISTOR SI ESTA LA KEY BUSCADA
-				if(pag->key==paginas->valor_pagina->key){
-					//ENCONTRADA
-					if(modificar){
-						//AQUI SE MODIFICA LA TABLA
-					}
-					return;
-				}
-				anterior = paginas;
-				paginas = paginas->siguientePagina;
-			}
-	if(paginas == NULL && aniadirSiNoHay) {
-		//NO SE ENCONTRO, PROCEDO A CREARLA Y PONERLA A LO ULTIMO
-		paginas = tabla_pagina_crear(pag, anterior->numero+1);
-		while(primero->siguientePagina!=NULL){
-			primero = primero->siguientePagina;
-		}
-		primero->siguientePagina = paginas;
-	}
-*/
 }
 
 //INTENTA BUSCAR EN QUE POSICION DE LA MEMORIA CONTIGUA SE ENCUNETRA LA PAGINA CON ESA KEY
@@ -1268,29 +1195,6 @@ void segmentoAgregarNroTabla(segmento* segmentoAModificar, int posNueva) {
 }
 
 
-/*
-void aniadirNuevaPaginaASegmento(pagina* nuevaPag, char* nombreTabla){
-	if(tablaSegmentos == NULL) {
-		//ESTA VACIA HAY QUE INICIARLA
-		tablaSegmentos = segmento_crear(nombreTabla, tabla_pagina_crear(nuevaPag, 0), nuevaPag);
-		return;
-	}
-	segmento* tablaAux = tablaSegmentos;
-	//YA HAY SEGMENTOS CREADOS, PROCEDO A BUSCAR EL QUE TIENE EL NOMBRE DE TABLA
-	while(tablaAux!= NULL){
-		if(strcmp(nombreTabla, obtenerNombreTablaDePath(tablaAux->path_tabla))){
-			//SE ENCONTRO LA TABLA, PROCEDO A VER SI EXISTE SU TABLA DE PAGINA
-			buscarKeyPorTablaPagina(tablaAux->reg_pagina, nuevaPag, true, false);
-			return;
-		}
-		tablaAux = tablaAux->siguienteSegmento;
-	}
-	//NO SE ENCONTRO EL SEGMENTO, PROCEDO A CREAR UNA NUEVA Y LA PONGO AL PRINCIPIO
-	tablaAux = segmento_crear(nombreTabla, tabla_pagina_crear(nuevaPag, 0), nuevaPag);
-	tablaAux->siguienteSegmento= tablaSegmentos;
-	tablaSegmentos = tablaAux;
-}
-*/
 
 void LRU(pagina* paginaCreada){
 	/*ALGORITMO, BUSCO LA PAGINA ENTRE TODAS QUE TIENEN MENOR CANTIDAD DE USOS
@@ -1301,139 +1205,6 @@ void LRU(pagina* paginaCreada){
 
 }
 
-
-/*
-bool chequear_si_memoria_tiene_espacio(int espacioAOcupar){
-	return (memoria->tamanioMemoria) > (espacioAOcupar + memoria->);
-}
-*/
-
-/*
-void segmento_agregar_pagina(segmento* seg, tabla_pagina* pag) {
-	tabla_pagina* aux = seg->reg_pagina;
-
-	 ESTO HAY QUE CAMBIARLO
-	if(chequear_si_memoria_tiene_espacio(sizeof(pagina)+sizeof(valor_pagina))){
-		//HAY ESPACIO SUFICIENTE
-		pag->siguientePagina = aux;
-		pag->numero = (seg->reg_pagina->numero)+1;
-		seg->reg_pagina = pag;
-		//ESTE ATRIBUTO YA NO EXISTE
-	//	seg->tamanio_segmento += sizeof(pag);
-	}
-
-	//SE SUPONE QUE LA PAGINA YA TIENE LOS VALORES
-	//CARGADO
-}*/
-
-/*
-//SE PUEDE MODIFICAR ESTO
-bool chequear_si_memoria_tiene_espacio(int tamanio) {
-	return memoria->tamanioMemoria > tamanio;
-}
-
-void pagina_agregar_valores(tabla_pagina* pag, pagina* valor) {
-	pag->valor_pagina=valor;
-}
-
-//ESTE SE USA PARA AQUELLOS VALORES QUE YA SE LOS IDENTIFICO
-void valores_reemplazar_items(pagina* valor_pag, int timestamp, char* valor){
-	valor_pag->timestamp=timestamp;
-	valor_pag->key=valor;
-}
-
-void pagina_poner_estado_modificado(tabla_pagina* pag) {
-	pag->flag=true;
-}
-*/
-/*
-int segmento_agregar_inicio_pagina(segmento* seg, pagina* pag){
-
-}
-*/
-
-
-/*
-int segmento_esta_vacio(segmento* seg){
-
-	return
-}
-*/
-
-//CUANDO HABLAMOS DE LIMPIAR MEMORIA, NOS REFERIMOS DE LIMPIAR TODA MEMORIA
-/*
-void limpiar_memoria(){
-	//SE DEBE USAR UN SEMAFORO AQUI
-	limpiandoMemoria=1;
-	free(bloque_memoria);
-	/*
-	while(mem->unidad!=NULL){
-		unidadTemporal= mem->unidad->siguienteUnidad;
-		limpiarUnidad(&(mem->unidad));
-
-		mem->unidad= unidadTemporal;
-	}
-
-	limpiandoMemoria=0;
-//	mem->memoriaDisponible = mem->tamanioMemoria;
-}
-*/
-
-//ESTO SOLO OCURRE CUANDO SE HACE JOURNAL
-//O ESO FUE LO QUE HE ENTENDIDO
-/*
-int limpiarUnidad(unidad_memoria* unidad_de_memoria){
-	//DEBE IDENTIFICAR SEGMENTO Y PAGINA A LA QUE LE CORRESPONDE
-	log_info(log_memoria, "[LIMPIAR UNIDAD] Entro a limpiar Unidad, procedo a buscar el segmento por su numero");
-	segmento* elSegmento = buscarSegmentoPorNumero(unidad_de_memoria->nroSegmento);
-	log_info(log_memoria, "[LIMPIAR UNIDAD] Realizo la operacion Journal");
-	pasar_valores_modificados_a_Lisandra(elSegmento, unidad_de_memoria);
-	log_info(log_memoria, "[LIMPIAR UNIDAD] JOURNAL DE UNIDAD REALIZADA");
-	log_info(log_memoria, "[LIMPIAR UNIDAD] Procedo a limpiar la unidad y tambien la unidad");
-	free(unidad_de_memoria);
-	return limpiar_segmento(&elSegmento);
-}
-
-segmento* buscarSegmentoPorNumero(int numeroABuscar){
-	segmento* segmentoAux = tablaSegmentos;
-	bool encontrado = false;
-	log_info(log_memoria, "[BUSCANDO SEGMENTO X NRO] En Buscar segmento por numero");
-	while(segmentoAux!=NULL){
-		//SI O SI LO VA A ENCONTRAR PORQUE NO PUEDE ESTAR EN MEMORIA Y NO EXISTIR EN LA TABLA
-		log_info(log_memoria, "[BUSCANDO SEGMENTO X NRO] Buscando segmento");
-		if(segmentoAux->nro_segmento == numeroABuscar){
-			log_info(log_memoria, "[BUSCANDO SEGMENTO X NRO] SEGMENTO ENCONTRADO");
-			return segmentoAux;
-		} else {
-			log_info(log_memoria, "[BUSCANDO SEGMENTO X NRO] No se encontro, paso al siguiente segmento");
-			segmentoAux = segmentoAux->siguienteSegmento;
-		}
-	}
-	//NO LO ENCONTRO, DEVUELVO NULL
-	log_info(log_memoria, "[BUSCANDO SEGMENTO X NRO] NO se encontro el segmento buscado");
-	return NULL;
-}
-
-tabla_pagina* buscarPaginaPorNumero(int numeroABuscar, segmento* seg){
-	tabla_pagina* paginaAux = seg->reg_pagina;
-	bool encontrado = false;
-	log_info(log_memoria, "[BUSCANDO PAGINA X NRO] En Buscar pagina por numero");
-	while(paginaAux!=NULL){
-		//SI O SI LO VA A ENCONTRAR PORQUE NO PUEDE ESTAR EN MEMORIA Y NO EXISTIR EN LA TABLA
-		log_info(log_memoria, "[BUSCANDO PAGINA X NRO] Buscando pagina");
-		if(paginaAux->numero == numeroABuscar){
-			log_info(log_memoria, "[BUSCANDO PAGINA X NRO] PAGINA ENCONTRADO");
-			return paginaAux;
-		} else {
-			log_info(log_memoria, "[BUSCANDO PAGINA X NRO] No se encontro, paso a la siguiente pagina");
-			paginaAux = paginaAux->siguientePagina;
-		}
-	}
-	//NO LO ENCONTRO, DEVUELVO NULL
-	log_info(log_memoria, "[BUSCANDO PAGINA X NRO] NO se encontro la pagina buscado");
-	return NULL;
-}
-*/
 
 void limpiar_segmento_x_nombre_tabla(char* nombreTabla){
 	//ESTO SE DEBE REVISAR, TIENE ERRORES
@@ -1498,35 +1269,6 @@ void vaciar_tabla_paginas_y_memoria(){
 
 }
 
-/* CREO QUE ESTO ES INNECESARIO
-int limpiar_valores_pagina(valor_pagina* valores){
-	int cantidadLiberada = sizeof(valores);
-	free(valores);
-	return cantidadLiberada;
-}
-*/
-/*
-int buscar_tabla_especifica(char* nombreTablaABuscar, segmento* segmentoBuscado) {
-	segmento* segTemporal;
-	memoria_principal* memTemporal = memoria;
-	while(memTemporal->segmentoMemoria!=NULL){
-		//EMPIEZO A BUSCAR
-		if(strcmp(
-			memTemporal->segmentoMemoria->nombreTabla,
-				nombreTablaABuscar))
-		{
-			//SE ENCONTRO LA TABLA BUSCADA
-			segmentoBuscado = memTemporal->segmentoMemoria;
-			return 1;
-		}
-		segTemporal = memTemporal->segmentoMemoria->siguienteSegmento;
-		memTemporal->segmentoMemoria = segTemporal;
-		//SE SIGUE BUSCANDO
-	}
-	return -1;
-}
-*/
-
 String obtenerNombreTablaDePath(String path){
 	int i;
 	int posUltimoBarra;
@@ -1561,71 +1303,3 @@ segmento* buscarSegmentoPorNombreTabla(char* nombreTabla){
 	log_info(log_memoria, "[BUSCANDO SEGMENTO X KEY] NO se encontro el segmento buscado, devuelvo NULL");
 	return NULL;
 }
-
-/*
-bool buscarKeyEnRegistro(char* nombreTabla, unidad_memoria* unidadAAnalizar, pagina** unidadADevolver, int16_t key){
-	log_info(log_memoria, "[BUSCANDO KEY] Buscando 1 segmento");
-
-	segmento* nuevoSegmento = buscarSegmentoPorNumero(unidadAAnalizar->nroSegmento);
-//	segmento* nuevoSegmento = buscarSegmentoPorNombreTabla(nombreTabla);
-	tabla_pagina* pagAux = nuevoSegmento->reg_pagina;
-
-	log_info(log_memoria, "[BUSCANDO KEY] Obtengo el segmento del registro");
-
-	if(nuevoSegmento!= NULL) {
-		log_info(log_memoria, "[BUSCANDO KEY] Procedo a buscar entre sus paginas si esta la key");
-		while(pagAux!=NULL) {
-			if(pagAux->valor_pagina->key == key){
-				log_info(log_memoria, "[BUSCANDO KEY] KEY ENCONTRADA");
-				unidadAAnalizar = pagAux->valor_pagina;
-				return true;
-			}
-			pagAux = pagAux->siguientePagina;
-		}
-	}
-	log_info(log_memoria, "[BUSCANDO KEY] NO se encontro la key para este segmento");
-	return false;
-}
-
-//ESTO SE HACE SIEMPRE DESPUES DE QUE BUSCA LA TABLA
-//Y SOLO SI SE ENCUNETRA
-int obtener_valores(char* nombreTabla, int16_t key, unidad_memoria* unidadExtra) {
-	pagina* valor_pag;
-	memoria_principal* memoriaAuxiliar = memoria;
-	log_info(log_memoria, "[BUSCANDO VALORES] Empiezo a buscar el valor con key %d", key);
-
-	//BUSCO PRIMERO REGISTOR POR REGISTRO, EMPEZANDO POR EL MAS ALTO DE LA COLA
-
-	bool encontrado = false;
-
-	/*
-	while(memoriaAuxiliar->unidad!=NULL){
-		unidadExtra = memoriaAuxiliar->unidad->siguienteUnidad;
-	//	encontrado = buscarKeyEnRegistro(nombreTabla, unidadAAnalizar, unidadADevolver, key)
-		encontrado = buscarKeyEnRegistro(nombreTabla, memoriaAuxiliar->unidad, &unidadExtra, key);
-		if(encontrado){
-			//SE ENCONTRO LA UNIDAD BUSCADA
-			return 1;
-		} else {
-			memoriaAuxiliar->unidad = unidadExtra;
-		}
-	}
-	*/
-
-	/*
-	pagina* otraPagina;
-
-	segmento* otroSegmento = segmentoHost;
-	while(otroSegmento->pagina!=NULL){
-		if(key==otroSegmento->pagina->valor_pagina->key){
-			//SE ENCONTRO LA COSA ESTA
-			valorADevolver = otraPagina->valor_pagina;
-			return 1;
-		}
-		otraPagina = otroSegmento->pagina->siguientePagina;
-		otroSegmento->pagina = otraPagina;
-	}
-
-	return -1;
-}
-*/
