@@ -33,8 +33,9 @@ int main() {
 	LisandraSetUP(); // CONFIGURACIÓN Y SETEO SOCKET
 
 	pthread_t* hiloListening,hiloConsola,hiloEjecutor;
-	pthread_create(&hiloListening, NULL,(void*) listenSomeLQL, NULL);
 	pthread_create(&hiloConsola  , NULL,(void*) consola, NULL);
+	pthread_create(&hiloListening, NULL,(void*) listenSomeLQL, NULL);
+
 	//pthread_create(&hiloEjecutor , NULL,(void*) consola, NULL);
 
 	pthread_join(hiloListening, NULL);
@@ -292,6 +293,8 @@ void validarLinea(char** lineaIngresada,t_log* logger){
 
 			log_info(logger,"En la posicion %d del array esta el valor %s",i,lineaIngresada[i]);
 
+			// log_info(logger,);
+
 			tamanio = i + 1;
 		}
 
@@ -306,15 +309,11 @@ void validarLinea(char** lineaIngresada,t_log* logger){
 
 						 printf("Describe seleccionado\n");
 
-						 
-
-						
 					 }
 					 else{
 		 				printf("Comando mal ingresado. \n");
 
-						 log_error(logger,
-		 									"Opcion mal ingresada por teclado en la consola");
+						 log_error(logger, "Opcion mal ingresada por teclado en la consola");
 		 				break;
 		 			}break;
 				}
@@ -502,11 +501,12 @@ void listenSomeLQL() {
 
 		Puntero buffer = malloc(sizeof(char)*100);
 
-		recibiendoMensaje = socketRecibir(conexionEntrante, buffer, 25,  logger);
+		recibiendoMensaje = socketRecibir(conexionEntrante, buffer, 50,  logger);
 
-		//char* msg = string_new();
+		char* msg = string_new();
 
-		char * msg = malloc(sizeof(char)*100);
+		// char * msg = malloc(sizeof(char)*100);
+		msg = string_duplicate(buffer);  // <-- ésto hace funcionar del string por red.
 
 		sem_wait(&semaforoQueries);
 		list_add(list_queries, msg);
