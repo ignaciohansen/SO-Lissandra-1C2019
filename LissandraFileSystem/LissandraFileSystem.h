@@ -5,6 +5,7 @@
 #include <commons/collections/list.h>
 
 #define PATH_BIN ".bin"
+#define PATH_BLOQUES "/Bloques/"
 #define PATH_LFILESYSTEM_CONFIG "../Config/LFS_CONFIG.txt"
 #define LOG_PATH "../Log/LOG_LFS.txt"
 #include <stdio.h>
@@ -73,7 +74,16 @@ typedef struct{
 
 }t_metadata_tabla;
 
+
 t_metadata_tabla* metadata;
+
+typedef struct{
+	int size;
+	char** bloques;
+
+}t_particion;
+
+t_particion* particionTabla;
 
 typedef struct{
 	int blocks;
@@ -100,3 +110,5 @@ void obtenerMetadata();
 int verificarTabla(char* tabla);
 
 void escanearParticion(int particion);
+
+char* buscarBloque(char* key);
