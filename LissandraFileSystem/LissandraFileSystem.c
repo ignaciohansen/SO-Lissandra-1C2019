@@ -6,7 +6,23 @@
  */
 
 #include "LissandraFileSystem.h"
-
+/*
+ * REQUERIMIENTOS:
+ *  - ¿ verificarExistenciaTabla    () ? Nota: está hecho el método de verificarExistenciaTabla()
+ *  - crearTabla(nombre, tipoConsistencia, nroParticiones, compactationTime)  // e.g.: CREATE TABLA1 SC 4 60000
+ *  - describe(nombre)
+ *  - bool      :verificarExistenciaTabla(nombre)
+ *  - obtenerMetadata(nombre)                           // ver que hacer acá
+ *  - crearMemtable()
+ *  - << todo lo necesario para gestionar las memTables >>
+ *  - registro**:escanearTabla    (nombre,key)          // retorna un array de punterosa registros.
+ *              :escaneaBinario   (key)
+ *              :escaneaTemp      (key)
+ *              :escaneaTempc     (key)
+ *  - registro**:escanearMemtable (key)                 // retorna un array de punterosa registros.
+ *
+ *  NOTA: nombres de tablas no se distingue uppercase de lowercase. Doesn't do difference by cases.
+ */
 int main() {
 
 	pantallaLimpiar();
