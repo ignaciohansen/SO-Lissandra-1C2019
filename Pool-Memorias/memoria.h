@@ -40,6 +40,9 @@ t_header* buffer;
 Mutex memoria_mutex_paginas_disponibles;
 Mutex mutex_segmento_en_modificacion;
 Mutex mutex_tabla_pagina_en_modificacion;
+Mutex mutex_segmento_modificando;
+Mutex mutex_limpiando_memoria;
+Semaforo paginasSinUsar; //TIENE CAPACIDAD HASTA PARA cantPaginasTotales
 int cantPaginasDisponibles, cantPaginasTotales;
 
 
@@ -84,46 +87,29 @@ typedef struct pagina{
 	u_int16_t key;
 }pagina;
 
+typedef struct pagina_a_devolver{
+	short nroPosicion;
+	long timestamp;
+	u_int16_t key;
+	char* value;
+}pagina_a_devolver;
+
 typedef struct tabla_paginas{
 //	int numero;
 //	struct pagina* valor_pagina;
 //	struct tabla_paginas* siguientePagina;
+	int vecesAccedido;
 	u_int16_t key;
 	int posicion;
 	bool flag;
 }tabla_pagina;
 
 typedef struct nodoSegmento{
-		char* path_tabla;
-		int* tablaPaginasAsociadas;
-		/* NO ES NECESARIO TENER UN PUNTERO A LA TABLA PAGINA
-		 * SINO QUE NECESITO TAN SOLO SABER SU POSICION
-		//  ser lista de tabla paginas? No se
-		//struct tabla_paginas* reg_pagina;
-		 * */
-		struct nodoSegmento* siguienteSegmento;
+	int cantPaginasAsociadas;
+	char* path_tabla;
+	int* paginasAsocida;
+	struct nodoSegmento* siguienteSegmento;
 }segmento;
-
-/* NO SE SI ESTE SIRVE PARA ALGO
-typedef struct infoPagina{
-	pagina* unaPag;
-	char* value;
-}infoPagina;
-*/
-
-/*EL NUMERO DE PAGINA YA ME LO DA SU POSICION EN EL BLOQUE
- * DE TABLA PAGINAS
- */
-
-
-/* ESTA ESTRUCTURA ESTA DE MAS
-typedef struct unidad_memoria {
-	int nroSegmento;
-	int nroPagina;
-	struct pagina * punteroAPagina;
-	struct unidad_memoria* siguienteUnidad;
-}unidad_memoria;
-*/
 
 memoria_principal* memoria;
 segmento* tablaSegmentos;
@@ -215,19 +201,40 @@ void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
 	/* @NAME: list_create
 	* @DESC: Crea una lista
 	*/
-	segmento * segmento_crear(char* pathNombreTabla, int nroPagina);
+
 	int tabla_pagina_crear(int16_t key, unsigned long timestampNuevo, char* valor, bool flag_modificado);
 //	pagina * pagina_crear(long timestamp, int16_t key, char * valor);
 	pagina* pagina_crear(long timestampNuevo, int16_t key, char * valor, char* nombreTabla);
 	//EL DE ABAJO CREA LA UNIDAD, EL DE ARRIBA DESPUES MANDA A BUSCAR EL SEGMENTO
 	pagina* crear_pagina(unsigned long timestampNUevo, int16_t key, char * valor);
+
+
+	/*
+	 * SEGMENTO
+	 */
+	void segmento_crear(char* pathNombreTabla, int nroPagina) ;
+	void eliminar_nro_pagina_de_segmento(segmento* unSegmento, int nroAQuitar);
+	void segmento_destruir(segmento*);
+	void segmento_destruir_y_vaciar_elementos(segmento *);
+	int limpiar_segmento(segmento * seg);
+	int segmento_esta_vacio(segmento *);
+	void aniadirNuevaPaginaASegmento(pagina* nuevaPag, char* nombreTabla);
+	int buscarKeyPorTablaPagina(int posicionABuscar, int16_t keyBuscada);
+	void asociar_nueva_pagina_a_segmento(segmento* unSegmento, int posicion);
+
+
+	//ACCESO A MEMORIA
+	void* obtenerInfoDePagina(int i, void* informacion);
+	void* accederYObtenerInfoDePaginaEnPosicion(int posicion, void* info);
+
+
 	/**
 	* @NAME: list_destroy
 	* @DESC: Destruye una lista sin liberar
 	* los elementos contenidos en los nodos
 	*/
 
-	void segmento_destruir(segmento*);
+
 	void tabla_pagina_destruir(tabla_pagina*);
 	void pagina_destruir(pagina*);
 
@@ -239,7 +246,7 @@ void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
 	* @DESC: Destruye una lista y sus elementos
 	*/
 
-	void segmento_destruir_y_vaciar_elementos(segmento *);
+
 	void pagina_destruir_y_vaciar_elementos(pagina *);
 
 	/**
@@ -275,8 +282,8 @@ void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
 
 	//DEVUELVEN EL VALOR DEL TAMAÑO DE MEMORIA
 	//QUE FUE LIBERADO
-	void limpiar_memoria(memoria_principal* mem);
-	int limpiar_segmento(segmento * seg);
+//	void limpiar_memoria(memoria_principal* mem);
+
 	int limpiar_valores_pagina(pagina* val);
 	int limpiar_paginas(tabla_pagina* pag);
 	int limpiar_valores_pagina(pagina* valores);
@@ -289,17 +296,6 @@ void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
 
 
 	bool chequear_si_memoria_tiene_espacio(int tamanio);
-	/**
-	* @NAME: list_iterate
-	* @DESC: Itera la lista llamando al closure por cada elemento
-	*/
-	void list_iterate(t_list *, void(*closure)(void*));
-
-	/**
-	* @NAME: list_find
-	* @DESC: Retorna el primer valor encontrado, el cual haga que condition devuelva != 0
-	*/
-	void *list_find(t_list *, bool(*closure)(void*));
 
 	//Busca una tabla entre los segmentos de memoria
 	//Si no lo encuentra devuelve un ERROR sino solo 1
@@ -309,25 +305,17 @@ void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
 //	int obtener_valores(int16_t key, segmento* segmentoHost, valor_pagina* valorADevolver);
 	int buscar_tabla_especifica(char* nombreTablaABuscar, segmento* segmentoBuscado);
 
-	/**
-	* @NAME: list_is_empty
-	* @DESC: Verifica si la lista esta vacia
-	*/
-
-	int segmento_esta_vacio(segmento *);
-
 /*
  * NUEVAS FUNCIONES
  */
-	void aniadirNuevaPaginaASegmento(pagina* nuevaPag, char* nombreTabla);
+
 	void LRU(pagina* paginaCreada);
-	int buscarKeyPorTablaPagina(int posicionABuscar, int16_t keyBuscada);
+
 	pagina* actualizarPosicionAPagina(pagina* unaPagina, int nuevaPos);
 
 	String obtenerNombreTablaDePath(String path);
-	void aniadirNuevaPosicionAArray(segmento** seg, int posNueva);
 
-	void pasarValoresALisandra(char* datos)
+	void pasarValoresALisandra(char* datos);
 #endif /* MEMORIA_H_ */
 
 
