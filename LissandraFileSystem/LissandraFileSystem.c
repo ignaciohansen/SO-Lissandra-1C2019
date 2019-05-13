@@ -39,7 +39,7 @@ int main() {
 	//pthread_create(&hiloEjecutor , NULL,(void*) consola, NULL);
 
 	pthread_join(hiloListening, NULL);
-	pthread_join(hiloConsola, NULL);
+	pthread_join(hiloConsola  , NULL);
 
 	sem_destroy(&semaforoQueries);
 	// consola();
@@ -263,6 +263,7 @@ void consola() {
 
 		if (linea) {
 			add_history(linea);
+
 			sem_wait(&semaforoQueries);
 			list_add(list_queries, linea);
 			sem_post(&semaforoQueries);
@@ -529,11 +530,12 @@ int comandoSelect(char* tabla, char* key) {
 
 	verificarTabla(tabla);
 
-	obtenerMetadata();
+	int obtuvo = obtenerMetadata(tabla);
 
 	int valorKey = atoi(key);
 
 	log_info(logger, "valorkey: %d ", valorKey);
+
 	int particiones = determinarParticion(valorKey, metadata->particiones);
 
 	escanearParticion(particiones);
@@ -570,11 +572,16 @@ int verificarTabla(char* tabla) {
 	log_info(logger, "Concatenamos: %s a tablaAVerificar", tabla);
 	log_info(logger, "tablaAVerificar queda en: %s", tablaAverificar);
 
+	string_append(&tablaAverificar, "/metadata");
+
 	log_info(logger, "La direccion de la tabla que se quiere verificar es: %s",
 			tablaAverificar);
+
+
 	FILE *file;
 
 	file = fopen(tablaAverificar, "r");
+
 	if (file == NULL) {
 		log_error(logger, "No existe la tabla");
 		return 0;
@@ -585,6 +592,7 @@ int verificarTabla(char* tabla) {
 	}
 
 	log_info(logger, "Le voy a pasar a verificarTabla la tabla: %s", tabla);
+
 	if (!verificarTabla(tabla)) {
 
 		log_info(logger, "No existe la tabla pasada por parametro");
@@ -596,13 +604,15 @@ int verificarTabla(char* tabla) {
 
 }
 
-void obtenerMetadata() {
+int obtenerMetadata(char* tabla) {
+
+	int result = 0;
 
 	metadata = malloc(sizeof(t_metadata_tabla));
 
 	t_config* metadataFile;
 
-	metadataFile = config_create("metadata.bin");
+	metadataFile = config_create("metadata");
 
 	if (metadataFile != NULL) {
 
@@ -612,44 +622,51 @@ void obtenerMetadata() {
 
 			log_info(logger, "Almacenando consistencia");
 
-			metadata->consistency = config_get_int_value(metadataFile,
-					"CONSISTENCY");
+			metadata->consistency = config_get_int_value( metadataFile
+					                                    , "CONSISTENCY");
 
 			log_info(logger, "La consistencia  es: %d", metadata->consistency);
+
 		} else {
+
 			log_error(logger, "El metadata no contiene la consistencia");
 
-		}
+		} // if (config_has_property(metadataFile, "CONSISTENCY"))
+
 		if (config_has_property(metadataFile, "PARTITIONS")) {
 
 			log_info(logger, "Almacenando particiones");
 
-			metadata->particiones = config_get_int_value(metadataFile,
-					"PARTITIONS");
+			metadata->particiones = config_get_int_value( metadataFile
+					                                    , "PARTITIONS");
 
 			log_info(logger, "Las particiones son : %d", metadata->particiones);
+
 		} else {
+
 			log_error(logger, "El metadata no contiene particiones");
 
-		}
+		} // if (config_has_property(metadataFile, "PARTITIONS"))
+
 		if (config_has_property(metadataFile, "COMPACTION_TIME")) {
 
 			log_info(logger, "Almacenando consistencia");
 
-			metadata->compaction_time = config_get_int_value(metadataFile,
-					"COMPACTION_TIME");
+			metadata->compaction_time = config_get_int_value( metadataFile
+					                                        , "COMPACTION_TIME");
 
-			log_info(logger, "el tiempo de compactacion es: %d",
-					metadata->compaction_time);
+			log_info(logger, "el tiempo de compactacion es: %d", metadata->compaction_time);
 		} else {
-			log_error(logger,
-					"El metadata no contiene el tiempo de compactacion");
 
-		}
+			log_error(logger, "El metadata no contiene el tiempo de compactacion");
+
+		} // if (config_has_property(metadataFile, "COMPACTION_TIME"))
+
 	} else {
 
-		log_error(logger,
-				"No se encontro el metadata para cargar la estructura");
+		log_error(logger, "[ERROR] Archivo metadata de partición no encontrado.");
+
+		result = -1;
 
 	}
 
@@ -658,7 +675,9 @@ void obtenerMetadata() {
 
 	free(metadataFile);
 
-}
+	return result;
+
+} // int obtenerMetadata()
 
 // el metadata se lee como un archivo de configuracion?
 

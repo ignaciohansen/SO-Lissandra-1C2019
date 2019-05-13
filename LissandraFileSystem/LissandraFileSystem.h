@@ -68,7 +68,7 @@ void listenSomeLQL();
  */
 
 typedef struct{
-	char* consistency;
+	char[2] consistency;
 	int particiones;
 	int compaction_time;
 
@@ -105,7 +105,7 @@ char* tablaAverificar;
 
 int comandoSelect(char* tabla, char* key);
 
-void obtenerMetadata();
+int obtenerMetadata(char* tabla);
 
 int verificarTabla(char* tabla);
 
