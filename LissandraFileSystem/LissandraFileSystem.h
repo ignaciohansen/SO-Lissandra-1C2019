@@ -68,7 +68,7 @@ void listenSomeLQL();
  */
 
 typedef struct{
-	char[2] consistency;
+	char* consistency;
 	int particiones;
 	int compaction_time;
 

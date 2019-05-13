@@ -557,6 +557,7 @@ int comandoSelect(char* tabla, char* key) {
 //}
 
 int verificarTabla(char* tabla) {
+
 	tablaAverificar = malloc(string_length(tabla_Path) + string_length(tabla));
 
 	log_info(logger,
@@ -565,17 +566,11 @@ int verificarTabla(char* tabla) {
 
 	log_info(logger, "%s", tablaAverificar);
 	string_append(&tablaAverificar, tabla_Path);
-	log_info(logger, "Concatenamos: %s a tablaAVerificar", tabla_Path);
-	log_info(logger, "tablaAVerificar queda en: %s", tablaAverificar);
-
 	string_append(&tablaAverificar, tabla);
 	log_info(logger, "Concatenamos: %s a tablaAVerificar", tabla);
-	log_info(logger, "tablaAVerificar queda en: %s", tablaAverificar);
 
 	string_append(&tablaAverificar, "/metadata");
-
-	log_info(logger, "La direccion de la tabla que se quiere verificar es: %s",
-			tablaAverificar);
+	log_info(logger, "[VERIFICADO] La direccion de la tabla que se quiere verificar es: %s",tablaAverificar);
 
 
 	FILE *file;
@@ -583,30 +578,36 @@ int verificarTabla(char* tabla) {
 	file = fopen(tablaAverificar, "r");
 
 	if (file == NULL) {
-		log_error(logger, "No existe la tabla");
+		log_error(logger, "[ERROR] No existe la tabla");
 		return 0;
-		perror("Error");
+		perror("Error!!");
 	} else {
+		log_error(logger, "[ OK ] Metadata de tabla abierto. \n");
 		return 1;
 		fclose(file);
-	}
+	} // if (file == NULL)
 
-	log_info(logger, "Le voy a pasar a verificarTabla la tabla: %s", tabla);
-
-	if (!verificarTabla(tabla)) {
-
-		log_info(logger, "No existe la tabla pasada por parametro");
-
-		return 0;
-	}
-
-	log_info(logger, "Existe la tabla pasada por parametro: %s", tabla);
+//
+//	log_info(logger, "Le voy a pasar a verificarTabla la tabla: %s", tabla);
+//
+//	if (!verificarTabla(tabla)) {
+//
+//		log_info(logger, "No existe la tabla pasada por parametro");
+//
+//		return 0;
+//	}
+//
+//	log_info(logger, "Existe la tabla pasada por parametro: %s", tabla);
 
 }
 
 int obtenerMetadata(char* tabla) {
 
 	int result = 0;
+
+	char* metadata_path = malloc( sizeof(tabla_Path) + sizeof(tabla) );
+	metadata_path = string_duplicate(tabla_Path);
+	string_append(metadata_path,tabla);
 
 	metadata = malloc(sizeof(t_metadata_tabla));
 
