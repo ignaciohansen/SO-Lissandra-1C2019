@@ -104,6 +104,7 @@ char* tablaAverificar; // directorio de la tabla
 char* path_tabla_metadata;
 
 int comandoSelect(char* tabla, char* key);
+void comandoDrop(char* tabla);
 
 int obtenerMetadata(char* tabla);
 

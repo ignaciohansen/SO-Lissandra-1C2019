@@ -452,6 +452,9 @@ void validarComando(char** comando, int tamanio, t_log* logger) {
 			log_info(logger, "Queriamos mandar esto: %s", comando[1]);
 			log_info(logger, "Y se mando esto: %s", mensaje);
 
+
+			comandoDrop(comando[1]);
+
 		}
 
 	}
@@ -813,6 +816,21 @@ char* buscarBloque(char* key) {
 	}
 
 	return "";
+
+}
+
+ void comandoDrop(char* tabla){
+
+	log_info(logger,"Por verificar tabla");
+
+	verificarTabla(tabla);
+
+	log_info(logger,"Vamos a eliminar el directorio: %s",tablaAverificar);
+
+	 if(remove(tablaAverificar)==0) // Eliminamos el archivo
+		 log_info(logger,"El archivo fue eliminado satisfactoriamente\n");
+	    else
+	    	log_info(logger,"No se pudo eliminar el archivo\n");
 
 }
 

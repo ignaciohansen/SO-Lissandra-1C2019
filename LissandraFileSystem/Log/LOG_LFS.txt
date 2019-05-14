@@ -1,0 +1,50 @@
+[INFO] 11:21:45:312 Proceso Lissandra File System/(5530:5530): [LOG CREADO] continuamos cargando la estructura de configuracion.
+[INFO] 11:21:45:312 Proceso Lissandra File System/(5530:5530): Por reservar memoria para variable de configuracion.
+[INFO] 11:21:45:312 Proceso Lissandra File System/(5530:5530): Por crear el archivo de config para levantar archivo con datos.
+[INFO] 11:21:45:313 Proceso Lissandra File System/(5530:5530): LissandraFS: Leyendo Archivo de Configuracion...
+[INFO] 11:21:45:313 Proceso Lissandra File System/(5530:5530): Almacenando el puerto
+[INFO] 11:21:45:313 Proceso Lissandra File System/(5530:5530): El puerto de escucha es: 8001
+[INFO] 11:21:45:313 Proceso Lissandra File System/(5530:5530): Almacenando el PUNTO DE MONTAJE: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem
+[INFO] 11:21:45:313 Proceso Lissandra File System/(5530:5530): El punto de montaje es: 145038424
+[INFO] 11:21:45:313 Proceso Lissandra File System/(5530:5530): La variabla tabla_path queda con: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem
+[INFO] 11:21:45:313 Proceso Lissandra File System/(5530:5530): Y ahora la variabla tabla_path queda con: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/
+[INFO] 11:21:45:313 Proceso Lissandra File System/(5530:5530): Almacenando el retardo
+[INFO] 11:21:45:313 Proceso Lissandra File System/(5530:5530): El retardo de respuesta es: 600
+[INFO] 11:21:45:313 Proceso Lissandra File System/(5530:5530): Almacenando el tamaño del valor de una key
+[INFO] 11:21:45:313 Proceso Lissandra File System/(5530:5530): El tamaño del valor es: 4
+[INFO] 11:21:45:313 Proceso Lissandra File System/(5530:5530): Almacenando el puerto
+[INFO] 11:21:45:313 Proceso Lissandra File System/(5530:5530): El tiempo de dumpeo es: 5000
+[INFO] 11:21:45:313 Proceso Lissandra File System/(5530:5530): Se ha cargado todos los datos del archivo de configuracion
+[INFO] 11:21:45:313 Proceso Lissandra File System/(5530:5530): En funcion nuevoSocket en el Proyecto Biblioteca, por llamar a funcion Socket()
+[INFO] 11:21:45:314 Proceso Lissandra File System/(5530:5530): Por retornar el socket creado: 4
+[ERROR] 11:21:45:314 Proceso Lissandra File System/(5530:5530): [  OK  ] Se ha creado el socket nro.: 4.
+[INFO] 11:21:45:314 Proceso Lissandra File System/(5530:5530): [PUERTO] Asociando a puerto: 8001.
+[INFO] 11:21:45:314 Proceso Lissandra File System/(5530:5530): En funcion asociarSocket()
+[INFO] 11:21:45:314 Proceso Lissandra File System/(5530:5530): [  OK  ] Asociado.
+[INFO] 11:21:45:314 Proceso Lissandra File System/(5530:5530): En funcion socketEscuchar
+[INFO] 11:21:45:314 Proceso Lissandra File System/(5530:5530): [  OK  ] Given socket is now listening.
+[INFO] 11:21:45:314 Proceso Lissandra File System/(5530:5534):  
+ ====== LFS Listener: waiting for client connections ====== 
+ 
+[INFO] 11:21:45:314 Proceso Lissandra File System/(5530:5534): [BIBLIO] (+) FUNCTION aceptarConexionSocket
+[INFO] 11:21:45:314 Proceso Lissandra File System/(5530:5534): Por llamar a accept
+[INFO] 11:21:45:314 Proceso Lissandra File System/(5530:5533): En el hilo de consola
+[INFO] 11:21:47:957 Proceso Lissandra File System/(5530:5533): En la posicion 0 del array esta el valor drop
+[INFO] 11:21:47:957 Proceso Lissandra File System/(5530:5533): En la posicion 1 del array esta el valor prueba
+[INFO] 11:21:47:957 Proceso Lissandra File System/(5530:5533): El tamanio del vector de comandos es: 2
+[INFO] 11:21:47:957 Proceso Lissandra File System/(5530:5533): Recibimos el comando: drop
+[INFO] 11:21:47:957 Proceso Lissandra File System/(5530:5533): Se devuelve el valor 4
+[INFO] 11:21:47:957 Proceso Lissandra File System/(5530:5533): Se selecciono Drop
+[INFO] 11:21:47:957 Proceso Lissandra File System/(5530:5533): Cantidad de parametros correctos ingresados para el comando Drop
+[INFO] 11:21:47:957 Proceso Lissandra File System/(5530:5533): Queriamos mandar esto: prueba
+[INFO] 11:21:47:957 Proceso Lissandra File System/(5530:5533): Y se mando esto: prueba
+[INFO] 11:21:47:957 Proceso Lissandra File System/(5530:5533): Por verificar tabla
+[INFO] 11:21:47:957 Proceso Lissandra File System/(5530:5533): Se reservo memoria para contatenar punto de montaje con la tabla
+[INFO] 11:21:47:957 Proceso Lissandra File System/(5530:5533): 
+[INFO] 11:21:47:957 Proceso Lissandra File System/(5530:5533): Concatenamos: prueba a tablaAVerificar
+[INFO] 11:21:47:957 Proceso Lissandra File System/(5530:5533): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/prueba
+[ERROR] 11:21:47:957 Proceso Lissandra File System/(5530:5533): [ OK ] Metadata de tabla abierto. 
+
+[INFO] 11:21:47:957 Proceso Lissandra File System/(5530:5533): Vamos a eliminar el directorio: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/prueba
+[INFO] 11:21:47:957 Proceso Lissandra File System/(5530:5533): El archivo fue eliminado satisfactoriamente
+
