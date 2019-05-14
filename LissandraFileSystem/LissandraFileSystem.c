@@ -790,15 +790,14 @@ char* buscarBloque(char* key) {
 	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo);
 
 	string_append(&bloqueObjetivo, PATH_BLOQUES);
+
 	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo);
 
 	char* bloque = malloc(2);
-
 	bloque = particionTabla->bloques[0];
 
+	string_append(&bloqueObjetivo, "block");
 	string_append(&bloqueObjetivo, bloque);
-	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo);
-
 	string_append(&bloqueObjetivo, ".bin");
 	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo);
 
