@@ -74,7 +74,6 @@ typedef struct{
 
 }t_metadata_tabla;
 
-
 t_metadata_tabla* metadata;
 
 typedef struct{
@@ -101,7 +100,8 @@ sem_t semaforoQueries;
  *--------------------------------------------------------------------------------------------
  */
 
-char* tablaAverificar;
+char* tablaAverificar; // directorio de la tabla
+char* path_tabla_metadata;
 
 int comandoSelect(char* tabla, char* key);
 

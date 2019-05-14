@@ -530,17 +530,16 @@ int comandoSelect(char* tabla, char* key) {
 
 	verificarTabla(tabla);
 
-	int obtuvo = obtenerMetadata(tabla);
+	obtenerMetadata(tabla); // 0: OK. -1: ERROR.
 
-	int valorKey = atoi(key);
-
-	log_info(logger, "valorkey: %d ", valorKey);
-
+	int valorKey    = atoi(key);
 	int particiones = determinarParticion(valorKey, metadata->particiones);
 
 	escanearParticion(particiones);
 
-	char* keyEncontrado = buscarBloque(key); //GUardar memoria
+	log_info(logger, "LLEGÓ ACÁ.");
+
+	char* keyEncontrado = buscarBloque(key); // GUardar memoria
 
 	// ver key con timestamp mas grande
 
@@ -568,8 +567,8 @@ int verificarTabla(char* tabla) {
 	string_append(&tablaAverificar, tabla_Path);
 	string_append(&tablaAverificar, tabla);
 	log_info(logger, "Concatenamos: %s a tablaAVerificar", tabla);
-
-	string_append(&tablaAverificar, "/metadata");
+	path_tabla_metadata = string_duplicate(tablaAverificar);
+	string_append(&path_tabla_metadata, "/metadata");
 	log_info(logger, "[VERIFICADO] La direccion de la tabla que se quiere verificar es: %s",tablaAverificar);
 
 
@@ -587,33 +586,18 @@ int verificarTabla(char* tabla) {
 		fclose(file);
 	} // if (file == NULL)
 
-//
-//	log_info(logger, "Le voy a pasar a verificarTabla la tabla: %s", tabla);
-//
-//	if (!verificarTabla(tabla)) {
-//
-//		log_info(logger, "No existe la tabla pasada por parametro");
-//
-//		return 0;
-//	}
-//
-//	log_info(logger, "Existe la tabla pasada por parametro: %s", tabla);
-
-}
+} // int verificarTabla(char* tabla)
 
 int obtenerMetadata(char* tabla) {
 
+	log_info(logger, "[obtenerMetadata] (+) metadata a abrir : %s",path_tabla_metadata);
+
 	int result = 0;
 
-	char* metadata_path = malloc( sizeof(tabla_Path) + sizeof(tabla) );
-	metadata_path = string_duplicate(tabla_Path);
-	string_append(metadata_path,tabla);
-
-	metadata = malloc(sizeof(t_metadata_tabla));
+	metadata = malloc(sizeof(t_metadata_tabla)); // Vatiable global.
 
 	t_config* metadataFile;
-
-	metadataFile = config_create("metadata");
+	metadataFile = config_create(path_tabla_metadata);
 
 	if (metadataFile != NULL) {
 
@@ -622,9 +606,8 @@ int obtenerMetadata(char* tabla) {
 		if (config_has_property(metadataFile, "CONSISTENCY")) {
 
 			log_info(logger, "Almacenando consistencia");
-
-			metadata->consistency = config_get_int_value( metadataFile
-					                                    , "CONSISTENCY");
+				// PROBLEMA.
+			metadata->consistency = config_get_string_value( metadataFile, "CONSISTENCY");
 
 			log_info(logger, "La consistencia  es: %d", metadata->consistency);
 
@@ -638,8 +621,7 @@ int obtenerMetadata(char* tabla) {
 
 			log_info(logger, "Almacenando particiones");
 
-			metadata->particiones = config_get_int_value( metadataFile
-					                                    , "PARTITIONS");
+			metadata->particiones = config_get_int_value( metadataFile, "PARTITIONS");
 
 			log_info(logger, "Las particiones son : %d", metadata->particiones);
 
@@ -651,12 +633,10 @@ int obtenerMetadata(char* tabla) {
 
 		if (config_has_property(metadataFile, "COMPACTION_TIME")) {
 
-			log_info(logger, "Almacenando consistencia");
-
-			metadata->compaction_time = config_get_int_value( metadataFile
-					                                        , "COMPACTION_TIME");
+			metadata->compaction_time = config_get_int_value( metadataFile, "COMPACTION_TIME");
 
 			log_info(logger, "el tiempo de compactacion es: %d", metadata->compaction_time);
+
 		} else {
 
 			log_error(logger, "El metadata no contiene el tiempo de compactacion");
@@ -669,33 +649,37 @@ int obtenerMetadata(char* tabla) {
 
 		result = -1;
 
-	}
+	} // if (metadataFile != NULL)
 
-	log_info(logger,
-			"Cargamos todo lo que se encontro en el metadata. Liberamos la variable metadataFile que fue utlizada para navegar el metadata");
+	log_info(logger, "[FREE] variable metadataFile utlizada para navegar el metadata.");
 
 	free(metadataFile);
+
+	log_info(logger, "[obtenerMetadata] (-) metadata a abrir : %s",tablaAverificar);
 
 	return result;
 
 } // int obtenerMetadata()
 
-// el metadata se lee como un archivo de configuracion?
-
 int determinarParticion(int key, int particiones) {
 
-	log_info(logger, "la key es %d", key);
-	log_info(logger, "La particion es %d", particiones);
-	printf("La tabla sera agregada en la particion %d \n", key % particiones);
+	log_info(logger, "KEY: %d ", key);
 
-	log_info(logger, "La tabla sera agregada en la particion %d",
-			key % particiones);
+	int retornar = key % particiones;
 
-	return key % particiones;
+	log_info(logger, "PARTICION: %d ", retornar);
+
+	return retornar;
 
 }
 
 void escanearParticion(int particion) {
+
+	log_info(logger,"[escanearParticion] (+) ");
+
+	log_info(logger,"[escanearParticion] (+) %s",tabla_Path);
+
+	log_info(logger,"[escanearParticion] (+) %s",tablaAverificar);
 
 	char * stringParticion = malloc(sizeof(char));
 
@@ -776,6 +760,8 @@ void escanearParticion(int particion) {
 			"Cargamos todo lo que se encontro en el metadata. Liberamos la variable metadataFile que fue utlizada para navegar el metadata");
 
 	free(particionFile);
+
+	log_info(logger,"[escanearParticion] (-) ");
 
 //LO que habia antes para levantar el archivo de metadata.bin
 	/*	FILE *file;
