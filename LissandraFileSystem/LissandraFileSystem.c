@@ -39,7 +39,7 @@ int main() {
 	//pthread_create(&hiloEjecutor , NULL,(void*) consola, NULL);
 
 	pthread_join(hiloListening, NULL);
-	pthread_join(hiloConsola  , NULL);
+	pthread_join(hiloConsola, NULL);
 
 	sem_destroy(&semaforoQueries);
 	// consola();
@@ -410,6 +410,15 @@ void validarComando(char** comando, int tamanio, t_log* logger) {
 		printf("Create seleccionado\n");
 		log_info(logger, "Se selecciono Create");
 
+		if (tamanio == 5) {
+
+			log_info(logger,
+					"Cantidad de parametros correctos ingresados para el comando Create");
+
+			comandoCreate(comando[1], comando[2], comando[3], comando[4]);
+
+		}
+
 	}
 		break;
 
@@ -451,7 +460,6 @@ void validarComando(char** comando, int tamanio, t_log* logger) {
 
 			log_info(logger, "Queriamos mandar esto: %s", comando[1]);
 			log_info(logger, "Y se mando esto: %s", mensaje);
-
 
 			comandoDrop(comando[1]);
 
@@ -535,7 +543,7 @@ int comandoSelect(char* tabla, char* key) {
 
 	obtenerMetadata(tabla); // 0: OK. -1: ERROR.
 
-	int valorKey    = atoi(key);
+	int valorKey = atoi(key);
 	int particiones = determinarParticion(valorKey, metadata->particiones);
 
 	escanearParticion(particiones);
@@ -572,8 +580,9 @@ int verificarTabla(char* tabla) {
 	log_info(logger, "Concatenamos: %s a tablaAVerificar", tabla);
 	path_tabla_metadata = string_duplicate(tablaAverificar);
 	string_append(&path_tabla_metadata, "/metadata");
-	log_info(logger, "[VERIFICADO] La direccion de la tabla que se quiere verificar es: %s",tablaAverificar);
-
+	log_info(logger,
+			"[VERIFICADO] La direccion de la tabla que se quiere verificar es: %s",
+			tablaAverificar);
 
 	FILE *file;
 
@@ -593,7 +602,8 @@ int verificarTabla(char* tabla) {
 
 int obtenerMetadata(char* tabla) {
 
-	log_info(logger, "[obtenerMetadata] (+) metadata a abrir : %s",path_tabla_metadata);
+	log_info(logger, "[obtenerMetadata] (+) metadata a abrir : %s",
+			path_tabla_metadata);
 
 	int result = 0;
 
@@ -609,8 +619,9 @@ int obtenerMetadata(char* tabla) {
 		if (config_has_property(metadataFile, "CONSISTENCY")) {
 
 			log_info(logger, "Almacenando consistencia");
-				// PROBLEMA.
-			metadata->consistency = config_get_string_value( metadataFile, "CONSISTENCY");
+			// PROBLEMA.
+			metadata->consistency = config_get_string_value(metadataFile,
+					"CONSISTENCY");
 
 			log_info(logger, "La consistencia  es: %d", metadata->consistency);
 
@@ -624,7 +635,8 @@ int obtenerMetadata(char* tabla) {
 
 			log_info(logger, "Almacenando particiones");
 
-			metadata->particiones = config_get_int_value( metadataFile, "PARTITIONS");
+			metadata->particiones = config_get_int_value(metadataFile,
+					"PARTITIONS");
 
 			log_info(logger, "Las particiones son : %d", metadata->particiones);
 
@@ -636,29 +648,35 @@ int obtenerMetadata(char* tabla) {
 
 		if (config_has_property(metadataFile, "COMPACTION_TIME")) {
 
-			metadata->compaction_time = config_get_int_value( metadataFile, "COMPACTION_TIME");
+			metadata->compaction_time = config_get_int_value(metadataFile,
+					"COMPACTION_TIME");
 
-			log_info(logger, "el tiempo de compactacion es: %d", metadata->compaction_time);
+			log_info(logger, "el tiempo de compactacion es: %d",
+					metadata->compaction_time);
 
 		} else {
 
-			log_error(logger, "El metadata no contiene el tiempo de compactacion");
+			log_error(logger,
+					"El metadata no contiene el tiempo de compactacion");
 
 		} // if (config_has_property(metadataFile, "COMPACTION_TIME"))
 
 	} else {
 
-		log_error(logger, "[ERROR] Archivo metadata de partición no encontrado.");
+		log_error(logger,
+				"[ERROR] Archivo metadata de partición no encontrado.");
 
 		result = -1;
 
 	} // if (metadataFile != NULL)
 
-	log_info(logger, "[FREE] variable metadataFile utlizada para navegar el metadata.");
+	log_info(logger,
+			"[FREE] variable metadataFile utlizada para navegar el metadata.");
 
 	free(metadataFile);
 
-	log_info(logger, "[obtenerMetadata] (-) metadata a abrir : %s",tablaAverificar);
+	log_info(logger, "[obtenerMetadata] (-) metadata a abrir : %s",
+			tablaAverificar);
 
 	return result;
 
@@ -676,20 +694,13 @@ int determinarParticion(int key, int particiones) {
 
 }
 
-void escanearParticion(int particion) {
-
-	log_info(logger,"[escanearParticion] (+) ");
-
-	log_info(logger,"[escanearParticion] (+) %s",tabla_Path);
-
-	log_info(logger,"[escanearParticion] (+) %s",tablaAverificar);
-
+void rutaParticion(int particion) {
 	char * stringParticion = malloc(sizeof(char));
 
 	sprintf(stringParticion, "%d", particion);
 	log_info(logger, "resultado de sprintf %s", stringParticion);
 
-	char* archivoParticion = malloc(
+	archivoParticion = malloc(
 			string_length(tablaAverificar) + string_length(stringParticion)
 					+ string_length(PATH_BIN));
 
@@ -704,13 +715,24 @@ void escanearParticion(int particion) {
 
 	string_append(&archivoParticion, ".bin");
 
+	log_info(logger, "%s", archivoParticion);
+}
+
+void escanearParticion(int particion) {
+
+	log_info(logger, "[escanearParticion] (+) ");
+
+	log_info(logger, "[escanearParticion] (+) %s", tabla_Path);
+
+	log_info(logger, "[escanearParticion] (+) %s", tablaAverificar);
+
+	rutaParticion(particion);
+
 	particionTabla = malloc(sizeof(t_particion));
 
 	t_config* particionFile;
 
 	particionFile = config_create(archivoParticion);
-
-	log_info(logger, "%s", archivoParticion);
 
 	FILE *file;
 	file = fopen(archivoParticion, "r");
@@ -764,7 +786,7 @@ void escanearParticion(int particion) {
 
 	free(particionFile);
 
-	log_info(logger,"[escanearParticion] (-) ");
+	log_info(logger, "[escanearParticion] (-) ");
 
 //LO que habia antes para levantar el archivo de metadata.bin
 	/*	FILE *file;
@@ -819,18 +841,92 @@ char* buscarBloque(char* key) {
 
 }
 
- void comandoDrop(char* tabla){
+void comandoDrop(char* tabla) {
 
-	log_info(logger,"Por verificar tabla");
+	log_info(logger, "Por verificar tabla");
 
 	verificarTabla(tabla);
 
-	log_info(logger,"Vamos a eliminar el directorio: %s",tablaAverificar);
+	log_info(logger, "Vamos a eliminar el directorio: %s", tablaAverificar);
 
-	 if(remove(tablaAverificar)==0) // Eliminamos el archivo
-		 log_info(logger,"El archivo fue eliminado satisfactoriamente\n");
-	    else
-	    	log_info(logger,"No se pudo eliminar el archivo\n");
+	if (remove(tablaAverificar) == 0) // Eliminamos el archivo
+		log_info(logger, "El archivo fue eliminado satisfactoriamente\n");
+	else
+		log_info(logger, "No se pudo eliminar el archivo\n");
+
+}
+
+void comandoCreate(char* tabla, char* consistencia, char* particiones,
+		char* tiempoCompactacion) {
+
+	if (verificarTabla(tabla) == 0) {     // La tabla no existe, se crea
+
+		mkdir(tablaAverificar, 0777);
+
+		log_info(logger, "Se crea la tabla y su direccion es %s ",
+				tablaAverificar);
+		log_info(logger, "Por crear archivo metadata");
+
+
+		FILE* archivoMetadata;
+
+		archivoMetadata = fopen(path_tabla_metadata, "w+");
+
+		if (archivoMetadata != NULL) {
+			log_info(logger,
+					"El archivo metadata se creo satisfactoriamente\n");
+
+			char *lineaConsistencia = malloc(sizeof(consistencia)+sizeof("CONSISTENSY=")+1);
+			lineaConsistencia = string_new();
+			string_append(&lineaConsistencia, "CONSISTENSY=");
+			string_append(&lineaConsistencia, consistencia);
+			string_append(&lineaConsistencia,"\n");
+			log_info(logger, "Se agrego la consistencia %s", lineaConsistencia);
+
+
+			char *lineaParticiones = malloc(sizeof(particiones)+sizeof("PARTITIONS=")+1);
+			lineaParticiones = string_new();
+			string_append(&lineaParticiones, "PARTITIONS=");
+			string_append(&lineaParticiones, particiones);
+			string_append(&lineaParticiones,"\n");
+			log_info(logger, "Se agregaron las particiones %s", lineaParticiones);
+
+			char *lineaTiempoCompactacion = malloc(sizeof(tiempoCompactacion)+sizeof("COMPACTION_TIME="));
+			lineaTiempoCompactacion = string_new();
+			string_append(&lineaTiempoCompactacion, "COMPACTION_TIME=");
+			string_append(&lineaTiempoCompactacion, tiempoCompactacion);
+			log_info(logger, "Se agrego el tiempo de compactacion %s", lineaTiempoCompactacion);
+
+			fputs(lineaConsistencia,archivoMetadata);
+			fputs(lineaParticiones,archivoMetadata);
+			fputs(lineaTiempoCompactacion,archivoMetadata);
+
+
+			fclose(archivoMetadata);
+
+			log_info(logger, "Por crear particiones");
+
+
+			int aux = atoi(particiones);
+
+			log_info(logger, "aux=%d",aux);
+			for (int i = 0; i < aux; i++) {
+				rutaParticion(i);
+				FILE* particion;
+				particion = fopen(archivoParticion, "w");
+				log_info(logger, "Particion creada: %s", archivoParticion);
+				fclose(particion);
+			}
+
+			// FALTA ASIGNAR BLOQUE PARA LA PARTICION
+
+
+		} else {
+			log_info(logger, "No se pudo crear el archivo metadata \n");
+			fclose(archivoMetadata);
+		}
+
+	}
 
 }
 

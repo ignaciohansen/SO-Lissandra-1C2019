@@ -102,9 +102,11 @@ sem_t semaforoQueries;
 
 char* tablaAverificar; // directorio de la tabla
 char* path_tabla_metadata;
+char* archivoParticion;
 
 int comandoSelect(char* tabla, char* key);
 void comandoDrop(char* tabla);
+void comandoCreate(char* tabla,char* consistencia,char* particiones,char* tiempoCompactacion);
 
 int obtenerMetadata(char* tabla);
 
