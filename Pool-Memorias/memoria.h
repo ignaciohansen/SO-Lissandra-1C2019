@@ -42,12 +42,16 @@ Mutex mutex_segmento_en_modificacion;
 Mutex mutex_tabla_pagina_en_modificacion;
 Mutex mutex_segmento_modificando;
 Mutex mutex_limpiando_memoria;
+Mutex mutex_pagina_auxiliar;
+Mutex mutex_pagina_referenciada_aux;
+Mutex mutex_pagina_referenciada_aux2;
+Mutex mutex_segmento_aux;
+Mutex LRUMutex;
 Semaforo paginasSinUsar; //TIENE CAPACIDAD HASTA PARA cantPaginasTotales
 int cantPaginasDisponibles, cantPaginasTotales;
 
 
 void* bloque_memoria;
-void* tabla_paginada;
 
 int max_valor_key;
 
@@ -74,12 +78,7 @@ typedef struct{
     int max_value_key;
 }t_memoria_config;
 
-typedef struct {
-	int tamanioMemoria;
-	short tamanioPagina;
-//	short cantPaginasDisponibles;
-	short paginasTotales;
-} memoria_principal;
+int a;
 
 typedef struct pagina{
 	short nroPosicion;
@@ -94,31 +93,37 @@ typedef struct pagina_a_devolver{
 	char* value;
 }pagina_a_devolver;
 
-typedef struct tabla_paginas{
+typedef struct pagina_referenciada{
 //	int numero;
 //	struct pagina* valor_pagina;
 //	struct tabla_paginas* siguientePagina;
 	int vecesAccedido;
+//	u_int16_t key;
+	pagina_a_devolver* pag;
+	int nropagina; //RELACIONAR UNA PAGINA EN MEMORIA
 	u_int16_t key;
-	int posicion;
 	bool flag;
-}tabla_pagina;
+	struct pagina_referenciada* sig;
+}pagina_referenciada;
 
 typedef struct nodoSegmento{
 	int cantPaginasAsociadas;
 	char* path_tabla;
-	int* paginasAsocida;
+	pagina_referenciada* paginasAsocida;
 	struct nodoSegmento* siguienteSegmento;
 }segmento;
 
-memoria_principal* memoria;
+//memoria_principal* memoria;
 segmento* tablaSegmentos;
 t_memoria_config* arc_config;
 
 //ESTOS 2 SOLO SE USARAN PARA CARGAR DATOS, NADA MAS
-tabla_pagina* aux_tabla_paginas;
+pagina_referenciada* aux_tabla_paginas;
+pagina_referenciada* aux_tabla_paginas2;
 pagina* aux_pagina;
+segmento* aux_segmento;
 
+int main();
 
 
 /*---------------------------------------------------
@@ -193,33 +198,36 @@ void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
  * FUNCIONES PARA ADMINISTRAR LA MEMORIA
  *---------------------------------------------------*/
 
+	pagina_a_devolver* selectObtenerDatos(int nroDePaginaAIr);
+	int buscarEntreTodasLasTablaPaginasLaKey(pagina_referenciada* tablasAsociadasASegmento,	int16_t keyBuscada);
+
 	segmento* buscarSegmentoPorNumero(int numeroABuscar);
 	segmento* buscarSegmentoPorNombreTabla(char* nombreTabla);
-	tabla_pagina* buscarPaginaPorNumero(int numeroABuscar, segmento* seg);
+	pagina_referenciada* buscarPaginaPorNumero(int numeroABuscar, segmento* seg);
 
 //	int limpiarUnidad(unidad_memoria* unidad_de_memoria);
 	/* @NAME: list_create
 	* @DESC: Crea una lista
 	*/
 
-	int tabla_pagina_crear(int16_t key, unsigned long timestampNuevo, char* valor, bool flag_modificado);
+	int tabla_pagina_crear(int16_t key, char* valor, bool flag_modificado);
 //	pagina * pagina_crear(long timestamp, int16_t key, char * valor);
 	pagina* pagina_crear(long timestampNuevo, int16_t key, char * valor, char* nombreTabla);
 	//EL DE ABAJO CREA LA UNIDAD, EL DE ARRIBA DESPUES MANDA A BUSCAR EL SEGMENTO
-	pagina* crear_pagina(unsigned long timestampNUevo, int16_t key, char * valor);
+	pagina* crear_pagina(int16_t key, char * valor);
 
 
 	/*
 	 * SEGMENTO
 	 */
-	void segmento_crear(char* pathNombreTabla, int nroPagina) ;
+	void segmento_crear(char* pathNombreTabla, pagina_referenciada* paginaRef);
 	void eliminar_nro_pagina_de_segmento(segmento* unSegmento, int nroAQuitar);
 	void segmento_destruir(segmento*);
 	void segmento_destruir_y_vaciar_elementos(segmento *);
 	int limpiar_segmento(segmento * seg);
 	int segmento_esta_vacio(segmento *);
 	void aniadirNuevaPaginaASegmento(pagina* nuevaPag, char* nombreTabla);
-	int buscarKeyPorTablaPagina(int posicionABuscar, int16_t keyBuscada);
+	int buscarKeyPorTablaPagina(pagina_referenciada* tabla_pagina_auxx, int16_t keyBuscada);
 	void asociar_nueva_pagina_a_segmento(segmento* unSegmento, int posicion);
 
 
@@ -235,7 +243,7 @@ void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
 	*/
 
 
-	void tabla_pagina_destruir(tabla_pagina*);
+	void tabla_pagina_destruir(pagina_referenciada*);
 	void pagina_destruir(pagina*);
 
 
@@ -254,15 +262,15 @@ void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
 	* @DESC: Agrega un elemento al final de la lista
 	*/
 
-	void segmento_agregar_pagina(segmento*, tabla_pagina*);
-	void pagina_agregar_valores(tabla_pagina*, pagina*);
-	void pagina_poner_estado_modificado(tabla_pagina* pag);
+	void segmento_agregar_pagina(segmento*, pagina_referenciada*);
+	void pagina_agregar_valores(pagina_referenciada*, pagina*);
+	void pagina_poner_estado_modificado(pagina_referenciada* pag);
 
 	/*
 	 * AGREGAR NUEVO ELEMENTO AL PRINCIPIO DE TODO
 	 */
-	int segmento_agregar_inicio_pagina(segmento*, tabla_pagina*);
-	int pagina_agregar_inicio_valores(tabla_pagina*, pagina*);
+	int segmento_agregar_inicio_pagina(segmento*, pagina_referenciada*);
+	int pagina_agregar_inicio_valores(pagina_referenciada*, pagina*);
 
 
 	void valores_reemplazar_items(pagina* valor_pag, int timestamp, char* valor);
@@ -285,7 +293,7 @@ void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
 //	void limpiar_memoria(memoria_principal* mem);
 
 	int limpiar_valores_pagina(pagina* val);
-	int limpiar_paginas(tabla_pagina* pag);
+	int limpiar_paginas(pagina_referenciada* pag);
 	int limpiar_valores_pagina(pagina* valores);
 
 	/**
@@ -308,6 +316,7 @@ void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
 /*
  * NUEVAS FUNCIONES
  */
+	void funcionInsert(char* nombreTabla, int16_t keyBuscada, char* valorAPoner);
 
 	void LRU(pagina* paginaCreada);
 
