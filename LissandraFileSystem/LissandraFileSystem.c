@@ -830,8 +830,12 @@ char* buscarBloque(char* key) {
 		char lectura;
 
 		do {
+			do {
 				lectura = fgetc(file);
-				printf(lectura);
+				printf("%c",lectura);
+			} while (lectura != '\n');
+			printf("fin de linea \n");
+			lectura = fgetc(file);
 		} while (!feof(file));
 
 		fclose(file);
