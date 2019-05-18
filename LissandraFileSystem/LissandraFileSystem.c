@@ -733,11 +733,11 @@ void escanearParticion(int particion) {
 	t_config* particionFile;
 
 	particionFile = config_create(archivoParticion);
-
+	log_info(logger, "[escanearParticion] (/) Ejecutando apertura de archivo.");
 	FILE *file;
 	file = fopen(archivoParticion, "r");
 	if (file == NULL) {
-		//log_error(logger, "No existe la particion");
+		log_error(logger, "No existe la particion");
 		perror("Error");
 	} else {
 		log_info(logger, "Abrimos particion %d", particion);
@@ -784,6 +784,7 @@ void escanearParticion(int particion) {
 	log_info(logger,
 			"Cargamos todo lo que se encontro en el metadata. Liberamos la variable metadataFile que fue utlizada para navegar el metadata");
 
+	free(particionTabla);
 	free(particionFile);
 
 	log_info(logger, "[escanearParticion] (-) ");
