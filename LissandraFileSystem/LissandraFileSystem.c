@@ -275,9 +275,6 @@ void consola() {
 		}
 
 		//fgets(bufferComando, MAXSIZE_COMANDO, stdin); -> Implementacion anterior
-
-		strtok(linea, "\n");
-
 		comandoSeparado = string_split(linea, separator);
 
 		validarLinea(comandoSeparado, logger);
@@ -455,7 +452,7 @@ void validarComando(char** comando, int tamanio, t_log* logger) {
 			log_info(logger,
 					"Cantidad de parametros correctos ingresados para el comando Drop");
 
-			mensaje = malloc(string_length(comando[1]));
+			mensaje = malloc(string_length(comando[1]) + 1);
 
 			strcpy(mensaje, comando[1]);
 
