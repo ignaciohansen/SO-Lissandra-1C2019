@@ -540,24 +540,25 @@ void listenSomeLQL() {
 
 int comandoSelect(char* tabla, char* key) {
 
-	verificarTabla(tabla);
+	if (verificarTabla(tabla) == -1) {
+		return -1;
+	} else { // archivo de tabla encontrado
+		obtenerMetadata(tabla); // 0: OK. -1: ERROR. // frenar en caso de error
 
-	obtenerMetadata(tabla); // 0: OK. -1: ERROR.
+		int valorKey = atoi(key);
+		int particiones = determinarParticion(valorKey, metadata->particiones);
 
-	int valorKey = atoi(key);
-	int particiones = determinarParticion(valorKey, metadata->particiones);
+		escanearParticion(particiones);
 
-	escanearParticion(particiones);
+		log_info(logger, "LLEGÓ ACÁ.");
 
-	log_info(logger, "LLEGÓ ACÁ.");
+		char* keyEncontrado = buscarBloque(key); // GUardar memoria
 
-	char* keyEncontrado = buscarBloque(key); // GUardar memoria
+		// ver key con timestamp mas grande
 
-	// ver key con timestamp mas grande
-
-	return valorKey;
-
-}
+		return valorKey;
+	}
+} // int comandoSelect(char* tabla, char* key)
 
 //void insert(char* tabla, int key,char* value){
 // verificarTabla(tabla);
@@ -591,12 +592,12 @@ int verificarTabla(char* tabla) {
 
 	if (file == NULL) {
 		log_error(logger, "[ERROR] No existe la tabla");
-		return 0;
-		perror("Error!!");
+		perror("Error al abrir tabla/archivo!!");
+		return -1;
 	} else {
 		log_error(logger, "[ OK ] Metadata de tabla abierto. \n");
-		return 1;
 		fclose(file);
+		return 0;
 	} // if (file == NULL)
 
 } // int verificarTabla(char* tabla)
