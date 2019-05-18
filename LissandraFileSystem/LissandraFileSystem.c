@@ -396,9 +396,10 @@ void validarComando(char** comando, int tamanio, t_log* logger) {
 		if (tamanio == 4 || tamanio == 5) {
 
 			if (tamanio == 4) {
-
+				int resultado = comandoInsert(comando[1], comando[2],comando[3]);
 			} else {
-
+				//int resultado = comandoInsert(comando[1], comando[2],comando[3]);
+				//int resultado = comandoInsert(comando[1], comando[2],comando[3],comando[4]);
 			}
 
 		}
@@ -695,7 +696,7 @@ int determinarParticion(int key, int particiones) {
 }
 
 void rutaParticion(int particion) {
-	char * stringParticion = malloc(sizeof(char));
+	char * stringParticion = malloc(sizeof(char)*3);
 
 	sprintf(stringParticion, "%d", particion);
 	log_info(logger, "resultado de sprintf %s", stringParticion);
@@ -713,7 +714,7 @@ void rutaParticion(int particion) {
 
 	string_append(&archivoParticion, stringParticion);
 
-	string_append(&archivoParticion, ".bin");
+	string_append(&archivoParticion, PATH_BIN); // ".bin"
 
 	log_info(logger, "%s", archivoParticion);
 }
@@ -727,13 +728,14 @@ void escanearParticion(int particion) {
 	log_info(logger, "[escanearParticion] (+) %s", tablaAverificar);
 
 	rutaParticion(particion);
-
+	log_info(logger, "[escanearParticion] (+) Sobreviví nro 1");
 	particionTabla = malloc(sizeof(t_particion));
 
 	t_config* particionFile;
 
 	particionFile = config_create(archivoParticion);
-	log_info(logger, "[escanearParticion] (/) Ejecutando apertura de archivo.");
+	log_info(logger, "[escanearParticion] (+) Sobreviví nro 2");
+
 	FILE *file;
 	file = fopen(archivoParticion, "r");
 	if (file == NULL) {
@@ -784,21 +786,10 @@ void escanearParticion(int particion) {
 	log_info(logger,
 			"Cargamos todo lo que se encontro en el metadata. Liberamos la variable metadataFile que fue utlizada para navegar el metadata");
 
-	free(particionTabla);
 	free(particionFile);
 
 	log_info(logger, "[escanearParticion] (-) ");
 
-//LO que habia antes para levantar el archivo de metadata.bin
-	/*	FILE *file;
-	 file = fopen(archivoParticion, "r");
-	 if (file == NULL) {
-	 //log_error(logger, "No existe la particion");
-	 perror("Error");
-	 } else {
-	 log_info(logger, "Abrimos particion %d",particion);
-	 fclose(file);
-	 }*/
 }
 
 char* buscarBloque(char* key) {
@@ -813,13 +804,13 @@ char* buscarBloque(char* key) {
 
 	string_append(&bloqueObjetivo, configFile->punto_montaje);
 
-	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo);
+	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo); // 1er línea de dirección
 
 	string_append(&bloqueObjetivo, PATH_BLOQUES);
 
-	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo);
+	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo); // 2da línea de dirección
 
-	char* bloque = malloc(2);
+	char* bloque = malloc(sizeof(particionTabla->bloques)); // 3er línea de dirección
 	bloque = particionTabla->bloques[0];
 
 	string_append(&bloqueObjetivo, "block");
@@ -828,17 +819,26 @@ char* buscarBloque(char* key) {
 	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo);
 
 	FILE *file;
-	file = fopen(bloqueObjetivo, "r");
+	file = fopen(bloqueObjetivo, "rt");
 
 	if (file == NULL) {
 		//log_error(logger, "No existe la particion");
 		perror("Error");
 	} else {
+
 		log_info(logger, "Abrimos Bloque");
+		char lectura;
+
+		do {
+				lectura = fgetc(file);
+				printf(lectura);
+		} while (!feof(file));
+
 		fclose(file);
+
 	}
 
-	return "";
+	return "asdasdasdas";
 
 }
 
@@ -928,6 +928,16 @@ void comandoCreate(char* tabla, char* consistencia, char* particiones,
 		}
 
 	}
+
+} // void comandoCreate
+
+void comandoInsert(char* tabla) {
+
+	log_info(logger,"[comandoInsert] (+) con tabla %s.", tabla);
+
+	verificarTabla(tabla);
+
+	log_info(logger,"[comandoInsert] (-) ");
 
 }
 
