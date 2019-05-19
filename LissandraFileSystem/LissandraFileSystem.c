@@ -319,6 +319,8 @@ void validarLinea(char** lineaIngresada, t_log* logger) {
 
 			printf("Describe seleccionado\n");
 
+			comandoDescribe();
+
 		} else {
 			printf("Comando mal ingresado. \n");
 
@@ -393,7 +395,8 @@ void validarComando(char** comando, int tamanio, t_log* logger) {
 		if (tamanio == 4 || tamanio == 5) {
 
 			if (tamanio == 4) {
-				int resultado = comandoInsert(comando[1], comando[2],comando[3]);
+				int resultado = comandoInsert(comando[1], comando[2],
+						comando[3]);
 			} else {
 				//int resultado = comandoInsert(comando[1], comando[2],comando[3]);
 				//int resultado = comandoInsert(comando[1], comando[2],comando[3],comando[4]);
@@ -432,6 +435,8 @@ void validarComando(char** comando, int tamanio, t_log* logger) {
 			mensaje = malloc(string_length(comando[1]));
 
 			strcpy(mensaje, comando[1]);
+
+			comandoDescribeEspecifico(comando[1]);
 
 			log_info(logger, "En mensaje ya tengo: %s y es de tamanio: %d",
 					mensaje, string_length(mensaje));
@@ -681,6 +686,41 @@ int obtenerMetadata(char* tabla) {
 
 } // int obtenerMetadata()
 
+void retornarValores(char* tabla) {
+
+	printf("\n");
+	printf("Valores de la %s \n", tabla);
+	printf("\n");
+	printf("CONSISTENCY=%s \n", metadata->consistency);
+	printf("PARTITIONS=%d \n", metadata->particiones);
+	printf("COMPACTION_TIME=%d \n", metadata->compaction_time);
+
+}
+
+void retornarValoresDirectorio() {
+	DIR *dir;
+	struct dirent *ent;
+
+	dir = opendir(TABLE_PATH);
+
+	if (dir == NULL) {
+		log_error(logger, "No puedo abrir el directorio");
+		perror("No puedo abrir el directorio");
+
+	}
+
+	while ((ent = readdir(dir)) != NULL) {
+		log_info(logger, "Tabla analizada= %s", ent->d_name);
+
+		if (strcmp(ent->d_name, ".") != 0 && strcmp(ent->d_name, "..") != 0) {
+			verificarTabla(ent->d_name);
+			obtenerMetadata(ent->d_name);
+			retornarValores(ent->d_name);
+		}
+	}
+	closedir(dir);
+}
+
 int determinarParticion(int key, int particiones) {
 
 	log_info(logger, "KEY: %d ", key);
@@ -694,7 +734,7 @@ int determinarParticion(int key, int particiones) {
 }
 
 void rutaParticion(int particion) {
-	char * stringParticion = malloc(sizeof(char)*3);
+	char * stringParticion = malloc(sizeof(char) * 3);
 
 	sprintf(stringParticion, "%d", particion);
 	log_info(logger, "resultado de sprintf %s", stringParticion);
@@ -830,7 +870,7 @@ char* buscarBloque(char* key) {
 		do {
 			do {
 				lectura = fgetc(file);
-				printf("%c",lectura);
+				printf("%c", lectura);
 			} while (lectura != '\n');
 			printf("fin de linea \n");
 			lectura = fgetc(file);
@@ -870,7 +910,6 @@ void comandoCreate(char* tabla, char* consistencia, char* particiones,
 				tablaAverificar);
 		log_info(logger, "Por crear archivo metadata");
 
-
 		FILE* archivoMetadata;
 
 		archivoMetadata = fopen(path_tabla_metadata, "w+");
@@ -879,40 +918,42 @@ void comandoCreate(char* tabla, char* consistencia, char* particiones,
 			log_info(logger,
 					"El archivo metadata se creo satisfactoriamente\n");
 
-			char *lineaConsistencia = malloc(sizeof(consistencia)+sizeof("CONSISTENSY=")+1);
+			char *lineaConsistencia = malloc(
+					sizeof(consistencia) + sizeof("CONSISTENSY=") + 1);
 			lineaConsistencia = string_new();
 			string_append(&lineaConsistencia, "CONSISTENSY=");
 			string_append(&lineaConsistencia, consistencia);
-			string_append(&lineaConsistencia,"\n");
+			string_append(&lineaConsistencia, "\n");
 			log_info(logger, "Se agrego la consistencia %s", lineaConsistencia);
 
-
-			char *lineaParticiones = malloc(sizeof(particiones)+sizeof("PARTITIONS=")+1);
+			char *lineaParticiones = malloc(
+					sizeof(particiones) + sizeof("PARTITIONS=") + 1);
 			lineaParticiones = string_new();
 			string_append(&lineaParticiones, "PARTITIONS=");
 			string_append(&lineaParticiones, particiones);
-			string_append(&lineaParticiones,"\n");
-			log_info(logger, "Se agregaron las particiones %s", lineaParticiones);
+			string_append(&lineaParticiones, "\n");
+			log_info(logger, "Se agregaron las particiones %s",
+					lineaParticiones);
 
-			char *lineaTiempoCompactacion = malloc(sizeof(tiempoCompactacion)+sizeof("COMPACTION_TIME="));
+			char *lineaTiempoCompactacion = malloc(
+					sizeof(tiempoCompactacion) + sizeof("COMPACTION_TIME="));
 			lineaTiempoCompactacion = string_new();
 			string_append(&lineaTiempoCompactacion, "COMPACTION_TIME=");
 			string_append(&lineaTiempoCompactacion, tiempoCompactacion);
-			log_info(logger, "Se agrego el tiempo de compactacion %s", lineaTiempoCompactacion);
+			log_info(logger, "Se agrego el tiempo de compactacion %s",
+					lineaTiempoCompactacion);
 
-			fputs(lineaConsistencia,archivoMetadata);
-			fputs(lineaParticiones,archivoMetadata);
-			fputs(lineaTiempoCompactacion,archivoMetadata);
-
+			fputs(lineaConsistencia, archivoMetadata);
+			fputs(lineaParticiones, archivoMetadata);
+			fputs(lineaTiempoCompactacion, archivoMetadata);
 
 			fclose(archivoMetadata);
 
 			log_info(logger, "Por crear particiones");
 
-
 			int aux = atoi(particiones);
 
-			log_info(logger, "aux=%d",aux);
+			log_info(logger, "aux=%d", aux);
 			for (int i = 0; i < aux; i++) {
 				rutaParticion(i);
 				FILE* particion;
@@ -922,7 +963,6 @@ void comandoCreate(char* tabla, char* consistencia, char* particiones,
 			}
 
 			// FALTA ASIGNAR BLOQUE PARA LA PARTICION
-
 
 		} else {
 			log_info(logger, "No se pudo crear el archivo metadata \n");
@@ -935,11 +975,24 @@ void comandoCreate(char* tabla, char* consistencia, char* particiones,
 
 void comandoInsert(char* tabla) {
 
-	log_info(logger,"[comandoInsert] (+) con tabla %s.", tabla);
+	log_info(logger, "[comandoInsert] (+) con tabla %s.", tabla);
 
 	verificarTabla(tabla);
 
-	log_info(logger,"[comandoInsert] (-) ");
+	log_info(logger, "[comandoInsert] (-) ");
 
+}
+
+void comandoDescribeEspecifico(char* tabla) {
+
+	verificarTabla(tabla);
+	obtenerMetadata(tabla);
+	retornarValores(tabla);
+
+}
+
+void comandoDescribe() {
+
+	retornarValoresDirectorio();
 }
 

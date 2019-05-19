@@ -3,12 +3,23 @@
 
 #include "../Biblioteca/src/Biblioteca.c"
 #include <commons/collections/list.h>
+#include <stdio.h>
+
+//Agregadas para directorio
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <string.h>
+#include <errno.h>
+
 
 #define PATH_BIN ".bin"
 #define PATH_BLOQUES "/Bloques/"
 #define PATH_LFILESYSTEM_CONFIG "../Config/LFS_CONFIG.txt"
 #define LOG_PATH "../Log/LOG_LFS.txt"
-#include <stdio.h>
+#define TABLE_PATH "../Tables/"
 
 #define atoa(x) #x
 
@@ -107,10 +118,17 @@ char* archivoParticion;
 int comandoSelect(char* tabla, char* key);
 void comandoDrop(char* tabla);
 void comandoCreate(char* tabla,char* consistencia,char* particiones,char* tiempoCompactacion);
+void comandoDescribeEspecifico(char* tabla);
+void comandoDescribe();
+
 
 int obtenerMetadata(char* tabla);
 
 int verificarTabla(char* tabla);
+
+void retornarValores(char* tabla);
+
+void retornarValoresDirectorio();
 
 void escanearParticion(int particion);
 
