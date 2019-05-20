@@ -1,245 +1,256 @@
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091):  
+[INFO] 23:23:04:7 Proceso Memoria/(12127:12127):  
  ========== Iniciación de Pool de Memoria ========== 
  
  
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [LOGYCONFIG](1) LOG CREADO. 
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [CONFIGURANDO MODULO] RESERVAR MEMORIA.
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [CONFIGURANDO MODULO] BUSCANDO CONFIGURACION.
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [CONFIGURANDO MODULO] LEYENDO CONFIGURACION...
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): PUERTO PARA MODULO MEMORIA: 8000
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [CONFIGURANDO MODULO] IP DE FILESYSTEM: "127.0.0.1"
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [CONFIGURANDO MODULO] PUERTO DE FILESYSTEM: 8001
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [CONFIGURANDO MODULO] IP DE SEEDS: "127.0.0.1"
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [CONFIGURANDO MODULO] PUERTOS PARA SEEDS: 151939568
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [CONFIGURANDO MODULO] RETARTDO MEMORIA: 600
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [CONFIGURANDO MODULO] RETARDO DEL FS: 600
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [CONFIGURANDO MODULO] TAMAÑO DE MEMORIA: 2048
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [CONFIGURANDO MODULO] RETARDO DEL JOURNALING: 600
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [CONFIGURANDO MODULO] RETARDO DE GOSSIPING: 30000
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [CONFIGURANDO MODULO] NUMERO DE MEMORIA: 600
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [LOGYCONFIG] *** CONFIGURACIÓN DE MEMORIA CARGADA. *** 
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [ARMAR MEMORIA] Armo el bloque de memoria, guardo su tamaño
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [ARMAR MEMORIA] Se ha creado la memoria contigua
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [ARMAR MEMORIA] Se ha creado la memoria
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [ARMAR MEMORIA] Guardo tamaño de memoria: 8192
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [ARMAR MEMORIA] Tamaño de memoria guardada, MEMORIA REAL: 2048
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [ARMAR MEMORIA] Tamaño de pagina: 16
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [ARMAR MEMORIA] Cantidad maxima de paginas en memoria: 128
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [ARMAR MEMORIA] Procedo a iniciar el bloque de memoria TABLA PAGINADA
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [ARMAR MEMORIA] Tabla paginada creada
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [ARMAR MEMORIA] Tamaño deL BLOQUE TABLA PAGINAs: 1536
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): Se ha creado el bloque de memoria de Tablas de paginas
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [ARMAR MEMORIA] Memoria inicializada de forma correcta
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key 100
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] La posicion a la cual le voy a asignar es 0
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Tabla pagina creada y procedo a crear la pagina misma
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR] Por crear pagina y valor
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR]KEY|VALOR|TIMESTAMP: 100|496799709|h
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR] Pagina creada y tambien su valor
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Pagina creada con: timestamp '496799709'; KEY '100'; y VALOR: 'h'
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Verifico si hay espacio libre en Memoria
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Existen '128' espacios LIBRES
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina
-[INFO] 14:47:48:71 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Por guardar los datos de la tabla pagina, el valor y la nueva pagina en memoria
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Tabla de pagina guardada
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Pagina guardada
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Decremento el semaforo de cantPaginasDisponibles en 1 unidad
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Se han guardado exitosamente los datos
-Ahora mismo hay '127' espacios libres
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] ASIGNACION COMPLETADA
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key 101
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] La posicion a la cual le voy a asignar es 1
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Tabla pagina creada y procedo a crear la pagina misma
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR] Por crear pagina y valor
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR]KEY|VALOR|TIMESTAMP: 101|496800393|h
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR] Pagina creada y tambien su valor
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Pagina creada con: timestamp '496800393'; KEY '101'; y VALOR: 'h'
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Verifico si hay espacio libre en Memoria
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Existen '127' espacios LIBRES
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Por guardar los datos de la tabla pagina, el valor y la nueva pagina en memoria
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Tabla de pagina guardada
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Pagina guardada
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Decremento el semaforo de cantPaginasDisponibles en 1 unidad
-[INFO] 14:47:48:72 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Se han guardado exitosamente los datos
-Ahora mismo hay '126' espacios libres
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] ASIGNACION COMPLETADA
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key 102
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] La posicion a la cual le voy a asignar es 2
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Tabla pagina creada y procedo a crear la pagina misma
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR] Por crear pagina y valor
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR]KEY|VALOR|TIMESTAMP: 102|496801012|h
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR] Pagina creada y tambien su valor
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Pagina creada con: timestamp '496801012'; KEY '102'; y VALOR: 'h'
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Verifico si hay espacio libre en Memoria
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Existen '126' espacios LIBRES
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Por guardar los datos de la tabla pagina, el valor y la nueva pagina en memoria
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Tabla de pagina guardada
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Pagina guardada
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Decremento el semaforo de cantPaginasDisponibles en 1 unidad
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Se han guardado exitosamente los datos
-Ahora mismo hay '125' espacios libres
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] ASIGNACION COMPLETADA
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key 103
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] La posicion a la cual le voy a asignar es 3
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Tabla pagina creada y procedo a crear la pagina misma
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR] Por crear pagina y valor
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR]KEY|VALOR|TIMESTAMP: 103|496801602|h
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR] Pagina creada y tambien su valor
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Pagina creada con: timestamp '496801602'; KEY '103'; y VALOR: 'h'
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Verifico si hay espacio libre en Memoria
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Existen '125' espacios LIBRES
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Por guardar los datos de la tabla pagina, el valor y la nueva pagina en memoria
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Tabla de pagina guardada
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Pagina guardada
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Decremento el semaforo de cantPaginasDisponibles en 1 unidad
-[INFO] 14:47:48:73 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Se han guardado exitosamente los datos
-Ahora mismo hay '124' espacios libres
-[INFO] 14:47:48:74 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] ASIGNACION COMPLETADA
-[INFO] 14:47:48:74 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion
-[INFO] 14:47:48:74 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key 104
-[INFO] 14:47:48:74 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] La posicion a la cual le voy a asignar es 4
-[INFO] 14:47:48:74 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Tabla pagina creada y procedo a crear la pagina misma
-[INFO] 14:47:48:74 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR] Por crear pagina y valor
-[INFO] 14:47:48:74 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR]KEY|VALOR|TIMESTAMP: 104|496802226|h
-[INFO] 14:47:48:74 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR] Pagina creada y tambien su valor
-[INFO] 14:47:48:74 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Pagina creada con: timestamp '496802226'; KEY '104'; y VALOR: 'h'
-[INFO] 14:47:48:74 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Verifico si hay espacio libre en Memoria
-[INFO] 14:47:48:74 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Existen '124' espacios LIBRES
-[INFO] 14:47:48:74 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina
-[INFO] 14:47:48:74 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion
-[INFO] 14:47:48:74 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Por guardar los datos de la tabla pagina, el valor y la nueva pagina en memoria
-[INFO] 14:47:48:74 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Tabla de pagina guardada
-[INFO] 14:47:48:74 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Pagina guardada
-[INFO] 14:47:48:74 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada
-[INFO] 14:47:48:74 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Decremento el semaforo de cantPaginasDisponibles en 1 unidad
-[INFO] 14:47:48:74 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Se han guardado exitosamente los datos
-Ahora mismo hay '123' espacios libres
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] ASIGNACION COMPLETADA
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key 105
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] La posicion a la cual le voy a asignar es 5
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Tabla pagina creada y procedo a crear la pagina misma
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR] Por crear pagina y valor
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR]KEY|VALOR|TIMESTAMP: 105|496802950|h
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR] Pagina creada y tambien su valor
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Pagina creada con: timestamp '496802950'; KEY '105'; y VALOR: 'h'
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Verifico si hay espacio libre en Memoria
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Existen '123' espacios LIBRES
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Por guardar los datos de la tabla pagina, el valor y la nueva pagina en memoria
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Tabla de pagina guardada
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Pagina guardada
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Decremento el semaforo de cantPaginasDisponibles en 1 unidad
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Se han guardado exitosamente los datos
-Ahora mismo hay '122' espacios libres
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] ASIGNACION COMPLETADA
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key 106
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] La posicion a la cual le voy a asignar es 6
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Tabla pagina creada y procedo a crear la pagina misma
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR] Por crear pagina y valor
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR]KEY|VALOR|TIMESTAMP: 106|496803629|h
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR] Pagina creada y tambien su valor
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Pagina creada con: timestamp '496803629'; KEY '106'; y VALOR: 'h'
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Verifico si hay espacio libre en Memoria
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Existen '122' espacios LIBRES
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Por guardar los datos de la tabla pagina, el valor y la nueva pagina en memoria
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Tabla de pagina guardada
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Pagina guardada
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Decremento el semaforo de cantPaginasDisponibles en 1 unidad
-[INFO] 14:47:48:75 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Se han guardado exitosamente los datos
-Ahora mismo hay '121' espacios libres
-[INFO] 14:47:48:76 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] ASIGNACION COMPLETADA
-[INFO] 14:47:48:76 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion
-[INFO] 14:47:48:76 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key 107
-[INFO] 14:47:48:76 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] La posicion a la cual le voy a asignar es 7
-[INFO] 14:47:48:76 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Tabla pagina creada y procedo a crear la pagina misma
-[INFO] 14:47:48:76 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR] Por crear pagina y valor
-[INFO] 14:47:48:76 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR]KEY|VALOR|TIMESTAMP: 107|496804230|h
-[INFO] 14:47:48:76 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR] Pagina creada y tambien su valor
-[INFO] 14:47:48:76 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Pagina creada con: timestamp '496804230'; KEY '107'; y VALOR: 'h'
-[INFO] 14:47:48:76 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Verifico si hay espacio libre en Memoria
-[INFO] 14:47:48:76 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Existen '121' espacios LIBRES
-[INFO] 14:47:48:76 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina
-[INFO] 14:47:48:76 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion
-[INFO] 14:47:48:76 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Por guardar los datos de la tabla pagina, el valor y la nueva pagina en memoria
-[INFO] 14:47:48:76 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Tabla de pagina guardada
-[INFO] 14:47:48:76 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Pagina guardada
-[INFO] 14:47:48:76 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada
-[INFO] 14:47:48:76 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Decremento el semaforo de cantPaginasDisponibles en 1 unidad
-[INFO] 14:47:48:76 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Se han guardado exitosamente los datos
-Ahora mismo hay '120' espacios libres
-[INFO] 14:47:48:76 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] ASIGNACION COMPLETADA
-[INFO] 14:47:48:76 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key 108
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] La posicion a la cual le voy a asignar es 8
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Tabla pagina creada y procedo a crear la pagina misma
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR] Por crear pagina y valor
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR]KEY|VALOR|TIMESTAMP: 108|496804883|h
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR] Pagina creada y tambien su valor
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Pagina creada con: timestamp '496804883'; KEY '108'; y VALOR: 'h'
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Verifico si hay espacio libre en Memoria
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Existen '120' espacios LIBRES
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Por guardar los datos de la tabla pagina, el valor y la nueva pagina en memoria
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Tabla de pagina guardada
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Pagina guardada
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Decremento el semaforo de cantPaginasDisponibles en 1 unidad
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Se han guardado exitosamente los datos
-Ahora mismo hay '119' espacios libres
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] ASIGNACION COMPLETADA
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key 109
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] La posicion a la cual le voy a asignar es 9
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Tabla pagina creada y procedo a crear la pagina misma
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR] Por crear pagina y valor
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR]KEY|VALOR|TIMESTAMP: 109|496805467|h
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [CREANDO PAGINA Y VALOR] Pagina creada y tambien su valor
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Pagina creada con: timestamp '496805467'; KEY '109'; y VALOR: 'h'
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Verifico si hay espacio libre en Memoria
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Existen '119' espacios LIBRES
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Por guardar los datos de la tabla pagina, el valor y la nueva pagina en memoria
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Tabla de pagina guardada
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Pagina guardada
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Decremento el semaforo de cantPaginasDisponibles en 1 unidad
-[INFO] 14:47:48:77 Proceso Memoria/(5091:5091): [asignarNuevaTablaAPosicionLibre] Se han guardado exitosamente los datos
-Ahora mismo hay '118' espacios libres
-[INFO] 14:47:48:78 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] ASIGNACION COMPLETADA
-[INFO] 14:47:48:78 Proceso Memoria/(5091:5091): [Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion
-[INFO] 14:47:48:82 Proceso Memoria/(5091:5091): [LIBERAR] Empiezo a liberar todos los elementos que se han inicializado
-[INFO] 14:47:48:82 Proceso Memoria/(5091:5091): [LIBERAR] Por liberar aux_pagina
-[INFO] 14:47:48:82 Proceso Memoria/(5091:5091): [LIBERAR] aux_pagina liberado
-[INFO] 14:47:48:82 Proceso Memoria/(5091:5091): [LIBERAR] Por liberar aux_tabla_paginas
-[INFO] 14:47:48:82 Proceso Memoria/(5091:5091): [LIBERAR] aux_tabla_paginas
-[INFO] 14:47:48:82 Proceso Memoria/(5091:5091): [LIBERAR] Por liberar memoria
-[INFO] 14:47:48:82 Proceso Memoria/(5091:5091): [LIBERAR] memoria Liberada
-[INFO] 14:47:48:82 Proceso Memoria/(5091:5091): [LIBERAR] Por liberar tabla_paginada
-[INFO] 14:47:48:82 Proceso Memoria/(5091:5091): [LIBERAR] tabla_paginada Liberada
-[INFO] 14:47:48:82 Proceso Memoria/(5091:5091): [LIBERAR] Por liberar Struct configuracion
-[INFO] 14:47:48:82 Proceso Memoria/(5091:5091): [LIBERAR] Struct configuracion Liberada
-[INFO] 14:47:48:82 Proceso Memoria/(5091:5091): [LIBERAR] Liberando log_memoria
-[INFO] 14:47:48:82 Proceso Memoria/(5091:5091): >>>>>>>>>>>>>>>FIN DE PROCESO MEMORIA<<<<<<<<<<<<<<<
+[INFO] 23:23:05:78 Proceso Memoria/(12127:12127): [LOGYCONFIG](1) LOG CREADO. 
+[INFO] 23:23:05:86 Proceso Memoria/(12127:12127): [CONFIGURANDO MODULO] RESERVAR MEMORIA.
+[INFO] 23:23:05:87 Proceso Memoria/(12127:12127): [CONFIGURANDO MODULO] BUSCANDO CONFIGURACION.
+[INFO] 23:23:05:139 Proceso Memoria/(12127:12127): [CONFIGURANDO MODULO] LEYENDO CONFIGURACION...
+[INFO] 23:23:05:150 Proceso Memoria/(12127:12127): PUERTO PARA MODULO MEMORIA: 8000
+[INFO] 23:23:05:151 Proceso Memoria/(12127:12127): [CONFIGURANDO MODULO] IP DE FILESYSTEM: "127.0.0.1"
+[INFO] 23:23:05:155 Proceso Memoria/(12127:12127): [CONFIGURANDO MODULO] PUERTO DE FILESYSTEM: 8001
+[INFO] 23:23:05:168 Proceso Memoria/(12127:12127): [CONFIGURANDO MODULO] IP DE SEEDS: "127.0.0.1"
+[INFO] 23:23:05:170 Proceso Memoria/(12127:12127): [CONFIGURANDO MODULO] PUERTOS PARA SEEDS: 70205968
+[INFO] 23:23:05:175 Proceso Memoria/(12127:12127): [CONFIGURANDO MODULO] RETARTDO MEMORIA: 600
+[INFO] 23:23:05:176 Proceso Memoria/(12127:12127): [CONFIGURANDO MODULO] RETARDO DEL FS: 600
+[INFO] 23:23:05:177 Proceso Memoria/(12127:12127): [CONFIGURANDO MODULO] TAMAÑO DE MEMORIA: 2048
+[INFO] 23:23:05:179 Proceso Memoria/(12127:12127): [CONFIGURANDO MODULO] RETARDO DEL JOURNALING: 600
+[INFO] 23:23:05:182 Proceso Memoria/(12127:12127): [CONFIGURANDO MODULO] RETARDO DE GOSSIPING: 30000
+[INFO] 23:23:05:184 Proceso Memoria/(12127:12127): [CONFIGURANDO MODULO] NUMERO DE MEMORIA: 600
+[INFO] 23:23:05:185 Proceso Memoria/(12127:12127): [LOGYCONFIG] *** CONFIGURACIÓN DE MEMORIA CARGADA. *** 
+[INFO] 23:23:05:187 Proceso Memoria/(12127:12127): [ARMAR MEMORIA] Armo el bloque de memoria, guardo su tamaño
+[INFO] 23:23:05:188 Proceso Memoria/(12127:12127): [ARMAR MEMORIA] Se ha creado la memoria contigua
+[INFO] 23:23:05:190 Proceso Memoria/(12127:12127): [ARMAR MEMORIA] Se ha creado la memoria
+[INFO] 23:23:05:191 Proceso Memoria/(12127:12127): [ARMAR MEMORIA] Guardo tamaño de memoria: 8192
+[INFO] 23:23:05:192 Proceso Memoria/(12127:12127): [ARMAR MEMORIA] Tamaño de memoria guardada, MEMORIA REAL: 2048
+[INFO] 23:23:05:193 Proceso Memoria/(12127:12127): [ARMAR MEMORIA] Tamaño de pagina: 20
+[INFO] 23:23:05:194 Proceso Memoria/(12127:12127): [ARMAR MEMORIA] Cantidad maxima de paginas en memoria: 102
+[INFO] 23:23:05:206 Proceso Memoria/(12127:12127): [ARMAR MEMORIA] Memoria inicializada de forma correcta
+[INFO] 23:23:05:207 Proceso Memoria/(12127:12127): [SEMAFOROS] Iniciando semaforos y mutexs
+[INFO] 23:23:05:223 Proceso Memoria/(12127:12127): [SEMAFOROS] Semaforos y mutex inicializados
+[INFO] 23:23:05:224 Proceso Memoria/(12127:12127): [SEMAFOROS] Semaforo paginasSinUsar iniciada con valor '102'
+[INFO] 23:23:05:226 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key 100
+[INFO] 23:23:05:231 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] La posicion a la cual le voy a asignar es 0
+[INFO] 23:23:05:232 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Tabla pagina creada y procedo a crear la pagina misma
+[INFO] 23:23:05:243 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR] Por crear pagina y valor
+[INFO] 23:23:05:356 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR]KEY|VALOR|TIMESTAMP: 100|1558318985257.000000|hola gente
+[INFO] 23:23:05:357 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR] Pagina creada y tambien su valor
+[INFO] 23:23:05:371 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Pagina creada con: timestamp '1558318985257.000000'; KEY '100'; y VALOR: 'hola gente'
+[INFO] 23:23:05:372 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Verifico si hay espacio libre en Memoria
+[INFO] 23:23:05:373 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Existen '102' espacios LIBRES
+[INFO] 23:23:05:380 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina
+[INFO] 23:23:05:390 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion
+[INFO] 23:23:05:392 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Por guardar los datos de el valor y la nueva pagina en memoria
+[INFO] 23:23:05:408 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Pagina guardada
+[INFO] 23:23:05:414 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada
+[INFO] 23:23:05:423 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Decremento el semaforo de cantPaginasDisponibles en 1 unidad
+[INFO] 23:23:05:434 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Se han guardado exitosamente los datos
+Ahora mismo hay '101' espacios libres
+[INFO] 23:23:05:467 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] ASIGNACION COMPLETADA
+[INFO] 23:23:05:471 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion
+[INFO] 23:23:05:485 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key 101
+[INFO] 23:23:05:485 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] La posicion a la cual le voy a asignar es 1
+[INFO] 23:23:05:486 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Tabla pagina creada y procedo a crear la pagina misma
+[INFO] 23:23:05:486 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR] Por crear pagina y valor
+[INFO] 23:23:05:487 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR]KEY|VALOR|TIMESTAMP: 101|1558318985486.000000|hola gente
+[INFO] 23:23:05:487 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR] Pagina creada y tambien su valor
+[INFO] 23:23:05:494 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Pagina creada con: timestamp '1558318985486.000000'; KEY '101'; y VALOR: 'hola gente'
+[INFO] 23:23:05:495 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Verifico si hay espacio libre en Memoria
+[INFO] 23:23:05:496 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Existen '101' espacios LIBRES
+[INFO] 23:23:05:503 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina
+[INFO] 23:23:05:503 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion
+[INFO] 23:23:05:504 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Por guardar los datos de el valor y la nueva pagina en memoria
+[INFO] 23:23:05:504 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Pagina guardada
+[INFO] 23:23:05:505 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada
+[INFO] 23:23:05:507 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Decremento el semaforo de cantPaginasDisponibles en 1 unidad
+[INFO] 23:23:05:508 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Se han guardado exitosamente los datos
+Ahora mismo hay '100' espacios libres
+[INFO] 23:23:05:528 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] ASIGNACION COMPLETADA
+[INFO] 23:23:05:528 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion
+[INFO] 23:23:05:530 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key 102
+[INFO] 23:23:05:531 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] La posicion a la cual le voy a asignar es 2
+[INFO] 23:23:05:532 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Tabla pagina creada y procedo a crear la pagina misma
+[INFO] 23:23:05:554 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR] Por crear pagina y valor
+[INFO] 23:23:05:555 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR]KEY|VALOR|TIMESTAMP: 102|1558318985554.000000|hola gente
+[INFO] 23:23:05:555 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR] Pagina creada y tambien su valor
+[INFO] 23:23:05:556 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Pagina creada con: timestamp '1558318985554.000000'; KEY '102'; y VALOR: 'hola gente'
+[INFO] 23:23:05:556 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Verifico si hay espacio libre en Memoria
+[INFO] 23:23:05:561 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Existen '100' espacios LIBRES
+[INFO] 23:23:05:574 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina
+[INFO] 23:23:05:574 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion
+[INFO] 23:23:05:575 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Por guardar los datos de el valor y la nueva pagina en memoria
+[INFO] 23:23:05:576 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Pagina guardada
+[INFO] 23:23:05:576 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada
+[INFO] 23:23:05:577 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Decremento el semaforo de cantPaginasDisponibles en 1 unidad
+[INFO] 23:23:05:578 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Se han guardado exitosamente los datos
+Ahora mismo hay '99' espacios libres
+[INFO] 23:23:05:591 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] ASIGNACION COMPLETADA
+[INFO] 23:23:05:591 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion
+[INFO] 23:23:05:592 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key 103
+[INFO] 23:23:05:592 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] La posicion a la cual le voy a asignar es 3
+[INFO] 23:23:05:593 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Tabla pagina creada y procedo a crear la pagina misma
+[INFO] 23:23:05:593 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR] Por crear pagina y valor
+[INFO] 23:23:05:594 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR]KEY|VALOR|TIMESTAMP: 103|1558318985593.000000|hola gente
+[INFO] 23:23:05:595 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR] Pagina creada y tambien su valor
+[INFO] 23:23:05:595 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Pagina creada con: timestamp '1558318985593.000000'; KEY '103'; y VALOR: 'hola gente'
+[INFO] 23:23:05:596 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Verifico si hay espacio libre en Memoria
+[INFO] 23:23:05:602 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Existen '99' espacios LIBRES
+[INFO] 23:23:05:602 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina
+[INFO] 23:23:05:603 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion
+[INFO] 23:23:05:603 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Por guardar los datos de el valor y la nueva pagina en memoria
+[INFO] 23:23:05:604 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Pagina guardada
+[INFO] 23:23:05:611 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada
+[INFO] 23:23:05:612 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Decremento el semaforo de cantPaginasDisponibles en 1 unidad
+[INFO] 23:23:05:617 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Se han guardado exitosamente los datos
+Ahora mismo hay '98' espacios libres
+[INFO] 23:23:05:622 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] ASIGNACION COMPLETADA
+[INFO] 23:23:05:623 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion
+[INFO] 23:23:05:625 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key 104
+[INFO] 23:23:05:625 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] La posicion a la cual le voy a asignar es 4
+[INFO] 23:23:05:626 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Tabla pagina creada y procedo a crear la pagina misma
+[INFO] 23:23:05:626 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR] Por crear pagina y valor
+[INFO] 23:23:05:628 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR]KEY|VALOR|TIMESTAMP: 104|1558318985627.000000|hola gente
+[INFO] 23:23:05:659 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR] Pagina creada y tambien su valor
+[INFO] 23:23:05:660 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Pagina creada con: timestamp '1558318985627.000000'; KEY '104'; y VALOR: 'hola gente'
+[INFO] 23:23:05:687 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Verifico si hay espacio libre en Memoria
+[INFO] 23:23:05:688 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Existen '98' espacios LIBRES
+[INFO] 23:23:05:688 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina
+[INFO] 23:23:05:689 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion
+[INFO] 23:23:05:689 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Por guardar los datos de el valor y la nueva pagina en memoria
+[INFO] 23:23:05:690 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Pagina guardada
+[INFO] 23:23:05:690 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada
+[INFO] 23:23:05:691 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Decremento el semaforo de cantPaginasDisponibles en 1 unidad
+[INFO] 23:23:05:691 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Se han guardado exitosamente los datos
+Ahora mismo hay '97' espacios libres
+[INFO] 23:23:05:694 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] ASIGNACION COMPLETADA
+[INFO] 23:23:05:694 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion
+[INFO] 23:23:05:695 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key 105
+[INFO] 23:23:05:696 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] La posicion a la cual le voy a asignar es 5
+[INFO] 23:23:05:697 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Tabla pagina creada y procedo a crear la pagina misma
+[INFO] 23:23:05:698 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR] Por crear pagina y valor
+[INFO] 23:23:05:699 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR]KEY|VALOR|TIMESTAMP: 105|1558318985698.000000|hola gente
+[INFO] 23:23:05:700 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR] Pagina creada y tambien su valor
+[INFO] 23:23:05:700 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Pagina creada con: timestamp '1558318985698.000000'; KEY '105'; y VALOR: 'hola gente'
+[INFO] 23:23:05:706 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Verifico si hay espacio libre en Memoria
+[INFO] 23:23:05:707 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Existen '97' espacios LIBRES
+[INFO] 23:23:05:707 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina
+[INFO] 23:23:05:708 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion
+[INFO] 23:23:05:708 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Por guardar los datos de el valor y la nueva pagina en memoria
+[INFO] 23:23:05:718 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Pagina guardada
+[INFO] 23:23:05:718 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada
+[INFO] 23:23:05:719 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Decremento el semaforo de cantPaginasDisponibles en 1 unidad
+[INFO] 23:23:05:719 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Se han guardado exitosamente los datos
+Ahora mismo hay '96' espacios libres
+[INFO] 23:23:05:736 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] ASIGNACION COMPLETADA
+[INFO] 23:23:05:739 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion
+[INFO] 23:23:05:740 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key 106
+[INFO] 23:23:05:740 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] La posicion a la cual le voy a asignar es 6
+[INFO] 23:23:05:741 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Tabla pagina creada y procedo a crear la pagina misma
+[INFO] 23:23:05:754 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR] Por crear pagina y valor
+[INFO] 23:23:05:756 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR]KEY|VALOR|TIMESTAMP: 106|1558318985756.000000|hola gente
+[INFO] 23:23:05:757 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR] Pagina creada y tambien su valor
+[INFO] 23:23:05:758 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Pagina creada con: timestamp '1558318985756.000000'; KEY '106'; y VALOR: 'hola gente'
+[INFO] 23:23:05:758 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Verifico si hay espacio libre en Memoria
+[INFO] 23:23:05:759 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Existen '96' espacios LIBRES
+[INFO] 23:23:05:759 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina
+[INFO] 23:23:05:760 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion
+[INFO] 23:23:05:769 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Por guardar los datos de el valor y la nueva pagina en memoria
+[INFO] 23:23:05:770 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Pagina guardada
+[INFO] 23:23:05:771 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada
+[INFO] 23:23:05:782 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Decremento el semaforo de cantPaginasDisponibles en 1 unidad
+[INFO] 23:23:05:783 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Se han guardado exitosamente los datos
+Ahora mismo hay '95' espacios libres
+[INFO] 23:23:05:786 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] ASIGNACION COMPLETADA
+[INFO] 23:23:05:787 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion
+[INFO] 23:23:05:788 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key 107
+[INFO] 23:23:05:789 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] La posicion a la cual le voy a asignar es 7
+[INFO] 23:23:05:795 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Tabla pagina creada y procedo a crear la pagina misma
+[INFO] 23:23:05:796 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR] Por crear pagina y valor
+[INFO] 23:23:05:796 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR]KEY|VALOR|TIMESTAMP: 107|1558318985796.000000|hola gente
+[INFO] 23:23:05:802 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR] Pagina creada y tambien su valor
+[INFO] 23:23:05:803 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Pagina creada con: timestamp '1558318985796.000000'; KEY '107'; y VALOR: 'hola gente'
+[INFO] 23:23:05:803 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Verifico si hay espacio libre en Memoria
+[INFO] 23:23:05:804 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Existen '95' espacios LIBRES
+[INFO] 23:23:05:804 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina
+[INFO] 23:23:05:809 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion
+[INFO] 23:23:05:811 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Por guardar los datos de el valor y la nueva pagina en memoria
+[INFO] 23:23:05:812 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Pagina guardada
+[INFO] 23:23:05:813 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada
+[INFO] 23:23:05:818 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Decremento el semaforo de cantPaginasDisponibles en 1 unidad
+[INFO] 23:23:05:820 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Se han guardado exitosamente los datos
+Ahora mismo hay '94' espacios libres
+[INFO] 23:23:05:862 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] ASIGNACION COMPLETADA
+[INFO] 23:23:05:862 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion
+[INFO] 23:23:05:863 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key 108
+[INFO] 23:23:05:864 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] La posicion a la cual le voy a asignar es 8
+[INFO] 23:23:05:864 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Tabla pagina creada y procedo a crear la pagina misma
+[INFO] 23:23:05:865 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR] Por crear pagina y valor
+[INFO] 23:23:05:903 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR]KEY|VALOR|TIMESTAMP: 108|1558318985902.000000|hola gente
+[INFO] 23:23:05:904 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR] Pagina creada y tambien su valor
+[INFO] 23:23:05:904 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Pagina creada con: timestamp '1558318985902.000000'; KEY '108'; y VALOR: 'hola gente'
+[INFO] 23:23:05:905 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Verifico si hay espacio libre en Memoria
+[INFO] 23:23:05:905 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Existen '94' espacios LIBRES
+[INFO] 23:23:05:905 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina
+[INFO] 23:23:05:906 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion
+[INFO] 23:23:05:906 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Por guardar los datos de el valor y la nueva pagina en memoria
+[INFO] 23:23:05:907 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Pagina guardada
+[INFO] 23:23:05:907 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada
+[INFO] 23:23:05:908 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Decremento el semaforo de cantPaginasDisponibles en 1 unidad
+[INFO] 23:23:05:908 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Se han guardado exitosamente los datos
+Ahora mismo hay '93' espacios libres
+[INFO] 23:23:05:919 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] ASIGNACION COMPLETADA
+[INFO] 23:23:05:927 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion
+[INFO] 23:23:05:928 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key 109
+[INFO] 23:23:05:938 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] La posicion a la cual le voy a asignar es 9
+[INFO] 23:23:05:939 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Tabla pagina creada y procedo a crear la pagina misma
+[INFO] 23:23:05:939 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR] Por crear pagina y valor
+[INFO] 23:23:05:940 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR]KEY|VALOR|TIMESTAMP: 109|1558318985939.000000|hola gente
+[INFO] 23:23:05:940 Proceso Memoria/(12127:12127): [CREANDO PAGINA Y VALOR] Pagina creada y tambien su valor
+[INFO] 23:23:05:940 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Pagina creada con: timestamp '1558318985939.000000'; KEY '109'; y VALOR: 'hola gente'
+[INFO] 23:23:05:946 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Verifico si hay espacio libre en Memoria
+[INFO] 23:23:05:948 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Existen '93' espacios LIBRES
+[INFO] 23:23:05:949 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina
+[INFO] 23:23:05:953 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion
+[INFO] 23:23:05:953 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Por guardar los datos de el valor y la nueva pagina en memoria
+[INFO] 23:23:05:954 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Pagina guardada
+[INFO] 23:23:05:954 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada
+[INFO] 23:23:05:963 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Decremento el semaforo de cantPaginasDisponibles en 1 unidad
+[INFO] 23:23:05:964 Proceso Memoria/(12127:12127): [asignarNuevaTablaAPosicionLibre] Se han guardado exitosamente los datos
+Ahora mismo hay '92' espacios libres
+[INFO] 23:23:05:982 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] ASIGNACION COMPLETADA
+[INFO] 23:23:05:982 Proceso Memoria/(12127:12127): [Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion
+[INFO] 23:23:05:983 Proceso Memoria/(12127:12127): [ACCEDIENDO A DATOS] Por acceder a la memoria a la posicion '0'
+[INFO] 23:23:05:990 Proceso Memoria/(12127:12127): [ACCEDIENDO A DATOS] Datos obtenidos de la posicion '0'
+[INFO] 23:23:05:2 Proceso Memoria/(12127:12127): [ACCEDIENDO A DATOS] Por acceder a la memoria a la posicion '1'
+[INFO] 23:23:05:3 Proceso Memoria/(12127:12127): [ACCEDIENDO A DATOS] Datos obtenidos de la posicion '1'
+[INFO] 23:23:06:10 Proceso Memoria/(12127:12127): [ACCEDIENDO A DATOS] Por acceder a la memoria a la posicion '2'
+[INFO] 23:23:06:10 Proceso Memoria/(12127:12127): [ACCEDIENDO A DATOS] Datos obtenidos de la posicion '2'
+[INFO] 23:23:06:13 Proceso Memoria/(12127:12127): [ACCEDIENDO A DATOS] Por acceder a la memoria a la posicion '3'
+[INFO] 23:23:06:14 Proceso Memoria/(12127:12127): [ACCEDIENDO A DATOS] Datos obtenidos de la posicion '3'
+[INFO] 23:23:06:15 Proceso Memoria/(12127:12127): [ACCEDIENDO A DATOS] Por acceder a la memoria a la posicion '4'
+[INFO] 23:23:06:16 Proceso Memoria/(12127:12127): [ACCEDIENDO A DATOS] Datos obtenidos de la posicion '4'
+[INFO] 23:23:06:23 Proceso Memoria/(12127:12127): [ACCEDIENDO A DATOS] Por acceder a la memoria a la posicion '5'
+[INFO] 23:23:06:23 Proceso Memoria/(12127:12127): [ACCEDIENDO A DATOS] Datos obtenidos de la posicion '5'
+[INFO] 23:23:06:34 Proceso Memoria/(12127:12127): [ACCEDIENDO A DATOS] Por acceder a la memoria a la posicion '6'
+[INFO] 23:23:06:35 Proceso Memoria/(12127:12127): [ACCEDIENDO A DATOS] Datos obtenidos de la posicion '6'
+[INFO] 23:23:06:37 Proceso Memoria/(12127:12127): [ACCEDIENDO A DATOS] Por acceder a la memoria a la posicion '7'
+[INFO] 23:23:06:38 Proceso Memoria/(12127:12127): [ACCEDIENDO A DATOS] Datos obtenidos de la posicion '7'
+[INFO] 23:23:06:44 Proceso Memoria/(12127:12127): [ACCEDIENDO A DATOS] Por acceder a la memoria a la posicion '8'
+[INFO] 23:23:06:45 Proceso Memoria/(12127:12127): [ACCEDIENDO A DATOS] Datos obtenidos de la posicion '8'
+[INFO] 23:23:06:55 Proceso Memoria/(12127:12127): [ACCEDIENDO A DATOS] Por acceder a la memoria a la posicion '9'
+[INFO] 23:23:06:56 Proceso Memoria/(12127:12127): [ACCEDIENDO A DATOS] Datos obtenidos de la posicion '9'
+[INFO] 23:23:06:58 Proceso Memoria/(12127:12127): [LIBERAR] Empiezo a liberar todos los elementos que se han inicializado
+[INFO] 23:23:06:59 Proceso Memoria/(12127:12127): [LIBERAR] Por liberar aux_pagina
+[INFO] 23:23:06:60 Proceso Memoria/(12127:12127): [LIBERAR] aux_pagina liberado
+[INFO] 23:23:06:63 Proceso Memoria/(12127:12127): [LIBERAR] Por liberar aux_segmento
+[INFO] 23:23:06:64 Proceso Memoria/(12127:12127): [LIBERAR] aux_pagina liberado
+[INFO] 23:23:06:70 Proceso Memoria/(12127:12127): [LIBERAR] Por liberar aux_tabla_paginas
+[INFO] 23:23:06:70 Proceso Memoria/(12127:12127): [LIBERAR] aux_tabla_paginas
+[INFO] 23:23:06:71 Proceso Memoria/(12127:12127): [LIBERAR] Por liberar aux_tabla_paginas2
+[INFO] 23:23:06:78 Proceso Memoria/(12127:12127): [LIBERAR] aux_pagina liberado
+[INFO] 23:23:06:97 Proceso Memoria/(12127:12127): [LIBERAR] Por liberar memoria
+[INFO] 23:23:06:100 Proceso Memoria/(12127:12127): [LIBERAR] memoria Liberada
+[INFO] 23:23:06:101 Proceso Memoria/(12127:12127): [LIBERAR] Por liberar Struct configuracion
+[INFO] 23:23:06:107 Proceso Memoria/(12127:12127): [LIBERAR] Struct configuracion Liberada
+[INFO] 23:23:06:107 Proceso Memoria/(12127:12127): [LIBERAR] Liberando log_memoria
+[INFO] 23:23:06:109 Proceso Memoria/(12127:12127): >>>>>>>>>>>>>>>FIN DE PROCESO MEMORIA<<<<<<<<<<<<<<<

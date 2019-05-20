@@ -23,8 +23,13 @@ void abortarProcesoPorUnErrorImportante(t_log* log, char* mensaje){
 
 //--------------------------------------- Funcion timestamp -------------------------------------
 
-long timestamp(void) {
-	return (unsigned)time(NULL);
+double  timestamp(void) {
+	struct timeval t;
+	gettimeofday(&t, NULL);
+	unsigned long long result = (((unsigned long long)t.tv_sec)*1000+((unsigned long long)t.tv_usec)/1000);
+	double a = result;
+	return a;
+//	return (unsigned)time(NULL);
 }
 
 //--------------------------------------- Funciones para Socket -------------------------------------

@@ -46,6 +46,7 @@ Mutex mutex_pagina_auxiliar;
 Mutex mutex_pagina_referenciada_aux;
 Mutex mutex_pagina_referenciada_aux2;
 Mutex mutex_segmento_aux;
+Mutex mutex_crear_pagina_nueva;
 Mutex LRUMutex;
 Semaforo paginasSinUsar; //TIENE CAPACIDAD HASTA PARA cantPaginasTotales
 int cantPaginasDisponibles, cantPaginasTotales;
@@ -82,13 +83,13 @@ int a;
 
 typedef struct pagina{
 	short nroPosicion;
-	long timestamp;
+	double timestamp;
 	u_int16_t key;
 }pagina;
 
 typedef struct pagina_a_devolver{
 	short nroPosicion;
-	long timestamp;
+	double timestamp;
 	u_int16_t key;
 	char* value;
 }pagina_a_devolver;
