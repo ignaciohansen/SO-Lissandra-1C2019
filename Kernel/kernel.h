@@ -34,12 +34,13 @@
 #include <readline/history.h>
 // HILOS
 #include <pthread.h>
+#include <semaphore.h>
 
 #define PATH_KERNEL_CONFIG "../Config/KERNEL.txt"
 #define LOG_PATH "../Log/LOG_KERNEL.txt"
 
 
-int socket_CMemoria,tamanio,countPID;
+int socket_CMemoria,tamanio,countPID,multiProcesamiento;
 t_log* log_kernel;
 t_list* list_queries;
 
@@ -47,7 +48,10 @@ t_list* list_queries;
 
 int resultado_Conectar, resultado_sendMsj;
 
-
+//Semaforos
+int valorMultiprocesamiento;
+Mutex countProcess;
+sem_t multiprocesamiento;
 
 typedef struct{
 
@@ -79,6 +83,7 @@ conexion* estructuraConexion;
 
 char* linea;
 char** lineaSeparada;
+char **comandoSeparado;
 int comando;
 int confirmacionRecibida;
 FILE* fd;
@@ -95,12 +100,13 @@ typedef struct{
 	int pid;
 	int estado;
 	int progamCounter;
+	int rafaga;
 	int comando;
 	int argumentos;
 	t_list* stack;
 }t_pcb;
 
-t_pcb* crearPcb(int comando, int parametros);
+t_pcb* crearPcb(char* comando);
 
 
 /*
@@ -108,7 +114,13 @@ t_pcb* crearPcb(int comando, int parametros);
  * */
 
 void inicializarListasPlanificador();
-void encolarProcesoNuevo(t_pcb* procesoNuevo);
+void planificar(char* linea);
+void agregarAListo(t_pcb* procesoNuevo);
+void agregarANuevo(char* linea);
+t_pcb* crearEstructurasAdministrativas(char* linea);
+void agregarAEjecutar();
+void agregarAExit();
+int rafagaComandoRun(char* path);
 
 pthread_mutex_t mutexColaNuevos;
 pthread_mutex_t mutexColaListos;
