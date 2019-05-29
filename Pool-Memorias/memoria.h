@@ -32,6 +32,7 @@ char* linea;
 char* argumentosComando;
 char** argumentosParseados;
 t_header* buffer;
+Bitmap bitmap;
 
 /*---------------------------------------------------------------------------------
  * 								MUTEX Y SEMAFOROS
@@ -47,7 +48,10 @@ Mutex mutex_pagina_referenciada_aux;
 Mutex mutex_pagina_referenciada_aux2;
 Mutex mutex_segmento_aux;
 Mutex mutex_crear_pagina_nueva;
-Mutex LRUMutex;
+Mutex LRUMutex, ACCIONLRU;
+Mutex JOURNALHecho;
+Mutex mutex_memoria;
+Mutex mutex_bitmap;
 Semaforo paginasSinUsar; //TIENE CAPACIDAD HASTA PARA cantPaginasTotales
 int cantPaginasDisponibles, cantPaginasTotales;
 
@@ -121,7 +125,8 @@ t_memoria_config* arc_config;
 //ESTOS 2 SOLO SE USARAN PARA CARGAR DATOS, NADA MAS
 pagina_referenciada* aux_tabla_paginas;
 pagina_referenciada* aux_tabla_paginas2;
-pagina* aux_pagina;
+pagina* aux_crear_pagina;
+pagina_a_devolver* aux_devolver_pagina;
 segmento* aux_segmento;
 
 int main();
@@ -170,7 +175,7 @@ void crearHIloEscuchaLFS();
  * PROCESO JOURNAL
  *---------------------------------------------------*/
 
-void JOURNAL(pagina* paginaAPasar, char* path_tabla);
+void JOURNAL();
 
 //void pasar_valores_modificados_a_Lisandra(segmento* elSegmento, unidad_memoria* unidad_de_memoria);
 
@@ -193,14 +198,20 @@ void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
  * FUNCIONES OBTENER VALORES MEDIANTE UNA KEY
  *---------------------------------------------------*/
 
+pagina_a_devolver* selectPaginaPorPosicion(int pos, void* info);
+
 //int obtener_valores(char* nombreTabla, int16_t key, unidad_memoria* unidadExtra);
 
 /*---------------------------------------------------
  * FUNCIONES PARA ADMINISTRAR LA MEMORIA
  *---------------------------------------------------*/
+	void incrementarAccesoDeKey(u_int16_t keyBuscada);
+
+	void agregarNuevaPaginaALaPosicion(pagina_a_devolver* pagina, int posicion);
+
 
 	pagina_a_devolver* selectObtenerDatos(int nroDePaginaAIr);
-	int buscarEntreTodasLasTablaPaginasLaKey(pagina_referenciada* tablasAsociadasASegmento,	int16_t keyBuscada);
+	int buscarEntreTodasLasTablaPaginasLaKey(pagina_referenciada* tablasAsociadasASegmento,	u_int16_t keyBuscada);
 
 	segmento* buscarSegmentoPorNumero(int numeroABuscar);
 	segmento* buscarSegmentoPorNombreTabla(char* nombreTabla);
@@ -211,24 +222,24 @@ void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
 	* @DESC: Crea una lista
 	*/
 
-	int tabla_pagina_crear(int16_t key, char* valor, bool flag_modificado);
+	pagina_referenciada* tabla_pagina_crear(u_int16_t key, char* valor, bool flag_modificado);
 //	pagina * pagina_crear(long timestamp, int16_t key, char * valor);
-	pagina* pagina_crear(long timestampNuevo, int16_t key, char * valor, char* nombreTabla);
+	pagina* pagina_crear(long timestampNuevo, u_int16_t key, char * valor, char* nombreTabla);
 	//EL DE ABAJO CREA LA UNIDAD, EL DE ARRIBA DESPUES MANDA A BUSCAR EL SEGMENTO
-	pagina* crear_pagina(int16_t key, char * valor);
+	pagina* crear_pagina(int16_t key, char * valor, int posicionAsignada);
 
 
 	/*
 	 * SEGMENTO
 	 */
-	void segmento_crear(char* pathNombreTabla, pagina_referenciada* paginaRef);
+	segmento* segmento_crear(char* pathNombreTabla, pagina_referenciada* paginaRef);
 	void eliminar_nro_pagina_de_segmento(segmento* unSegmento, int nroAQuitar);
 	void segmento_destruir(segmento*);
 	void segmento_destruir_y_vaciar_elementos(segmento *);
 	int limpiar_segmento(segmento * seg);
 	int segmento_esta_vacio(segmento *);
 	void aniadirNuevaPaginaASegmento(pagina* nuevaPag, char* nombreTabla);
-	int buscarKeyPorTablaPagina(pagina_referenciada* tabla_pagina_auxx, int16_t keyBuscada);
+	int buscarKeyPorTablaPagina(pagina_referenciada* tabla_pagina_auxx, u_int16_t keyBuscada);
 	void asociar_nueva_pagina_a_segmento(segmento* unSegmento, int posicion);
 
 
@@ -308,7 +319,7 @@ void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
 
 	//Busca una tabla entre los segmentos de memoria
 	//Si no lo encuentra devuelve un ERROR sino solo 1
-	int buscar_tabla_especifica(char* nombreTablaABuscar, segmento* segmentoBuscado);
+//	int buscar_tabla_especifica(char* nombreTablaABuscar, segmento* segmentoBuscado);
 
 
 //	int obtener_valores(int16_t key, segmento* segmentoHost, valor_pagina* valorADevolver);
@@ -317,15 +328,17 @@ void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
 /*
  * NUEVAS FUNCIONES
  */
-	void funcionInsert(char* nombreTabla, int16_t keyBuscada, char* valorAPoner);
+	int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner);
 
-	void LRU(pagina* paginaCreada);
+	void LRU(pagina* paginaCreada, int* nroAsignado, char* value);
 
 	pagina* actualizarPosicionAPagina(pagina* unaPagina, int nuevaPos);
 
 	String obtenerNombreTablaDePath(String path);
 
 	void pasarValoresALisandra(char* datos);
+
+	int buscarPaginaDisponible(u_int16_t key);
 #endif /* MEMORIA_H_ */
 
 

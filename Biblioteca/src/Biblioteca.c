@@ -861,8 +861,9 @@ Bitmap bitmapCrear(int cantidadBloques) {
 	char* bits = malloc(tamanioBytes);
 	Bitmap bitmap = bitarray_create_with_mode(bits, tamanioBytes, LSB_FIRST);
 	int indice;
-	for(indice = 0; indice < tamanioBytes*8; indice++)
+	for(indice = 0; indice < tamanioBytes*8; indice++){
 		bitarray_clean_bit(bitmap, indice);
+	}
 	return bitmap;
 }
 
