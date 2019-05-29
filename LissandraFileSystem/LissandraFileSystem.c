@@ -540,35 +540,6 @@ void listenSomeLQL() {
 
 }
 
-int comandoSelect(char* tabla, char* key) {
-
-	if (verificarTabla(tabla) == -1) {
-		return -1;
-	} else { // archivo de tabla encontrado
-		obtenerMetadata(tabla); // 0: OK. -1: ERROR. // frenar en caso de error
-
-		int valorKey = atoi(key);
-		int particiones = determinarParticion(valorKey, metadata->particiones);
-
-		escanearParticion(particiones);
-
-		log_info(logger, "LLEGÓ ACÁ.");
-
-		char* keyEncontrado = buscarBloque(key); // GUardar memoria
-
-		// ver key con timestamp mas grande
-
-		return valorKey;
-	}
-} // int comandoSelect(char* tabla, char* key)
-
-//void insert(char* tabla, int key,char* value){
-// verificarTabla(tabla);
-// obtener el metadata de la tabla
-// verificar si existe lista a dumpear
-//
-
-//}
 
 int verificarTabla(char* tabla) {
 
@@ -710,9 +681,10 @@ void retornarValoresDirectorio() {
 	}
 
 	while ((ent = readdir(dir)) != NULL) {
-		log_info(logger, "Tabla analizada= %s", ent->d_name);
+
 
 		if (strcmp(ent->d_name, ".") != 0 && strcmp(ent->d_name, "..") != 0) {
+			log_info(logger, "Tabla analizada= %s", ent->d_name);
 			verificarTabla(ent->d_name);
 			obtenerMetadata(ent->d_name);
 			retornarValores(ent->d_name);
@@ -784,7 +756,7 @@ void escanearParticion(int particion) {
 		fclose(file);
 	}
 
-	if (particion != NULL) {
+	if (particion > -1) {
 
 		log_info(logger, "LFS: Leyendo metadata de la particion...");
 
@@ -857,7 +829,7 @@ char* buscarBloque(char* key) {
 	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo);
 
 	FILE *file;
-	file = fopen(bloqueObjetivo, "rt");
+	file = fopen(bloqueObjetivo, "r");
 
 	if (file == NULL) {
 		//log_error(logger, "No existe la particion");
@@ -865,16 +837,22 @@ char* buscarBloque(char* key) {
 	} else {
 
 		log_info(logger, "Abrimos Bloque");
-		char lectura;
+		//char lectura;
+		//do {
+		//	do {
+		//		lectura = fgetc(file);
+		//		printf("%c", lectura);
+		//	} while (lectura != '\n');
+		//	printf("fin de linea \n");
+		//	lectura = fgetc(file);
+		//} while (!feof(file));
 
-		do {
-			do {
-				lectura = fgetc(file);
-				printf("%c", lectura);
-			} while (lectura != '\n');
-			printf("fin de linea \n");
-			lectura = fgetc(file);
-		} while (!feof(file));
+		char linea[1024];
+
+		 while(fgets(linea, 1024, (FILE*) file)) {
+		        printf("LINEA: %s", linea);
+		    }
+
 
 		fclose(file);
 
@@ -883,6 +861,29 @@ char* buscarBloque(char* key) {
 	return "asdasdasdas";
 
 }
+
+int comandoSelect(char* tabla, char* key) {
+
+	if (verificarTabla(tabla) == -1) {
+		return -1;
+	} else { // archivo de tabla encontrado
+		obtenerMetadata(tabla); // 0: OK. -1: ERROR. // frenar en caso de error
+
+		int valorKey = atoi(key);
+		int particiones = determinarParticion(valorKey, metadata->particiones);
+
+		escanearParticion(particiones);
+
+		log_info(logger, "LLEGÓ ACÁ.");
+
+		char* keyEncontrado = buscarBloque(key); // GUardar memoria
+
+		// ver key con timestamp mas grande
+
+		return valorKey;
+	}
+} // int comandoSelect(char* tabla, char* key)
+
 
 void comandoDrop(char* tabla) {
 
