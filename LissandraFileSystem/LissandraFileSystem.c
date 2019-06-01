@@ -565,15 +565,16 @@ int verificarTabla(char* tabla) {
 
 	if (file == NULL) {
 		log_error(logger, "[ERROR] No existe la tabla");
-		perror("Error al abrir tabla/archivo!!");
+		perror("Error al abrir tabla/archivo");
 		return -1;
+		//return -1;  COMENTO PORQUE SINO NO SE HACE EL CREATE, MAS ADELANTE SE CREARA EL VERIFICAR TABLA PARA CREATE
 	} else {
 		log_error(logger, "[ OK ] Metadata de tabla abierto. \n");
 		fclose(file);
 		return 0;
-	} // if (file == NULL)
+	}
 
-} // int verificarTabla(char* tabla)
+}
 
 int obtenerMetadata(char* tabla) {
 
@@ -862,6 +863,49 @@ char* buscarBloque(char* key) {
 
 }
 
+void eliminarTablaCompleta(char* tabla){
+
+obtenerMetadata(tabla);
+
+for(int i=0;i<metadata->particiones;i++ ){
+
+rutaParticion(i);
+
+log_info(logger, "Vamos a eliminar el archivo binario  de la tabla: %s",archivoParticion);
+
+int retParticion = remove(archivoParticion);
+
+if (retParticion == 0) // Eliminamos el archivo
+			log_info(logger, "El archivo fue eliminado satisfactoriamente\n");
+		else
+			log_info(logger, "No se pudo eliminar el archivo\n");
+
+}
+
+log_info(logger, "Vamos a eliminar el metadata de la tabla: %s", path_tabla_metadata);
+
+	int retMet = remove(path_tabla_metadata);
+
+		log_info(logger, "Resultado de remove del metadata de la tabla%d", retMet);
+
+		if (retMet == 0) // Eliminamos el archivo
+			log_info(logger, "El archivo fue eliminado satisfactoriamente\n");
+		else
+			log_info(logger, "No se pudo eliminar el archivo\n");
+
+	log_info(logger, "Vamos a eliminar el directorio: %s", tablaAverificar);
+
+	int retTab = remove(tablaAverificar);
+
+	log_info(logger, "Resultado de remove de la tabla %d", retTab);
+
+	if (retTab == 0) // Eliminamos el archivo
+		log_info(logger, "El archivo fue eliminado satisfactoriamente\n");
+	else
+		log_info(logger, "No se pudo eliminar el archivo\n");
+
+}
+
 int comandoSelect(char* tabla, char* key) {
 
 	if (verificarTabla(tabla) == -1) {
@@ -891,19 +935,16 @@ void comandoDrop(char* tabla) {
 
 	verificarTabla(tabla);
 
-	log_info(logger, "Vamos a eliminar el directorio: %s", tablaAverificar);
+	log_info(logger, "Vamos a eliminar la tabla: %s", tablaAverificar);
 
-	if (remove(tablaAverificar) == 0) // Eliminamos el archivo
-		log_info(logger, "El archivo fue eliminado satisfactoriamente\n");
-	else
-		log_info(logger, "No se pudo eliminar el archivo\n");
+	eliminarTablaCompleta(tabla);
 
 }
 
 void comandoCreate(char* tabla, char* consistencia, char* particiones,
 		char* tiempoCompactacion) {
 
-	if (verificarTabla(tabla) == 0) {     // La tabla no existe, se crea
+	if (verificarTabla(tabla) == -1) {     // La tabla no existe, se crea
 
 		mkdir(tablaAverificar, 0777);
 
@@ -969,10 +1010,15 @@ void comandoCreate(char* tabla, char* consistencia, char* particiones,
 			log_info(logger, "No se pudo crear el archivo metadata \n");
 			fclose(archivoMetadata);
 		}
-
 	}
+		else {
+			log_info(logger, "La tabla ya existe \n");
+			perror("La tabla ingresada ya existe");
 
-} // void comandoCreate
+				}
+
+
+}
 
 void comandoInsert(char* tabla) {
 

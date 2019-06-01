@@ -133,3 +133,5 @@ void retornarValoresDirectorio();
 void escanearParticion(int particion);
 
 char* buscarBloque(char* key);
+
+void eliminarTablaCompleta(char* tabla);
