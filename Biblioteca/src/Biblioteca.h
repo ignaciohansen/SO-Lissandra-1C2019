@@ -29,6 +29,7 @@
 #include "commons/string.h"
 #include <commons/collections/queue.h>
 #include "commons/collections/list.h"
+#include "commons/collections/dictionary.h"
 #include "commons/temporal.h"
 #include "commons/bitarray.h"
 #include <stdint.h>

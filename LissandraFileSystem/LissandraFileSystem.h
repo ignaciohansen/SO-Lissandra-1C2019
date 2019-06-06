@@ -3,7 +3,7 @@
 
 #include "../Biblioteca/src/Biblioteca.c"
 #include <commons/collections/list.h>
-#include <stdio.h>
+#include <commons/collections/dictionary.h>
 
 //Agregadas para directorio
 #include <stdlib.h>
@@ -106,6 +106,8 @@ t_metadata_LFS* metadataLFS;
 
 sem_t semaforoQueries;
 
+t_dictionary* diccionario;
+
 /*--------------------------------------------------------------------------------------------
  * 									Elementos de comandos
  *--------------------------------------------------------------------------------------------
@@ -114,6 +116,8 @@ sem_t semaforoQueries;
 char* tablaAverificar; // directorio de la tabla
 char* path_tabla_metadata;
 char* archivoParticion;
+char* registroPorAgregar;
+
 
 int comandoSelect(char* tabla, char* key);
 void comandoDrop(char* tabla);
@@ -135,3 +139,5 @@ void escanearParticion(int particion);
 char* buscarBloque(char* key);
 
 void eliminarTablaCompleta(char* tabla);
+
+char* desenmascararValue(char* value);

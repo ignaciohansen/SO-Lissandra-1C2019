@@ -8,11 +8,11 @@
 #include "LissandraFileSystem.h"
 /*
  * REQUERIMIENTOS:
- *  - ¿ verificarExistenciaTabla    () ? Nota: está hecho el método de verificarExistenciaTabla()
+ *  - �� verificarExistenciaTabla    () ? Nota: est�� hecho el m��todo de verificarExistenciaTabla()
  *  - crearTabla(nombre, tipoConsistencia, nroParticiones, compactationTime)  // e.g.: CREATE TABLA1 SC 4 60000
  *  - describe(nombre)
  *  - bool      :verificarExistenciaTabla(nombre)
- *  - obtenerMetadata(nombre)                           // ver que hacer acá
+ *  - obtenerMetadata(nombre)                           // ver que hacer ac��
  *  - crearMemtable()
  *  - << todo lo necesario para gestionar las memTables >>
  *  - registro**:escanearTabla    (nombre,key)          // retorna un array de punterosa registros.
@@ -30,7 +30,7 @@ int main() {
 	sem_init(&semaforoQueries, 0, 1);
 	list_queries = list_create();
 
-	LisandraSetUP(); // CONFIGURACIÓN Y SETEO SOCKET
+	LisandraSetUP(); // CONFIGURACI��N Y SETEO SOCKET
 
 	pthread_t* hiloListening, hiloConsola, hiloEjecutor;
 	pthread_create(&hiloConsola, NULL, (void*) consola, NULL);
@@ -42,6 +42,8 @@ int main() {
 	pthread_join(hiloConsola, NULL);
 
 	sem_destroy(&semaforoQueries);
+	dictionary_destroy(diccionario);
+
 	// consola();
 	return 0;
 }
@@ -65,7 +67,7 @@ void LisandraSetUP() {
 		imprimirMensajeProceso("Levantando el servidor del proceso Lisandra");
 		abrirServidorLissandra();
 	}
-
+	diccionario = dictionary_create();
 }
 
 int abrirServidorLissandra() {
@@ -195,13 +197,13 @@ bool cargarConfiguracion() {
 
 		if (config_has_property(archivoCOnfig, "TAMANIO_VALUE")) {
 
-			log_info(logger, "Almacenando el tamaño del valor de una key");
+			log_info(logger, "Almacenando el tama��o del valor de una key");
 
 			//Por lo que dice el texto
 			configFile->tamanio_value = config_get_int_value(archivoCOnfig,
 					"TAMANIO_VALUE");
 
-			log_info(logger, "El tamaño del valor es: %d",
+			log_info(logger, "El tama��o del valor es: %d",
 					configFile->tamanio_value);
 
 		} else {
@@ -395,11 +397,9 @@ void validarComando(char** comando, int tamanio, t_log* logger) {
 		if (tamanio == 4 || tamanio == 5) {
 
 			if (tamanio == 4) {
-				int resultado = comandoInsert(comando[1], comando[2],
-						comando[3]);
+				//comandoInsert(comando[1], comando[2], comando[3]);
 			} else {
-				//int resultado = comandoInsert(comando[1], comando[2],comando[3]);
-				//int resultado = comandoInsert(comando[1], comando[2],comando[3],comando[4]);
+				comandoInsert(comando[1], comando[2],comando[3],comando[4]);
 			}
 
 		}
@@ -518,7 +518,7 @@ void listenSomeLQL() {
 		char* msg = string_new();
 
 		// char * msg = malloc(sizeof(char)*100);
-		msg = string_duplicate(buffer); // <-- ésto hace funcionar del string por red.
+		msg = string_duplicate(buffer); // <-- ��sto hace funcionar del string por red.
 
 		sem_wait(&semaforoQueries);
 		list_add(list_queries, msg);
@@ -533,7 +533,7 @@ void listenSomeLQL() {
 		string_append(&msg, "\".");
 
 		imprimirVerde(logger, msg);
-		// liberar ¿msg?
+		// liberar ��msg?
 		free(buffer);
 
 	}
@@ -548,6 +548,10 @@ int verificarTabla(char* tabla) {
 	log_info(logger,
 			"Se reservo memoria para contatenar punto de montaje con la tabla");
 	tablaAverificar = string_new();
+
+	 for(int i=0;i<strlen(tabla);i++){
+	        tabla[i] = toupper(tabla[i]);
+	        }
 
 	log_info(logger, "%s", tablaAverificar);
 	string_append(&tablaAverificar, tabla_Path);
@@ -567,7 +571,7 @@ int verificarTabla(char* tabla) {
 		log_error(logger, "[ERROR] No existe la tabla");
 		perror("Error al abrir tabla/archivo");
 		return -1;
-		//return -1;  COMENTO PORQUE SINO NO SE HACE EL CREATE, MAS ADELANTE SE CREARA EL VERIFICAR TABLA PARA CREATE
+
 	} else {
 		log_error(logger, "[ OK ] Metadata de tabla abierto. \n");
 		fclose(file);
@@ -640,7 +644,7 @@ int obtenerMetadata(char* tabla) {
 	} else {
 
 		log_error(logger,
-				"[ERROR] Archivo metadata de partición no encontrado.");
+				"[ERROR] Archivo metadata de partici��n no encontrado.");
 
 		result = -1;
 
@@ -739,13 +743,13 @@ void escanearParticion(int particion) {
 	log_info(logger, "[escanearParticion] (+) %s", tablaAverificar);
 
 	rutaParticion(particion);
-	log_info(logger, "[escanearParticion] (+) Sobreviví nro 1");
+	log_info(logger, "[escanearParticion] (+) Sobreviv�� nro 1");
 	particionTabla = malloc(sizeof(t_particion));
 
 	t_config* particionFile;
 
 	particionFile = config_create(archivoParticion);
-	log_info(logger, "[escanearParticion] (+) Sobreviví nro 2");
+	log_info(logger, "[escanearParticion] (+) Sobreviv�� nro 2");
 
 	FILE *file;
 	file = fopen(archivoParticion, "r");
@@ -763,14 +767,14 @@ void escanearParticion(int particion) {
 
 		if (config_has_property(particionFile, "SIZE")) {
 
-			log_info(logger, "Almacenando el tamaño de la particion");
+			log_info(logger, "Almacenando el tama��o de la particion");
 
 			particionTabla->size = config_get_int_value(particionFile, "SIZE");
 
-			log_info(logger, "el tamaño de la particion  es: %d",
+			log_info(logger, "el tama��o de la particion  es: %d",
 					particionTabla->size);
 		} else {
-			log_error(logger, "El metadata de la tabla no contiene el tamaño");
+			log_error(logger, "El metadata de la tabla no contiene el tama��o");
 
 		}
 		if (config_has_property(particionFile, "BLOCKS")) {
@@ -815,13 +819,13 @@ char* buscarBloque(char* key) {
 
 	string_append(&bloqueObjetivo, configFile->punto_montaje);
 
-	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo); // 1er línea de dirección
+	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo); // 1er l��nea de direcci��n
 
 	string_append(&bloqueObjetivo, PATH_BLOQUES);
 
-	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo); // 2da línea de dirección
+	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo); // 2da l��nea de direcci��n
 
-	char* bloque = malloc(sizeof(particionTabla->bloques)); // 3er línea de dirección
+	char* bloque = malloc(sizeof(particionTabla->bloques)); // 3er l��nea de direcci��n
 	bloque = particionTabla->bloques[0];
 
 	string_append(&bloqueObjetivo, "block");
@@ -863,6 +867,7 @@ char* buscarBloque(char* key) {
 
 }
 
+
 void eliminarTablaCompleta(char* tabla){
 
 obtenerMetadata(tabla);
@@ -881,6 +886,8 @@ if (retParticion == 0) // Eliminamos el archivo
 			log_info(logger, "No se pudo eliminar el archivo\n");
 
 }
+
+
 
 log_info(logger, "Vamos a eliminar el metadata de la tabla: %s", path_tabla_metadata);
 
@@ -906,6 +913,14 @@ log_info(logger, "Vamos a eliminar el metadata de la tabla: %s", path_tabla_meta
 
 }
 
+char* desenmascararValue(char* value){
+
+	char* valueSinPimeraComilla = stringTomarDesdePosicion(value,1);
+	char* valueDesenmascarado = strtok(valueSinPimeraComilla,"\"");
+	log_info(logger,"el value desenmascarado es %s",valueDesenmascarado);
+	return valueDesenmascarado;
+
+}
 int comandoSelect(char* tabla, char* key) {
 
 	if (verificarTabla(tabla) == -1) {
@@ -918,7 +933,7 @@ int comandoSelect(char* tabla, char* key) {
 
 		escanearParticion(particiones);
 
-		log_info(logger, "LLEGÓ ACÁ.");
+		log_info(logger, "LLEG�� AC��.");
 
 		char* keyEncontrado = buscarBloque(key); // GUardar memoria
 
@@ -1020,13 +1035,47 @@ void comandoCreate(char* tabla, char* consistencia, char* particiones,
 
 }
 
-void comandoInsert(char* tabla) {
+void comandoInsert(char* tabla,char* key,char* value,char* timestamp) {
 
-	log_info(logger, "[comandoInsert] (+) con tabla %s.", tabla);
+char* valueDesenmascarado = desenmascararValue(value);
 
-	verificarTabla(tabla);
+registroPorAgregar = malloc(
+			string_length(key) + string_length(value)
+					+ string_length(timestamp));
 
-	log_info(logger, "[comandoInsert] (-) ");
+registroPorAgregar = string_new();
+
+
+	string_append(&registroPorAgregar, timestamp);
+
+	string_append(&registroPorAgregar, ";");
+
+	string_append(&registroPorAgregar, key);
+
+	string_append(&registroPorAgregar, ";");
+
+	string_append(&registroPorAgregar, valueDesenmascarado);
+
+
+	log_info(logger,"Se va a agregar el siguiente registro %s",registroPorAgregar);
+
+// Verifico que la key ya exista en el diccionario, aca se hace el dump
+
+if(dictionary_has_key(diccionario,key)){
+void* keyYaExistente = dictionary_get(diccionario,key);
+}
+
+
+dictionary_put(diccionario,key,registroPorAgregar);
+
+void* resultado = dictionary_get(diccionario,key);
+
+
+log_info(logger,"lo agregado fue: %s", resultado);
+int i = dictionary_size(diccionario);
+
+log_info(logger,"cantidad de elementos diccionario: %d", i);
+
 
 }
 
