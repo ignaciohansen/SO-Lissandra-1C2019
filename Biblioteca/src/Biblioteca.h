@@ -346,3 +346,5 @@ void memoriaLiberar(Puntero puntero);
 void configuracionSenialHijo(int senial);
 void imprimirMensajeProceso(String mensaje);
 void fileLimpiar(String ruta);
+
+msg_com_t recibir_mensaje(int conexion);

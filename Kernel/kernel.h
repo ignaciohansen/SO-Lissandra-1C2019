@@ -118,7 +118,7 @@ void planificar(char* linea);
 void agregarAListo(t_pcb* procesoNuevo);
 void agregarANuevo(char* linea);
 t_pcb* crearEstructurasAdministrativas(char* linea);
-void agregarAEjecutar();
+void agregarAEjecutar(char* linea);
 void agregarAExit();
 int rafagaComandoRun(char* path);
 
