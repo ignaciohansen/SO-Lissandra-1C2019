@@ -198,6 +198,9 @@ void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
  * FUNCIONES OBTENER VALORES MEDIANTE UNA KEY
  *---------------------------------------------------*/
 
+//ESTE DE AQUI ABAJO DEVUELVE LA POSICION EN DONDE SE ENCUENTA LA KEY BUSCADA
+//si no lo encunetra devuelve ERROR O -1
+int buscarEnMemoriaLaKey(u_int16_t keyBuscada);
 pagina_a_devolver* selectPaginaPorPosicion(int pos, void* info);
 
 //int obtener_valores(char* nombreTabla, int16_t key, unidad_memoria* unidadExtra);
@@ -205,12 +208,12 @@ pagina_a_devolver* selectPaginaPorPosicion(int pos, void* info);
 /*---------------------------------------------------
  * FUNCIONES PARA ADMINISTRAR LA MEMORIA
  *---------------------------------------------------*/
-	void incrementarAccesoDeKey(u_int16_t keyBuscada);
+	void incrementarAccesoDeKey(int posBUscado);
 
 	void agregarNuevaPaginaALaPosicion(pagina_a_devolver* pagina, int posicion);
 
 
-	pagina_a_devolver* selectObtenerDatos(int nroDePaginaAIr);
+	pagina_a_devolver* selectObtenerDatos(int nroDePaginaAIr, bool necesitoValue);
 	int buscarEntreTodasLasTablaPaginasLaKey(pagina_referenciada* tablasAsociadasASegmento,	u_int16_t keyBuscada);
 
 	segmento* buscarSegmentoPorNumero(int numeroABuscar);
@@ -222,7 +225,7 @@ pagina_a_devolver* selectPaginaPorPosicion(int pos, void* info);
 	* @DESC: Crea una lista
 	*/
 
-	pagina_referenciada* tabla_pagina_crear(u_int16_t key, char* valor, bool flag_modificado);
+	void tabla_pagina_crear(u_int16_t key, char* valor, bool flag_modificado, pagina_referenciada** devolver);
 //	pagina * pagina_crear(long timestamp, int16_t key, char * valor);
 	pagina* pagina_crear(long timestampNuevo, u_int16_t key, char * valor, char* nombreTabla);
 	//EL DE ABAJO CREA LA UNIDAD, EL DE ARRIBA DESPUES MANDA A BUSCAR EL SEGMENTO
@@ -339,6 +342,9 @@ pagina_a_devolver* selectPaginaPorPosicion(int pos, void* info);
 	void pasarValoresALisandra(char* datos);
 
 	int buscarPaginaDisponible(u_int16_t key);
+
+
+void selectHardcodeado(int cant, int inicio, void* info);
+void insertHardcodeado(int cant, int inicio, void* info, char* valorNuevo, char* nombreTabla);
+
 #endif /* MEMORIA_H_ */
-
-
