@@ -30,7 +30,7 @@ int main() {
 	sem_init(&semaforoQueries, 0, 1);
 	list_queries = list_create();
 
-	LisandraSetUP(); // CONFIGURACI��N Y SETEO SOCKET
+	LisandraSetUP(); // CONFIGURACION Y SETEO SOCKET
 
 	pthread_t* hiloListening, hiloConsola, hiloEjecutor;
 	pthread_create(&hiloConsola, NULL, (void*) consola, NULL);
@@ -68,6 +68,7 @@ void LisandraSetUP() {
 		abrirServidorLissandra();
 	}
 	diccionario = dictionary_create();
+	listaKeysRepetidas = list_create();
 }
 
 int abrirServidorLissandra() {
@@ -197,13 +198,13 @@ bool cargarConfiguracion() {
 
 		if (config_has_property(archivoCOnfig, "TAMANIO_VALUE")) {
 
-			log_info(logger, "Almacenando el tama��o del valor de una key");
+			log_info(logger, "Almacenando el tamaño del valor de una key");
 
 			//Por lo que dice el texto
 			configFile->tamanio_value = config_get_int_value(archivoCOnfig,
 					"TAMANIO_VALUE");
 
-			log_info(logger, "El tama��o del valor es: %d",
+			log_info(logger, "El tamaño del valor es: %d",
 					configFile->tamanio_value);
 
 		} else {
@@ -397,7 +398,7 @@ void validarComando(char** comando, int tamanio, t_log* logger) {
 		if (tamanio == 4 || tamanio == 5) {
 
 			if (tamanio == 4) {
-				//comandoInsert(comando[1], comando[2], comando[3]);
+				comandoInsertSinTimestamp(comando[1], comando[2], comando[3]);
 			} else {
 				comandoInsert(comando[1], comando[2],comando[3],comando[4]);
 			}
@@ -518,7 +519,7 @@ void listenSomeLQL() {
 		char* msg = string_new();
 
 		// char * msg = malloc(sizeof(char)*100);
-		msg = string_duplicate(buffer); // <-- ��sto hace funcionar del string por red.
+		msg = string_duplicate(buffer); // <-- Esto hace funcionar del string por red.
 
 		sem_wait(&semaforoQueries);
 		list_add(list_queries, msg);
@@ -533,7 +534,7 @@ void listenSomeLQL() {
 		string_append(&msg, "\".");
 
 		imprimirVerde(logger, msg);
-		// liberar ��msg?
+		// liberar msg?
 		free(buffer);
 
 	}
@@ -644,7 +645,7 @@ int obtenerMetadata(char* tabla) {
 	} else {
 
 		log_error(logger,
-				"[ERROR] Archivo metadata de partici��n no encontrado.");
+				"[ERROR] Archivo metadata de particion no encontrado.");
 
 		result = -1;
 
@@ -743,13 +744,13 @@ void escanearParticion(int particion) {
 	log_info(logger, "[escanearParticion] (+) %s", tablaAverificar);
 
 	rutaParticion(particion);
-	log_info(logger, "[escanearParticion] (+) Sobreviv�� nro 1");
+	log_info(logger, "[escanearParticion] (+) Sobrevivi nro 1");
 	particionTabla = malloc(sizeof(t_particion));
 
 	t_config* particionFile;
 
 	particionFile = config_create(archivoParticion);
-	log_info(logger, "[escanearParticion] (+) Sobreviv�� nro 2");
+	log_info(logger, "[escanearParticion] (+) Sobrevivi nro 2");
 
 	FILE *file;
 	file = fopen(archivoParticion, "r");
@@ -767,14 +768,14 @@ void escanearParticion(int particion) {
 
 		if (config_has_property(particionFile, "SIZE")) {
 
-			log_info(logger, "Almacenando el tama��o de la particion");
+			log_info(logger, "Almacenando el tamaño de la particion");
 
 			particionTabla->size = config_get_int_value(particionFile, "SIZE");
 
-			log_info(logger, "el tama��o de la particion  es: %d",
+			log_info(logger, "el tamaño de la particion  es: %d",
 					particionTabla->size);
 		} else {
-			log_error(logger, "El metadata de la tabla no contiene el tama��o");
+			log_error(logger, "El metadata de la tabla no contiene el tamaño");
 
 		}
 		if (config_has_property(particionFile, "BLOCKS")) {
@@ -819,13 +820,13 @@ char* buscarBloque(char* key) {
 
 	string_append(&bloqueObjetivo, configFile->punto_montaje);
 
-	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo); // 1er l��nea de direcci��n
+	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo); // 1er linea de direccion
 
 	string_append(&bloqueObjetivo, PATH_BLOQUES);
 
-	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo); // 2da l��nea de direcci��n
+	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo); // 2da linea de direccion
 
-	char* bloque = malloc(sizeof(particionTabla->bloques)); // 3er l��nea de direcci��n
+	char* bloque = malloc(sizeof(particionTabla->bloques)); // 3er linea de direccion
 	bloque = particionTabla->bloques[0];
 
 	string_append(&bloqueObjetivo, "block");
@@ -933,8 +934,6 @@ int comandoSelect(char* tabla, char* key) {
 
 		escanearParticion(particiones);
 
-		log_info(logger, "LLEG�� AC��.");
-
 		char* keyEncontrado = buscarBloque(key); // GUardar memoria
 
 		// ver key con timestamp mas grande
@@ -1035,6 +1034,21 @@ void comandoCreate(char* tabla, char* consistencia, char* particiones,
 
 }
 
+void comandoInsertSinTimestamp(char* tabla,char* key,char* value) {
+
+int aux = time(NULL);
+
+char timestamp[11];
+
+sprintf(timestamp, "%d", aux);
+
+log_info(logger,"el timestamp a agregar es: %s",timestamp);
+
+comandoInsert(tabla,key,value,timestamp);
+
+}
+
+
 void comandoInsert(char* tabla,char* key,char* value,char* timestamp) {
 
 char* valueDesenmascarado = desenmascararValue(value);
@@ -1061,12 +1075,51 @@ registroPorAgregar = string_new();
 
 // Verifico que la key ya exista en el diccionario, aca se hace el dump
 
-if(dictionary_has_key(diccionario,key)){
-void* keyYaExistente = dictionary_get(diccionario,key);
+bool keyRepetida = dictionary_has_key(diccionario,key);
+log_info(logger,"valor keyRepetida %d",keyRepetida);
+
+if(keyRepetida){
+	log_info(logger,"Encontre una key repetida");
+
+	void* keyYaExistente = dictionary_get(diccionario,key);
+
+log_info(logger,"Ya existe este registro en la memtable y es la siguiente: %s",keyYaExistente);
+
+list_add(listaKeysRepetidas,keyYaExistente);
+list_add(listaKeysRepetidas,registroPorAgregar);
+
+void* primeraPos = list_get(listaKeysRepetidas, 0);
+void* segundaPos = list_get(listaKeysRepetidas, 1);
+
+log_info(logger,"Se va a agregar el siguiente registro en la primera pos de la lista %s",primeraPos);
+log_info(logger,"Se va a agregar el siguiente registro en la segunda pos de la lista %s",segundaPos);
+
+dictionary_put(diccionario,key,listaKeysRepetidas);
+
+
+/*
+char* registroDuplicado = malloc(
+			string_length(keyYaExistente) + string_length(registroPorAgregar)
+					+ 9);
+
+
+registroDuplicado = string_new();
+
+string_append(&registroDuplicado, "[");
+string_append(&registroDuplicado, "(");
+string_append(&registroDuplicado, keyYaExistente);
+string_append(&registroDuplicado, ")");
+string_append(&registroDuplicado, ";");
+string_append(&registroDuplicado, "(");
+string_append(&registroDuplicado, registroPorAgregar);
+string_append(&registroDuplicado, ")");
+string_append(&registroDuplicado, "]");
+*/
+
+}else{
+	dictionary_put(diccionario,key,registroPorAgregar);
+
 }
-
-
-dictionary_put(diccionario,key,registroPorAgregar);
 
 void* resultado = dictionary_get(diccionario,key);
 

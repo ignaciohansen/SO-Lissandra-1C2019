@@ -13,6 +13,8 @@
 #include <dirent.h>
 #include <string.h>
 #include <errno.h>
+#include <time.h>
+
 
 
 #define PATH_BIN ".bin"
@@ -107,6 +109,7 @@ t_metadata_LFS* metadataLFS;
 sem_t semaforoQueries;
 
 t_dictionary* diccionario;
+t_list * listaKeysRepetidas;
 
 /*--------------------------------------------------------------------------------------------
  * 									Elementos de comandos
@@ -120,6 +123,8 @@ char* registroPorAgregar;
 
 
 int comandoSelect(char* tabla, char* key);
+void comandoInsertSinTimestamp(char* tabla,char* key,char* value);
+void comandoInsert(char* tabla,char* key,char* value,char* timestamp);
 void comandoDrop(char* tabla);
 void comandoCreate(char* tabla,char* consistencia,char* particiones,char* tiempoCompactacion);
 void comandoDescribeEspecifico(char* tabla);
