@@ -1094,3 +1094,115 @@ void fileLimpiar(String ruta) {
 		fclose(archivo);
 	}
 }
+
+/*+++++++++++++++++++++++++++++++++++++++ PROTOCOLO +++++++++++++++++++++++++++++++++++++++++++++++++++*/
+buffer_com_t serializar_request(req_com_t msg)
+{
+	buffer_com_t buf;
+	int desp=0, tam_payload;
+	conexion_t tipo_conexion=REQUEST;
+
+	//Calculo el tamaño del payload
+	//El payload contiene el largo del string y el string del request
+	tam_payload = sizeof(int) + msg.tam;
+
+	//Aloco en memoria el stream
+	//El stream contiene el tipo de conexión, el tamaño del payload y el payload
+	buf.tam = sizeof(conexion_t)+sizeof(int)+tam_payload;
+	buf.stream = malloc(buf.tam);
+
+	//Ahora cargo el stream con los datos que necesito
+
+	//Primero el tipo
+	memcpy(buf.stream+desp,&tipo_conexion,sizeof(conexion_t));
+	desp += sizeof(conexion_t);
+
+	//Ahora el tamaño
+	memcpy(buf.stream+desp,&tam_payload,sizeof(int));
+	desp += sizeof(int);
+
+	//Ahora el largo del request
+	memcpy(buf.stream+desp,&msg.tam,sizeof(int));
+	desp += sizeof(int);
+
+	//Después el request
+	memcpy(buf.stream+desp,msg.str,msg.tam);
+	desp += tam_payload;
+	return buf;
+}
+
+int enviar_request(int socket, req_com_t enviar)
+{
+	int retval = 0;
+	buffer_com_t serializado;
+	serializado = serializar_request(enviar);
+	if(send(socket, serializado.stream, serializado.tam, 0)==-1)
+		retval = -1;
+	borrar_buffer(serializado);
+	return retval;
+}
+
+msg_com_t recibir_mensaje(int conexion)
+{
+	msg_com_t recibido;
+
+	//Primero recibo el tipo
+	if(recv(conexion, &(recibido.tipo), sizeof(conexion_t), MSG_WAITALL) == 0){
+		//printf("\nError al recibir el mensaje");
+		recibido.tipo = DESCONECTADO;
+		return recibido;
+	}
+
+	//Ahora recibo el tamaño
+	if(recv(conexion, &(recibido.payload.tam), sizeof(int), MSG_WAITALL) == 0){
+			//printf("\nError al recibir el mensaje");
+			recibido.tipo = DESCONECTADO;
+			return recibido;
+	}
+
+	//Ahora aloco en memoria el stream
+	recibido.payload.stream = malloc(recibido.payload.tam);
+
+	//Ahora recibo el payload de tamaño ya conocido
+	if(recv(conexion, recibido.payload.stream, recibido.payload.tam, MSG_WAITALL) == 0){
+			//printf("\nError al recibir el mensaje");
+			recibido.tipo = DESCONECTADO;
+			return recibido;
+	}
+
+	return recibido;
+}
+
+req_com_t procesar_request(msg_com_t msg)
+{
+	req_com_t req;
+	int desp = 0;
+
+	//Tengo que desempaquetar el stream
+
+	//Primero tengo el largo del request
+	memcpy(&req.tam, msg.payload.stream+desp, sizeof(int));
+	desp += sizeof(int);
+
+	//Ahora ya sé el largo del string
+	req.str = malloc(req.tam);
+
+	memcpy(req.str, msg.payload.stream+desp, req.tam);
+
+	return req;
+}
+
+
+void borrar_buffer(buffer_com_t buf)
+{
+	if(buf.tam>0)
+		free(buf.stream);
+}
+
+void borrar_mensaje(msg_com_t msg)
+{
+	borrar_buffer(msg.payload);
+}
+
+
+

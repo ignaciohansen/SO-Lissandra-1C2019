@@ -8,11 +8,11 @@
 #include "LissandraFileSystem.h"
 /*
  * REQUERIMIENTOS:
- *  - ¿ verificarExistenciaTabla    () ? Nota: está hecho el método de verificarExistenciaTabla()
+ *  - �� verificarExistenciaTabla    () ? Nota: est�� hecho el m��todo de verificarExistenciaTabla()
  *  - crearTabla(nombre, tipoConsistencia, nroParticiones, compactationTime)  // e.g.: CREATE TABLA1 SC 4 60000
  *  - describe(nombre)
  *  - bool      :verificarExistenciaTabla(nombre)
- *  - obtenerMetadata(nombre)                           // ver que hacer acá
+ *  - obtenerMetadata(nombre)                           // ver que hacer ac��
  *  - crearMemtable()
  *  - << todo lo necesario para gestionar las memTables >>
  *  - registro**:escanearTabla    (nombre,key)          // retorna un array de punterosa registros.
@@ -30,7 +30,7 @@ int main() {
 	sem_init(&semaforoQueries, 0, 1);
 	list_queries = list_create();
 
-	LisandraSetUP(); // CONFIGURACIÓN Y SETEO SOCKET
+	LisandraSetUP(); // CONFIGURACION Y SETEO SOCKET
 
 	pthread_t* hiloListening, hiloConsola, hiloEjecutor;
 	pthread_create(&hiloConsola, NULL, (void*) consola, NULL);
@@ -42,6 +42,8 @@ int main() {
 	pthread_join(hiloConsola, NULL);
 
 	sem_destroy(&semaforoQueries);
+	dictionary_destroy(diccionario);
+
 	// consola();
 	return 0;
 }
@@ -65,7 +67,8 @@ void LisandraSetUP() {
 		imprimirMensajeProceso("Levantando el servidor del proceso Lisandra");
 		abrirServidorLissandra();
 	}
-
+	diccionario = dictionary_create();
+	listaKeysRepetidas = list_create();
 }
 
 int abrirServidorLissandra() {
@@ -395,11 +398,9 @@ void validarComando(char** comando, int tamanio, t_log* logger) {
 		if (tamanio == 4 || tamanio == 5) {
 
 			if (tamanio == 4) {
-				int resultado = comandoInsert(comando[1], comando[2],
-						comando[3]);
+				comandoInsertSinTimestamp(comando[1], comando[2], comando[3]);
 			} else {
-				//int resultado = comandoInsert(comando[1], comando[2],comando[3]);
-				//int resultado = comandoInsert(comando[1], comando[2],comando[3],comando[4]);
+				comandoInsert(comando[1], comando[2],comando[3],comando[4]);
 			}
 
 		}
@@ -518,7 +519,7 @@ void listenSomeLQL() {
 		char* msg = string_new();
 
 		// char * msg = malloc(sizeof(char)*100);
-		msg = string_duplicate(buffer); // <-- ésto hace funcionar del string por red.
+		msg = string_duplicate(buffer); // <-- Esto hace funcionar del string por red.
 
 		sem_wait(&semaforoQueries);
 		list_add(list_queries, msg);
@@ -533,42 +534,13 @@ void listenSomeLQL() {
 		string_append(&msg, "\".");
 
 		imprimirVerde(logger, msg);
-		// liberar ¿msg?
+		// liberar msg?
 		free(buffer);
 
 	}
 
 }
 
-int comandoSelect(char* tabla, char* key) {
-
-	if (verificarTabla(tabla) == -1) {
-		return -1;
-	} else { // archivo de tabla encontrado
-		obtenerMetadata(tabla); // 0: OK. -1: ERROR. // frenar en caso de error
-
-		int valorKey = atoi(key);
-		int particiones = determinarParticion(valorKey, metadata->particiones);
-
-		escanearParticion(particiones);
-
-		log_info(logger, "LLEGÓ ACÁ.");
-
-		char* keyEncontrado = buscarBloque(key); // GUardar memoria
-
-		// ver key con timestamp mas grande
-
-		return valorKey;
-	}
-} // int comandoSelect(char* tabla, char* key)
-
-//void insert(char* tabla, int key,char* value){
-// verificarTabla(tabla);
-// obtener el metadata de la tabla
-// verificar si existe lista a dumpear
-//
-
-//}
 
 int verificarTabla(char* tabla) {
 
@@ -577,6 +549,10 @@ int verificarTabla(char* tabla) {
 	log_info(logger,
 			"Se reservo memoria para contatenar punto de montaje con la tabla");
 	tablaAverificar = string_new();
+
+	 for(int i=0;i<strlen(tabla);i++){
+	        tabla[i] = toupper(tabla[i]);
+	        }
 
 	log_info(logger, "%s", tablaAverificar);
 	string_append(&tablaAverificar, tabla_Path);
@@ -594,15 +570,16 @@ int verificarTabla(char* tabla) {
 
 	if (file == NULL) {
 		log_error(logger, "[ERROR] No existe la tabla");
-		perror("Error al abrir tabla/archivo!!");
+		perror("Error al abrir tabla/archivo");
 		return -1;
+
 	} else {
 		log_error(logger, "[ OK ] Metadata de tabla abierto. \n");
 		fclose(file);
 		return 0;
-	} // if (file == NULL)
+	}
 
-} // int verificarTabla(char* tabla)
+}
 
 int obtenerMetadata(char* tabla) {
 
@@ -668,7 +645,7 @@ int obtenerMetadata(char* tabla) {
 	} else {
 
 		log_error(logger,
-				"[ERROR] Archivo metadata de partición no encontrado.");
+				"[ERROR] Archivo metadata de particion no encontrado.");
 
 		result = -1;
 
@@ -710,9 +687,10 @@ void retornarValoresDirectorio() {
 	}
 
 	while ((ent = readdir(dir)) != NULL) {
-		log_info(logger, "Tabla analizada= %s", ent->d_name);
+
 
 		if (strcmp(ent->d_name, ".") != 0 && strcmp(ent->d_name, "..") != 0) {
+			log_info(logger, "Tabla analizada= %s", ent->d_name);
 			verificarTabla(ent->d_name);
 			obtenerMetadata(ent->d_name);
 			retornarValores(ent->d_name);
@@ -766,13 +744,13 @@ void escanearParticion(int particion) {
 	log_info(logger, "[escanearParticion] (+) %s", tablaAverificar);
 
 	rutaParticion(particion);
-	log_info(logger, "[escanearParticion] (+) Sobreviví nro 1");
+	log_info(logger, "[escanearParticion] (+) Sobrevivi nro 1");
 	particionTabla = malloc(sizeof(t_particion));
 
 	t_config* particionFile;
 
 	particionFile = config_create(archivoParticion);
-	log_info(logger, "[escanearParticion] (+) Sobreviví nro 2");
+	log_info(logger, "[escanearParticion] (+) Sobrevivi nro 2");
 
 	FILE *file;
 	file = fopen(archivoParticion, "r");
@@ -784,7 +762,7 @@ void escanearParticion(int particion) {
 		fclose(file);
 	}
 
-	if (particion != NULL) {
+	if (particion > -1) {
 
 		log_info(logger, "LFS: Leyendo metadata de la particion...");
 
@@ -842,13 +820,13 @@ char* buscarBloque(char* key) {
 
 	string_append(&bloqueObjetivo, configFile->punto_montaje);
 
-	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo); // 1er línea de dirección
+	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo); // 1er linea de direccion
 
 	string_append(&bloqueObjetivo, PATH_BLOQUES);
 
-	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo); // 2da línea de dirección
+	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo); // 2da linea de direccion
 
-	char* bloque = malloc(sizeof(particionTabla->bloques)); // 3er línea de dirección
+	char* bloque = malloc(sizeof(particionTabla->bloques)); // 3er linea de direccion
 	bloque = particionTabla->bloques[0];
 
 	string_append(&bloqueObjetivo, "block");
@@ -857,7 +835,7 @@ char* buscarBloque(char* key) {
 	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo);
 
 	FILE *file;
-	file = fopen(bloqueObjetivo, "rt");
+	file = fopen(bloqueObjetivo, "r");
 
 	if (file == NULL) {
 		//log_error(logger, "No existe la particion");
@@ -865,16 +843,22 @@ char* buscarBloque(char* key) {
 	} else {
 
 		log_info(logger, "Abrimos Bloque");
-		char lectura;
+		//char lectura;
+		//do {
+		//	do {
+		//		lectura = fgetc(file);
+		//		printf("%c", lectura);
+		//	} while (lectura != '\n');
+		//	printf("fin de linea \n");
+		//	lectura = fgetc(file);
+		//} while (!feof(file));
 
-		do {
-			do {
-				lectura = fgetc(file);
-				printf("%c", lectura);
-			} while (lectura != '\n');
-			printf("fin de linea \n");
-			lectura = fgetc(file);
-		} while (!feof(file));
+		char linea[1024];
+
+		 while(fgets(linea, 1024, (FILE*) file)) {
+		        printf("LINEA: %s", linea);
+		    }
+
 
 		fclose(file);
 
@@ -884,25 +868,97 @@ char* buscarBloque(char* key) {
 
 }
 
-void comandoDrop(char* tabla) {
 
-	log_info(logger, "Por verificar tabla");
+void eliminarTablaCompleta(char* tabla){
 
-	verificarTabla(tabla);
+obtenerMetadata(tabla);
+
+for(int i=0;i<metadata->particiones;i++ ){
+
+rutaParticion(i);
+
+log_info(logger, "Vamos a eliminar el archivo binario  de la tabla: %s",archivoParticion);
+
+int retParticion = remove(archivoParticion);
+
+if (retParticion == 0) // Eliminamos el archivo
+			log_info(logger, "El archivo fue eliminado satisfactoriamente\n");
+		else
+			log_info(logger, "No se pudo eliminar el archivo\n");
+
+}
+
+
+
+log_info(logger, "Vamos a eliminar el metadata de la tabla: %s", path_tabla_metadata);
+
+	int retMet = remove(path_tabla_metadata);
+
+		log_info(logger, "Resultado de remove del metadata de la tabla%d", retMet);
+
+		if (retMet == 0) // Eliminamos el archivo
+			log_info(logger, "El archivo fue eliminado satisfactoriamente\n");
+		else
+			log_info(logger, "No se pudo eliminar el archivo\n");
 
 	log_info(logger, "Vamos a eliminar el directorio: %s", tablaAverificar);
 
-	if (remove(tablaAverificar) == 0) // Eliminamos el archivo
+	int retTab = remove(tablaAverificar);
+
+	log_info(logger, "Resultado de remove de la tabla %d", retTab);
+
+	if (retTab == 0) // Eliminamos el archivo
 		log_info(logger, "El archivo fue eliminado satisfactoriamente\n");
 	else
 		log_info(logger, "No se pudo eliminar el archivo\n");
 
 }
 
+char* desenmascararValue(char* value){
+
+	char* valueSinPimeraComilla = stringTomarDesdePosicion(value,1);
+	char* valueDesenmascarado = strtok(valueSinPimeraComilla,"\"");
+	log_info(logger,"el value desenmascarado es %s",valueDesenmascarado);
+	return valueDesenmascarado;
+
+}
+int comandoSelect(char* tabla, char* key) {
+
+	if (verificarTabla(tabla) == -1) {
+		return -1;
+	} else { // archivo de tabla encontrado
+		obtenerMetadata(tabla); // 0: OK. -1: ERROR. // frenar en caso de error
+
+		int valorKey = atoi(key);
+		int particiones = determinarParticion(valorKey, metadata->particiones);
+
+		escanearParticion(particiones);
+
+		char* keyEncontrado = buscarBloque(key); // GUardar memoria
+
+		// ver key con timestamp mas grande
+
+		return valorKey;
+	}
+} // int comandoSelect(char* tabla, char* key)
+
+
+void comandoDrop(char* tabla) {
+
+	log_info(logger, "Por verificar tabla");
+
+	verificarTabla(tabla);
+
+	log_info(logger, "Vamos a eliminar la tabla: %s", tablaAverificar);
+
+	eliminarTablaCompleta(tabla);
+
+}
+
 void comandoCreate(char* tabla, char* consistencia, char* particiones,
 		char* tiempoCompactacion) {
 
-	if (verificarTabla(tabla) == 0) {     // La tabla no existe, se crea
+	if (verificarTabla(tabla) == -1) {     // La tabla no existe, se crea
 
 		mkdir(tablaAverificar, 0777);
 
@@ -968,18 +1024,111 @@ void comandoCreate(char* tabla, char* consistencia, char* particiones,
 			log_info(logger, "No se pudo crear el archivo metadata \n");
 			fclose(archivoMetadata);
 		}
-
 	}
+		else {
+			log_info(logger, "La tabla ya existe \n");
+			perror("La tabla ingresada ya existe");
 
-} // void comandoCreate
+				}
 
-void comandoInsert(char* tabla) {
 
-	log_info(logger, "[comandoInsert] (+) con tabla %s.", tabla);
+}
 
-	verificarTabla(tabla);
+void comandoInsertSinTimestamp(char* tabla,char* key,char* value) {
 
-	log_info(logger, "[comandoInsert] (-) ");
+int aux = time(NULL);
+
+char timestamp[11];
+
+sprintf(timestamp, "%d", aux);
+
+log_info(logger,"el timestamp a agregar es: %s",timestamp);
+
+comandoInsert(tabla,key,value,timestamp);
+
+}
+
+
+void comandoInsert(char* tabla,char* key,char* value,char* timestamp) {
+
+char* valueDesenmascarado = desenmascararValue(value);
+
+registroPorAgregar = malloc(
+			string_length(key) + string_length(value)
+					+ string_length(timestamp));
+
+registroPorAgregar = string_new();
+
+
+	string_append(&registroPorAgregar, timestamp);
+
+	string_append(&registroPorAgregar, ";");
+
+	string_append(&registroPorAgregar, key);
+
+	string_append(&registroPorAgregar, ";");
+
+	string_append(&registroPorAgregar, valueDesenmascarado);
+
+
+	log_info(logger,"Se va a agregar el siguiente registro %s",registroPorAgregar);
+
+// Verifico que la key ya exista en el diccionario, aca se hace el dump
+
+bool keyRepetida = dictionary_has_key(diccionario,key);
+log_info(logger,"valor keyRepetida %d",keyRepetida);
+
+if(keyRepetida){
+	log_info(logger,"Encontre una key repetida");
+
+	void* keyYaExistente = dictionary_get(diccionario,key);
+
+log_info(logger,"Ya existe este registro en la memtable y es la siguiente: %s",keyYaExistente);
+
+list_add(listaKeysRepetidas,keyYaExistente);
+list_add(listaKeysRepetidas,registroPorAgregar);
+
+void* primeraPos = list_get(listaKeysRepetidas, 0);
+void* segundaPos = list_get(listaKeysRepetidas, 1);
+
+log_info(logger,"Se va a agregar el siguiente registro en la primera pos de la lista %s",primeraPos);
+log_info(logger,"Se va a agregar el siguiente registro en la segunda pos de la lista %s",segundaPos);
+
+dictionary_put(diccionario,key,listaKeysRepetidas);
+
+
+/*
+char* registroDuplicado = malloc(
+			string_length(keyYaExistente) + string_length(registroPorAgregar)
+					+ 9);
+
+
+registroDuplicado = string_new();
+
+string_append(&registroDuplicado, "[");
+string_append(&registroDuplicado, "(");
+string_append(&registroDuplicado, keyYaExistente);
+string_append(&registroDuplicado, ")");
+string_append(&registroDuplicado, ";");
+string_append(&registroDuplicado, "(");
+string_append(&registroDuplicado, registroPorAgregar);
+string_append(&registroDuplicado, ")");
+string_append(&registroDuplicado, "]");
+*/
+
+}else{
+	dictionary_put(diccionario,key,registroPorAgregar);
+
+}
+
+void* resultado = dictionary_get(diccionario,key);
+
+
+log_info(logger,"lo agregado fue: %s", resultado);
+int i = dictionary_size(diccionario);
+
+log_info(logger,"cantidad de elementos diccionario: %d", i);
+
 
 }
 

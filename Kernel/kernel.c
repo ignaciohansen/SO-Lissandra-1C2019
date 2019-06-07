@@ -10,8 +10,7 @@
 
 int main() {
 
-	// (BEGIN) LISTA COMPARTIDA POR LOS HILOS. ALMACENA LOS QUERYS A EJECUTAR.
-	list_queries = list_create();
+	id_com_t soy = KERNEL;
 
 	log_kernel = archivoLogCrear(LOG_PATH, "Proceso Kernel");
 
@@ -51,8 +50,8 @@ int main() {
 	//pthread_join(hiloConexion,NULL);
 	pthread_join(hiloConsola, NULL);
 
-	mostrarQueries(log_kernel, list_queries);
-	list_destroy(list_queries); // FREE de la lista de queries;
+	//mostrarQueries(log_kernel, list_queries);
+	//list_destroy(list_queries); // FREE de la lista de queries;
 
 	log_info(log_kernel, "Salimoooos");
 
@@ -200,11 +199,7 @@ void consola() {
 
 	menu();
 
-	char bufferComando[MAXSIZE_COMANDO];
-
 	while (1) {
-
-		//printf(">");
 
 		linea = readline(">");
 
@@ -223,10 +218,10 @@ void consola() {
 
 		planificar(linea);
 
-		char* lineaCopia = calloc(1, sizeof(linea) + 1);
-		strncpy(lineaCopia, linea, sizeof(linea) + 1);
+		//char* lineaCopia = calloc(1, sizeof(linea) + 1);
+		//strncpy(lineaCopia, linea, sizeof(linea) + 1);
 		// AÑADE LA LINEA A LA LISTA PRINCIPAL
-		list_add(list_queries, (void*) lineaCopia);
+		//list_add(list_queries, (void*) lineaCopia);
 
 		comandoSeparado = string_split(linea, separator);
 
@@ -750,7 +745,8 @@ t_pcb* crearPcb(char* comando) {
 	//En caso que sea el comando run voy a leer el archivo
 	if (comando_aux == run) {
 
-		log_info(log_kernel,"Vino Run de comando, vamos a buscar cuantas lineas tiene el archivo");
+		log_info(log_kernel,
+				"Vino Run de comando, vamos a buscar cuantas lineas tiene el archivo");
 		int aux_rafaga = rafagaComandoRun(comandoSeparado[1]);
 
 		pcbProceso->pid = countPID;
@@ -762,7 +758,7 @@ t_pcb* crearPcb(char* comando) {
 	}
 	//en caso que sea otro comando la rafaga es 1
 	else {
-		log_info(log_kernel,"En la condicion de que no es un comando RUN");
+		log_info(log_kernel, "En la condicion de que no es un comando RUN");
 		pcbProceso->pid = countPID;
 		pcbProceso->comando = comando_aux;
 		pcbProceso->rafaga = 1;
@@ -774,7 +770,8 @@ t_pcb* crearPcb(char* comando) {
 
 int rafagaComandoRun(char* path) {
 
-	log_info(log_kernel, "Vamos a buscar la cantidad de lineas que tiene el archivo");
+	log_info(log_kernel,
+			"Vamos a buscar la cantidad de lineas que tiene el archivo");
 	int caracter, contador;
 
 	contador = 0;
@@ -797,15 +794,16 @@ int rafagaComandoRun(char* path) {
 
 		while ((caracter = fgetc(fd)) != EOF) {
 
-			if(caracter == '\n'){
+			if (caracter == '\n') {
 
 				contador++;
 			}
 
-
 		}
 
-		log_info(log_kernel, "Fuera del while principal, la cantidad de lineas del archivo es: %d",contador);
+		log_info(log_kernel,
+				"Fuera del while principal, la cantidad de lineas del archivo es: %d",
+				contador);
 		rewind(fd);
 		fclose(fd);
 		free(path);
@@ -883,9 +881,15 @@ void planificar(char* linea) {
 
 	//Valido multiprocesamiento
 
-	//semaforoWait(&multiprocesamiento);
+	semaforoValor(&multiprocesamiento, &valorMultiprocesamiento);
 
-	agregarAEjecutar();
+	log_info(log_kernel,
+			"El valor del semaforo contador multiprocesamiento, antes de agregar a ejecutar un proceso es: %d",
+			valorMultiprocesamiento);
+
+	semaforoWait(&multiprocesamiento);
+
+	agregarAEjecutar(linea);
 
 	//termino
 
@@ -924,20 +928,17 @@ void agregarAListo(t_pcb* pcbParaAgregar) {
 
 }
 
-void agregarAEjecutar() {
+void agregarAEjecutar(char* linea) {
 
 	t_pcb* pcbListoParaEjecutar;
 
-	semaforoValor(&multiprocesamiento, &valorMultiprocesamiento);
+	req_com_t req;
+	req.tam = strlen(linea);
+	req.str = malloc(req.tam);
+	strcpy(req.str, linea);
 
 	log_info(log_kernel,
-			"El valor del semaforo contador multiprocesamiento, antes de agregar a ejecutar un proceso es: %d",
-			valorMultiprocesamiento);
-
-	semaforoWait(&multiprocesamiento);
-
-	log_info(log_kernel,
-			"Bloqueamos Mutex para poder insertar el elemento en la cola de listos");
+			"Bloqueamos Mutex para poder sacar el elemento en la cola de listos y colocarlo en ejecucion");
 
 	mutexBloquear(&mutexColaListos);
 	pcbListoParaEjecutar = list_remove(colaListos, 0);
@@ -952,7 +953,9 @@ void agregarAEjecutar() {
 	pcbListoParaEjecutar->estado = ejecucion;
 
 	mutexBloquear(&mutexColaEjecucion);
+	socket_CMemoria = conexionKernel();
 	list_add(colaEjecucion, pcbListoParaEjecutar);
+	enviar_request(socket_CMemoria,req);
 	mutexDesbloquear(&mutexColaEjecucion);
 
 	log_info(log_kernel,

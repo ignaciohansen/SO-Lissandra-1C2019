@@ -3,7 +3,7 @@
 
 #include "../Biblioteca/src/Biblioteca.c"
 #include <commons/collections/list.h>
-#include <stdio.h>
+#include <commons/collections/dictionary.h>
 
 //Agregadas para directorio
 #include <stdlib.h>
@@ -13,6 +13,8 @@
 #include <dirent.h>
 #include <string.h>
 #include <errno.h>
+#include <time.h>
+
 
 
 #define PATH_BIN ".bin"
@@ -106,6 +108,9 @@ t_metadata_LFS* metadataLFS;
 
 sem_t semaforoQueries;
 
+t_dictionary* diccionario;
+t_list * listaKeysRepetidas;
+
 /*--------------------------------------------------------------------------------------------
  * 									Elementos de comandos
  *--------------------------------------------------------------------------------------------
@@ -114,8 +119,12 @@ sem_t semaforoQueries;
 char* tablaAverificar; // directorio de la tabla
 char* path_tabla_metadata;
 char* archivoParticion;
+char* registroPorAgregar;
+
 
 int comandoSelect(char* tabla, char* key);
+void comandoInsertSinTimestamp(char* tabla,char* key,char* value);
+void comandoInsert(char* tabla,char* key,char* value,char* timestamp);
 void comandoDrop(char* tabla);
 void comandoCreate(char* tabla,char* consistencia,char* particiones,char* tiempoCompactacion);
 void comandoDescribeEspecifico(char* tabla);
@@ -133,3 +142,7 @@ void retornarValoresDirectorio();
 void escanearParticion(int particion);
 
 char* buscarBloque(char* key);
+
+void eliminarTablaCompleta(char* tabla);
+
+char* desenmascararValue(char* value);

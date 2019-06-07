@@ -29,6 +29,7 @@
 #include "commons/string.h"
 #include <commons/collections/queue.h>
 #include "commons/collections/list.h"
+#include "commons/collections/dictionary.h"
 #include "commons/temporal.h"
 #include "commons/bitarray.h"
 #include <stdint.h>
@@ -345,3 +346,5 @@ void memoriaLiberar(Puntero puntero);
 void configuracionSenialHijo(int senial);
 void imprimirMensajeProceso(String mensaje);
 void fileLimpiar(String ruta);
+
+msg_com_t recibir_mensaje(int conexion);
