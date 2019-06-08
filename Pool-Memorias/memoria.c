@@ -49,7 +49,7 @@ int main() {
 	printf("INICIANDO EL MODULO MEMORIA");
 	inicioLogYConfig();
 
-	//---crearConexionesConOtrosProcesos(); // conecta con LFS y puede que con kernel.
+	crearConexionesConOtrosProcesos(); // conecta con LFS y puede que con kernel.
 
 	printf("HACIENDO MEMORIA");
 	aux_crear_pagina = malloc(sizeof(pagina));
@@ -249,7 +249,7 @@ void armarMemoriaPrincipal() {
 
 
 	cantPaginasDisponibles = tamanioMemoria/tamanioPagina;
-	cantPaginasDisponibles = 10;
+//	cantPaginasDisponibles = 10;
 
 //memoria->paginasTotales = cantPaginasDisponibles;
 	cantPaginasTotales = cantPaginasDisponibles;
