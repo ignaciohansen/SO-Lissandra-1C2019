@@ -7,8 +7,8 @@ int main() {
 	// LOGGING
 	printf("INICIANDO EL MODULO MEMORIA");
 	inicioLogYConfig();
-
-	crearConexionesConOtrosProcesos(); // conecta con LFS y puede que con kernel.
+//NDESPUES LO SACO
+//	crearConexionesConOtrosProcesos(); // conecta con LFS y puede que con kernel.
 	printf("HACIENDO MEMORIA");
 	aux_crear_pagina = malloc(sizeof(pagina));
 	aux_devolver_pagina = malloc(sizeof(pagina_a_devolver));
@@ -45,7 +45,7 @@ int main() {
 
     selectHardcodeado(10, 0, informacion);
 
-    insertHardcodeado(1, 11, informacion, "sdf", "123");
+    insertHardcodeado(1, 11, informacion, "123", "asd");
     selectHardcodeado(10, 0, informacion);
 
     free(nuevaPag);
@@ -480,6 +480,7 @@ void levantarServidor() {
 	str_com_t string;
 
 	msg_com_t recibido;
+
 	// SOCKET
 	socketEscuchaKernel = nuevoSocket(log_memoria);  // CREAR SOCKET
 	if (socketEscuchaKernel == ERROR) {                // CASO DE ERROR.
@@ -580,10 +581,12 @@ void levantarServidor() {
 
 		printf("\n\n***Me llego un request***");
 		log_info(log_memoria, "***Me llego un request***");
+
 		string = procesar_request(recibido);
 		borrar_mensaje(recibido);
 		printf("\n\nRequest: %s", string.str);
 		log_info(log_memoria, "Request: %s", string.str);
+
 
 		log_info(log_memoria, "Fin de parseo");
 		printf("Fin de parseo. \n");
@@ -593,48 +596,47 @@ void levantarServidor() {
 }
 
 void crearHIloEscucharKernel() {
-pthread_t hiloEscucharKernel;
-log_info(log_memoria,
+	pthread_t hiloEscucharKernel;
+	log_info(log_memoria,
 		"[HILO SERVER] *** HILO CREADO PARA ESCUCHA PERMANENTE *** ");
-hiloCrear(&hiloEscucharKernel, (void*) escucharConexionKernel, NULL);
+	hiloCrear(&hiloEscucharKernel, (void*) escucharConexionKernel, NULL);
 
 // NO SE SI DEBE ESTAR ASI, LO DEJO POR SI ACASO
-pthread_detach(hiloEscucharKernel);
-log_info(log_memoria, "[HILO SERVER] ESCUCHANDO A LOS CLIENTES");
+	pthread_detach(hiloEscucharKernel);
+		log_info(log_memoria, "[HILO SERVER] ESCUCHANDO A LOS CLIENTES");
 }
 
 void escucharConexionKernel() {
-socketEscuchar(socketEscuchaKernel    // SOCKET
-		, 10, log_memoria); // LOG
-str_com_t string;
-
-msg_com_t recibido;
-while (1) {
-	log_info(log_memoria, " +++ esperando conexiones... +++ ");
-	conexionEntrante = aceptarConexionSocket(socketEscuchaKernel, log_memoria);
-	if (conexionEntrante == ERROR) {
+	socketEscuchar(socketEscuchaKernel    // SOCKET
+						, 10, log_memoria); // LOG
+	str_com_t string;
+	msg_com_t recibido;
+	while (1) {
+		log_info(log_memoria, " +++ esperando conexiones... +++ ");
+		conexionEntrante = aceptarConexionSocket(socketEscuchaKernel, log_memoria);
+			if (conexionEntrante == ERROR) {
 		log_error(log_memoria, "ERROR AL CONECTAR.");
 		abortarProcesoPorUnErrorImportante(log_memoria,
 				"El socket que escucha a Kernel no se conecto");
 
-	}/*
-	 buffer = malloc( 10 * sizeof(char) );
+			}
+			buffer = malloc( 10 * sizeof(char) );
 
-	 recibiendoMensaje = socketRecibir(conexionEntrante, buffer, 10, log_memoria);
-	 log_info(log_memoria, "Recibimos por socket %s",buffer);
-	 log_info(log_memoria,"El mensaje que se recibio fue %s", buffer);*/
+			recibiendoMensaje = socketRecibir(conexionEntrante, buffer, 10, log_memoria);
+				log_info(log_memoria, "Recibimos por socket %s",buffer);
+				log_info(log_memoria,"El mensaje que se recibio fue %s", buffer);
 
-	log_info(log_memoria, "Por llamar a recibir mensaje");
-	recibido = recibir_mensaje(conexionEntrante);
+				log_info(log_memoria, "Por llamar a recibir mensaje");
+				recibido = recibir_mensaje(conexionEntrante);
 
-	printf("\n\n***Me llego un request***");
-	log_info(log_memoria, "***Me llego un request***");
-	string = procesar_request(recibido);
-	borrar_mensaje(recibido);
-	printf("\n\nRequest: %s", string.str);
-	log_info(log_memoria, "Request: %s", string.str);
+				printf("\n\n***Me llego un request***");
+				log_info(log_memoria, "***Me llego un request***");
+				string = procesar_request(recibido);
+				borrar_mensaje(recibido);
+			printf("\n\nRequest: %s", string.str);
+			log_info(log_memoria, "Request: %s", string.str);
 
-}
+	}
 }
 
 /*-----------------------------------------------------------------------------
@@ -1318,7 +1320,8 @@ void incrementarAccesoDeKey(int pos){
 	segmento* seg_aux = tablaSegmentos;
 	pagina_referenciada* ref;
 	int anterior;
-	log_info(log_memoria, "[INCREMENTAR ACCESO EN 1] Entrando, empiezo a buscar la tabla de pagina con numero '%d'", pos);
+	log_info(log_memoria, "[INCREMENTAR ACCESO EN 1] Entrando, empiezo a buscar la tabla de pagina con numero '%d'"
+			, pos);
 	while(seg_aux!=NULL){
 		log_info(log_memoria, "[INCREMENTAR ACCESO EN 1] En la tabla '%s'", seg_aux->path_tabla);
 		ref = seg_aux->paginasAsocida;
@@ -1334,8 +1337,9 @@ void incrementarAccesoDeKey(int pos){
 			}
 			ref = ref->sig;
 		}
-		log_info(log_memoria, "[INCREMENTAR ACCESO EN 1] NO se encontro, paso a otro segmento");
+
 		seg_aux = seg_aux->siguienteSegmento;
+		log_info(log_memoria, "[INCREMENTAR ACCESO EN 1] NO se encontro, paso a otro segmento");
 	}
 	log_error(log_memoria, "[INCREMENTAR ACCESO EN 1] ERROR, ALGO PASO POR AQUI");
 	return;
@@ -1465,15 +1469,17 @@ int buscarKeyPorTablaPagina(pagina_referenciada* tabla_pagina_auxx, u_int16_t ke
 	mutexBloquear(&mutex_pagina_referenciada_aux2);
 //	log_info(log_memoria, "[Buscar Key Por Tabla PAGINA] Por buscar la KEY '%d' en la pagina '%d'",
 //			posicionABuscar, keyBuscada);
-	aux_tabla_paginas2 = tabla_pagina_auxx;
-	while(aux_tabla_paginas2!=NULL){
-		if(aux_tabla_paginas2->key==keyBuscada){
+	pagina_referenciada* aux_referencia = tabla_pagina_auxx;
+
+
+	while(aux_referencia!=NULL){
+		if(aux_referencia->key==keyBuscada){
 			log_info(log_memoria, "[Buscar Key Por Tabla PAGINA] SE ENCONTRO LA PAGINA PARA LA KEY EN LA POSICION PARA LA KEY|POSICION %d|%d",
-						keyBuscada, aux_tabla_paginas2->nropagina);
+						keyBuscada, aux_referencia->nropagina);
 			mutexDesbloquear(&mutex_pagina_referenciada_aux2);
-			return aux_tabla_paginas2->nropagina;
+			return aux_referencia->nropagina;
 		}
-		aux_tabla_paginas2 = aux_tabla_paginas2->sig;
+		aux_referencia = aux_referencia->sig;
 	}
 
 	log_info(log_memoria, "[Buscar Key Por Tabla PAGINA] NO SE ENCONTRO LA PAGINA PARA LA KEY EN LA POSICION PARA LA KEY%d",
@@ -1489,21 +1495,22 @@ int buscarEntreTodasLasTablaPaginasLaKey(pagina_referenciada* tablasAsociadasASe
 
 		int i =-1;
 	mutexBloquear(&mutex_pagina_referenciada_aux2);
-	aux_tabla_paginas2 = tablasAsociadasASegmento;
+	pagina_referenciada* tablaasociadaaux = tablasAsociadasASegmento;
+
 	//	log_info(log_memoria, "[Buscar Key Por Tabla PAGINA] Por buscar la KEY '%d' en la pagina '%d'",
 	//			posicionABuscar, keyBuscada);
 	int posicionDeLaKey = buscarEnMemoriaLaKey(keyBuscada);
 
-	while(aux_tabla_paginas2!=NULL){
-		if(aux_tabla_paginas2->nropagina==posicionDeLaKey){
+	while(tablaasociadaaux!=NULL){
+		if(tablaasociadaaux->nropagina==posicionDeLaKey){
 			log_info(log_memoria, "[Buscar Key Por Tabla PAGINA] SE ENCONTRO LA PAGINA PARA LA KEY EN LA POSICION PARA LA KEY|POSICION %d|%d",
-				keyBuscada, aux_tabla_paginas2->nropagina);
-			aux_tabla_paginas2->vecesAccedido +=1;
-			i= aux_tabla_paginas2->nropagina;
+				keyBuscada, tablaasociadaaux->nropagina);
+			tablaasociadaaux->vecesAccedido +=1;
+			i= tablaasociadaaux->nropagina;
 			mutexDesbloquear(&mutex_pagina_referenciada_aux2);
 			return i;
 		}
-		aux_tabla_paginas2 = aux_tabla_paginas2->sig;
+		tablaasociadaaux = tablaasociadaaux->sig;
 	}
 	mutexDesbloquear(&mutex_pagina_referenciada_aux2);
 	log_info(log_memoria, "[Buscar Key Por Tabla PAGINA] NO SE ENCONTRO LA PAGINA PARA LA KEY EN LA POSICION PARA LA KEY%d",
@@ -1552,7 +1559,9 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner){
 	segmento* segmentoBuscado = NULL;
 	pagina_referenciada* ref = malloc(sizeof(pagina_referenciada));
 	log_info(log_memoria, "[INSERT] Me pongo a buscar el segmento y la tabla en base a '%s' y '%d'", nombreTabla, keyBuscada);
-	int posicionAIr = buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(nombreTabla, keyBuscada, &segmentoBuscado, &nroPosicion);
+	int posicionAIr =
+			buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(nombreTabla, keyBuscada,
+															&segmentoBuscado, &nroPosicion);
 
 	if(posicionAIr==-1){
 		log_info(log_memoria, "[INSERT] NO se encontro la posicion a donde debo ir");
@@ -1603,10 +1612,11 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner){
 		 * SE CREO PERFECTAMENTE, CONOSCO EL SEGMENTO Y LA PAGINA A REFERENCIAR, PROCEDO A MODIFICAR Y ACCEDER
 		 * A LA MEMORIA PARA LA MODIFICACION DE LOS CAMPOS
 		 */
-		log_info(log_memoria, "[INSERT] Existe el segmento '%s' y la pagina que referencia la key (%d) que es NRO '%d'\nProcedo a poner el nuevo valor que es '%s'",
-				nombreTabla, keyBuscada, posicionAIr, valorAPoner);
+		log_info(log_memoria, "[INSERT A MODIFICAR]\nExiste el segmento '%s' y la pagina que referencia la key (%d) que es NRO '%d'\nProcedo a poner el nuevo valor que es '%s'",
+				segmentoBuscado->path_tabla, keyBuscada, posicionAIr, valorAPoner);
 		free(ref);
-		free(segmentoBuscado);
+
+	//	free(segmentoBuscado);
 		modificarValoresDeTablaYMemoriaAsociadasAKEY(posicionAIr, valorAPoner, nroPosicion);
 	}
 	/*log_info(log_memoria, "[INSERT HECHO] Compruebo si se agrego segmentos y tabla de paginas bien");
@@ -1632,23 +1642,42 @@ void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo, 
 
 	strcpy(valorString, valorNuevo);
 
-	log_info(log_memoria, "[Modificar valor pagina] Pagina modificada con key '%d' VALORES NUEVOS;  TIMESTAMP '%d'; VALOR '%s'",
-											aux->key, aux->timestamp, valorString);
+	log_info(log_memoria,
+"[Modificar valor pagina] Pagina modificada con key '%d' VALORES NUEVOS;  TIMESTAMP '%f'; VALOR '%s'",
+											aux->key, aux->timestamp, valorNuevo);
 
-	log_info(log_memoria, "[MOdificar valor pagina] Guardando los datos actualizados la pagina con key: %d", aux->key);
-	memcpy(bloque_memoria+posAIr*(sizeof(aux)+max_valor_key), aux, sizeof(aux));
-	log_info(log_memoria, "[MOdificar valor pagina] key: '%d', VALOR NUEVO: %s", aux->key, valorString);
+	log_info(log_memoria,
+			"[MOdificar valor pagina] Guardando los datos actualizados la pagina con key: %d",
+			aux->key);
 
 
-	log_info(log_memoria, "[MOdificar valor tabla pagina] Actualizar FLAG de tabla pagina asociada a la key: %d", aux->key);
+	printf("\n\nEN MODIFICACION NUEVO TIMESTAMP: %d - %f\n\n", aux->key, aux->timestamp);
+
+
+	memcpy(bloque_memoria+posAIr*(sizeof(pagina)+max_valor_key), aux, sizeof(pagina));
+	memcpy(bloque_memoria+posAIr*(sizeof(pagina)+max_valor_key)+sizeof(pagina)-1, valorString, max_valor_key);
+	log_info(log_memoria,
+			"[MOdificar valor pagina] key: '%d', VALOR NUEVO: %s",
+			aux->key, valorString);
+
+
+	log_info(log_memoria,
+			"[MOdificar valor tabla pagina] Actualizar FLAG de tabla pagina asociada a la key: %d",
+			aux->key);
 	actualizarFlagDeLaKey(aux->key);
 
-	log_info(log_memoria, "[MOdificar valor tabla pagina] FLAG ACTUALIZADO EN MODIFICADO PARA LA TABLA DE LA KEY|NRO DE PAGINA: %d|%d", aux->key, nroPosicion);
+	log_info(log_memoria,
+"[MOdificar valor tabla pagina] FLAG ACTUALIZADO EN MODIFICADO PARA LA TABLA DE LA KEY|NRO DE PAGINA: %d|%d",
+	aux->key, nroPosicion);
 
-	log_info(log_memoria, "[Modificar valor pagina] Se ham modificado el FLAG de la tabla KEY|NRO DE PAGINA: %d|%d", aux->key,nroPosicion);
+	log_info(log_memoria,
+			"[Modificar valor pagina] Se ham modificado el FLAG de la tabla KEY|NRO DE PAGINA: %d|%d",
+			aux->key,nroPosicion);
 	free(aux);
-	log_info(log_memoria, "[Modificar valor pagina] Desbloqueo el MUTEX mutex_tabla_pagina_en_modificacion");
-	log_info(log_memoria, "[Modificar valores de pagina] Saliendo");
+	log_info(log_memoria,
+			"[Modificar valor pagina] Desbloqueo el MUTEX mutex_tabla_pagina_en_modificacion");
+	log_info(log_memoria,
+			"[Modificar valores de pagina] Saliendo");
 	mutexDesbloquear(&mutex_memoria);
 	mutexDesbloquear(&mutex_tabla_pagina_en_modificacion);
 }
@@ -1695,50 +1724,53 @@ void LRU(pagina* paginaCreada, int* nroAsignado, char* valor){
 	 */
 	mutexBloquear(&ACCIONLRU);
 	log_info(log_memoria, "[LRU] Comenzando el LRU, empiezo a buscar la pagina a reemplazar");
-	segmento* auxSeg = tablaSegmentos, auxSeg2;
-	pagina_a_devolver* aux_pag_devolver;
+	segmento* seg_aux = tablaSegmentos;
 	pagina_referenciada* ref;
-	int i, minHastaAHora =-1, candidatoAQuitar = -1;
-	for(i=0;i<cantPaginasTotales;i++){
-		aux_pag_devolver = selectObtenerDatos(i, false);
+
+	int minHastaAHora =-1, candidatoAQuitar = -1;
+//	for(i=0;i<cantPaginasTotales;i++){
+//		aux_pag_devolver = selectObtenerDatos(i, false);
 		//BUSCAR EN SEGMENTO Y TABLA D EPAGINA LA CANTIDAD DE VECES ACCEDIDAS
-		log_info(log_memoria, "[LRU] Obtuve datos de la pagina y tambien KEY %d|%d", i, aux_pag_devolver->key);
+//		log_info(log_memoria, "[LRU] Obtuve datos de la pagina y tambien KEY %d|%d", i, aux_pag_devolver->key);
 		log_info(log_memoria, "[LRU] Busco la key entre los segmentos y tabla de paginas");
-		if(auxSeg!=NULL){
+		while(seg_aux!=NULL){
 			//
-			ref = auxSeg->paginasAsocida;
+			ref = seg_aux->paginasAsocida;
 			while(ref!=NULL){
 		//		if(ref->key== aux_pag_devolver->key) {
 					if(ref->flag==true){
 						log_info(log_memoria,
-								"[LRU] \nLa cantidad de accesos que tuvo la pagina nro: '%d' fue de '%d'\nEL minimo actual es: '%d'",
-								ref->nropagina, ref->vecesAccedido, minHastaAHora);
+								"[LRU] \nLa cantidad de accesos que tuvo la pagina nro: '%d' fue de '%d'\nEL minimo actual es: '%d'\nY el candidato para reemplazar es: '%d'",
+								ref->nropagina, ref->vecesAccedido, minHastaAHora, candidatoAQuitar);
 						if(minHastaAHora==-1){
 							log_info(log_memoria, "[LRU] Se encontro la tabla de pagina y no fue actualizada, es candidato a quitar");
 							minHastaAHora = ref->vecesAccedido;
-						    candidatoAQuitar=i;
+						    candidatoAQuitar=ref->nropagina;
 							log_info(log_memoria, "[LRU Actualizo candidato] Pagina|MAX Cantidad de veces accedidas hasta ahora: %d|%d", candidatoAQuitar, minHastaAHora);
 					//		ref = NULL;
 						}
 						else {
 							if(minHastaAHora>ref->vecesAccedido){
-							log_info(log_memoria, "[LRU] Se encontro la tabla de pagina y no fue actualizada, es candidato a quitar");
-							minHastaAHora = ref->vecesAccedido;
-							candidatoAQuitar=i;
-							log_info(log_memoria, "[LRU Actualizo candidato] Pagina|MAX Cantidad de veces accedidas hasta ahora: %d|%d", candidatoAQuitar, minHastaAHora);
-					//		ref = NULL;
+							log_info(log_memoria,
+									"[LRU] Se encontro la tabla de pagina y no fue actualizada, es candidato a quitar");
+								minHastaAHora = ref->vecesAccedido;
+								candidatoAQuitar=ref->nropagina;
+								log_info(log_memoria,
+										"[LRU Actualizo candidato] Pagina|MAX Cantidad de veces accedidas hasta ahora: %d|%d", candidatoAQuitar, minHastaAHora);
+								//		ref = NULL;
+							} else {
+								log_info(log_memoria,
+										"[LRU] No se encontro un nuevo candidato, busco otro");
 							}
 						}
 		//			}
 
-				}
-				log_info(log_memoria, "[LRU] No se encontro candidato, paso al siguiente segmento");
+					}
 				ref = ref->sig;
 			}
+			log_info(log_memoria, "[LRU] Paso al siguiente segmento");
+			seg_aux = seg_aux->siguienteSegmento;
 		}
-		free(aux_pag_devolver);
-	}
-
 	if(candidatoAQuitar<0){
 				log_info(log_memoria, "[LRU sin candidato] NO hay nada que se puede quitar, por lo tanto se fuerza un JOURNAL");
 				JOURNAL();
