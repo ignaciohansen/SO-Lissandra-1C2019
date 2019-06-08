@@ -1,6 +1,47 @@
 #include "memoria.h"
+#include "parser.h"
 
 void terminar_memoria(t_log* g_log);
+int buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(char* nombreTabla, u_int16_t keyBuscada,
+		segmento** segmentoBuscado, int* nroDePagina);
+
+void consola_prueba() {
+	void* informacion = malloc(sizeof(pagina)+max_valor_key);
+	int fin = 0, aux;
+	pagina_a_devolver* pagina;
+	request_t req;
+	segmento *seg;
+	int pag;
+	char *linea;
+	printf("\n\n");
+	while(!fin){
+		linea = readline(">>");
+		req = parser(linea);
+		free(linea);
+		switch(req.command){
+			case INSERT:
+				printf("\nInsertando: <%s><%d><%s>\n\n",req.args[0],atoi(req.args[1]),req.args[2]);
+				if(funcionInsert(req.args[0],atoi(req.args[1]),req.args[2])== -1)
+					printf("Mayor al max value\n\n");
+				break;
+			case SELECT:
+				printf("\nObteniendo: <%s><%d>\n\n",req.args[0],atoi(req.args[1]));
+				pag = buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(req.args[0],atoi(req.args[1]),&seg,&aux);
+				pagina = selectPaginaPorPosicion(pag,informacion);
+				printf("\nValor<%d>: %s\n",pagina->key,pagina->value);
+				break;
+			default:
+				fin = 1;
+				break;
+		}
+		borrar_request(req);
+
+	}
+	free(informacion);
+}
+
+
+
 
 int main() {
 
@@ -8,7 +49,7 @@ int main() {
 	printf("INICIANDO EL MODULO MEMORIA");
 	inicioLogYConfig();
 
-	crearConexionesConOtrosProcesos(); // conecta con LFS y puede que con kernel.
+	//---crearConexionesConOtrosProcesos(); // conecta con LFS y puede que con kernel.
 	printf("HACIENDO MEMORIA");
 	aux_crear_pagina = malloc(sizeof(pagina));
 	aux_devolver_pagina = malloc(sizeof(pagina_a_devolver));
@@ -18,7 +59,7 @@ int main() {
 //	aux_tabla_paginas=malloc(sizeof(tabla_pagina));
 //    ejecutarHiloConsola();
 
-	arc_config->max_value_key = 4;
+	arc_config->max_value_key = 20;
 	max_valor_key = arc_config->max_value_key;
 	armarMemoriaPrincipal();
 
@@ -30,30 +71,30 @@ int main() {
 
     void* informacion = malloc(sizeof(pagina)+max_valor_key);
     int i =0;
-
-	pagina* nuevaPag =malloc(sizeof(pagina));
+    consola_prueba();
+/*	pagina* nuevaPag =malloc(sizeof(pagina));
 
     insertHardcodeado(5, 0, informacion, "h", "hola");
-    insertHardcodeado(5, 5, informacion, "Que", "psd");
+   //---insertHardcodeado(5, 5, informacion, "Que", "psd");
 
     selectHardcodeado(3, 0, informacion);
 
     printf("COMIENZO CON 2° TANDA\n\n");
 
-    insertHardcodeado(1, 0, informacion, "XYC", "hola");
-    insertHardcodeado(1, 1, informacion, "pos", "hola");
+    //---insertHardcodeado(1, 0, informacion, "XYC", "hola");
+    //---insertHardcodeado(1, 1, informacion, "pos", "hola");
 
-    selectHardcodeado(10, 0, informacion);
+    //---selectHardcodeado(10, 0, informacion);
 
-    insertHardcodeado(1, 11, informacion, "sdf", "123");
-    selectHardcodeado(10, 0, informacion);
+    //---insertHardcodeado(1, 11, informacion, "sdf", "123");
+    //---selectHardcodeado(10, 0, informacion);
 
     free(nuevaPag);
-    	printf("TERMINADO");
+*/
+    	printf("TERMINADO\n");
   //  	free(pagina_obtenida->value);
    // 	free(pagina_obtenida);
     	free(informacion);
-
     //    ejecutarHiloConsola();
     	liberar_todo_por_cierre_de_modulo();
     	return 0;
@@ -1538,7 +1579,7 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner){
 	 * 		b* NO encontado, creo el la tabla, pagina y segmentovalorAPoner (en este orden)
 	 */
 	log_info(log_memoria, "[INSERT] EN funcion INSERT");
-	if(strlen(valorAPoner)>max_valor_key){
+	if(strlen(valorAPoner)>=max_valor_key){
 		log_error(log_memoria, "[INSERT] El valor VALUE '%s' es mayor que el max value KEY\nMOTIVO: %d Mayor que %d",
 				valorAPoner, strlen(valorAPoner), max_valor_key);
 		return -1;
