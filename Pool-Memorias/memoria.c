@@ -8,7 +8,7 @@ int main() {
 	printf("INICIANDO EL MODULO MEMORIA");
 	inicioLogYConfig();
 //NDESPUES LO SACO
-//	crearConexionesConOtrosProcesos(); // conecta con LFS y puede que con kernel.
+	crearConexionesConOtrosProcesos(); // conecta con LFS y puede que con kernel.
 	printf("HACIENDO MEMORIA");
 	aux_crear_pagina = malloc(sizeof(pagina));
 	aux_devolver_pagina = malloc(sizeof(pagina_a_devolver));
@@ -16,7 +16,7 @@ int main() {
 	aux_tabla_paginas = malloc(sizeof(pagina_referenciada));
 	aux_tabla_paginas2 = malloc(sizeof(pagina_referenciada));
 //	aux_tabla_paginas=malloc(sizeof(tabla_pagina));
-//    ejecutarHiloConsola();
+    ejecutarHiloConsola();
 
 	arc_config->max_value_key = 4;
 	max_valor_key = arc_config->max_value_key;
@@ -34,7 +34,7 @@ int main() {
 	pagina* nuevaPag =malloc(sizeof(pagina));
 
     insertHardcodeado(5, 0, informacion, "h", "hola");
-    insertHardcodeado(5, 5, informacion, "Que", "psd");
+    insertHardcodeado(5, 5, informacion, "Qued", "psd");
 
     selectHardcodeado(3, 0, informacion);
 
