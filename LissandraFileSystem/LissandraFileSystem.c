@@ -32,6 +32,8 @@ int main() {
 
 	LisandraSetUP(); // CONFIGURACION Y SETEO SOCKET
 
+	cargarBitmap();
+
 	pthread_t* hiloListening, hiloConsola, hiloEjecutor;
 	pthread_create(&hiloConsola, NULL, (void*) consola, NULL);
 	pthread_create(&hiloListening, NULL, (void*) listenSomeLQL, NULL);
@@ -62,11 +64,16 @@ void LisandraSetUP() {
 	imprimirVerde(logger,
 			"[LOG CREADO] continuamos cargando la estructura de configuracion.");
 
-	if (cargarConfiguracion()) {
-		//SI SE CARGO BIEN LA CONFIGURACION ENTONCES PROCESO DE ABRIR UN SERVIDOR
-		imprimirMensajeProceso("Levantando el servidor del proceso Lisandra");
-		abrirServidorLissandra();
+	if (cargarConfiguracion() ) {
+		if(!obtenerMetadata()){
+			//SI SE CARGO BIEN LA CONFIGURACION ENTONCES PROCESO DE ABRIR UN SERVIDOR
+			imprimirMensajeProceso("Levantando el servidor del proceso Lisandra");
+			abrirServidorLissandra();
+		}
 	}
+
+	log_info(logger, "la configuracion y la metadata se levantaron ok");
+
 	diccionario = dictionary_create();
 	listaKeysRepetidas = list_create();
 }
@@ -248,6 +255,183 @@ bool cargarConfiguracion() {
 	}
 
 }
+
+int existeArchivo(char* path){
+    FILE* reader=fopen(path,"r");
+    if(reader==NULL)
+        return false;
+    fclose(reader);
+    return true;
+}
+
+int32_t sizeFile(char* path){
+    FILE *aux = fopen(path,"r");
+    if(aux==NULL)
+        return -1;
+    fseek(aux,0,SEEK_END);
+    int32_t size=ftell(aux);
+    fclose(aux);
+    return size;
+}
+
+int32_t createBlockSize(int32_t size){
+    FILE* writer;
+    writer=fopen(bitmapPath,"w");
+    if(writer == NULL)
+        return 1;
+    char a=0;
+    fwrite(&a,1,size,writer);
+    fclose(writer);
+    return 0;
+}
+
+int32_t createBitmap(int32_t cantBloques){
+    int bytesAEscribir=cantBloques/8;
+    if(cantBloques%8!=0)
+        bytesAEscribir++;
+    createBlockSize(bytesAEscribir);
+    return 0;
+}
+
+void cargarBitmap() {
+
+	bitmapPath = malloc(sizeof(char)*50);
+	bitmapPath = string_new();
+
+	string_append(&bitmapPath, configFile->punto_montaje);
+
+	string_append(&bitmapPath, PATH_LFILESYSTEM_BITMAP);
+
+	log_info(logger, "ruta del bitmap: %s", bitmapPath);
+
+	if(!existeArchivo(bitmapPath) || sizeFile(bitmapPath) != (metadataLFS->blocks /8)) {
+		log_info(log,"Archivo de bitmap no existe o tiene un tamaño incorrecto, creando de cero");
+		createBitmap(metadataLFS->blocks);
+
+	}
+	else {
+		log_info(logger, "existe archivo");
+		bitarray = crearBitarray();
+	}
+
+	log_info(logger, "cantidad de bloques libres: %d", cantBloquesLibresBitmap());
+	log_info(logger, "cantidad de bloques ocupados: %d", cantidadBloquesOcupadosBitmap());
+	ocuparBloqueLibreBitmap(3);
+	log_info(logger, "ocupando bloque: %d", 3);
+	log_info(logger, "se ocupo bien? tiene que ser 1: %d", estadoBloqueBitmap(3));
+	log_info(logger, "okey... vamos a liberarlo: %d", liberarBloqueBitmap(3));
+	log_info(logger, "se ocupo bien? tiene que ser 0: %d", estadoBloqueBitmap(3));
+	log_info(logger, "primer bloque libre: %d", obtenerPrimerBloqueLibreBitmap());
+}
+
+t_bitarray* crearBitarray() {
+
+	bytesAEscribir= metadataLFS->blocks / 8;
+
+	if(metadataLFS->blocks%8 != 0)
+		bytesAEscribir++;
+
+	char* bitarrayAux = malloc(bytesAEscribir);
+
+	FILE* archivoBitmap = fopen(bitmapPath, "rb");
+
+	if(archivoBitmap == NULL){
+		imprimirError(logger, "El archivoBitmap no se pudo abrir correctamente");
+		exit(-1);
+	}
+
+	fread(bitarrayAux, bytesAEscribir, 1, archivoBitmap);
+
+	fclose(archivoBitmap);
+
+	return bitarray_create_with_mode(bitarrayAux, bytesAEscribir, MSB_FIRST);
+
+}
+
+void persistirCambioBitmap() {
+
+	FILE* archivoBitmap = fopen(bitmapPath, "wb");bitarray = crearBitarray();
+	fwrite(bitarray->bitarray, bytesAEscribir, 1, archivoBitmap);
+
+	fclose(archivoBitmap);
+
+}
+
+int cantBloquesLibresBitmap() {
+	int cantidad = 0;
+
+	for(int i=0; i<bitarray_get_max_bit(bitarray); i++){
+		if(bitarray_test_bit(bitarray, i) == 0){
+			cantidad++;
+		}
+	}
+
+	return cantidad;
+}
+
+int estadoBloqueBitmap(int bloque) {
+
+	return bitarray_test_bit(bitarray, bloque);
+}
+
+int ocuparBloqueLibreBitmap(int bloque) {
+
+	bitarray_set_bit(bitarray, bloque);
+	persistirCambioBitmap();
+
+	return 0;
+}
+
+int liberarBloqueBitmap(int bloque) {
+
+	bitarray_clean_bit(bitarray, bloque);
+	persistirCambioBitmap();
+
+	return 0;
+}
+
+int obtenerPrimerBloqueLibreBitmap() {
+
+	int posicion;
+
+	for(int i=0; i<bitarray_get_max_bit(bitarray); i++){
+		if(bitarray_test_bit(bitarray, i) == 0){
+			posicion = i;
+			break;
+		}
+	}
+
+	return posicion;
+}
+
+int obtenerPrimerBloqueOcupadoBitmap() {
+
+	int posicion;
+
+	for(int i=0; i<bitarray_get_max_bit(bitarray); i++){
+		if(bitarray_test_bit(bitarray, i) == 1){
+			posicion = i;
+			break;
+		}
+	}
+
+	return posicion;
+}
+
+int cantidadBloquesOcupadosBitmap() {
+
+	int cantidad = 0;
+
+		for(int i=0; i<bitarray_get_max_bit(bitarray); i++){
+			if(bitarray_test_bit(bitarray, i) == 1){
+				cantidad++;
+			}
+		}
+
+		return cantidad;
+}
+
+
 
 void consola() {
 
@@ -581,7 +765,7 @@ int verificarTabla(char* tabla) {
 
 }
 
-int obtenerMetadata(char* tabla) {
+int obtenerMetadataTabla(char* tabla) {
 
 	log_info(logger, "[obtenerMetadata] (+) metadata a abrir : %s",
 			path_tabla_metadata);
@@ -661,7 +845,97 @@ int obtenerMetadata(char* tabla) {
 
 	return result;
 
-} // int obtenerMetadata()
+}
+
+int obtenerMetadata() {
+
+	log_info(logger, "levantando metadata del File System");
+
+	int result = 0;
+
+	metadataLFS = malloc(sizeof(t_metadata_LFS)); // Vatiable global.
+
+	char* metadataPath = malloc(sizeof(char)*50);
+	metadataPath = string_new();
+
+	string_append(&metadataPath, configFile->punto_montaje);
+
+	string_append(&metadataPath, PATH_LFILESYSTEM_METADATA);
+
+	log_info(logger, "ruta de la metadata: %s", metadataPath);
+
+	t_config* metadataFile;
+	metadataFile = config_create(metadataPath);
+
+	if (metadataFile != NULL) {
+
+		log_info(logger, "LFS: Leyendo metadata...");
+
+		if (config_has_property(metadataFile, "BLOCK_SIZE")) {
+
+			log_info(logger, "Almacenando tamaño de bloque");
+			// PROBLEMA.
+			metadataLFS->block_size = config_get_int_value(metadataFile,
+					"BLOCK_SIZE");
+
+			log_info(logger, "el tamaño del bloque es: %d", metadataLFS->block_size);
+
+		} else {
+
+			log_error(logger, "El metadata no contiene el tamañano de bloque [BLOCK_SIZE]");
+
+		} // if (config_has_property(metadataFile, "CONSISTENCY"))
+
+		if (config_has_property(metadataFile, "BLOCKS")) {
+
+			log_info(logger, "Almacenando cantidad de bloques");
+
+			metadataLFS->blocks = config_get_int_value(metadataFile,
+					"BLOCKS");
+
+			log_info(logger, "La cantidad de bloques es: %d", metadataLFS->blocks);
+
+		} else {
+
+			log_error(logger, "El metadata no contiene cantidad de bloques [BLOCKS]");
+
+		} // if (config_has_property(metadataFile, "PARTITIONS"))
+
+		if (config_has_property(metadataFile, "MAGIC_NUMBER")) {
+
+			log_info(logger, "Almacenando magic number");
+
+			metadataLFS->magic_number = config_get_string_value(metadataFile,
+					"MAGIC_NUMBER");
+
+			log_info(logger, "el magic number es: %s",
+					metadataLFS->magic_number);
+
+		} else {
+
+			log_error(logger,
+					"El metadata no contiene el magic number [MAGIC_NUMBER]");
+
+		} // if (config_has_property(metadataFile, "COMPACTION_TIME"))
+
+	} else {
+
+		log_error(logger,
+				"[ERROR] Archivo metadata de file system no encontrado.");
+
+		result = -1;
+
+	} // if (metadataFile != NULL)
+
+	log_info(logger,
+			"[FREE] variable metadataFile utlizada para navegar el metadata.");
+
+	free(metadataFile);
+
+	log_info(logger, "result: %d", result);
+
+	return result;
+}
 
 void retornarValores(char* tabla) {
 
@@ -692,7 +966,7 @@ void retornarValoresDirectorio() {
 		if (strcmp(ent->d_name, ".") != 0 && strcmp(ent->d_name, "..") != 0) {
 			log_info(logger, "Tabla analizada= %s", ent->d_name);
 			verificarTabla(ent->d_name);
-			obtenerMetadata(ent->d_name);
+			obtenerMetadataTabla(ent->d_name);
 			retornarValores(ent->d_name);
 		}
 	}
@@ -871,7 +1145,7 @@ char* buscarBloque(char* key) {
 
 void eliminarTablaCompleta(char* tabla){
 
-obtenerMetadata(tabla);
+obtenerMetadataTabla(tabla);
 
 for(int i=0;i<metadata->particiones;i++ ){
 
@@ -927,7 +1201,7 @@ int comandoSelect(char* tabla, char* key) {
 	if (verificarTabla(tabla) == -1) {
 		return -1;
 	} else { // archivo de tabla encontrado
-		obtenerMetadata(tabla); // 0: OK. -1: ERROR. // frenar en caso de error
+		obtenerMetadataTabla(tabla); // 0: OK. -1: ERROR. // frenar en caso de error
 
 		int valorKey = atoi(key);
 		int particiones = determinarParticion(valorKey, metadata->particiones);
@@ -1135,7 +1409,7 @@ log_info(logger,"cantidad de elementos diccionario: %d", i);
 void comandoDescribeEspecifico(char* tabla) {
 
 	verificarTabla(tabla);
-	obtenerMetadata(tabla);
+	obtenerMetadataTabla(tabla);
 	retornarValores(tabla);
 
 }

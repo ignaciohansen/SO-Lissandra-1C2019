@@ -4,6 +4,7 @@
 #include "../Biblioteca/src/Biblioteca.c"
 #include <commons/collections/list.h>
 #include <commons/collections/dictionary.h>
+#include <commons/bitarray.h>
 
 //Agregadas para directorio
 #include <stdlib.h>
@@ -20,6 +21,8 @@
 #define PATH_BIN ".bin"
 #define PATH_BLOQUES "/Bloques/"
 #define PATH_LFILESYSTEM_CONFIG "../Config/LFS_CONFIG.txt"
+#define PATH_LFILESYSTEM_METADATA "/Metadata/Metadata"
+#define PATH_LFILESYSTEM_BITMAP "/Metadata/Bitmap.bin"
 #define LOG_PATH "../Log/LOG_LFS.txt"
 #define TABLE_PATH "../Tables/"
 
@@ -73,8 +76,6 @@ char *separator = " ";
  */
 void listenSomeLQL();
 
-#endif /* LFILESSYSTEM_H_ */
-
 /*--------------------------------------------------------------------------------------------
  * 									Estructura metadatas
  *--------------------------------------------------------------------------------------------
@@ -121,7 +122,6 @@ char* path_tabla_metadata;
 char* archivoParticion;
 char* registroPorAgregar;
 
-
 int comandoSelect(char* tabla, char* key);
 void comandoInsertSinTimestamp(char* tabla,char* key,char* value);
 void comandoInsert(char* tabla,char* key,char* value,char* timestamp);
@@ -130,8 +130,26 @@ void comandoCreate(char* tabla,char* consistencia,char* particiones,char* tiempo
 void comandoDescribeEspecifico(char* tabla);
 void comandoDescribe();
 
+/*--------------------------------------------------------------------------------------------
+ * 									Elementos de bitmap
+ *--------------------------------------------------------------------------------------------
+ */
 
-int obtenerMetadata(char* tabla);
+char* bitmapPath;
+
+int bytesAEscribir;
+
+void cargarBitmap();
+t_bitarray* crearBitarray();
+
+/*--------------------------------------------------------------------------------------------
+ * 									Otros
+ *--------------------------------------------------------------------------------------------
+ */
+
+int obtenerMetadataTabla(char* tabla);
+
+int obtenerMetadata();
 
 int verificarTabla(char* tabla);
 
@@ -146,3 +164,5 @@ char* buscarBloque(char* key);
 void eliminarTablaCompleta(char* tabla);
 
 char* desenmascararValue(char* value);
+
+#endif /* LFILESSYSTEM_H_ */
