@@ -29,7 +29,6 @@
 #include "commons/string.h"
 #include <commons/collections/queue.h>
 #include "commons/collections/list.h"
-#include "commons/collections/dictionary.h"
 #include "commons/temporal.h"
 #include "commons/bitarray.h"
 #include <stdint.h>
@@ -147,6 +146,28 @@ enum comandos{
 	salir
 	
 };
+
+/* Tipos de datos */
+
+//Tipos de mensaje soportados
+typedef enum
+{
+	GOSSIPING,
+	REQUEST,
+	ERRORCOMANDO,
+	HANDSHAKECOMANDO,
+	DESCONECTADO //Lo agregué para poder detectar y manejar la caída del servidor
+} conexion_t;
+
+//Identificación del tipo de proceso
+typedef enum
+{
+	LFS,
+	MEMORIA,
+	KERNEL,
+	RECHAZADO
+} id_com_t;
+
 
 //FUNCIONES PARA ABORTAR UN PROCESO
 void abortarProcesoPorUnError(t_log log, char* mensaje);
@@ -347,4 +368,36 @@ void configuracionSenialHijo(int senial);
 void imprimirMensajeProceso(String mensaje);
 void fileLimpiar(String ruta);
 
-msg_com_t recibir_mensaje(int conexion);
+
+/************************************PROTOCOLO ****************************************************/
+//String de tamaño 'tam'
+typedef struct{
+	int tam;
+	char *str;
+} str_com_t;
+
+//Por el momento dijimos que un request es un string
+typedef str_com_t req_com_t;
+
+//Por el momento dijimos que un error es un string
+typedef str_com_t error_com_t;
+
+//Hanshake. Tiene un id y puede tener un string. Si seteamos en 0 el tam del msg, este no se envía.
+typedef struct
+{
+	id_com_t id;
+	str_com_t msg;
+} handshake_com_t;
+
+//Buffer. Similar a un string pero sin caracter de fin de cadena
+typedef struct{
+	int tam;
+	void *stream;
+} buffer_com_t;
+
+//Mensaje crudo, sin procesar. Sólo se identifica el tipo de mensaje
+typedef struct{
+	conexion_t tipo;
+	buffer_com_t payload;
+} msg_com_t;
+
