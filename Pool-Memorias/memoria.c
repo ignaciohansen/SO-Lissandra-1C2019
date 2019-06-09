@@ -46,10 +46,10 @@ void consola_prueba() {
 int main() {
 
 	// LOGGING
-	printf("INICIANDO EL MODULO MEMORIA");
+	printf("INICIANDO EL MODULO MEMORIA \n COMINEZA EL TP PIBE\n\n");
 	inicioLogYConfig();
 
-	crearConexionesConOtrosProcesos(); // conecta con LFS y puede que con kernel.
+//	crearConexionesConOtrosProcesos(); // conecta con LFS y puede que con kernel.
 
 	printf("HACIENDO MEMORIA");
 	aux_crear_pagina = malloc(sizeof(pagina));
@@ -58,7 +58,7 @@ int main() {
 	aux_tabla_paginas = malloc(sizeof(pagina_referenciada));
 	aux_tabla_paginas2 = malloc(sizeof(pagina_referenciada));
 //	aux_tabla_paginas=malloc(sizeof(tabla_pagina));
-    ejecutarHiloConsola();
+//    ejecutarHiloConsola();
 
 	arc_config->max_value_key = 20;
 	max_valor_key = arc_config->max_value_key;
@@ -71,8 +71,67 @@ int main() {
 //    infoPagina* infoPag = malloc(sizeof(infoPag));
 
     void* informacion = malloc(sizeof(pagina)+max_valor_key);
-    int i =0;
-    consola_prueba();
+    int i =0, nroDePagina;
+//    consola_prueba();
+    segmento* seg;
+
+
+    pagina_a_devolver* pagina;
+    int pag;
+    printf("\nPASO 0");
+    insertHardcodeado(1, 0, informacion, "1", "hola");
+
+  // selectHardcodeado(1, 0, informacion);
+    log_info(log_memoria, "\n\n[PASAMOS]\n\n");
+   pag = buscarEntreLosSegmentosLaPosicionXNombreTablaYKey("hola", 100, &seg, &nroDePagina);
+   log_info(log_memoria, "\n\n[PASAMOS]\n\n");
+
+   pagina = selectPaginaPorPosicion(pag,informacion);
+       printf("\nValor<%d>: %s\n",pagina->key,pagina->value);
+
+       log_info(log_memoria, "\n\n[PASAMOS]\n\n");
+       free(pagina->value);
+       free(pagina);
+       /*
+    pag = buscarEntreLosSegmentosLaPosicionXNombreTablaYKey("hola", 100, &seg, &nroDePagina);
+
+    pagina = selectPaginaPorPosicion(pag,informacion);
+    				printf("\nValor<%d>: %s\n",pagina->key,pagina->value);
+    				*/
+
+    log_info(log_memoria, "\n\n\nEMPIEZA TEST\n\n\n");
+    insertHardcodeado(1, 0, informacion, "25", "psd");
+
+
+    log_info(log_memoria, "\n\n\nEMPIEZA BUSQUEDAD\n\n\n");
+    pagina = malloc(sizeof(pagina_a_devolver));
+ //   pagina->value = malloc(max_valor_key);
+    if (funcionSelect("hola", 100, &pagina)){
+    	printf("BIEN\n");
+    } else {
+    	printf("MAL\n");
+    }
+    if (funcionSelect("psd", 100, &pagina)){
+        	printf("BIEN\n");
+        } else {
+        	printf("MAL\n");
+        }
+    if (funcionSelect("psd", 1010, &pagina)){
+            	printf("BIEN\n");
+            } else {
+            	printf("MAL\n");
+            }
+ //   free(pagina->value);
+    free(pagina);
+/*
+    pag = buscarEntreLosSegmentosLaPosicionXNombreTablaYKey("hola", 100, &seg, &nroDePagina);
+
+    pagina = selectPaginaPorPosicion(pag,informacion);
+       				printf("\nValor<%d>: %s\n",pagina->key,pagina->value);
+*/
+
+//   selectHardcodeado(1, 0, informacion);
+
 /*	pagina* nuevaPag =malloc(sizeof(pagina));
 
     insertHardcodeado(5, 0, informacion, "h", "hola");
@@ -102,8 +161,37 @@ int main() {
     	return 0;
 }
 
+int funcionSelect(char* nombreTablaAIr, u_int16_t keyBuscada, pagina_a_devolver** dato){
+	int direccionPagina, nroDePagina;
+	segmento *seg;
+	pagina_a_devolver* datos_a_devolver;
+	void* informacion = malloc(sizeof(pagina)+max_valor_key);
+	log_info(log_memoria, "[FUNCION SELECT] ENTRANDO POR NUEVA PETICION\nValor de key de los datos solicitados:\n\nSEGMENTO: %s\nKEY: %d",
+			nombreTablaAIr, keyBuscada);
+	direccionPagina = buscarEntreLosSegmentosLaPosicionXNombreTablaYKey
+			(nombreTablaAIr, keyBuscada, &seg, &nroDePagina);
+
+	if(direccionPagina==-1){
+			log_info(log_memoria, "[FUNCION SELECT] ERROR, NO SE ENCONTRO NADA, DEVUELVO ERROR");
+			free(informacion);
+			return 0;
+		}
+	log_info(log_memoria, "[FUNCION SELECT] Numero de pagina a donde debo ir: %d\nMe pongo a buscar los datos\n", direccionPagina);
+
+	datos_a_devolver = selectPaginaPorPosicion(direccionPagina,informacion);
+
+	log_info(log_memoria, "[FUNCION SELECT] Se encontro los datos");
+	memcpy(*dato, datos_a_devolver, sizeof(pagina_a_devolver));
+	//ESTO LUEGO SE PODRIA COMENTAR PERO ES PARA ASEGURARNOS DE QUE RETORNA ALGO
+	printf("\nValor<%d>: %s\n",datos_a_devolver->key,datos_a_devolver->value);
+	free(datos_a_devolver->value);
+	free(datos_a_devolver);
+	free(informacion);
+	return 1;
+}
+
 void insertHardcodeado(int cant, int inicio, void* info, char* valorNuevo, char* nombreTabla){
-	int i, key = 100;
+	int i;
 	log_info(log_memoria, "\n\n[X Insertar datos] Insertando datos en '%s'\n\nValor a poner ['%s']\n", nombreTabla, valorNuevo);
 	for(i=inicio; i<cant+inicio; i++){
 	     printf("\nComienzo el insert NRO %d\n", i);
@@ -111,7 +199,7 @@ void insertHardcodeado(int cant, int inicio, void* info, char* valorNuevo, char*
 	        printf("Se hizo el insert NRO %d\n", i);
 
 	    } else {
-	     printf("ERROR CON %s\n", valorNuevo);
+	    	printf("ERROR CON %s\n", valorNuevo);
 	    }
 	}
 }
@@ -1287,7 +1375,7 @@ pagina_a_devolver* selectObtenerDatos(int nroDePaginaAIr, bool necesitoValue){
 	void* informacion = malloc(sizeof(pagina)+max_valor_key);
 	log_info(log_memoria, "[Obtener Datos] Me pongo a buscar la pagina requerida");
 	informacion = accederYObtenerInfoDePaginaEnPosicion(nroDePaginaAIr, informacion);
-
+	mutexDesbloquear(&mutex_memoria);
 //	mutexBloquear(&mutex_pagina_auxiliar);
 	memcpy(pag_con_datos, informacion, sizeof(pagina));
 
@@ -1296,7 +1384,7 @@ pagina_a_devolver* selectObtenerDatos(int nroDePaginaAIr, bool necesitoValue){
 		pag->value = malloc(max_valor_key+1);
 		memcpy(&pag->value, informacion+sizeof(pagina)-1, max_valor_key);
 	}
-	mutexDesbloquear(&mutex_memoria);
+
 
 	pag->key=pag_con_datos->key;
 	pag->timestamp=pag_con_datos->timestamp;
@@ -1342,6 +1430,7 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, void* info){
 	devolver->timestamp=pag->timestamp;
 	memcpy(devolver->value, info+sizeof(pagina)-1, max_valor_key);
 	log_info(log_memoria, "[SELECT] Datos obtenidos de la posicion '%d'", posicion);
+
 	free(pag);
 	mutexDesbloquear(&mutex_memoria);
 	mutexDesbloquear(&mutex_tabla_pagina_en_modificacion);
@@ -1353,6 +1442,7 @@ void* accederYObtenerInfoDePaginaEnPosicion(int posicion, void* info){
 	log_info(log_memoria, "[ACCEDIENDO A DATOS] Por acceder a la memoria a la posicion '%d'", posicion);
 //	mutexBloquear(&mutex_tabla_pagina_en_modificacion);
 	info = obtenerInfoDePagina(posicion, info);
+//	mutexDesbloquear(&mutex_memoria);
 	log_info(log_memoria, "[ACCEDIENDO A DATOS] Datos obtenidos de la posicion '%d'", posicion);
 //	mutexDesbloquear(&mutex_tabla_pagina_en_modificacion);
 
@@ -1398,7 +1488,10 @@ void incrementarAccesoDeKey(int pos){
 
 
 //ESTO SOLO SIRVE CUANDO SE INSERTAN NUEVOS ELEMENTOS A MEMORIA
-void tabla_pagina_crear(u_int16_t key, char* valor, bool flag_modificado, pagina_referenciada** devolver) {
+void tabla_pagina_crear(
+		u_int16_t key, char* valor, bool flag_modificado,
+		pagina_referenciada** devolver, char* nombreTabla,
+		bool existeSegmento, segmento* segmetnoApuntado) {
 	char valor_string[max_valor_key];
 	log_info(log_memoria, "[Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key %d", key);
 
@@ -1421,32 +1514,45 @@ void tabla_pagina_crear(u_int16_t key, char* valor, bool flag_modificado, pagina
 
 
 		//MIENTRAS EST{E BLOQUEADO, NO SE PUEDE QUITAR O PONER NUEVAS PAGINAS
-	log_info(log_memoria, "[Crear Tabla y pagina] Verifico si hay espacio libre en Memoria");
-	posicionAsignada = buscarPaginaDisponible(key);
+	log_info(log_memoria,
+			"[Crear Tabla y pagina] Verifico si hay espacio libre en Memoria");
+	posicionAsignada = buscarPaginaDisponible(key, existeSegmento, nombreTabla, segmetnoApuntado);
 	if(posicionAsignada==-1){
-		log_info(log_memoria, "[Crear Tabla y pagina] NO hay espacio libre por lo tanto activo el LRU");
+		log_info(log_memoria,
+
+				"[Crear Tabla y pagina] NO hay espacio libre por lo tanto activo el LRU");
 		//SIGNIFICA QUE LLEGO AL TOPE DE PAGINAS EN MEMORIA
 		//O SEA ESTAN TODAS OCUPADAS, APLICO LRU
 		mutexBloquear(&LRUMutex);
 		LRU(crear_pagina(key, valor, -1), &posicionAsignada, valor);
 		pag_ref->nropagina=posicionAsignada;
 		mutexDesbloquear(&LRUMutex);
-		log_info(log_memoria, "[Crear Tabla y pagina] LRU FINALIZADO, posicion de pagina NRO: %d", posicionAsignada);
+		log_info(log_memoria,
+				"[Crear Tabla y pagina] LRU FINALIZADO, posicion de pagina NRO: %d",
+				posicionAsignada);
 
 	} else {
 
-		log_info(log_memoria, "[Crear Tabla y pagina] La pagina '%d' esta LIBRES y la usare para guardar la pagina", posicionAsignada);
+		log_info(log_memoria,
+				"[Crear Tabla y pagina] La pagina '%d' esta LIBRES y la usare para guardar la pagina",
+
+				posicionAsignada);
 		//AUN HAY ESPACIO, GAURDO ESTA NUEVA PAGINA EN ALGUNA POSICION LIBRE
 	//	pag_ref->nropagina=posicionAsignada;
-		log_info(log_memoria, "[Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina");
+		log_info(log_memoria,
+				"[Crear Tabla y pagina] Asigno el espacio libre a la tabla pagina y a la pagina");
 	//	aux_pag = actualizarPosicionAPagina(aux_crear_pagina, posicionAsignada);
-		log_info(log_memoria, "[Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion");
+		log_info(log_memoria,
+				"[Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion");
 
-		asignarNuevaPaginaALaPosicion(posicionAsignada, crear_pagina(key, valor, posicionAsignada), valor_string);
+		asignarNuevaPaginaALaPosicion(posicionAsignada,
+				crear_pagina(key, valor, posicionAsignada), valor_string);
 		pag_ref->nropagina=posicionAsignada;
-		log_info(log_memoria, "[Crear Tabla y pagina] ASIGNACION COMPLETADA");
+		log_info(log_memoria,
+				"[Crear Tabla y pagina] ASIGNACION COMPLETADA");
 	}
-	log_info(log_memoria, "[Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion");
+	log_info(log_memoria,
+			"[Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion");
 	memcpy(*devolver, pag_ref, sizeof(pagina_referenciada));
 	free(pag_ref);
 	mutexDesbloquear(&mutex_tabla_pagina_en_modificacion);
@@ -1534,25 +1640,42 @@ int buscarKeyPorTablaPagina(pagina_referenciada* tabla_pagina_auxx, u_int16_t ke
 
 //INTENTA BUSCAR EN QUE POSICION DE LA MEMORIA CONTIGUA SE ENCUNETRA LA PAGINA CON ESA KEY
 
-int buscarEntreTodasLasTablaPaginasLaKey(pagina_referenciada* tablasAsociadasASegmento,	u_int16_t keyBuscada){
+int buscarEntreTodasLasTablaPaginasLaKey(pagina_referenciada* tablasAsociadasASegmento,
+		u_int16_t keyBuscada){
 
 		int i =-1;
 	mutexBloquear(&mutex_pagina_referenciada_aux2);
 	pagina_referenciada* tablaasociadaaux = tablasAsociadasASegmento;
-
+	pagina_a_devolver* pagina_devolver;
 	//	log_info(log_memoria, "[Buscar Key Por Tabla PAGINA] Por buscar la KEY '%d' en la pagina '%d'",
 	//			posicionABuscar, keyBuscada);
-	int posicionDeLaKey = buscarEnMemoriaLaKey(keyBuscada);
-
+//	int posicionDeLaKey = buscarEnMemoriaLaKey(keyBuscada);
+	void* informacion;
+	log_info(log_memoria, "[Buscar Key Por Tabla PAGINA] Por buscar la KEY '%d'", keyBuscada);
 	while(tablaasociadaaux!=NULL){
-		if(tablaasociadaaux->nropagina==posicionDeLaKey){
-			log_info(log_memoria, "[Buscar Key Por Tabla PAGINA] SE ENCONTRO LA PAGINA PARA LA KEY EN LA POSICION PARA LA KEY|POSICION %d|%d",
+		informacion = malloc(sizeof(pagina)+max_valor_key);
+		pagina_devolver = selectPaginaPorPosicion(tablaasociadaaux->nropagina, informacion);
+
+		if(pagina_devolver->key==keyBuscada){
+			log_info(log_memoria, "[Buscar Key Por Tabla PAGINA] SE ENCONTRO LA KEY EN LA POSICION PARA LA KEY|POSICION %d|%d",
 				keyBuscada, tablaasociadaaux->nropagina);
-			tablaasociadaaux->vecesAccedido +=1;
+		//	tablaasociadaaux->vecesAccedido +=1;
 			i= tablaasociadaaux->nropagina;
+	//		free(pagina_devolver);
+	//		free(informacion);
+			free(pagina_devolver->value);
+			free(pagina_devolver);
+			free(informacion);
+			mutexDesbloquear(&mutex_memoria);
 			mutexDesbloquear(&mutex_pagina_referenciada_aux2);
 			return i;
 		}
+//		free(pagina_devolver);
+	//	free(informacion);
+		free(informacion);
+		free(pagina_devolver->value);
+		free(pagina_devolver);
+		mutexBloquear(&mutex_memoria);
 		tablaasociadaaux = tablaasociadaaux->sig;
 	}
 	mutexDesbloquear(&mutex_pagina_referenciada_aux2);
@@ -1566,18 +1689,26 @@ int buscarEntreTodasLasTablaPaginasLaKey(pagina_referenciada* tablasAsociadasASe
 //Trata de buscar entre todos los segmentos la key buscada a partir de la key  y nombre tabla
 
 //1* PARTE PARA BUSCAR UJNA KEY, usada principalmente para select
-int buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(char* nombreTabla, u_int16_t keyBuscada,
-		segmento** segmentoBuscado, int* nroDePagina){
-	log_info(log_memoria, "[Buscar Key] Empiezo a buscar la key '%d' perteneciente a la tabla '%s'", keyBuscada, nombreTabla);
+int buscarEntreLosSegmentosLaPosicionXNombreTablaYKey
+	(char* nombreTabla, u_int16_t keyBuscada,
+		segmento** segmentoBuscado, int* nroDePagina)
+{
+	log_info(log_memoria,
+			"[Buscar Key] Empiezo a buscar la key '%d' perteneciente a la tabla '%s'",
+			keyBuscada, nombreTabla);
 	segmento* seg_aux = buscarSegmentoPorNombreTabla(nombreTabla);
 	*segmentoBuscado = seg_aux;
 	if(seg_aux!=NULL){
 		//EXISTE EL SEGMENTO
-		log_info(log_memoria, "[Buscar Key] Se encontro el segmento con nombre '%s'", nombreTabla);
+		log_info(log_memoria,
+				"[Buscar Key] Se encontro el segmento con nombre '%s'",
+				seg_aux->path_tabla);
 		return buscarEntreTodasLasTablaPaginasLaKey(seg_aux->paginasAsocida, keyBuscada);
 	}
 	//NO EXISTE EL SEGMENTO
-	log_info(log_memoria, "[Buscar Key] NO EXISTE NINGUN SEGMENTO ASOCIADA A '%s'; Devuelvo ERROR", nombreTabla);
+	log_info(log_memoria,
+			"[Buscar Key] NO EXISTE NINGUN SEGMENTO ASOCIADA A '%s'; Devuelvo ERROR",
+			nombreTabla);
 	return -1;
 }
 
@@ -1601,7 +1732,8 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner){
 	log_info(log_memoria, "[INSERT] EN funcion INSERT");
 	segmento* segmentoBuscado = NULL;
 	pagina_referenciada* ref = malloc(sizeof(pagina_referenciada));
-	log_info(log_memoria, "[INSERT] Me pongo a buscar el segmento y la tabla en base a '%s' y '%d'", nombreTabla, keyBuscada);
+	log_info(log_memoria, "[INSERT] Me pongo a buscar el segmento y la tabla en base a '%s' y '%d'",
+			nombreTabla, keyBuscada);
 	int posicionAIr =
 			buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(nombreTabla, keyBuscada,
 															&segmentoBuscado, &nroPosicion);
@@ -1610,21 +1742,22 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner){
 		log_info(log_memoria, "[INSERT] NO se encontro la posicion a donde debo ir");
 		//CASO B, verifico si se encontro el segmento, caso contrario debo tambien crearlo
 		if(segmentoBuscado==NULL){
-			log_info(log_memoria, "[INSERT] Tampoco se encontro que existe un segmento asociado a la tabla '%s'/nProcedo a crear el segmento, tabla de pagina y alojar la pagina en memoria", nombreTabla);
+			log_info(log_memoria, "[INSERT] Tampoco se encontro que existe un segmento asociado a la tabla '%s'/nProcedo a crear el segmento, tabla de pagina y alojar la pagina en memoria",
+						nombreTabla);
 			//NO SE ENCONTRO NINGUN SEGMENTO CON EL NOMBRE DE LA TABLA BUSCADA POR LO TANTO DEBO CREARLA
 
 	//		log_info(log_memoria, "[INSERT] Se ha creado una tabla de pagina, el nro de su posicion es '%d'", nroTablaCreada);
-			tabla_pagina_crear(keyBuscada, valorAPoner, true, &ref);
-
+			tabla_pagina_crear(keyBuscada, valorAPoner, true, &ref, nombreTabla, false, segmentoBuscado);
 			log_info(log_memoria, "[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|TRUE", ref->nropagina, ref->key);
 			segmentoBuscado = segmento_crear(nombreTabla, ref);
 			log_info(log_memoria, "[INSERT] SEGMENTO Creado para la tabla '%s' /nComo es el primer segmento TABLA SEGMENTOS apuntara este elemento", segmentoBuscado->path_tabla);
 			tablaSegmentos = segmentoBuscado;
 			log_info(log_memoria, "[INSERT] Se ha creado un segmento para la tabla '%s'", nombreTabla);
 		} else {
-			log_info(log_memoria, "[INSERT] Se encontro un segmento asociado a la tabla '%s'", segmentoBuscado->path_tabla);
+			log_info(log_memoria, "[INSERT] Se encontro un segmento asociado a la tabla '%s'",
+					segmentoBuscado->path_tabla);
 			//EXISTE EL SEGMENTO, SOLO CREO LA TABLA Y LA PAGINA Y SE LA ASIGNO A LA COLA DE TABLA DE PAGINAS DE SEGMENTO
-			tabla_pagina_crear(keyBuscada, valorAPoner, true, &ref);
+			tabla_pagina_crear(keyBuscada, valorAPoner, true, &ref, nombreTabla, true, segmentoBuscado);
 			pagina_referenciada* ref3 = segmentoBuscado->paginasAsocida;
 			while(ref3->sig!=NULL){
 				ref3=ref3->sig;
@@ -1651,6 +1784,8 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner){
 	//		free(ref);
 		}
 	} else {
+		printf("[INSERT A MODIFICAR]\nExiste el segmento '%s' y la pagina que referencia la key (%d) que es NRO '%d'\nProcedo a poner el nuevo valor que es '%s'\n\n",
+				segmentoBuscado->path_tabla, keyBuscada, posicionAIr, valorAPoner);
 		/*
 		 * SE CREO PERFECTAMENTE, CONOSCO EL SEGMENTO Y LA PAGINA A REFERENCIAR, PROCEDO A MODIFICAR Y ACCEDER
 		 * A LA MEMORIA PARA LA MODIFICACION DE LOS CAMPOS
@@ -1979,38 +2114,53 @@ segmento* buscarSegmentoPorNombreTabla(char* nombreTabla){
 	return NULL;
 }
 
-int buscarPaginaDisponible(u_int16_t key){
-	int i, proximaPosLibre = 0;
+int buscarPaginaDisponible(u_int16_t key, bool existiaTabla,
+		char* nombreTabla, segmento* segmetnoApuntado){
+	int i;
 	pagina_a_devolver* pag;
-	log_info(log_memoria, "[BITMAP] Verifico si tiene espacio libre del total de paginas que son: '%d'",
-			cantPaginasTotales);
+	pagina_referenciada* pagina_referenciada;
+
 	mutexBloquear(&mutex_bitmap);
+	log_info(log_memoria, "[BITMAP] Verifico si tiene espacio libre del total de paginas que son: '%d'",
+				cantPaginasTotales);
+
+	if(existiaTabla){
+		log_info(log_memoria, "[BITMAP] Busco key [%d] en el segmento '%s'",
+					key, segmetnoApuntado->path_tabla);
+		pagina_referenciada = segmetnoApuntado->paginasAsocida;
+		while(pagina_referenciada!=NULL){
+			pag = selectObtenerDatos(pagina_referenciada->nropagina, false);
+			log_info(log_memoria, "[BITMAP] Obtuve la pagina de la posicion '%d' y tiene key '%d' y busco la key '%d'",
+					pagina_referenciada->nropagina, pag->key, key);
+			if(pag->key == key){
+				log_info(log_memoria, "\n[BITMAP] La posicion LIBRE: '%d'\n",
+						pagina_referenciada->nropagina, key);
+				free(pag);
+				mutexDesbloquear(&mutex_bitmap);
+				return pagina_referenciada->nropagina;
+			}
+			log_info(log_memoria, "[BITMAP] La posicion '%d' NO esta  libre,\n paso al siguiente BITMAP",
+				pagina_referenciada->nropagina, key);
+
+			free(pag);
+			pagina_referenciada = pagina_referenciada->sig;
+		}
+		log_info(log_memoria, "[BITMAP]\n No se encontro en el segmento  '%s' la key '%d' buscad\nPaso a crearla!",
+				segmetnoApuntado->path_tabla, key);
+		mutexDesbloquear(&mutex_bitmap);
+		return -1;
+	}
+
 	for(i=0;i<cantPaginasTotales;i++){
-
-	//	log_info(log_memoria, "[BITMAP] BITMAP de la posicion '%d' esta %d",
-	//			i, !bitmapBitOcupado(bitmap, i));
-
+		log_info(log_memoria, "[BITMAP] Busco la siguiente posicion libre para la key [%d]", i);
 		if(!bitmapBitOcupado(bitmap, i)){
 			//esta libre la posicion
 			log_info(log_memoria, "[BITMAP] La posicion '%d' esta libre", i);
 			mutexDesbloquear(&mutex_bitmap);
 			return i;
-		} else {
-			log_info(log_memoria, "[BITMAP] La posicion '%d' esta NO libre pero verifico si tiene la misma key la cual es '%d'", i, key);
-			pag = selectObtenerDatos(i, false);
-			log_info(log_memoria, "[BITMAP] Obtuve la pagina de la posicion '%d' y tiene key '%d' y busco la key '%d'", i, pag->key, key);
-
-			if(pag->key == key){
-				log_info(log_memoria, "[BITMAP] La posicion '%d' contiene a la key '%d' por lo tanto la devuelvo", i, key);
-				mutexDesbloquear(&mutex_bitmap);
-	//			free(pag->value);
-				free(pag);
-				return  i;
-			}
-	//		free(pag->value);
-			free(pag);
 		}
 	}
+	log_info(log_memoria, "[BITMAP] YA NO EXISTEN POSICIONES LIBRE EN EL BITMAP");
 	mutexDesbloquear(&mutex_bitmap);
 	return -1;
 

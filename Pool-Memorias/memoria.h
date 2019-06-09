@@ -225,7 +225,10 @@ pagina_a_devolver* selectPaginaPorPosicion(int pos, void* info);
 	* @DESC: Crea una lista
 	*/
 
-	void tabla_pagina_crear(u_int16_t key, char* valor, bool flag_modificado, pagina_referenciada** devolver);
+	void tabla_pagina_crear(
+			u_int16_t key, char* valor, bool flag_modificado,
+			pagina_referenciada** devolver, char* nombreTabla,
+			bool existeSegmento, segmento* segmetnoApuntado);
 //	pagina * pagina_crear(long timestamp, int16_t key, char * valor);
 	pagina* pagina_crear(long timestampNuevo, u_int16_t key, char * valor, char* nombreTabla);
 	//EL DE ABAJO CREA LA UNIDAD, EL DE ARRIBA DESPUES MANDA A BUSCAR EL SEGMENTO
@@ -332,6 +335,7 @@ pagina_a_devolver* selectPaginaPorPosicion(int pos, void* info);
  * NUEVAS FUNCIONES
  */
 	int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner);
+	int funcionSelect(char* nombreTablaAIr, u_int16_t keyBuscada, pagina_a_devolver** datos_a_devolver);
 
 	void LRU(pagina* paginaCreada, int* nroAsignado, char* value);
 
@@ -341,7 +345,7 @@ pagina_a_devolver* selectPaginaPorPosicion(int pos, void* info);
 
 	void pasarValoresALisandra(char* datos);
 
-	int buscarPaginaDisponible(u_int16_t key);
+	int buscarPaginaDisponible(u_int16_t key, bool existiaTabla, char* nombreTabla, segmento* segmetnoApuntado);
 
 
 void selectHardcodeado(int cant, int inicio, void* info);
