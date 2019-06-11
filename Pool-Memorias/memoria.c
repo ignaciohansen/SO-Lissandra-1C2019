@@ -70,92 +70,12 @@ int main() {
 	//   max_valor_key=6;
 //    infoPagina* infoPag = malloc(sizeof(infoPag));
 
-    void* informacion = malloc(sizeof(pagina)+max_valor_key);
-    int i =0, nroDePagina;
-//    consola_prueba();
-    segmento* seg;
 
+    consola_prueba();
 
-    pagina_a_devolver* pagina;
-    int pag;
-    printf("\nPASO 0");
-    insertHardcodeado(1, 0, informacion, "1", "hola");
-
-  // selectHardcodeado(1, 0, informacion);
-    log_info(log_memoria, "\n\n[PASAMOS]\n\n");
-   pag = buscarEntreLosSegmentosLaPosicionXNombreTablaYKey("hola", 100, &seg, &nroDePagina);
-   log_info(log_memoria, "\n\n[PASAMOS]\n\n");
-
-   pagina = selectPaginaPorPosicion(pag,informacion);
-       printf("\nValor<%d>: %s\n",pagina->key,pagina->value);
-
-       log_info(log_memoria, "\n\n[PASAMOS]\n\n");
-       free(pagina->value);
-       free(pagina);
-       /*
-    pag = buscarEntreLosSegmentosLaPosicionXNombreTablaYKey("hola", 100, &seg, &nroDePagina);
-
-    pagina = selectPaginaPorPosicion(pag,informacion);
-    				printf("\nValor<%d>: %s\n",pagina->key,pagina->value);
-    				*/
-
-    log_info(log_memoria, "\n\n\nEMPIEZA TEST\n\n\n");
-    insertHardcodeado(1, 0, informacion, "25", "psd");
-
-
-    log_info(log_memoria, "\n\n\nEMPIEZA BUSQUEDAD\n\n\n");
-    pagina = malloc(sizeof(pagina_a_devolver));
- //   pagina->value = malloc(max_valor_key);
-    if (funcionSelect("hola", 100, &pagina)){
-    	printf("BIEN\n");
-    } else {
-    	printf("MAL\n");
-    }
-    if (funcionSelect("psd", 100, &pagina)){
-        	printf("BIEN\n");
-        } else {
-        	printf("MAL\n");
-        }
-    if (funcionSelect("psd", 1010, &pagina)){
-            	printf("BIEN\n");
-            } else {
-            	printf("MAL\n");
-            }
- //   free(pagina->value);
-    free(pagina);
-/*
-    pag = buscarEntreLosSegmentosLaPosicionXNombreTablaYKey("hola", 100, &seg, &nroDePagina);
-
-    pagina = selectPaginaPorPosicion(pag,informacion);
-       				printf("\nValor<%d>: %s\n",pagina->key,pagina->value);
-*/
-
-//   selectHardcodeado(1, 0, informacion);
-
-/*	pagina* nuevaPag =malloc(sizeof(pagina));
-
-    insertHardcodeado(5, 0, informacion, "h", "hola");
-
-   //insertHardcodeado(5, 5, informacion, "Que", "psd");
-
-    selectHardcodeado(3, 0, informacion);
-
-    printf("COMIENZO CON 2° TANDA\n\n");
-
-    //---insertHardcodeado(1, 0, informacion, "XYC", "hola");
-    //---insertHardcodeado(1, 1, informacion, "pos", "hola");
-
-    //---selectHardcodeado(10, 0, informacion);
-
-    insertHardcodeado(1, 11, informacion, "123", "asd");
-    selectHardcodeado(10, 0, informacion);
-
-    free(nuevaPag);
-*/
     	printf("TERMINADO\n");
   //  	free(pagina_obtenida->value);
    // 	free(pagina_obtenida);
-    	free(informacion);
     //    ejecutarHiloConsola();
     	liberar_todo_por_cierre_de_modulo();
     	return 0;
@@ -1675,7 +1595,7 @@ int buscarEntreTodasLasTablaPaginasLaKey(pagina_referenciada* tablasAsociadasASe
 		free(informacion);
 		free(pagina_devolver->value);
 		free(pagina_devolver);
-		mutexBloquear(&mutex_memoria);
+		mutexDesbloquear(&mutex_memoria);
 		tablaasociadaaux = tablaasociadaaux->sig;
 	}
 	mutexDesbloquear(&mutex_pagina_referenciada_aux2);
@@ -2147,8 +2067,8 @@ int buscarPaginaDisponible(u_int16_t key, bool existiaTabla,
 		}
 		log_info(log_memoria, "[BITMAP]\n No se encontro en el segmento  '%s' la key '%d' buscad\nPaso a crearla!",
 				segmetnoApuntado->path_tabla, key);
-		mutexDesbloquear(&mutex_bitmap);
-		return -1;
+//		mutexDesbloquear(&mutex_bitmap);
+	//	return -1;
 	}
 
 	for(i=0;i<cantPaginasTotales;i++){
