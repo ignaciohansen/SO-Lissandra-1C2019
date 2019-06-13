@@ -112,10 +112,26 @@ request_t parser(char* req)
 		request.command=DESCRIBE;
 	else if(!strcmp(command,"DROP"))
 		request.command=DROP;
-//	else if(!strcmp(command,"JOURNAL"))
-//		request.command=JOURNAL;
-	else
+	else if(!strcmp(command,"JOURNAL"))
+		request.command=JOURNALCOMANDO;
+	else if(!strcmp(command,"RETARDO_MEMORIA")) {
+		request.command=RETARDO_MEMORIA;
+	}
+	else if(!strcmp(command,"RETARDO_FS")) {
+			request.command=RETARDO_FS;
+		}
+	else if(!strcmp(command,"RETARDO_JOURNAL")) {
+			request.command=RETARDO_JOURNAL;
+		}
+	else if(!strcmp(command,"RETARDO_GOSSIPING")) {
+			request.command=RETARDO_GOSSIPING;
+		}
+	else if(!strcmp(command,"SALIR")) {
+			request.command=SALIR;
+		}
+	else {
 		request.command=INVALID_COMMAND;
+	}
 	args=sacar_primeros_caracteres(temp,strlen(command)+1);
 	request.cant_args=cant_args;
 	request.args=malloc(sizeof(char*)*cant_args);

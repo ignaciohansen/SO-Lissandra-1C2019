@@ -221,6 +221,7 @@ void mensajeRevisarConexion(Mensaje* mensaje, Socket socketReceptor, int bytes,t
 void mensajeObtenerDatos(Mensaje* mensaje, Socket socketReceptor,t_log* logger);
 bool mensajeDesconexion(Mensaje* mensaje) ;
 
+
 //--------------------------------------- Funciones para Header -------------------------------------
 
 Header headerCrear(int operacion, int tamanio);
