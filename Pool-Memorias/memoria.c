@@ -47,7 +47,7 @@ void consola_prueba() {
 	//			borrar_request(req);
 				break;
 			case DESCRIBE:
-
+				//FALLA SI PONGO OSLO DESCRIBE, ES ALGO DE LA REQ QUE NO ANDA
 				printf("\nObteniendo la metadata de: <%s>\n\n",req.args[0]);
 				if(funcionDescribe(req.args[0])==-1){
 					printf("\nERROR, no existe la METADATA de <%s>\n", req.args[0]);
@@ -236,7 +236,7 @@ int funcionDescribe(char* nombreTablaAIr){
 					imprimirMensaje2(log_memoria, "DESCRIBE: Segmento|Pagina = [%s]-[%d]\n",
 							nombreTablaAIr,	ref->nropagina);
 					ref = ref->sig;
-					sleep(1);
+		//			sleep(1);
 				}
 			segmentoBuscado->siguienteSegmento;
 			}
