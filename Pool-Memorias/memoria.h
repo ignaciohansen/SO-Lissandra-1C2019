@@ -16,6 +16,7 @@
 #include <commons/config.h>
 #include <commons/collections/queue.h>
 #include "../Biblioteca/src/Biblioteca.c"
+#include "parser.h"
 
 #define PATH_MEMORIA_CONFIG "../Config/MEMORIA.txt"
 #define LOG_PATH "../Log/logMEMORIA.txt"
@@ -37,6 +38,13 @@ Bitmap bitmap;
 
 int tamanioPredefinidoParaNombreTabla = 50;
 
+/*
+ * 									HILOS
+ */
+
+pthread_t hiloConsolaMemoria;
+
+
 /*---------------------------------------------------------------------------------
  * 								MUTEX Y SEMAFOROS
  ----------------------------------------------------------------------------------*/
@@ -56,6 +64,14 @@ Mutex JOURNALHecho;
 Mutex mutex_memoria;
 Mutex mutex_bitmap;
 Mutex mutex_bloque_LRU_modificando;
+
+Mutex mutex_info_request;
+//RETARDOS
+Mutex mutex_retardo_memoria;
+Mutex mutex_retardo_fs;
+Mutex mutex_retardo_gossiping;
+Mutex mutex_retardo_journal;
+
 Semaforo paginasSinUsar; //TIENE CAPACIDAD HASTA PARA cantPaginasTotales
 int cantPaginasDisponibles, cantPaginasTotales;
 
@@ -129,6 +145,15 @@ typedef struct nodoLRU {
 	bool estado;
 }nodoLRU;
 
+typedef struct datosRequest{
+	int tamanioReq1;
+	char* req1;
+	int tamanioReq2;
+	char* req2;
+	int tamanioReq3;
+	char* req3;
+}datosRequest;
+
 
 //memoria_principal* memoria;
 segmento* tablaSegmentos;
@@ -159,6 +184,7 @@ char* lectura_consola();
 void terminar_memoria(t_log* g_log);
 void inicioLogYConfig();
 void liberar_todo_por_cierre_de_modulo();
+void cerrarTodosLosHilosPendientes();
 
 /*---------------------------------------------------
  * FUNCIONES PARA LA CONSOLA
@@ -183,6 +209,10 @@ void conectarConServidorLisandraFileSystem();
 void crearHIloEscucharKernel();
 void escucharConexionKernel();
 void crearHIloEscuchaLFS();
+
+void hiloInsert(request_t* req);
+void hiloSelect(request_t* req);
+void hiloDescribe(request_t* req);
 
 int funcionDescribe(char* nombreTablaAIr);
 int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bool estadoAPoner);
@@ -314,7 +344,7 @@ pagina_a_devolver* selectPaginaPorPosicion(int pos, void* info);
 
 	String obtenerNombreTablaDePath(String path);
 
-	void pasarValoresALisandra(char* datos);
+	int pasarValoresALisandra(char* datos);
 
 	int buscarPaginaDisponible(u_int16_t key, bool existiaTabla, char* nombreTabla, segmento* segmetnoApuntado);
 
