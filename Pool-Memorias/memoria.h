@@ -328,6 +328,7 @@ pagina_a_devolver* selectPaginaPorPosicion(int pos, void* info);
 	void limpiar_y_destruir_todo_lo_de_segmento(segmento *);
 	void limpiar_todos_los_elementos_de_1_segmento(segmento* segmentoABorrar);
 	void liberarTodosLasTablasDePaginas(pagina_referenciada* ref);
+	void liberarPosicionLRU(int posicionAIr);
 
 	bool chequear_si_memoria_tiene_espacio(int tamanio);
 

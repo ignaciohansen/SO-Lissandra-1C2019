@@ -9,7 +9,20 @@
 #define RETARDOS_H_
 
 
+Mutex mutex_retardo_memoria;
+Mutex mutex_retardo_fs;
+Mutex mutex_retardo_gossiping;
+Mutex mutex_retardo_journal;
 
+void iniciarSemaforosRetados();
+
+void retardo_memoria(int milisegundos);
+
+void retardo_fs(int milisegundos);
+
+void retardo_gossiping(int milisegundos);
+
+void retardo_journal(int milisegundos);
 
 
 

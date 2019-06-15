@@ -1,15 +1,15 @@
 #include "memoria.h"
+#include "retardos.h"
 
 void terminar_memoria(t_log* g_log);
 int buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(char* nombreTabla, u_int16_t keyBuscada,
 		segmento** segmentoBuscado, int* nroDePagina);
 
 void consola_prueba() {
-	void* informacion = malloc(sizeof(pagina)+max_valor_key);
 	int fin = 0, aux;
 	request_t req;
 	segmento *seg;
-	int retardo;;
+	int retardo;
 	char *linea;
 	datosRequest* datosDeRequest = malloc(sizeof(datosRequest));
 		datosDeRequest->req1 = malloc(datosDeRequest->tamanioReq1);
@@ -17,6 +17,7 @@ void consola_prueba() {
 		datosDeRequest->req3 = malloc(datosDeRequest->tamanioReq3);
 	printf("\n\n");
 	while(!fin){
+		retardo_memoria(arc_config->retardo_mem);
 		mutexBloquear(&mutex_info_request);
 		linea = readline(">>");
 		req = parser(linea);
@@ -111,7 +112,6 @@ void consola_prueba() {
 
 	}
 	free(datosDeRequest);
-	free(informacion);
 }
 
 void hiloDrop(request_t* req){
@@ -359,6 +359,8 @@ int funcionDrop(char* nombre) {
 int funcionDescribe(char* nombreTablaAIr){
 	segmento* segmentoBuscado;
 	pagina_referenciada* ref;
+	void*info = malloc(sizeof(pagina)+max_valor_key);
+	pagina_a_devolver* keyObtenida;
 	if(stringEstaVacio(nombreTablaAIr)){
 		log_info(log_memoria, "[FUNCION DESCRIBRE] EN DESCRIBE TOTAL");
 		segmentoBuscado = tablaSegmentos;
@@ -372,9 +374,11 @@ int funcionDescribe(char* nombreTablaAIr){
 			printf("[%s]", segmentoBuscado->path_tabla);
 			ref = segmentoBuscado->paginasAsocida;
 			while(ref!=NULL){
-				imprimirMensaje2(log_memoria, "\nDESCRIBE: Segmento|Pagina = [%s]-[%d]\n",
-						segmentoBuscado->path_tabla, ref->nropagina);
+				keyObtenida = selectPaginaPorPosicion(ref->nropagina, info);
+				imprimirMensaje2(log_memoria, "\nDESCRIBE: Segmento|Key = [%s]-[%d]\n",
+						segmentoBuscado->path_tabla, keyObtenida->key);
 				ref = ref->sig;
+				free(keyObtenida);
 		//		sleep(1);
 			}
 			printf("Obteniend datos de ");
@@ -393,11 +397,14 @@ int funcionDescribe(char* nombreTablaAIr){
 		}
 		ref = segmentoBuscado->paginasAsocida;
 		while(ref!=NULL){
-				imprimirMensaje2(log_memoria, "DESCRIBE: Segmento|Pagina = [%s]-[%d]\n",
-						nombreTablaAIr,	ref->nropagina);
+				keyObtenida = selectPaginaPorPosicion(ref->nropagina, info);
+				imprimirMensaje2(log_memoria, "\nDESCRIBE: Segmento|Key = [%s]-[%d]\n",
+					segmentoBuscado->path_tabla, keyObtenida->key);
 				ref = ref->sig;
+				free(keyObtenida);
 			}
 	}
+	free(info);
 	return 0;
 }
 
@@ -595,6 +602,8 @@ void iniciarSemaforosYMutex() {
 	mutexIniciar(&mutex_bloque_LRU_modificando);
 	mutexIniciar(&mutex_info_request);
 	semaforoIniciar(&paginasSinUsar, cantPaginasTotales);
+
+	iniciarSemaforosRetardos();
 
 	log_info(log_memoria, "[SEMAFOROS] Semaforos y mutex inicializados");
 	log_info(log_memoria,
@@ -1597,7 +1606,6 @@ int buscarEnMemoriaLaKey(u_int16_t keyBuscada){
 	for(pos=0; pos<cantPaginasTotales; pos++){
 		//ACCEDO A LA MEMORIA, HAGO RECORRIDO POR TODA ELLA BUSCANDO LA KEY Y DEVUELVO LA POSICION
 		if(bitmapBitOcupado(bitmap, pos)){
-			retardo_memoria(arc_config->retardo_mem);
 			memcpy(pag, bloque_memoria+pos*(sizeof(pagina)+max_valor_key), sizeof(pagina));
 			if(pag->key==keyBuscada){
 				free(pag);
@@ -1644,7 +1652,7 @@ pagina_a_devolver* selectObtenerDatos(int nroDePaginaAIr, bool necesitoValue){
 //ESTE, CADA VEZ QUE SE LO INVOCA SE DEBE PONER UN SEMAFORO
 void* obtenerInfoDePagina(int i, void* informacion){
 	log_info(log_memoria, "[OBTENIENDO DATOS] Empiezo a obtener datos de pagina '%d'", i);
-	retardo_memoria(arc_config->retardo_mem);
+
 	mutexBloquear(&mutex_memoria);
 	memcpy(informacion, bloque_memoria+i*(sizeof(pagina)+max_valor_key), sizeof(pagina)+max_valor_key);
 	log_info(log_memoria, "[OBTENIENDO DATOS] Obtuve datos de pagina '%d'", i);
@@ -1658,18 +1666,18 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, void* info){
 	info = obtenerInfoDePagina(posicion, info);
 	pagina* pag = malloc(sizeof(pagina));
 
-	pagina_a_devolver* devolver = malloc(sizeof(pagina_a_devolver));
-	devolver->value=malloc(max_valor_key);
+
 	memcpy(pag, info, sizeof(pagina));
 	log_info(log_memoria, "[OBTENIENDO DATOS] Incremento el valor de Acceso para la pagina con key '%d'", pag->key);
 	incrementarAccesoDeKey(pag->nroPosicion);
-	retardo_memoria(arc_config->retardo_mem);
+
 	memcpy(bloque_memoria+posicion*(sizeof(pagina)+max_valor_key), pag, sizeof(pagina));
 	log_info(log_memoria, "[asignarNuevaTablaAPosicionLibre] Cantidad de accesos de la pagina NRO '%d' de la key '%d' ACTUALIZADA",
 			posicion, pag->key);
 
 //	memcpy(bloque_memoria+posicion*(sizeof(pagina)+max_valor_key)+sizeof(pagina)-1,valorAPoner, max_valor_key);
-
+	pagina_a_devolver* devolver = malloc(sizeof(pagina_a_devolver));
+	devolver->value=malloc(max_valor_key);
 	devolver->key = pag->key;
 	devolver->nroPosicion= pag->nroPosicion;
 	devolver->timestamp=pag->timestamp;
@@ -1788,7 +1796,7 @@ void asignarNuevaPaginaALaPosicion(
 	log_info(log_memoria, "[asignarNuevaTablaAPosicionLibre] Por guardar los datos de el valor y la nueva pagina en memoria");
 //	char stringValor[max_valor_key];
 //	strcpy(stringValor, valorAPoner);
-	retardo_memoria(arc_config->retardo_mem);
+
 	mutexBloquear(&mutex_memoria);
 	mutexBloquear(&mutex_bitmap);
 
@@ -2033,8 +2041,6 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 }
 
 void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo, int nroPosicion) {
-	retardo_memoria(arc_config->retardo_mem);
-
 	mutexBloquear(&mutex_tabla_pagina_en_modificacion);
 	mutexBloquear(&mutex_memoria);
 	pagina* aux = malloc(sizeof(pagina));
@@ -2155,18 +2161,26 @@ void limpiar_todos_los_elementos_de_1_segmento(segmento* segmentoABorrar){
 void liberarTodosLasTablasDePaginas(pagina_referenciada* ref){
 	pagina_referenciada* refaux;
 	void* info = malloc(sizeof(pagina)+max_valor_key);
-	retardo_memoria(arc_config->retardo_mem);
+
 	while(ref!=NULL){
 		refaux = ref->sig;
 	//	retardo_memoria(arc_config->retardo_mem);
-		memcpy(bloque_memoria+ref->nropagina*(sizeof(pagina)+max_valor_key), info, sizeof(pagina)+max_valor_key);
-
+		memcpy(bloque_memoria+(ref->nropagina)*(sizeof(pagina)+max_valor_key), info, sizeof(pagina)+max_valor_key);
+		liberarPosicionLRU(ref->nropagina);
 		log_info(log_memoria, "[LIBERAR SEGMENTO] TABLA DE LA PAGINA NRO '%d' LIBERADA", ref->nropagina);
 		free(ref);
 		ref = refaux;
 	}
 	free(info);
 	log_info(log_memoria, "[LIBERAR SEGMENTO] TABLA DE LA PAGINA LIBERADO POR COMPLETO");
+}
+
+void liberarPosicionLRU(int posicionAIr) {
+	void* info = malloc(sizeof(nodoLRU));
+	memcpy(bloque_LRU+posicionAIr*sizeof(nodoLRU), info, sizeof(nodoLRU));
+	bitmapLiberarBit(bitmap, posicionAIr);
+	log_info(log_memoria, "[LIBERAR SEGMENTO EN LRU]"
+			"BLOQUE DE LA LRU EN LA POSICION NRO '%d' LIBERADA", posicionAIr);
 }
 
 void liberar_todo_segmento(){
@@ -2210,7 +2224,7 @@ void vaciar_tabla_paginas_y_memoria(){
 	mutexBloquear(&mutex_tabla_pagina_en_modificacion);
 	int i;
 
-	retardo_memoria(arc_config->retardo_mem);
+
 	for(i=0; i<cantPaginasTotales;i++){
 
 			memcpy(bloque_memoria+i*(sizeof(pagina)+max_valor_key), pag, sizeof(pagina)+max_valor_key);
