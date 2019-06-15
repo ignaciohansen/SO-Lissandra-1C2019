@@ -9,9 +9,8 @@ void consola_prueba() {
 	int fin = 0, aux;
 	request_t req;
 	segmento *seg;
-	int pag;
+	int retardo;;
 	char *linea;
-	char separador ="#";
 	datosRequest* datosDeRequest = malloc(sizeof(datosRequest));
 		datosDeRequest->req1 = malloc(datosDeRequest->tamanioReq1);
 		datosDeRequest->req2 = malloc(datosDeRequest->tamanioReq2);
@@ -54,43 +53,58 @@ void consola_prueba() {
 				Hilo hiloDescribes;
 				hiloCrear(&hiloDescribes, hiloDescribe, &req);
 				hiloEsperar(hiloDescribes);
+
 				imprimirPorPantallaTodosLosComandosDisponibles();
 		//		borrar_request(req);
 				break;
-		//	case DROP:
-
+			case DROP:
+				printf("\DROP de la tabla: <%s>\n\n",req.args[0]);
+				Hilo drophilp;
+				hiloCrear(&drophilp, hiloDrop, &req);
+				hiloEsperar(drophilp);
+				imprimirPorPantallaTodosLosComandosDisponibles();
+		//		borrar_request(req);
+				break;
 			case RETARDO_MEMORIA:
+				retardo = atoi(req.args[0]);
+				mutexDesbloquear(&mutex_info_request);
 				imprimirAviso1(log_memoria, "Cambiando el retardo de acceso a MEMORIA a [%d]",
-						atoi(req.args[0]));
-				modificarTIempoRetardo(atoi(req.args[0]), RETARDO_MEMORIA);
+						retardo);
+				modificarTIempoRetardo(retardo, RETARDO_MEMORIA);
 				imprimirPorPantallaTodosLosComandosDisponibles();
 				break;
 			case RETARDO_FS:
+				retardo = atoi(req.args[0]);
+				mutexDesbloquear(&mutex_info_request);
 				imprimirAviso1(log_memoria, "Cambiando el retardo de acceso a MEMORIA a [%d]",
-						atoi(req.args[0]));
-				modificarTIempoRetardo(atoi(req.args[0]), RETARDO_FS);
+						retardo);
+				modificarTIempoRetardo(retardo, RETARDO_FS);
 				imprimirPorPantallaTodosLosComandosDisponibles();
 				break;
 			case RETARDO_GOSSIPING:
+				retardo = atoi(req.args[0]);
+				mutexDesbloquear(&mutex_info_request);
 				imprimirAviso1(log_memoria, "Cambiando el retardo de acceso a MEMORIA a [%d]",
-						atoi(req.args[0]));
-				modificarTIempoRetardo(atoi(req.args[0]), RETARDO_GOSSIPING);
+						retardo);
+				modificarTIempoRetardo(retardo, RETARDO_GOSSIPING);
 				imprimirPorPantallaTodosLosComandosDisponibles();
 				break;
 			case RETARDO_JOURNAL:
+				retardo = atoi(req.args[0]);
+				mutexDesbloquear(&mutex_info_request);
 				imprimirAviso1(log_memoria, "Cambiando el retardo de acceso a MEMORIA a [%d]",
-						atoi(req.args[0]));
-				modificarTIempoRetardo(atoi(req.args[0]), RETARDO_JOURNAL);
+						retardo);
+				modificarTIempoRetardo(retardo, RETARDO_JOURNAL);
 				imprimirPorPantallaTodosLosComandosDisponibles();
 				break;
 			case SALIR:
-				borrar_request(req);
+			//	borrar_request(req);
 				imprimirAviso(log_memoria, "\nEMPIEZA A CERRARSE TODO EL MODULO DE MEMORIA\n\n");
 				fin = 1;
 				break;
 			default:
-				fin = 1;
-				borrar_request(req);
+				imprimirAviso(log_memoria, "\n\nERROR AL REALIZAR LA CONSULTA, PRUEBE DE NUEVO\n\n");
+			//	borrar_request(req);
 				break;
 		}
 		borrar_request(req);
@@ -100,22 +114,41 @@ void consola_prueba() {
 	free(informacion);
 }
 
+void hiloDrop(request_t* req){
+	if(stringEstaVacio(req->args[0])){
+		imprimirError(log_memoria, "NO SE HA INGRESADO 1 NOMBRE CORRECTO\n");
+		return;
+	}
+	char* nombre = malloc(strlen(req->args[0]));
+	memcpy(nombre, req->args[0], strlen(req->args[0])+1);
+	mutexDesbloquear(&mutex_info_request);
+	if(funcionDrop(nombre)==-1){
+		imprimirError1(log_memoria, "\nERROR, La tabla ya fue eliminada o no existe: <%s>\n", nombre);
+	}
+	free(nombre);
+}
+
 void hiloDescribe(request_t* req){
 	char* nombre;
 	if(req->cant_args == 0){
+		mutexDesbloquear(&mutex_info_request);
 		//ES DESCRIBE DE TODAS LAS COSAS EN MEMORIA
-		printf("\n\nENTRA AQUI Y AGRADEZCO\n");
+	//	printf("\n\nENTRA AQUI Y AGRADEZCO\n");
 		nombre = "";
 	//	sleep(5);
+		if(funcionDescribe(nombre)==-1){
+			printf("\nERROR, NO existe la METADATA de los segmentos\n");
+		}
 	} else {
 		nombre = malloc(strlen(req->args[0]));
 		memcpy(nombre, req->args[0], strlen(req->args[0])+1);
+		mutexDesbloquear(&mutex_info_request);
+		if(funcionDescribe(nombre)==-1){
+			printf("\nERROR, NO existe la METADATA de <%s>\n", nombre);
+		} else {
+			free(nombre);
+		}
 	}
-	mutexDesbloquear(&mutex_info_request);
-	if(funcionDescribe(nombre)==-1){
-		printf("\nERROR, NO existe la METADATA de <%s>\n", nombre);
-	}
-
 }
 
 void hiloInsert(request_t* req){
@@ -157,6 +190,7 @@ void hiloSelect(request_t* req){
 	} else {
 		printf("\nERROR <%s><%d>\n", nombreTablaABuscar, keyBuscado);
 	}
+	free(informacion);
 	free(pagina->value);
 	free(pagina);
 
@@ -291,12 +325,42 @@ int funcionSelect(char* nombreTablaAIr, u_int16_t keyBuscada, pagina_a_devolver*
 	return 1;
 }
 
+int funcionDrop(char* nombre) {
+	segmento* segmentoBuscado;
+	segmento* segmentoAnterior = tablaSegmentos;
+	pagina_referenciada* ref;
+	log_info(log_memoria, "[FUNCION DROP] EN FUNCION DROP");
+
+	mutexBloquear(&mutex_segmento_en_modificacion);
+	if(stringIguales(tablaSegmentos->path_tabla, nombre)){
+		log_info(log_memoria, "[FUNCION DROP] Se encontro <%s> y es el primero de todos", nombre);
+		tablaSegmentos = tablaSegmentos->siguienteSegmento;
+		limpiar_todos_los_elementos_de_1_segmento(segmentoAnterior);
+		mutexDesbloquear(&mutex_segmento_en_modificacion);
+		return 1;
+	}
+	segmentoBuscado = buscarSegmentoPorNombreTabla(nombre);
+	if(segmentoBuscado==NULL){
+		log_info(log_memoria, "[FUNCION DROP] No se encontro <%s> -> DevuelvoError", nombre);
+		//NO HAY NADA ASI QUE DEVUELVO ERROR
+		mutexDesbloquear(&mutex_segmento_en_modificacion);
+		return -1;
+	}
+	log_info(log_memoria, "[FUNCION DROP] Empiezo a buscar el anterior de ese segmento");
+	while(segmentoAnterior->siguienteSegmento != segmentoBuscado) {
+		segmentoAnterior = segmentoAnterior->siguienteSegmento;
+	}
+	segmentoAnterior->siguienteSegmento=segmentoBuscado->siguienteSegmento;
+	limpiar_todos_los_elementos_de_1_segmento(segmentoBuscado);
+	mutexDesbloquear(&mutex_segmento_en_modificacion);
+	return 1;
+}
+
 int funcionDescribe(char* nombreTablaAIr){
 	segmento* segmentoBuscado;
 	pagina_referenciada* ref;
 	if(stringEstaVacio(nombreTablaAIr)){
-
-		log_info(log_memoria, "[FUNCION DESCRIBRE] En DESCRIBE TOTAL");
+		log_info(log_memoria, "[FUNCION DESCRIBRE] EN DESCRIBE TOTAL");
 		segmentoBuscado = tablaSegmentos;
 		if(segmentoBuscado==NULL){
 			imprimirError(log_memoria,
@@ -304,15 +368,19 @@ int funcionDescribe(char* nombreTablaAIr){
 			return -1;
 		}
 		while(segmentoBuscado!=NULL){
+			printf("Obteniend datos de ");
+			printf("[%s]", segmentoBuscado->path_tabla);
 			ref = segmentoBuscado->paginasAsocida;
 			while(ref!=NULL){
-				imprimirMensaje2(log_memoria, "DESCRIBE: Segmento|Pagina = [%s]-[%d]\n",
+				imprimirMensaje2(log_memoria, "\nDESCRIBE: Segmento|Pagina = [%s]-[%d]\n",
 						segmentoBuscado->path_tabla, ref->nropagina);
 				ref = ref->sig;
 		//		sleep(1);
 			}
+			printf("Obteniend datos de ");
+			printf("[%s]", segmentoBuscado->path_tabla);
 			segmentoBuscado = segmentoBuscado->siguienteSegmento;
-			}
+		}
 	} else {
 		log_info(log_memoria, "[FUNCION DESCRIBRE] En DESCRIBE de <%s>", nombreTablaAIr);
 		segmentoBuscado = buscarSegmentoPorNombreTabla(nombreTablaAIr);
@@ -2074,15 +2142,13 @@ void LRU(pagina* paginaCreada, int* nroAsignado, char* valor, bool flag_modifica
 
 
 
-void limpiar_segmento_x_nombre_tabla(char* nombreTabla){
+void limpiar_todos_los_elementos_de_1_segmento(segmento* segmentoABorrar){
 	//ESTO SE DEBE REVISAR, TIENE ERRORES
-	log_info(log_memoria, "[LIBERAR SEGMENTO] Liberando segmento de la tabla '%s'", nombreTabla);
-	segmento* seg_aux;
-	while(seg_aux->path_tabla){
-
-	}
-	free(buscarSegmentoPorNombreTabla(nombreTabla));
-
+	log_info(log_memoria,
+			"[LIBERAR SEGMENTO] Liberando todas las tablas y paginas del segmento y a si mismo '%s'",
+			segmentoABorrar->path_tabla);
+	liberarTodosLasTablasDePaginas(segmentoABorrar->paginasAsocida);
+	free(segmentoABorrar);
 	log_info(log_memoria, "[LIBERAR SEGMENTO] SEGMENTO LIBERADO");
 }
 

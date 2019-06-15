@@ -213,6 +213,7 @@ void crearHIloEscuchaLFS();
 void hiloInsert(request_t* req);
 void hiloSelect(request_t* req);
 void hiloDescribe(request_t* req);
+void hiloDrop(request_t* req);
 
 int funcionDescribe(char* nombreTablaAIr);
 int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bool estadoAPoner);
@@ -325,7 +326,8 @@ pagina_a_devolver* selectPaginaPorPosicion(int pos, void* info);
 	int limpiar_valores_pagina(pagina* valores);
 
 	void limpiar_y_destruir_todo_lo_de_segmento(segmento *);
-
+	void limpiar_todos_los_elementos_de_1_segmento(segmento* segmentoABorrar);
+	void liberarTodosLasTablasDePaginas(pagina_referenciada* ref);
 
 	bool chequear_si_memoria_tiene_espacio(int tamanio);
 
