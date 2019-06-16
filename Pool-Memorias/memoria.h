@@ -8,6 +8,7 @@
 #ifndef MEMORIA_H_
 #define MEMORIA_H_
 
+//#include "estructurasMemoria.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/sem.h>
@@ -17,6 +18,8 @@
 #include <commons/collections/queue.h>
 #include "../Biblioteca/src/Biblioteca.c"
 #include "parser.h"
+//#include "../Biblioteca/src/Biblioteca.h"
+
 
 #define PATH_MEMORIA_CONFIG "../Config/MEMORIA.txt"
 #define LOG_PATH "../Log/logMEMORIA.txt"
@@ -49,38 +52,34 @@ pthread_t hiloConsolaMemoria;
  * 								MUTEX Y SEMAFOROS
  ----------------------------------------------------------------------------------*/
 
-Mutex memoria_mutex_paginas_disponibles;
-Mutex mutex_segmento_en_modificacion;
-Mutex mutex_tabla_pagina_en_modificacion;
-Mutex mutex_segmento_modificando;
-Mutex mutex_limpiando_memoria;
-Mutex mutex_pagina_auxiliar;
-Mutex mutex_pagina_referenciada_aux;
-Mutex mutex_pagina_referenciada_aux2;
-Mutex mutex_segmento_aux;
-Mutex mutex_crear_pagina_nueva;
-Mutex LRUMutex, ACCIONLRU;
-Mutex JOURNALHecho;
-Mutex mutex_memoria;
-Mutex mutex_bitmap;
-Mutex mutex_bloque_LRU_modificando;
+pthread_mutex_t memoria_mutex_paginas_disponibles;
+pthread_mutex_t mutex_segmento_en_modificacion;
+pthread_mutex_t mutex_tabla_pagina_en_modificacion;
+pthread_mutex_t mutex_segmento_modificando;
+pthread_mutex_t mutex_limpiando_memoria;
+pthread_mutex_t mutex_pagina_auxiliar;
+pthread_mutex_t mutex_pagina_referenciada_aux;
+pthread_mutex_t mutex_pagina_referenciada_aux2;
+pthread_mutex_t mutex_segmento_aux;
+pthread_mutex_t mutex_crear_pagina_nueva;
+pthread_mutex_t LRUMutex, ACCIONLRU;
+pthread_mutex_t JOURNALHecho;
+pthread_mutex_t mutex_memoria;
+pthread_mutex_t mutex_bitmap;
+pthread_mutex_t mutex_bloque_LRU_modificando;
 
-Mutex mutex_info_request;
-//RETARDOS
-Mutex mutex_retardo_memoria;
-Mutex mutex_retardo_fs;
-Mutex mutex_retardo_gossiping;
-Mutex mutex_retardo_journal;
+Mutex mutex_borrar_datos_de_1_segmento;
+Mutex mutex_drop;
 
-Semaforo paginasSinUsar; //TIENE CAPACIDAD HASTA PARA cantPaginasTotales
+pthread_mutex_t mutex_info_request;
+
+
+//Semaforo paginasSinUsar; //TIENE CAPACIDAD HASTA PARA cantPaginasTotales
 int cantPaginasDisponibles, cantPaginasTotales;
 
-
-void* bloque_memoria;
-void* bloque_LRU;
-
-int max_valor_key;
-
+/*
+ * ESTRUCTURAS
+ */
 typedef struct{
     int puerto;
     char* ip_fs;
@@ -165,6 +164,13 @@ pagina_referenciada* aux_tabla_paginas2;
 pagina* aux_crear_pagina;
 pagina_a_devolver* aux_devolver_pagina;
 segmento* aux_segmento;
+
+void* bloque_memoria;
+void* bloque_LRU;
+
+int max_valor_key;
+
+
 
 int main();
 

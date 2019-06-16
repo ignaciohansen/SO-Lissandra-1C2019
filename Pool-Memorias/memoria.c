@@ -1,14 +1,87 @@
 #include "memoria.h"
 #include "retardos.h"
 
+
 void terminar_memoria(t_log* g_log);
 int buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(char* nombreTabla, u_int16_t keyBuscada,
 		segmento** segmentoBuscado, int* nroDePagina);
 
+int main() {
+
+	// LOGGING
+	printf("INICIANDO EL MODULO MEMORIA \n COMINEZA EL TP PIBE\n\n");
+	inicioLogYConfig();
+
+//	crearConexionesConOtrosProcesos(); // conecta con LFS y puede que con kernel.
+
+	printf("HACIENDO MEMORIA");
+	aux_crear_pagina = malloc(sizeof(pagina));
+	aux_devolver_pagina = malloc(sizeof(pagina_a_devolver));
+	aux_segmento = malloc(sizeof(segmento));
+	aux_tabla_paginas = malloc(sizeof(pagina_referenciada));
+	aux_tabla_paginas2 = malloc(sizeof(pagina_referenciada));
+//	aux_tabla_paginas=malloc(sizeof(tabla_pagina));
+
+
+	arc_config->max_value_key = 20;
+	max_valor_key = arc_config->max_value_key;
+	//ESTE ES SOLO TEST, DESPUES SE BORRA A LA MIERDA
+		   max_valor_key=6;
+	armarMemoriaPrincipal();
+
+	iniciarSemaforosYMutex();
+
+	//ESTE ES SOLO TEST, DESPUES SE BORRA A LA MIERDA
+	   max_valor_key=6;
+//    infoPagina* infoPag = malloc(sizeof(infoPag));
+
+	imprimirPorPantallaTodosLosComandosDisponibles();
+	ejecutarHiloConsola();
+//	consola_prueba();
+/*
+	   void* info = malloc(50);
+	   insertHardcodeado(1, 1, info, "sdf", "TABLA1");
+	   insertHardcodeado(2, 1, info, "xxx", "TABLA1");
+	   insertHardcodeado(3, 1, info, "www", "TABLA1");
+	   char* cadenapasada = malloc(10);
+	   memcpy(cadenapasada, "TABLA1", 7);
+	   selectHardcodeado(cadenapasada, 1, info);
+	   selectHardcodeado(cadenapasada, 2, info);
+	   selectHardcodeado(cadenapasada,3, info);
+	   insertHardcodeado(4, 1, info, "aaa", "TABLA1");
+	   selectHardcodeado(cadenapasada,4, info);
+	   selectHardcodeado(cadenapasada,1, info);
+	   selectHardcodeado(cadenapasada,3, info);
+	   selectHardcodeado(cadenapasada,2, info);
+
+	   insertHardcodeado(8, 1, info, "trd", "TABLA4");
+	   selectHardcodeado(cadenapasada,2, info);
+
+	   insertHardcodeado(4, 1, info, "xsa", "TABLA2");
+	   insertHardcodeado(1, 1, info, "4fd", "TABLA3");
+	   selectHardcodeado(cadenapasada,4, info);
+	   insertHardcodeado(4, 1, info, "rrr", "TABLA1");
+	   selectHardcodeado(cadenapasada,4, info);
+	   memcpy(cadenapasada, "TABLA2", 7);
+	   selectHardcodeado(cadenapasada,4, info);
+	   memcpy(cadenapasada, "TABLA4", 7);
+	   selectHardcodeado(cadenapasada,8, info);
+
+	free(info);
+	  */
+
+
+    printf("TERMINADO\n");
+
+    //    ejecutarHiloConsola();
+
+    	liberar_todo_por_cierre_de_modulo();
+    	return 0;
+}
+
 void consola_prueba() {
-	int fin = 0, aux;
+	int fin = 0;
 	request_t req;
-	segmento *seg;
 	int retardo;
 	char *linea;
 	datosRequest* datosDeRequest = malloc(sizeof(datosRequest));
@@ -30,7 +103,7 @@ void consola_prueba() {
 				hiloCrear(&hiloInsertNuevo, hiloInsert, &req);
 				hiloEsperar(hiloInsertNuevo);
 		//		free(datosDeRequest);
-		//		borrar_request(req);
+			//	borrar_request(req);
 				break;
 			case SELECT:
 				//HAY UN TEMA CON EL TEMA DEL REQ.ARGS 0 Y ES QUE SI NO PONGO NOMBRE
@@ -41,7 +114,7 @@ void consola_prueba() {
 				hiloEsperar(hiloSelectNuevo);
 
 				imprimirPorPantallaTodosLosComandosDisponibles();
-	//			borrar_request(req);
+			//	borrar_request(req);
 				break;
 			case DESCRIBE:
 				//FALLA SI PONGO OSLO DESCRIBE, ES ALGO DE LA REQ QUE NO ANDA
@@ -56,7 +129,7 @@ void consola_prueba() {
 				hiloEsperar(hiloDescribes);
 
 				imprimirPorPantallaTodosLosComandosDisponibles();
-		//		borrar_request(req);
+			//	borrar_request(req);
 				break;
 			case DROP:
 				printf("\DROP de la tabla: <%s>\n\n",req.args[0]);
@@ -73,6 +146,7 @@ void consola_prueba() {
 						retardo);
 				modificarTIempoRetardo(retardo, RETARDO_MEMORIA);
 				imprimirPorPantallaTodosLosComandosDisponibles();
+
 				break;
 			case RETARDO_FS:
 				retardo = atoi(req.args[0]);
@@ -106,6 +180,7 @@ void consola_prueba() {
 			default:
 				imprimirAviso(log_memoria, "\n\nERROR AL REALIZAR LA CONSULTA, PRUEBE DE NUEVO\n\n");
 			//	borrar_request(req);
+				mutexDesbloquear(&mutex_info_request);
 				break;
 		}
 		borrar_request(req);
@@ -190,85 +265,10 @@ void hiloSelect(request_t* req){
 	} else {
 		printf("\nERROR <%s><%d>\n", nombreTablaABuscar, keyBuscado);
 	}
-	free(informacion);
+//	free(informacion);
 	free(pagina->value);
 	free(pagina);
 
-}
-
-
-int main() {
-
-	// LOGGING
-	printf("INICIANDO EL MODULO MEMORIA \n COMINEZA EL TP PIBE\n\n");
-	inicioLogYConfig();
-
-//	crearConexionesConOtrosProcesos(); // conecta con LFS y puede que con kernel.
-
-	printf("HACIENDO MEMORIA");
-	aux_crear_pagina = malloc(sizeof(pagina));
-	aux_devolver_pagina = malloc(sizeof(pagina_a_devolver));
-	aux_segmento = malloc(sizeof(segmento));
-	aux_tabla_paginas = malloc(sizeof(pagina_referenciada));
-	aux_tabla_paginas2 = malloc(sizeof(pagina_referenciada));
-//	aux_tabla_paginas=malloc(sizeof(tabla_pagina));
-
-
-	arc_config->max_value_key = 20;
-	max_valor_key = arc_config->max_value_key;
-	//ESTE ES SOLO TEST, DESPUES SE BORRA A LA MIERDA
-		   max_valor_key=6;
-	armarMemoriaPrincipal();
-
-	iniciarSemaforosYMutex();
-
-	//ESTE ES SOLO TEST, DESPUES SE BORRA A LA MIERDA
-	   max_valor_key=6;
-//    infoPagina* infoPag = malloc(sizeof(infoPag));
-
-	imprimirPorPantallaTodosLosComandosDisponibles();
-	ejecutarHiloConsola();
-//	consola_prueba();
-/*
-	   void* info = malloc(50);
-	   insertHardcodeado(1, 1, info, "sdf", "TABLA1");
-	   insertHardcodeado(2, 1, info, "xxx", "TABLA1");
-	   insertHardcodeado(3, 1, info, "www", "TABLA1");
-	   char* cadenapasada = malloc(10);
-	   memcpy(cadenapasada, "TABLA1", 7);
-	   selectHardcodeado(cadenapasada, 1, info);
-	   selectHardcodeado(cadenapasada, 2, info);
-	   selectHardcodeado(cadenapasada,3, info);
-	   insertHardcodeado(4, 1, info, "aaa", "TABLA1");
-	   selectHardcodeado(cadenapasada,4, info);
-	   selectHardcodeado(cadenapasada,1, info);
-	   selectHardcodeado(cadenapasada,3, info);
-	   selectHardcodeado(cadenapasada,2, info);
-
-	   insertHardcodeado(8, 1, info, "trd", "TABLA4");
-	   selectHardcodeado(cadenapasada,2, info);
-
-	   insertHardcodeado(4, 1, info, "xsa", "TABLA2");
-	   insertHardcodeado(1, 1, info, "4fd", "TABLA3");
-	   selectHardcodeado(cadenapasada,4, info);
-	   insertHardcodeado(4, 1, info, "rrr", "TABLA1");
-	   selectHardcodeado(cadenapasada,4, info);
-	   memcpy(cadenapasada, "TABLA2", 7);
-	   selectHardcodeado(cadenapasada,4, info);
-	   memcpy(cadenapasada, "TABLA4", 7);
-	   selectHardcodeado(cadenapasada,8, info);
-
-	free(info);
-	  */
-
-
-    printf("TERMINADO\n");
-  //  	free(pagina_obtenida->value);
-   // 	free(pagina_obtenida);
-    //    ejecutarHiloConsola();
-
-    	liberar_todo_por_cierre_de_modulo();
-    	return 0;
 }
 
 void imprimirPorPantallaTodosLosComandosDisponibles(){
@@ -326,6 +326,7 @@ int funcionSelect(char* nombreTablaAIr, u_int16_t keyBuscada, pagina_a_devolver*
 }
 
 int funcionDrop(char* nombre) {
+	mutexBloquear(&ACCIONLRU);
 	segmento* segmentoBuscado;
 	segmento* segmentoAnterior = tablaSegmentos;
 	pagina_referenciada* ref;
@@ -353,6 +354,7 @@ int funcionDrop(char* nombre) {
 	segmentoAnterior->siguienteSegmento=segmentoBuscado->siguienteSegmento;
 	limpiar_todos_los_elementos_de_1_segmento(segmentoBuscado);
 	mutexDesbloquear(&mutex_segmento_en_modificacion);
+	mutexDesbloquear(&ACCIONLRU);
 	return 1;
 }
 
@@ -370,8 +372,8 @@ int funcionDescribe(char* nombreTablaAIr){
 			return -1;
 		}
 		while(segmentoBuscado!=NULL){
-			printf("Obteniend datos de ");
-			printf("[%s]", segmentoBuscado->path_tabla);
+			printf("Obteniend datos de [%s]", segmentoBuscado->path_tabla);
+
 			ref = segmentoBuscado->paginasAsocida;
 			while(ref!=NULL){
 				keyObtenida = selectPaginaPorPosicion(ref->nropagina, info);
@@ -433,7 +435,8 @@ void cerrarTodosLosHilosPendientes() {
 }
 
 void liberar_todo_por_cierre_de_modulo() {
-	cerrarTodosLosHilosPendientes();
+	//ESTE TIENE 1 ERROR, REVISARLO LUEGO
+	//	cerrarTodosLosHilosPendientes();
 
 	log_info(log_memoria,
 			"[LIBERAR] Por liberar Segmentos y sus tablas de paginas");
@@ -601,9 +604,14 @@ void iniciarSemaforosYMutex() {
 	mutexIniciar(&mutex_bitmap);
 	mutexIniciar(&mutex_bloque_LRU_modificando);
 	mutexIniciar(&mutex_info_request);
-	semaforoIniciar(&paginasSinUsar, cantPaginasTotales);
+//	semaforoIniciar(&paginasSinUsar, cantPaginasTotales);
 
-	iniciarSemaforosRetardos();
+	mutexIniciar(&mutex_retardo_memoria);
+		mutexIniciar(&mutex_retardo_gossiping);
+		mutexIniciar(&mutex_retardo_fs);
+		mutexIniciar(&mutex_retardo_journal);
+
+//	iniciarSemaforosRetados();
 
 	log_info(log_memoria, "[SEMAFOROS] Semaforos y mutex inicializados");
 	log_info(log_memoria,
@@ -650,17 +658,6 @@ void modificarTIempoRetardo(int nuevoCampo, int campoAModificar) {
 				"[MODIFICAR TIEMPO RETARDO]NO se abrio el archivo de configuracion para MODIFICAR TIEMPO RETARDO");
 		return;
 	} else {
-	/*	if (config_has_property(configFile, campoAModificar)) {
-			log_info(log_memoria,
-					"[MODIFICAR TIEMPO RETARDO]Modificando el campo '%s' con el nuevo valor %d",
-					campoAModificar, nuevoCampo);
-			config_set_value(configFile, campoAModificar, nuevoCampo);
-			log_info(log_memoria,
-					"[MODIFICAR TIEMPO RETARDO][Hecho] Se ha modificando el campo '%s' con el nuevo valor %d",
-					campoAModificar, nuevoCampo);
-			log_info(log_memoria,
-					"[MODIFICAR TIEMPO RETARDO]Guardar nuevo dato en la estructura Config del modulo");
-*/
 			switch(campoAModificar){
 				case RETARDO_MEMORIA:
 					modificarTiempoRetardoMemoria(nuevoCampo);
@@ -943,6 +940,7 @@ void levantarServidor() {
 
 		 }*/
 
+		/*
 		log_info(log_memoria, "Por llamar a recibir mensaje");
 		recibido = recibir_mensaje(conexionEntrante);
 
@@ -953,7 +951,7 @@ void levantarServidor() {
 		borrar_mensaje(recibido);
 		printf("\n\nRequest: %s", string.str);
 		log_info(log_memoria, "Request: %s", string.str);
-
+*/
 
 		log_info(log_memoria, "Fin de parseo");
 		printf("Fin de parseo. \n");
@@ -1544,8 +1542,12 @@ void segmento_eliminar_nro_pagina(segmento* unSegmento, int nroAQuitar){
 		tablaPaginaBuscador = tablaPaginaBuscador->sig;
 	}
 //	printf("\nENCONTRADO\n%d == %d\n\n", tablaPaginaBuscador->nropagina, nroAQuitar);
-
+	log_info(log_memoria, "\n[ELIMINANDO PAGIAN A SEGMENTO] Procedo a eliminar la tabla de pagina encontrada de: [%d]",
+			tablaPaginaBuscador->nropagina);
 	tablaPaginaAux = tablaPaginaBuscador->sig;
+	mutexBloquear(&mutex_bitmap);
+	liberarPosicionLRU(tablaPaginaBuscador->nropagina);
+	mutexDesbloquear(&mutex_bitmap);
 	free(tablaPaginaBuscador);
 
 	if(tablaPaginaAux==NULL){
@@ -1719,16 +1721,18 @@ void tabla_pagina_crear(
 		u_int16_t key, char* valor, bool flag_modificado,
 		pagina_referenciada** devolver, char* nombreTabla,
 		bool existeSegmento, segmento* segmetnoApuntado) {
-	char valor_string[max_valor_key];
+//	char valor_string[max_valor_key];
 	log_info(log_memoria, "[Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key %d", key);
 
 //	pagina* aux_pag = malloc(sizeof(pagina));
 	pagina_referenciada* pag_ref = malloc(sizeof(pagina_referenciada));
+
 	pag_ref->sig=NULL;
 	int posicionAsignada = -1;
-	strcpy(valor_string, valor);
-	mutexBloquear(&mutex_pagina_auxiliar);
-	aux_tabla_paginas->sig=NULL;
+//	strcpy(valor_string, valor);
+	//COMENTADO POR POSIBLE DEADLOCK
+//	mutexBloquear(&mutex_pagina_auxiliar);
+//	aux_tabla_paginas->sig=NULL;
 	mutexBloquear(&mutex_tabla_pagina_en_modificacion);
 
 	log_info(log_memoria, "[Crear Tabla y pagina] Tabla pagina creada");
@@ -1775,11 +1779,11 @@ void tabla_pagina_crear(
 	log_info(log_memoria,
 			"[Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion");
 	memcpy(*devolver, pag_ref, sizeof(pagina_referenciada));
-//	printf("\n\n\nNRO PAGINA: %d\n\n\n", pag_ref->nropagina);
+	printf("\n\n\nNRO PAGINA: %d\n\n\n", pag_ref->nropagina);
 
 	free(pag_ref);
 	mutexDesbloquear(&mutex_tabla_pagina_en_modificacion);
-	mutexDesbloquear(&mutex_pagina_auxiliar);
+//	mutexDesbloquear(&mutex_pagina_auxiliar);
 	return;
 }
 
@@ -1930,7 +1934,9 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 	}
 
 	//ESTO ES PARA BLOQUEAR CUALQUIER INSERT NUEVO CUANDO SE ESTA REALIZANDO LRU O JOURNAL
-	mutexBloquear(&mutex_bloque_LRU_modificando);
+	//ADEMAS, SI YA SE ESTA REALIZANDO 1 INSERT ENTONCES
+
+	//mutexBloquear(&mutex_bloque_LRU_modificando);
 	mutexBloquear(&ACCIONLRU);
 	mutexDesbloquear(&ACCIONLRU);
 	int nroPosicion=0;
@@ -1965,6 +1971,7 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 			}
 
 			segmentoBuscado = segmento_crear(nombreTabla, ref);
+			segmentoBuscado->paginasAsocida = ref;
 			log_info(log_memoria, "[INSERT] SEGMENTO Creado para la tabla '%s' /nComo es el primer segmento TABLA SEGMENTOS apuntara este elemento", segmentoBuscado->path_tabla);
 			segmentoBuscado->siguienteSegmento = tablaSegmentos;
 			tablaSegmentos = segmentoBuscado;
@@ -1978,14 +1985,14 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 					&ref, nombreTabla, true, segmentoBuscado);
 
 			if(estadoAPoner) {
-		//		printf("[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|TRUE",
-		//			ref->nropagina, keyBuscada);
+				printf("[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|TRUE",
+					ref->nropagina, keyBuscada);
 				log_info(log_memoria,
 		"[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|TRUE",
 					ref->nropagina, keyBuscada);
 						} else {
-		//		printf("[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|TRUE",
-		//			ref->nropagina, keyBuscada);
+				printf("[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|TRUE",
+					ref->nropagina, keyBuscada);
 				log_info(log_memoria,
 		"[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|FALSE",
 					ref->nropagina, keyBuscada);
@@ -2033,9 +2040,7 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 	//	free(segmentoBuscado);
 		modificarValoresDeTablaYMemoriaAsociadasAKEY(posicionAIr, valorAPoner, nroPosicion);
 	}
-	mutexDesbloquear(&mutex_bloque_LRU_modificando);
-
-
+//	mutexDesbloquear(&mutex_bloque_LRU_modificando);
 
 	return 1;
 }
@@ -2044,7 +2049,7 @@ void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo, 
 	mutexBloquear(&mutex_tabla_pagina_en_modificacion);
 	mutexBloquear(&mutex_memoria);
 	pagina* aux = malloc(sizeof(pagina));
-	char valorString[max_valor_key];
+//	char valorString[max_valor_key];
 	log_info(log_memoria, "[Modificar valores de pagina] Entrando");
 	memcpy(aux, bloque_memoria+posAIr*(sizeof(pagina)+max_valor_key), sizeof(pagina));
 //	printf("1 hecho\n");
@@ -2053,7 +2058,7 @@ void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo, 
 	log_info(log_memoria, "[Modificar valor pagina] Incremento el acceso a la pagina '%d' de la key '%d'", posAIr, aux->key);
 	incrementarAccesoDeKey(posAIr);
 
-	strcpy(valorString, valorNuevo);
+	//strcpy(valorString, valorNuevo);
 
 	log_info(log_memoria,
 "[Modificar valor pagina] Pagina modificada con key '%d' VALORES NUEVOS;  TIMESTAMP '%f'; VALOR '%s'",
@@ -2068,10 +2073,10 @@ void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo, 
 
 
 	memcpy(bloque_memoria+posAIr*(sizeof(pagina)+max_valor_key), aux, sizeof(pagina));
-	memcpy(bloque_memoria+posAIr*(sizeof(pagina)+max_valor_key)+sizeof(pagina)-1, valorString, max_valor_key);
+	memcpy(bloque_memoria+posAIr*(sizeof(pagina)+max_valor_key)+sizeof(pagina)-1, valorNuevo, max_valor_key);
 	log_info(log_memoria,
 			"[MOdificar valor pagina] key: '%d', VALOR NUEVO: %s",
-			aux->key, valorString);
+			aux->key, valorNuevo);
 
 	modificar_bloque_LRU("xs", aux->timestamp, nroPosicion, true, false);
 
@@ -2098,13 +2103,8 @@ void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo, 
 
 void LRU(pagina* paginaCreada, int* nroAsignado, char* valor, bool flag_modificado,
 		char* nombreTabla){
-	/*ALGORITMO, BUSCO LA PAGINA ENTRE TODAS QUE TIENEN MENOR CANTIDAD DE USOS
-		LUEGO VERIFICO SI ESTA MODIFICADA O NO
-		CASO MODIFICADO: VUELVO A AJECTUTAR LRU SIN TENER EN CUENTA ESE BLOQUE
-		CASO NO MODIFICADO: REEMPLAZO
-	 */
 	mutexBloquear(&ACCIONLRU);
-	imprimirAviso(log_memoria, "[LRU] Comenzando el LRU, empiezo a buscar la pagina a reemplazar");
+//	imprimirAviso(log_memoria, "[LRU] Comenzando el LRU, empiezo a buscar la pagina a reemplazar");
 	log_info(log_memoria, "[LRU] Comenzando el LRU, empiezo a buscar la pagina a reemplazar");
 
 
@@ -2112,10 +2112,11 @@ void LRU(pagina* paginaCreada, int* nroAsignado, char* valor, bool flag_modifica
 	log_info(log_memoria, "[LRU] Busco la key entre los segmentos y tabla de paginas");
 	char* nombreTablaQueDeboBuscar = malloc(tamanioPredefinidoParaNombreTabla);
 	candidatoAQuitar = buscarEnBloqueLRUElProximoAQuitar(&nombreTablaQueDeboBuscar);
-	printf("\n\nLINEA 1925: NOMBRE QUE TENGO QUE BUSCAR: %s  -  %d\n", nombreTablaQueDeboBuscar, candidatoAQuitar);
+//	printf("\n\nLINEA 1925: NOMBRE QUE TENGO QUE BUSCAR: %s  -  %d\n", nombreTablaQueDeboBuscar, candidatoAQuitar);
 
 	if(candidatoAQuitar<0){
 				log_info(log_memoria, "[LRU sin candidato] NO hay nada que se puede quitar, por lo tanto se fuerza un JOURNAL");
+				mutexBloquear(&JOURNALHecho);
 				JOURNAL();
 				log_info(log_memoria, "[LRU sin candidato] JOURNAL HECHO, lo asigno a la primera posicion");
 				paginaCreada->nroPosicion=0;
@@ -2142,6 +2143,7 @@ void LRU(pagina* paginaCreada, int* nroAsignado, char* valor, bool flag_modifica
 			}
 	free(nombreTablaQueDeboBuscar);
 	mutexDesbloquear(&ACCIONLRU);
+
 }
 
 
@@ -2161,7 +2163,7 @@ void limpiar_todos_los_elementos_de_1_segmento(segmento* segmentoABorrar){
 void liberarTodosLasTablasDePaginas(pagina_referenciada* ref){
 	pagina_referenciada* refaux;
 	void* info = malloc(sizeof(pagina)+max_valor_key);
-
+	mutexBloquear(&mutex_bitmap);
 	while(ref!=NULL){
 		refaux = ref->sig;
 	//	retardo_memoria(arc_config->retardo_mem);
@@ -2171,16 +2173,19 @@ void liberarTodosLasTablasDePaginas(pagina_referenciada* ref){
 		free(ref);
 		ref = refaux;
 	}
+	mutexDesbloquear(&mutex_bitmap);
 	free(info);
 	log_info(log_memoria, "[LIBERAR SEGMENTO] TABLA DE LA PAGINA LIBERADO POR COMPLETO");
 }
 
 void liberarPosicionLRU(int posicionAIr) {
+
 	void* info = malloc(sizeof(nodoLRU));
 	memcpy(bloque_LRU+posicionAIr*sizeof(nodoLRU), info, sizeof(nodoLRU));
 	bitmapLiberarBit(bitmap, posicionAIr);
 	log_info(log_memoria, "[LIBERAR SEGMENTO EN LRU]"
 			"BLOQUE DE LA LRU EN LA POSICION NRO '%d' LIBERADA", posicionAIr);
+
 }
 
 void liberar_todo_segmento(){
@@ -2355,7 +2360,8 @@ int buscarPaginaDisponible(u_int16_t key, bool existiaTabla,
 }
 
 void modificar_bloque_LRU(char* nombreTabla, double timestamp, int nroPosicion, bool estado,
-		bool vieneDeFuncionInsert){
+		bool vieneDeFuncionInsert)
+{
 //	mutexBloquear(&LRUMutex);
 	log_info(log_memoria, "[MODIFICAR BLOQUE LRU]\nActualizar bloque LRU");
 	nodoLRU* nuevoNodo = malloc(sizeof(nodoLRU));

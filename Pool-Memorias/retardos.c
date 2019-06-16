@@ -5,13 +5,8 @@
  *      Author: utnso
  */
 #include <time.h>
-
-void iniciarSemaforosRetados(){
-	mutexIniciar(&mutex_retardo_memoria);
-	mutexIniciar(&mutex_retardo_gossiping);
-	mutexIniciar(&mutex_retardo_fs);
-	mutexIniciar(&mutex_retardo_journal);
-}
+#include "retardos.h"
+//#include "../Biblioteca/src/Biblioteca.h"
 
 void retardo_memoria(int milisegundos){
 	mutexBloquear(&mutex_retardo_memoria);
