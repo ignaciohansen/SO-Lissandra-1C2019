@@ -4,38 +4,37 @@
  *  Created on: 13 jun. 2019
  *      Author: utnso
  */
-#include <time.h>
 #include "retardos.h"
-//#include "../Biblioteca/src/Biblioteca.h"
+//#include "../Biblioteca/src/Biblioteca.c"
 
 void retardo_memoria(int milisegundos){
-	mutexBloquear(&mutex_retardo_memoria);
+	pthread_mutex_lock(&mutex_retardo_memoria);
 	usleep(milisegundos*1000);
-	mutexDesbloquear(&mutex_retardo_memoria);
+	pthread_mutex_unlock(&mutex_retardo_memoria);
 }
 
 void retardo_fs(int milisegundos){
-	mutexBloquear(&mutex_retardo_fs);
+	pthread_mutex_lock(&mutex_retardo_fs);
 	usleep(milisegundos*1000);
-	mutexDesbloquear(&mutex_retardo_fs);
+	pthread_mutex_unlock(&mutex_retardo_fs);
 }
 
 void retardo_gossiping(int milisegundos){
 	while(1){
-		mutexBloquear(&mutex_retardo_gossiping);
+		pthread_mutex_lock(&mutex_retardo_gossiping);
 		usleep(milisegundos*1000);
 		//LUEGO DE ESTO ACTIVARA LA FUNCION GOSSIPING
 	//	GOSSIPING();
-		mutexDesbloquear(&mutex_retardo_gossiping);
+		pthread_mutex_unlock(&mutex_retardo_gossiping);
 	}
 }
 
 void retardo_journal(int milisegundos){
 	while(1){
-		mutexBloquear(&mutex_retardo_journal);
+		pthread_mutex_lock(&mutex_retardo_journal);
 		usleep(milisegundos*1000);
 		//LUEGO DE ESTO EMPIEZA UN JOURNAL;
 		JOURNAL();
-		mutexDesbloquear(&mutex_retardo_journal);
+		pthread_mutex_unlock(&mutex_retardo_journal);
 	}
 }
