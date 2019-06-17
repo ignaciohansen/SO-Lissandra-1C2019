@@ -131,6 +131,15 @@ void comandoDescribeEspecifico(char* tabla);
 void comandoDescribe();
 
 /*--------------------------------------------------------------------------------------------
+ * 									Funciones y variables de tiempo
+ *--------------------------------------------------------------------------------------------
+ */
+
+double acumuladorTiempo = 0;
+clock_t tiempoComando;
+
+
+/*--------------------------------------------------------------------------------------------
  * 									Elementos de bitmap
  *--------------------------------------------------------------------------------------------
  */
@@ -172,6 +181,10 @@ void escanearParticion(int particion);
 char* buscarBloque(char* key);
 
 void eliminarTablaCompleta(char* tabla);
+
+bool validarKey(char* key);
+
+bool validarValue(char* value);
 
 char* desenmascararValue(char* value);
 

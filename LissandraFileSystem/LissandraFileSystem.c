@@ -1167,6 +1167,34 @@ log_info(logger, "Vamos a eliminar el metadata de la tabla: %s", path_tabla_meta
 
 }
 
+bool validarValue(char* value){
+
+bool contienePuntoYcoma = stringContiene(value,";");
+
+if(contienePuntoYcoma){
+
+log_info(logger,"el value contiene ; por lo tanto no se agrega");
+
+}
+
+return contienePuntoYcoma;
+
+}
+
+bool validarKey(char* key){
+
+bool contienePuntoYcoma = stringContiene(key,";");
+
+if(contienePuntoYcoma){
+
+log_info(logger,"la key contiene ; por lo tanto no se agrega");
+
+}
+
+return contienePuntoYcoma;
+
+}
+
 char* desenmascararValue(char* value){
 
 	char* valueSinPimeraComilla = stringTomarDesdePosicion(value,1);
@@ -1175,6 +1203,17 @@ char* desenmascararValue(char* value){
 	return valueDesenmascarado;
 
 }
+
+void sumarTiempo(){
+
+tiempoComando  = clock();
+
+acumuladorTiempo += (double)(tiempoComando) / CLOCKS_PER_SEC;
+
+log_info(logger,"El tiempo hasta ahora es %f",acumuladorTiempo);
+
+}
+
 int comandoSelect(char* tabla, char* key) {
 
 	if (verificarTabla(tabla) == -1) {
@@ -1192,6 +1231,8 @@ int comandoSelect(char* tabla, char* key) {
 		// ver key con timestamp mas grande
 
 		return valorKey;
+
+		sumarTiempo();
 	}
 } // int comandoSelect(char* tabla, char* key)
 
@@ -1206,6 +1247,7 @@ void comandoDrop(char* tabla) {
 
 	eliminarTablaCompleta(tabla);
 
+	sumarTiempo();
 }
 
 void comandoCreate(char* tabla, char* consistencia, char* particiones,
@@ -1273,6 +1315,7 @@ void comandoCreate(char* tabla, char* consistencia, char* particiones,
 
 			// FALTA ASIGNAR BLOQUE PARA LA PARTICION
 
+
 		} else {
 			log_info(logger, "No se pudo crear el archivo metadata \n");
 			fclose(archivoMetadata);
@@ -1304,6 +1347,11 @@ comandoInsert(tabla,key,value,timestamp);
 
 void comandoInsert(char* tabla,char* key,char* value,char* timestamp) {
 
+bool verificarValue = validarValue(value);
+bool verificarKey = validarKey(key);
+bool algunoContiene =  (verificarValue || verificarKey);
+
+if(!algunoContiene){
 char* valueDesenmascarado = desenmascararValue(value);
 
 registroPorAgregar = malloc(
@@ -1350,25 +1398,6 @@ log_info(logger,"Se va a agregar el siguiente registro en la segunda pos de la l
 dictionary_put(diccionario,key,listaKeysRepetidas);
 
 
-/*
-char* registroDuplicado = malloc(
-			string_length(keyYaExistente) + string_length(registroPorAgregar)
-					+ 9);
-
-
-registroDuplicado = string_new();
-
-string_append(&registroDuplicado, "[");
-string_append(&registroDuplicado, "(");
-string_append(&registroDuplicado, keyYaExistente);
-string_append(&registroDuplicado, ")");
-string_append(&registroDuplicado, ";");
-string_append(&registroDuplicado, "(");
-string_append(&registroDuplicado, registroPorAgregar);
-string_append(&registroDuplicado, ")");
-string_append(&registroDuplicado, "]");
-*/
-
 }else{
 	dictionary_put(diccionario,key,registroPorAgregar);
 
@@ -1382,8 +1411,12 @@ int i = dictionary_size(diccionario);
 
 log_info(logger,"cantidad de elementos diccionario: %d", i);
 
+sumarTiempo();
 
 }
+
+}
+
 
 void comandoDescribeEspecifico(char* tabla) {
 
@@ -1401,3 +1434,5 @@ void comandoDescribe() {
 void cerrarTodo() {
 	fclose(archivoBitmap);
 }
+
+
