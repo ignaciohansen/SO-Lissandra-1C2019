@@ -23,8 +23,7 @@ void retardo_gossiping(int milisegundos){
 	while(1){
 		pthread_mutex_lock(&mutex_retardo_gossiping);
 		usleep(milisegundos*1000);
-		//LUEGO DE ESTO ACTIVARA LA FUNCION GOSSIPING
-	//	GOSSIPING();
+		//LUEGO DE ESTO ACTIVARA LA FUNCION GOSSIPING //	GOSSIPING();
 		pthread_mutex_unlock(&mutex_retardo_gossiping);
 	}
 }

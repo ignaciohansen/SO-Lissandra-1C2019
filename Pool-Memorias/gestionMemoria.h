@@ -17,6 +17,8 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteVa
 
 //int obtener_valores(char* nombreTabla, int16_t key, unidad_memoria* unidadExtra);
 
+
+
 /*---------------------------------------------------
  * FUNCIONES PARA ADMINISTRAR LA MEMORIA
  *---------------------------------------------------*/

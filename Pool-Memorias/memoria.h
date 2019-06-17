@@ -33,6 +33,7 @@
 #define ERROR -1
 
 t_config* configFile;
+t_header* buffer;
 
 int socketEscuchaKernel,conexionEntrante,recibiendoMensaje;
 int sockeConexionLF, resultado_sendMsj;
@@ -42,7 +43,7 @@ int tamanio, limpiandoMemoria;
 char* linea;
 char* argumentosComando;
 char** argumentosParseados;
-t_header* buffer;
+
 
 /*
  * 									HILOS

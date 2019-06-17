@@ -16,6 +16,8 @@ void* accederYObtenerInfoDePaginaEnPosicion(int posicion, void* info){
 	log_info(log_memoria, "[ACCEDIENDO A DATOS] Datos obtenidos de la posicion '%d'", posicion);
 //	mutexDesbloquear(&mutex_tabla_pagina_en_modificacion);
 
+
+
 	return info;
 }
 

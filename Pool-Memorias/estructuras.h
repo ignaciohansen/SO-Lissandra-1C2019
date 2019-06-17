@@ -27,15 +27,19 @@ t_bitarray* bitmap;
 pthread_mutex_t memoria_mutex_paginas_disponibles;
 pthread_mutex_t mutex_segmento_en_modificacion;
 pthread_mutex_t mutex_tabla_pagina_en_modificacion;
+
 pthread_mutex_t mutex_segmento_modificando;
 pthread_mutex_t mutex_limpiando_memoria;
 pthread_mutex_t mutex_pagina_auxiliar;
+
 pthread_mutex_t mutex_pagina_referenciada_aux;
 pthread_mutex_t mutex_pagina_referenciada_aux2;
 pthread_mutex_t mutex_segmento_aux;
+
 pthread_mutex_t mutex_crear_pagina_nueva;
 pthread_mutex_t LRUMutex, ACCIONLRU;
 pthread_mutex_t JOURNALHecho;
+
 pthread_mutex_t mutex_memoria;
 pthread_mutex_t mutex_bitmap;
 pthread_mutex_t mutex_bloque_LRU_modificando;

@@ -21,11 +21,11 @@ int main() {
 	aux_tabla_paginas2 = malloc(sizeof(pagina_referenciada));
 //	aux_tabla_paginas=malloc(sizeof(tabla_pagina));
 
-
 	arc_config->max_value_key = 20;
 	max_valor_key = arc_config->max_value_key;
 	//ESTE ES SOLO TEST, DESPUES SE BORRA A LA MIERDA
 		   max_valor_key=6;
+
 	armarMemoriaPrincipal();
 
 	iniciarSemaforosYMutex();
