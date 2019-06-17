@@ -5,6 +5,9 @@
  *      Author: utnso
  */
 
+#ifndef GESTION_MEMORIA_INC
+#define GESTION_MEMORIA_INC
+
 //#include "../Biblioteca/src/Biblioteca.c"
 #include "estructuras.h"
 //#include "memoria.h"
@@ -129,3 +132,5 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteVa
 
 
 void insertHardcodeado(int cant, int inicio, void* info, char* valorNuevo, char* nombreTabla);
+
+#endif

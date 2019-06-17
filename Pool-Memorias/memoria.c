@@ -1,4 +1,5 @@
 #include "memoria.h"
+#include "gestionMemoria.h"
 //#include "../Biblioteca/src/Biblioteca.c"
 
 void terminar_memoria(t_log* g_log);

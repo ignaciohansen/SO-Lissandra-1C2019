@@ -23,7 +23,8 @@ void borrar_request(request_t req)
 	for(int i=0; i<req.cant_args; i++){
 		free(req.args[i]);
 	}
-	free(req.args);
+	if(req.cant_args > 0)
+		free(req.args);
 	free(req.request_str);
 	free(req.command_str);
 }
@@ -134,13 +135,16 @@ request_t parser(char* req)
 	}
 	args=sacar_primeros_caracteres(temp,strlen(command)+1);
 	request.cant_args=cant_args;
-	request.args=malloc(sizeof(char*)*cant_args);
-	for(int i=0; i<cant_args; i++){
-		request.args[i]=primer_palabra(args);
-		if(i != cant_args-1){
-			aux_arg=sacar_primeros_caracteres(args,strlen(request.args[i])+1);
-			free(args);
-			args=aux_arg;
+	if(cant_args > 0)
+	{
+		request.args=malloc(sizeof(char*)*cant_args);
+		for(int i=0; i<cant_args; i++){
+			request.args[i]=primer_palabra(args);
+			if(i != cant_args-1){
+				aux_arg=sacar_primeros_caracteres(args,strlen(request.args[i])+1);
+				free(args);
+				args=aux_arg;
+			}
 		}
 	}
 	free(args);

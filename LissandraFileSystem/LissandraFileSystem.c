@@ -30,24 +30,28 @@ int main() {
 	sem_init(&semaforoQueries, 0, 1);
 	list_queries = list_create();
 
-	//hacer en otra funcion
-	int aux = time(NULL);
-	sprintf(timestamp_inicio, "%d", aux);
 
-	log_info(logger, "el timestamp_inicio es: %s", timestamp_inicio);
 
 	LisandraSetUP(); // CONFIGURACION Y SETEO SOCKET
 
+	//hacer en otra funcion
+	int timestamp_inicio = time(NULL);
+	//sprintf(timestamp_inicio, "%d", aux);
+
+	log_info(logger, "el timestamp_inicio es: %d", timestamp_inicio);
+
 	cargarBitmap();
 
-	pthread_t* hiloListening, hiloConsola, hiloEjecutor;
+	pthread_t* hiloListening, hiloConsola, hiloEjecutor,hiloDump;
 	pthread_create(&hiloConsola, NULL, (void*) consola, NULL);
 	pthread_create(&hiloListening, NULL, (void*) listenSomeLQL, NULL);
+	pthread_create(&hiloDump, NULL, (void*) esperarTiempoDump, NULL);
 
 	//pthread_create(&hiloEjecutor , NULL,(void*) consola, NULL);
 
 	pthread_join(hiloListening, NULL);
 	pthread_join(hiloConsola, NULL);
+	pthread_join(hiloDump, NULL);
 
 	cerrarTodo();
 
@@ -79,9 +83,9 @@ void LisandraSetUP() {
 
 	log_info(logger, "la configuracion y la metadata se levantaron ok");
 
-	diccionario = dictionary_create();
-	listaKeysRepetidas = list_create();
-	listaKeysInsertadas = list_create();
+	memtable = dictionary_create();
+	listaTablasRepetidas = list_create();
+	listaTablasInsertadas = list_create();
 }
 
 int abrirServidorLissandra() {
@@ -971,28 +975,29 @@ void retornarValoresDirectorio() {
 
 void esperarTiempoDump() {
 
-	dumps = 1;
-	int cantidad_de_dumps = 0;
 
 	while(true){
 
 		//hacer en otra funcion
-		int aux = time(NULL);
-		char timestamp_actual[11];
-		sprintf(timestamp_actual, "%d", aux);
+		int timestamp_actual = time(NULL);
+		//char timestamp_actual[11];
+		//sprintf(timestamp_actual, "%d", aux);
 
-		if((timestamp_actual - timestamp_inicio) / dumps >= configFile->tiempo_dump){
+
+	int tiempoEjecucion = (timestamp_actual - timestamp_inicio) / (dumps_a_dividir*1000);
+	//log_info(logger,"el tiempo de ejecucion es: %d",tiempoEjecucion);
+		if( tiempoEjecucion >= configFile->tiempo_dump){
 			log_info(logger, "Es tiempo de dump, hay cosas?");
-			if(dictionary_size(diccionario) > 0){
+			if(dictionary_size(memtable) > 0){
 				log_info(logger, "Hay, se hace el dump");
-				crearArchivoTemporal();
+				realizarDump();
 				cantidad_de_dumps++;
 			}
 			else{
 				//nada
 			}
 
-			dumps++;
+			dumps_a_dividir++;
 		}
 		else {
 			//no hace nada
@@ -1000,31 +1005,45 @@ void esperarTiempoDump() {
 
 	}
 
+
+}
+
+void realizarDump(){
+	for(int i=0;i<dictionary_size(memtable);i++){
+		char* tabla = list_get(listaTablasInsertadas,i);
+		char* path = armarPathTablaParaDump(tabla);
+		crearArchivoTemporal(path,tabla);
+	}
+}
+
+char* armarPathTablaParaDump(char* tabla){
+	char* path_archivo_temporal = malloc(sizeof(char)*50);
+	path_archivo_temporal = string_new();
+
+	string_append(&path_archivo_temporal,TABLE_PATH);
+
+	string_append(&path_archivo_temporal, tabla);
+
+	sprintf(path_archivo_temporal, "%d", cantidad_de_dumps);
+
+	string_append(&path_archivo_temporal, ".tmp");
+
+	return path_archivo_temporal;
+
 }
 
 
-void crearArchivoTemporal(){
-
-	//COSAS A ANALIZAR
-	// armar el path del temporal con la tabla , ver como mandar desde el insert a este hilo la tabla
+void crearArchivoTemporal(char* path,char* tabla){
 
 	// path objetivo: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA/cantidad_de_dumps.tmp
 
-
-	// Hay que hacer uno de estos para todas las tablas que hayan pasado, puede ser un lista de tablas como hicimos con las keys o ver otra forma
-
 	FILE* temporal;
-	temporal = fopen(archivoParticion, "w");
-	//Recorrer lista de keys insertadas
-		for (int i = 0; i < list_size(listaKeysInsertadas); i++) {
-
-					// Por cada posicion de la lista, obtener la key y pasar esa key como parametro del diccionario para get
-					dictionary_get(diccionario,list_get(listaKeysInsertadas,i));
-
-					//La idea es poner un fputs y llenar el archivo
-
-}
-		fclose(temporal);
+	temporal = fopen(path, "w");
+	t_list* listaRegistrosTabla = dictionary_get(memtable,tabla);
+	for(int i = 0; i<list_size(listaRegistrosTabla);i++){
+		fputs(list_get(listaRegistrosTabla,i),temporal);
+	}
+	fclose(temporal);
 }
 
 
@@ -1441,46 +1460,44 @@ registroPorAgregar = string_new();
 
 	log_info(logger,"Se va a agregar el siguiente registro %s",registroPorAgregar);
 
-// Verifico que la key ya exista en el diccionario, aca se hace el dump
+// Verifico que la key ya exista en el memtable, aca se hace el dump
 
-bool keyRepetida = dictionary_has_key(diccionario,key);
-log_info(logger,"valor keyRepetida %d",keyRepetida);
+bool tablaRepetida = dictionary_has_key(memtable,tabla);
+log_info(logger,"valor tablaRepetida %d",tablaRepetida);
 
-if(keyRepetida){
-	log_info(logger,"Encontre una key repetida");
+if(tablaRepetida){
+	log_info(logger,"Encontre una tabla repetida");
 
-	void* keyYaExistente = dictionary_get(diccionario,key);
+	void* tablaYaExistente = dictionary_get(memtable,tabla);
 
-log_info(logger,"Ya existe este registro en la memtable y es la siguiente: %s",keyYaExistente);
+log_info(logger,"Ya existe este registro en la memtable y es la siguiente: %s",tablaYaExistente);
 
-list_add(listaKeysRepetidas,keyYaExistente);
-list_add(listaKeysRepetidas,registroPorAgregar);
+list_add(listaTablasRepetidas,tablaYaExistente);
+list_add(listaTablasRepetidas,registroPorAgregar);
 
-void* primeraPos = list_get(listaKeysRepetidas, 0);
-void* segundaPos = list_get(listaKeysRepetidas, 1);
+void* primeraPos = list_get(listaTablasRepetidas, 0);
+void* segundaPos = list_get(listaTablasRepetidas, 1);
 
 log_info(logger,"Se va a agregar el siguiente registro en la primera pos de la lista %s",primeraPos);
 log_info(logger,"Se va a agregar el siguiente registro en la segunda pos de la lista %s",segundaPos);
 
-dictionary_put(diccionario,key,listaKeysRepetidas);
+dictionary_put(memtable,tabla,listaTablasRepetidas);
 
 
 }else{
-	dictionary_put(diccionario,key,registroPorAgregar);
+	dictionary_put(memtable,tabla,registroPorAgregar);
 
 }
 
 // Lista utilizada para ver despues las keys a dumpear
-list_add(listaKeysRepetidas,key);
+list_add(listaTablasInsertadas,tabla);
 
 
-void* resultado = dictionary_get(diccionario,key);
+void* resultado = dictionary_get(memtable,tabla);
 
+int i = dictionary_size(memtable);
 
-log_info(logger,"lo agregado fue: %s", resultado);
-int i = dictionary_size(diccionario);
-
-log_info(logger,"cantidad de elementos diccionario: %d", i);
+log_info(logger,"cantidad de elementos memtable: %d", i);
 
 
 }
@@ -1504,9 +1521,9 @@ void comandoDescribe() {
 void cerrarTodo() {
 
 	sem_destroy(&semaforoQueries);
-	dictionary_destroy(diccionario);
-	list_destroy(listaKeysRepetidas);
-	list_destroy(listaKeysInsertadas);
+	dictionary_destroy(memtable);
+	list_destroy(listaTablasRepetidas);
+	list_destroy(listaTablasInsertadas);
 	fclose(archivoBitmap);
 }
 

@@ -5,10 +5,10 @@
  *      Author: utnso
  */
 
-/*
+
 #ifndef ESTRUCTURAS_H_
 #define ESTRUCTURAS_H_
-*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/sem.h>
@@ -150,4 +150,4 @@ int max_valor_key;
 
 
 
-//#endif /* ESTRUCTURAS_H_ */
+#endif /* ESTRUCTURAS_H_ */
