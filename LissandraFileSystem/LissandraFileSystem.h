@@ -111,6 +111,7 @@ sem_t semaforoQueries;
 
 t_dictionary* diccionario;
 t_list * listaKeysRepetidas;
+t_list * listaKeysInsertadas;
 
 /*--------------------------------------------------------------------------------------------
  * 									Elementos de comandos
@@ -129,14 +130,6 @@ void comandoDrop(char* tabla);
 void comandoCreate(char* tabla,char* consistencia,char* particiones,char* tiempoCompactacion);
 void comandoDescribeEspecifico(char* tabla);
 void comandoDescribe();
-
-/*--------------------------------------------------------------------------------------------
- * 									Funciones y variables de tiempo
- *--------------------------------------------------------------------------------------------
- */
-
-double acumuladorTiempo = 0;
-clock_t tiempoComando;
 
 
 /*--------------------------------------------------------------------------------------------
@@ -162,12 +155,20 @@ int obtenerPrimerBloqueOcupadoBitmap();
 int cantidadBloquesOcupadosBitmap();
 
 /*--------------------------------------------------------------------------------------------
- * 									Elementos de bitmap
+ * 									Elementos de tiempo
  *--------------------------------------------------------------------------------------------
  */
 
+
 char timestamp_inicio[11];
 int dumps;
+
+/*--------------------------------------------------------------------------------------------
+ * 									Elementos de archivos temporales
+ *--------------------------------------------------------------------------------------------
+ */
+
+char* path_archivo_temporal;
 
 
 /*--------------------------------------------------------------------------------------------

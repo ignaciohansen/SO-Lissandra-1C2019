@@ -81,6 +81,7 @@ void LisandraSetUP() {
 
 	diccionario = dictionary_create();
 	listaKeysRepetidas = list_create();
+	listaKeysInsertadas = list_create();
 }
 
 int abrirServidorLissandra() {
@@ -984,6 +985,7 @@ void esperarTiempoDump() {
 			log_info(logger, "Es tiempo de dump, hay cosas?");
 			if(dictionary_size(diccionario) > 0){
 				log_info(logger, "Hay, se hace el dump");
+				crearArchivoTemporal();
 				cantidad_de_dumps++;
 			}
 			else{
@@ -999,6 +1001,32 @@ void esperarTiempoDump() {
 	}
 
 }
+
+
+void crearArchivoTemporal(){
+
+	//COSAS A ANALIZAR
+	// armar el path del temporal con la tabla , ver como mandar desde el insert a este hilo la tabla
+
+	// path objetivo: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA/cantidad_de_dumps.tmp
+
+
+	// Hay que hacer uno de estos para todas las tablas que hayan pasado, puede ser un lista de tablas como hicimos con las keys o ver otra forma
+
+	FILE* temporal;
+	temporal = fopen(archivoParticion, "w");
+	//Recorrer lista de keys insertadas
+		for (int i = 0; i < list_size(listaKeysInsertadas); i++) {
+
+					// Por cada posicion de la lista, obtener la key y pasar esa key como parametro del diccionario para get
+					dictionary_get(diccionario,list_get(listaKeysInsertadas,i));
+
+					//La idea es poner un fputs y llenar el archivo
+
+}
+		fclose(temporal);
+}
+
 
 //DUMP
 
@@ -1255,16 +1283,6 @@ char* desenmascararValue(char* value){
 
 }
 
-void sumarTiempo(){
-
-tiempoComando  = clock();
-
-acumuladorTiempo += (double)(tiempoComando) / CLOCKS_PER_SEC;
-
-log_info(logger,"El tiempo hasta ahora es %f",acumuladorTiempo);
-
-}
-
 int comandoSelect(char* tabla, char* key) {
 
 	if (verificarTabla(tabla) == -1) {
@@ -1283,7 +1301,6 @@ int comandoSelect(char* tabla, char* key) {
 
 		return valorKey;
 
-		sumarTiempo();
 	}
 } // int comandoSelect(char* tabla, char* key)
 
@@ -1298,7 +1315,6 @@ void comandoDrop(char* tabla) {
 
 	eliminarTablaCompleta(tabla);
 
-	sumarTiempo();
 }
 
 void comandoCreate(char* tabla, char* consistencia, char* particiones,
@@ -1454,6 +1470,10 @@ dictionary_put(diccionario,key,listaKeysRepetidas);
 
 }
 
+// Lista utilizada para ver despues las keys a dumpear
+list_add(listaKeysRepetidas,key);
+
+
 void* resultado = dictionary_get(diccionario,key);
 
 
@@ -1462,7 +1482,6 @@ int i = dictionary_size(diccionario);
 
 log_info(logger,"cantidad de elementos diccionario: %d", i);
 
-sumarTiempo();
 
 }
 
@@ -1486,6 +1505,8 @@ void cerrarTodo() {
 
 	sem_destroy(&semaforoQueries);
 	dictionary_destroy(diccionario);
+	list_destroy(listaKeysRepetidas);
+	list_destroy(listaKeysInsertadas);
 	fclose(archivoBitmap);
 }
 
