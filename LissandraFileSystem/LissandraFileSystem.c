@@ -30,6 +30,12 @@ int main() {
 	sem_init(&semaforoQueries, 0, 1);
 	list_queries = list_create();
 
+	//hacer en otra funcion
+	int aux = time(NULL);
+	sprintf(timestamp_inicio, "%d", aux);
+
+	log_info(logger, "el timestamp_inicio es: %s", timestamp_inicio);
+
 	LisandraSetUP(); // CONFIGURACION Y SETEO SOCKET
 
 	cargarBitmap();
@@ -43,8 +49,7 @@ int main() {
 	pthread_join(hiloListening, NULL);
 	pthread_join(hiloConsola, NULL);
 
-	sem_destroy(&semaforoQueries);
-	dictionary_destroy(diccionario);
+	cerrarTodo();
 
 	// consola();
 	return 0;
@@ -454,11 +459,11 @@ void menu() {
 
 	printf("Los comandos que se pueden ingresar son: \n"
 			"COMANDOS \n"
-			"Insert \n"
-			"Select \n"
-			"Create \n"
-			"Describe \n"
-			"Drop \n"
+			"insert \n"
+			"select \n"
+			"create \n"
+			"describe \n"
+			"drop \n"
 			"SALIR \n"
 			"\n");
 
@@ -634,6 +639,15 @@ void validarComando(char** comando, int tamanio, t_log* logger) {
 
 	}
 		break;
+
+	case salir: {
+			printf("Salir seleccionado\n");
+			log_info(logger, "Se selecciono Salir");
+
+			//cerrarTodo(); terminar
+
+		}
+			break;
 
 	default: {
 		printf("Comando mal ingresado. \n");
@@ -951,6 +965,43 @@ void retornarValoresDirectorio() {
 	}
 	closedir(dir);
 }
+
+//DUMP
+
+void esperarTiempoDump() {
+
+	dumps = 1;
+	int cantidad_de_dumps = 0;
+
+	while(true){
+
+		//hacer en otra funcion
+		int aux = time(NULL);
+		char timestamp_actual[11];
+		sprintf(timestamp_actual, "%d", aux);
+
+		if((timestamp_actual - timestamp_inicio) / dumps >= configFile->tiempo_dump){
+			log_info(logger, "Es tiempo de dump, hay cosas?");
+			if(dictionary_size(diccionario) > 0){
+				log_info(logger, "Hay, se hace el dump");
+				cantidad_de_dumps++;
+			}
+			else{
+				//nada
+			}
+
+			dumps++;
+		}
+		else {
+			//no hace nada
+		}
+
+	}
+
+}
+
+//DUMP
+
 
 int determinarParticion(int key, int particiones) {
 
@@ -1432,6 +1483,9 @@ void comandoDescribe() {
 }
 
 void cerrarTodo() {
+
+	sem_destroy(&semaforoQueries);
+	dictionary_destroy(diccionario);
 	fclose(archivoBitmap);
 }
 
