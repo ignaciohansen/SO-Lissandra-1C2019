@@ -109,9 +109,9 @@ t_metadata_LFS* metadataLFS;
 
 sem_t semaforoQueries;
 
-t_dictionary* diccionario;
-t_list * listaKeysRepetidas;
-t_list * listaKeysInsertadas;
+t_dictionary* memtable;
+t_list * listaTablasRepetidas;
+t_list * listaTablasInsertadas;
 
 /*--------------------------------------------------------------------------------------------
  * 									Elementos de comandos
@@ -155,20 +155,26 @@ int obtenerPrimerBloqueOcupadoBitmap();
 int cantidadBloquesOcupadosBitmap();
 
 /*--------------------------------------------------------------------------------------------
- * 									Elementos de tiempo
+ * 									Elementos de dump
  *--------------------------------------------------------------------------------------------
  */
 
 
-char timestamp_inicio[11];
-int dumps;
+int timestamp_inicio;
+int cantidad_de_dumps = 0;
+int dumps_a_dividir =1;
+
+void esperarTiempoDump();
+char* armarPathTablaParaDump(char* tabla);
+void crearArchivoTemporal(char* path,char* tabla);
+void realizarDump();
 
 /*--------------------------------------------------------------------------------------------
  * 									Elementos de archivos temporales
  *--------------------------------------------------------------------------------------------
  */
 
-char* path_archivo_temporal;
+
 
 
 /*--------------------------------------------------------------------------------------------
@@ -199,5 +205,9 @@ bool validarValue(char* value);
 char* desenmascararValue(char* value);
 
 void cerrarTodo();
+
+
+
+
 
 #endif /* LFILESSYSTEM_H_ */
