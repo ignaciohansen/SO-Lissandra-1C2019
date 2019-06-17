@@ -136,11 +136,21 @@ void comandoDescribe();
  */
 
 char* bitmapPath;
-
+t_bitarray* bitarray;
 int bytesAEscribir;
+FILE* archivoBitmap;
 
+int existeArchivo(char* path);
 void cargarBitmap();
 t_bitarray* crearBitarray();
+void persistirCambioBitmap();
+int cantBloquesLibresBitmap();
+int estadoBloqueBitmap(int bloque);
+int ocuparBloqueLibreBitmap(int bloque);
+int liberarBloqueBitmap(int bloque);
+int obtenerPrimerBloqueLibreBitmap();
+int obtenerPrimerBloqueOcupadoBitmap();
+int cantidadBloquesOcupadosBitmap();
 
 /*--------------------------------------------------------------------------------------------
  * 									Otros
@@ -164,5 +174,7 @@ char* buscarBloque(char* key);
 void eliminarTablaCompleta(char* tabla);
 
 char* desenmascararValue(char* value);
+
+void cerrarTodo();
 
 #endif /* LFILESSYSTEM_H_ */

@@ -264,35 +264,6 @@ int existeArchivo(char* path){
     return true;
 }
 
-int32_t sizeFile(char* path){
-    FILE *aux = fopen(path,"r");
-    if(aux==NULL)
-        return -1;
-    fseek(aux,0,SEEK_END);
-    int32_t size=ftell(aux);
-    fclose(aux);
-    return size;
-}
-
-int32_t createBlockSize(int32_t size){
-    FILE* writer;
-    writer=fopen(bitmapPath,"w");
-    if(writer == NULL)
-        return 1;
-    char a=0;
-    fwrite(&a,1,size,writer);
-    fclose(writer);
-    return 0;
-}
-
-int32_t createBitmap(int32_t cantBloques){
-    int bytesAEscribir=cantBloques/8;
-    if(cantBloques%8!=0)
-        bytesAEscribir++;
-    createBlockSize(bytesAEscribir);
-    return 0;
-}
-
 void cargarBitmap() {
 
 	bitmapPath = malloc(sizeof(char)*50);
@@ -302,26 +273,31 @@ void cargarBitmap() {
 
 	string_append(&bitmapPath, PATH_LFILESYSTEM_BITMAP);
 
-	log_info(logger, "ruta del bitmap: %s", bitmapPath);
-
-	if(!existeArchivo(bitmapPath) || sizeFile(bitmapPath) != (metadataLFS->blocks /8)) {
-		log_info(log,"Archivo de bitmap no existe o tiene un tamaño incorrecto, creando de cero");
-		createBitmap(metadataLFS->blocks);
-
+	if(!existeArchivo(bitmapPath)) {
+		log_info(log,"Archivo de bitmap no existe");
 	}
 	else {
-		log_info(logger, "existe archivo");
+		log_info(logger, "existe archivo, se procede a cargar el bitmap");
 		bitarray = crearBitarray();
 	}
 
-	log_info(logger, "cantidad de bloques libres: %d", cantBloquesLibresBitmap());
-	log_info(logger, "cantidad de bloques ocupados: %d", cantidadBloquesOcupadosBitmap());
-	ocuparBloqueLibreBitmap(3);
-	log_info(logger, "ocupando bloque: %d", 3);
-	log_info(logger, "se ocupo bien? tiene que ser 1: %d", estadoBloqueBitmap(3));
-	log_info(logger, "okey... vamos a liberarlo: %d", liberarBloqueBitmap(3));
-	log_info(logger, "se ocupo bien? tiene que ser 0: %d", estadoBloqueBitmap(3));
+	log_info(logger, "cantidad de bloques libres en el bitmap creado: %d", cantBloquesLibresBitmap());
+
+	//pruebas de las funciones bitmap
+	/*log_info(logger, "cantidad de bloques ocupados: %d", cantidadBloquesOcupadosBitmap());
+
+	ocuparBloqueLibreBitmap(0);
+	log_info(logger, "ocupando bloque: %d", 0);
+	log_info(logger, "se ocupo bien? tiene que ser 1: %d", estadoBloqueBitmap(0));
+
+	log_info(logger, "cantidad de bloques ocupados: %d = 1?", cantidadBloquesOcupadosBitmap());
 	log_info(logger, "primer bloque libre: %d", obtenerPrimerBloqueLibreBitmap());
+
+	liberarBloqueBitmap(0);
+	log_info(logger, "okey... vamos a liberarlo");
+	log_info(logger, "se libero bien? tiene que ser 0: %d", estadoBloqueBitmap(0));
+
+	log_info(logger, "cantidad de bloques ocupados: %d = 0?", cantidadBloquesOcupadosBitmap());*/
 }
 
 t_bitarray* crearBitarray() {
@@ -331,18 +307,23 @@ t_bitarray* crearBitarray() {
 	if(metadataLFS->blocks%8 != 0)
 		bytesAEscribir++;
 
-	char* bitarrayAux = malloc(bytesAEscribir);
+	if(fopen(bitmapPath, "rb") == NULL){
+		return NULL;
+	}
 
-	FILE* archivoBitmap = fopen(bitmapPath, "rb");
+	char* bitarrayAux = malloc(bytesAEscribir);
+	bzero(bitarrayAux,bytesAEscribir);
+
+	archivoBitmap = fopen(bitmapPath, "wb"); //cuando se termina la ejecucion, hay que cerrarlo
 
 	if(archivoBitmap == NULL){
 		imprimirError(logger, "El archivoBitmap no se pudo abrir correctamente");
 		exit(-1);
 	}
 
-	fread(bitarrayAux, bytesAEscribir, 1, archivoBitmap);
+	fwrite(bitarrayAux, bytesAEscribir, 1, archivoBitmap);
 
-	fclose(archivoBitmap);
+	imprimirMensajeProceso("[BITMAP CREADO] ya se puede operar con los bloques");
 
 	return bitarray_create_with_mode(bitarrayAux, bytesAEscribir, MSB_FIRST);
 
@@ -350,11 +331,9 @@ t_bitarray* crearBitarray() {
 
 void persistirCambioBitmap() {
 
-	FILE* archivoBitmap = fopen(bitmapPath, "wb");bitarray = crearBitarray();
 	fwrite(bitarray->bitarray, bytesAEscribir, 1, archivoBitmap);
 
-	fclose(archivoBitmap);
-
+	log_info(logger, "cambios en bitmap persistidos");
 }
 
 int cantBloquesLibresBitmap() {
@@ -1419,3 +1398,6 @@ void comandoDescribe() {
 	retornarValoresDirectorio();
 }
 
+void cerrarTodo() {
+	fclose(archivoBitmap);
+}
