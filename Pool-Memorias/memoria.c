@@ -34,7 +34,7 @@ int main() {
 	   max_valor_key=6;
 //    infoPagina* infoPag = malloc(sizeof(infoPag));
 
-	imprimirPorPantallaTodosLosComandosDisponibles();
+//	imprimirPorPantallaTodosLosComandosDisponibles();
 	ejecutarHiloConsola();
 //	consola_prueba();
 /*
@@ -91,6 +91,7 @@ void consola_prueba() {
 	int i;
 	while(!fin){
 		retardo_memoria(arc_config->retardo_mem);
+		imprimirPorPantallaTodosLosComandosDisponibles();
 		pthread_mutex_lock(&mutex_info_request);
 		linea = readline(">>");
 		req = parser(linea);
@@ -98,24 +99,26 @@ void consola_prueba() {
 
 		switch(req.command){
 			case INSERT:
-				printf("\nInsertando: <%s><%d><%s>\n\n",req.args[0],atoi(req.args[1]),req.args[2]);
-				Hilo hiloInsertNuevo;
-				hiloCrear(&hiloInsertNuevo, hiloInsert, &req);
-				hiloEsperar(hiloInsertNuevo);
-		//		free(datosDeRequest);
-		//		borrar_request(req);
-		//		borrar_request(req);
+				if(req.cant_args == 3){
+					printf("\nInsertando: <%s><%d><%s>\n\n",req.args[0],atoi(req.args[1]),req.args[2]);
+					Hilo hiloInsertNuevo;
+					hiloCrear(&hiloInsertNuevo, hiloInsert, &req);
+					hiloEsperar(hiloInsertNuevo);
+				} else {
+					imprimirError(log_memoria, "[COMANDO INSERT]\nEl comando INSERT esta mal ingresado");
+				}
 				break;
 			case SELECT:
+				if(req.cant_args == 2){
+					printf("\nObteniendo: <%s><%d>\n\n",req.args[0],atoi(req.args[1]));
+					Hilo hiloSelectNuevo;
+					hiloCrear(&hiloSelectNuevo, hiloSelect, &req);
+					hiloEsperar(hiloSelectNuevo);
+				} else {
+					imprimirError(log_memoria, "[COMANDO SELECT]\nEl comando SELECT esta mal ingresado");
+				}
 				//HAY UN TEMA CON EL TEMA DEL REQ.ARGS 0 Y ES QUE SI NO PONGO NOMBRE
 				//MANDA SARASA, REVISALO LUEGO Y CORREGILO
-				printf("\nObteniendo: <%s><%d>\n\n",req.args[0],atoi(req.args[1]));
-				Hilo hiloSelectNuevo;
-				hiloCrear(&hiloSelectNuevo, hiloSelect, &req);
-				hiloEsperar(hiloSelectNuevo);
-
-				imprimirPorPantallaTodosLosComandosDisponibles();
-		//		borrar_request(req);
 				break;
 			case DESCRIBE:
 				//FALLA SI PONGO OSLO DESCRIBE, ES ALGO DE LA REQ QUE NO ANDA
@@ -129,49 +132,73 @@ void consola_prueba() {
 				hiloCrear(&hiloDescribes, hiloDescribe, &req);
 				hiloEsperar(hiloDescribes);
 
-				imprimirPorPantallaTodosLosComandosDisponibles();
+			//	imprimirPorPantallaTodosLosComandosDisponibles();
 			//	borrar_request(req);
 				break;
 			case DROP:
-				printf("\DROP de la tabla: <%s>\n\n",req.args[0]);
-				Hilo drophilp;
-				hiloCrear(&drophilp, hiloDrop, &req);
-				hiloEsperar(drophilp);
-				imprimirPorPantallaTodosLosComandosDisponibles();
+				if(req.cant_args == 1){
+					printf("\DROP de la tabla: <%s>\n\n",req.args[0]);
+					Hilo drophilp;
+					hiloCrear(&drophilp, hiloDrop, &req);
+					hiloEsperar(drophilp);
+			//		imprimirPorPantallaTodosLosComandosDisponibles();
+				} else {
+					imprimirError(log_memoria, "[COMANDO DROP]\nEl comando DROP esta mal ingresado");
+				}
 		//		borrar_request(req);
 				break;
 			case RETARDO_MEMORIA:
-				retardo = atoi(req.args[0]);
-				mutexDesbloquear(&mutex_info_request);
-				imprimirAviso1(log_memoria, "Cambiando el retardo de acceso a MEMORIA a [%d]",
-						retardo);
-				modificarTIempoRetardo(retardo, RETARDO_MEMORIA);
-				imprimirPorPantallaTodosLosComandosDisponibles();
+				if(req.cant_args == 1){
+					retardo = atoi(req.args[0]);
+					mutexDesbloquear(&mutex_info_request);
+					imprimirAviso1(log_memoria, "Cambiando el retardo de acceso a MEMORIA a [%d]",
+							retardo);
+					modificarTIempoRetardo(retardo, RETARDO_MEMORIA);
+				} else {
+					imprimirError(log_memoria, "[COMANDO RETARDO]\nEl comando RETARDO esta mal ingresado");
+				}
+
+	//			imprimirPorPantallaTodosLosComandosDisponibles();
 
 				break;
 			case RETARDO_FS:
-				retardo = atoi(req.args[0]);
-				mutexDesbloquear(&mutex_info_request);
-				imprimirAviso1(log_memoria, "Cambiando el retardo de acceso a MEMORIA a [%d]",
-						retardo);
-				modificarTIempoRetardo(retardo, RETARDO_FS);
-				imprimirPorPantallaTodosLosComandosDisponibles();
+				if(req.cant_args == 1){
+					retardo = atoi(req.args[0]);
+					mutexDesbloquear(&mutex_info_request);
+					imprimirAviso1(log_memoria, "Cambiando el retardo de acceso a LISANDRA a [%d]",
+											retardo);
+					modificarTIempoRetardo(retardo, RETARDO_FS);
+				} else {
+					imprimirError(log_memoria, "[COMANDO RETARDO]\nEl comando RETARDO esta mal ingresado");
+				}
+
+		//		imprimirPorPantallaTodosLosComandosDisponibles();
 				break;
 			case RETARDO_GOSSIPING:
-				retardo = atoi(req.args[0]);
-				mutexDesbloquear(&mutex_info_request);
-				imprimirAviso1(log_memoria, "Cambiando el retardo de acceso a MEMORIA a [%d]",
-						retardo);
-				modificarTIempoRetardo(retardo, RETARDO_GOSSIPING);
-				imprimirPorPantallaTodosLosComandosDisponibles();
+				if(req.cant_args == 1){
+					retardo = atoi(req.args[0]);
+					mutexDesbloquear(&mutex_info_request);
+					imprimirAviso1(log_memoria, "Cambiando el retardo de GOSSIPING a [%d]",
+							retardo);
+					modificarTIempoRetardo(retardo, RETARDO_GOSSIPING);
+				} else {
+					imprimirError(log_memoria, "[COMANDO RETARDO]\nEl comando RETARDO esta mal ingresado");
+				}
+
+		//		imprimirPorPantallaTodosLosComandosDisponibles();
 				break;
 			case RETARDO_JOURNAL:
-				retardo = atoi(req.args[0]);
-				mutexDesbloquear(&mutex_info_request);
-				imprimirAviso1(log_memoria, "Cambiando el retardo de acceso a MEMORIA a [%d]",
-						retardo);
-				modificarTIempoRetardo(retardo, RETARDO_JOURNAL);
-				imprimirPorPantallaTodosLosComandosDisponibles();
+				if(req.cant_args == 1){
+					retardo = atoi(req.args[0]);
+					mutexDesbloquear(&mutex_info_request);
+					imprimirAviso1(log_memoria, "Cambiando el retardo de JOURNAL a [%d]",
+									retardo);
+					modificarTIempoRetardo(retardo, RETARDO_JOURNAL);
+				} else {
+					imprimirError(log_memoria, "[COMANDO RETARDO]\nEl comando RETARDO esta mal ingresado");
+				}
+
+		//		imprimirPorPantallaTodosLosComandosDisponibles();
 				break;
 			case SALIR:
 			//	borrar_request(req);
@@ -242,7 +269,7 @@ void hiloInsert(request_t* req){
 	}
 	free(valorAPoner);
 	free(nombreTabla);
-	imprimirPorPantallaTodosLosComandosDisponibles();
+//	imprimirPorPantallaTodosLosComandosDisponibles();
 }
 
 void hiloSelect(request_t* req){
@@ -266,9 +293,12 @@ void hiloSelect(request_t* req){
 		pagina = selectPaginaPorPosicion(pag,informacion);
 		*/
 
-		/*printf("\nSEGMENTO <%s>\nKEY<%d>: VALUE: %s\n", nombreTablaABuscar,
+		printf("\n******************"
+				"DATOS DEL SELECT"
+				"******************\n"
+				"SEGMENTO [%s]\nKEY [%d]\nVALUE: [%s]\n", nombreTablaABuscar,
 				pagina_y_valor->key,pagina_y_valor->value);
-				*/
+
 	} else {
 		printf("\nERROR <%s><%d>\n", nombreTablaABuscar, keyBuscado);
 	}
@@ -356,14 +386,14 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 					&ref, nombreTabla, true, segmentoBuscado);
 
 			if(estadoAPoner) {
-	//			printf("[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|TRUE",
-		//			ref->nropagina, keyBuscada);
+				printf("[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|TRUE",
+					ref->nropagina, keyBuscada);
 				log_info(log_memoria,
 		"[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|TRUE",
 					ref->nropagina, keyBuscada);
 						} else {
-	//			printf("[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|TRUE",
-		//			ref->nropagina, keyBuscada);
+				printf("[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|TRUE",
+					ref->nropagina, keyBuscada);
 				log_info(log_memoria,
 		"[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|FALSE",
 					ref->nropagina, keyBuscada);
@@ -398,8 +428,8 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 	//		free(ref);
 		}
 	} else {
-	//	printf("[INSERT A MODIFICAR]\nExiste el segmento '%s' y la pagina que referencia la key (%d) que es NRO '%d'\nProcedo a poner el nuevo valor que es '%s'\n\n",
-	//			segmentoBuscado->path_tabla, keyBuscada, posicionAIr, valorAPoner);
+		printf("[INSERT A MODIFICAR]\nExiste el segmento '%s' y la pagina que referencia la key (%d) que es NRO '%d'\nProcedo a poner el nuevo valor que es '%s'\n\n",
+				segmentoBuscado->path_tabla, keyBuscada, posicionAIr, valorAPoner);
 		/*
 		 * SE CREO PERFECTAMENTE, CONOSCO EL SEGMENTO Y LA PAGINA A REFERENCIAR, PROCEDO A MODIFICAR Y ACCEDER
 		 * A LA MEMORIA PARA LA MODIFICACION DE LOS CAMPOS

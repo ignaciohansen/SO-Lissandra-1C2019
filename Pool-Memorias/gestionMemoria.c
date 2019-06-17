@@ -53,11 +53,11 @@ void asignarNuevaPaginaALaPosicion(
 	memcpy(valorString, bloque_memoria+posLibre*(sizeof(pagina)+max_valor_key)+sizeof(pagina)-1, max_valor_key);
 //	printf("\n\nNOMBRE QUE DEBO INGRESAR A BLOQUE LRU: %s\n\n\n", nombreTabla);
 	modificar_bloque_LRU(nombreTabla, timestamp(), posLibre, estadoAsignado, true);
-
+/*
 	printf("[asignarNuevaTablaAPosicionLibre]POSICION %d\nVALORES EN BLOQUE: KEY|VALUE|TIMESTAMP %d|%s|%f\nVALORES ORIGINALES: KEY|VALUE|TIMESTAMP %d|%s|%f\n",
 				pagNew->nroPosicion, pagNew->key, valorString, pagNew->timestamp,
 				pagina_nueva->key, valorAPoner,pagina_nueva->timestamp);
-
+*/
 	log_info(log_memoria,"[asignarNuevaTablaAPosicionLibre]POSICION %d\nVALORES PUESTOS en bl: KEY|VALUE|TIMESTAMP %d|%s|%f\nVALORES PUESTOS: KEY|VALUE|TIMESTAMP %d|%s|%f\n",
 			pagNew->nroPosicion, pagNew->key, valorString, pagNew->timestamp,
 			pagina_nueva->key, valorAPoner,pagina_nueva->timestamp);
@@ -175,7 +175,7 @@ segmento* buscarSegmentoPorNombreTabla(char* nombreTabla){
 		log_info(log_memoria, "[BUSCANDO KEY] Nombre buscado | NOmbre obtenido '%s'|'%s'",
 				nombreTabla, nombreEnSegmento);
 
-		if(stringIguales(nombreEnSegmento, nombreTabla)){
+		if(strcmp(nombreTabla, nombreEnSegmento) == 0){
 			//SE ENCONTRO EL SEGMENTO BUSCADO
 			log_info(log_memoria, "[BUSCANDO SEGMENTO X NOMBRETABLA] Se encontro el segmento buscado");
 			return todoSegmento;
@@ -248,10 +248,10 @@ int buscarEnBloqueLRUElProximoAQuitar(char** nombreTablaCorrespondienteASacarTab
 		memcpy(nodo, bloque_LRU+i*desplazamiento, sizeof(nodoLRU));
 		if(nodo->estado == true){
 			//SIGNIFICA QUE NO FUE MODIFICADO
-			printf("TIMESTAMP ACTUAL = %f\nTIMESTAMP A COMPARAR: %f\n\n",
-					menortimestamp, nodo->timestamp);
+		/*	printf("TIMESTAMP ACTUAL = %f\nTIMESTAMP A COMPARAR: %f\n\n",
+					menortimestamp, nodo->timestamp);*/
 			if(menortimestamp > nodo->timestamp){
-				printf("ENTRO AQUI\n\n");
+			//	printf("ENTRO AQUI\n\n");
 				menortimestamp = nodo->timestamp;
 				potencialCandidato = i;
 			}
@@ -531,7 +531,7 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteVa
 	devolver->nroPosicion= pag->nroPosicion;
 	devolver->timestamp=pag->timestamp;
 	memcpy(devolver->value, info+sizeof(pagina)-1, max_valor_key);
-	printf("DATO QUE OBTUVE DE INFO: <%s>\n", devolver->value);
+//	printf("DATO QUE OBTUVE DE INFO: <%s>\n", devolver->value);
 	log_info(log_memoria, "[SELECT] Datos obtenidos de la posicion '%d'", posicion);
 	free(pag);
 	mutexDesbloquear(&mutex_memoria);
