@@ -8,7 +8,7 @@ int buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(char* nombreTabla, u_int16
 int main() {
 
 	// LOGGING
-	printf("INICIANDO EL MODULO MEMORIA \n COMINEZA EL TP PIBE\n\n");
+	printf("INICIANDO EL MODULO MEMORIA \n COMINEZA EL TP\n***************************************\n");
 	inicioLogYConfig();
 
 //	crearConexionesConOtrosProcesos(); // conecta con LFS y puede que con kernel.
@@ -302,7 +302,8 @@ void hiloSelect(request_t* req){
 	} else {
 		printf("\nERROR <%s><%d>\n", nombreTablaABuscar, keyBuscado);
 	}
-//	free(informacion);
+	free(valorABuscar);
+	free(nombreTablaABuscar);
 	free(pagina_y_valor->value);
 	free(pagina_y_valor);
 
@@ -467,7 +468,8 @@ int funcionSelect(char* nombreTablaAIr, u_int16_t keyBuscada,
 			return 0;
 		}
 	log_info(log_memoria, "[FUNCION SELECT] Numero de pagina a donde debo ir: %d\nMe pongo a buscar los datos\n", direccionPagina);
-
+	free((*dato)->value);
+	free(*dato);
 	*dato = selectPaginaPorPosicion(direccionPagina, true);
 	modificar_bloque_LRU(NULL, timestamp(), direccionPagina, true, false);
 

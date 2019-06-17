@@ -533,6 +533,7 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteVa
 	memcpy(devolver->value, info+sizeof(pagina)-1, max_valor_key);
 //	printf("DATO QUE OBTUVE DE INFO: <%s>\n", devolver->value);
 	log_info(log_memoria, "[SELECT] Datos obtenidos de la posicion '%d'", posicion);
+	free(info);
 	free(pag);
 	mutexDesbloquear(&mutex_memoria);
 	mutexDesbloquear(&mutex_tabla_pagina_en_modificacion);
@@ -683,8 +684,13 @@ void liberarTodosLasTablasDePaginas(pagina_referenciada* ref){
 
 void liberarPosicionLRU(int posicionAIr) {
 
-	void* info = malloc(sizeof(nodoLRU));
-	memcpy(bloque_LRU+posicionAIr*sizeof(nodoLRU), info, sizeof(nodoLRU));
+	int desplazamiento = sizeof(nodoLRU)+tamanioPredefinidoParaNombreTabla;
+	nodoLRU* info = malloc(sizeof(nodoLRU));
+	info->estado = false;
+	info->nroPagina = -1;
+	info->timestamp = 1;
+	memcpy(bloque_LRU+posicionAIr*desplazamiento, info, sizeof(nodoLRU));
+	free(info);
 	bitmapLiberarBit(bitmap, posicionAIr);
 	log_info(log_memoria, "[LIBERAR SEGMENTO EN LRU]"
 			"BLOQUE DE LA LRU EN LA POSICION NRO '%d' LIBERADA", posicionAIr);
