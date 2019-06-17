@@ -221,6 +221,7 @@ void mensajeRevisarConexion(Mensaje* mensaje, Socket socketReceptor, int bytes,t
 void mensajeObtenerDatos(Mensaje* mensaje, Socket socketReceptor,t_log* logger);
 bool mensajeDesconexion(Mensaje* mensaje) ;
 
+
 //--------------------------------------- Funciones para Header -------------------------------------
 
 Header headerCrear(int operacion, int tamanio);
@@ -370,6 +371,7 @@ void fileLimpiar(String ruta);
 
 
 /************************************PROTOCOLO ****************************************************/
+
 //String de tamaño 'tam'
 typedef struct{
 	int tam;
@@ -400,4 +402,16 @@ typedef struct{
 	conexion_t tipo;
 	buffer_com_t payload;
 } msg_com_t;
+
+buffer_com_t serializar_request(req_com_t msg);
+
+int enviar_request(int socket, req_com_t enviar);
+
+msg_com_t recibir_mensaje(int conexion);
+
+req_com_t procesar_request(msg_com_t msg);
+
+void borrar_buffer(buffer_com_t buf);
+
+void borrar_mensaje(msg_com_t msg);
 

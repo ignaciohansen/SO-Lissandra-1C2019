@@ -8,6 +8,7 @@
 #ifndef MEMORIA_H_
 #define MEMORIA_H_
 
+//#include "estructurasMemoria.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/sem.h>
@@ -16,12 +17,16 @@
 #include <commons/config.h>
 #include <commons/collections/queue.h>
 #include "../Biblioteca/src/Biblioteca.c"
+#include "parser.h"
+//#include "../Biblioteca/src/Biblioteca.h"
+
 
 #define PATH_MEMORIA_CONFIG "../Config/MEMORIA.txt"
 #define LOG_PATH "../Log/logMEMORIA.txt"
 #define MAXSIZE_COMANDO 200
 #define ERROR -1
 
+t_config* configFile;
 t_log* log_memoria;
 int socketEscuchaKernel,conexionEntrante,recibiendoMensaje;
 int sockeConexionLF, resultado_sendMsj;
@@ -34,32 +39,47 @@ char** argumentosParseados;
 t_header* buffer;
 Bitmap bitmap;
 
+int tamanioPredefinidoParaNombreTabla = 50;
+
+/*
+ * 									HILOS
+ */
+
+pthread_t hiloConsolaMemoria;
+
+
 /*---------------------------------------------------------------------------------
  * 								MUTEX Y SEMAFOROS
  ----------------------------------------------------------------------------------*/
 
-Mutex memoria_mutex_paginas_disponibles;
-Mutex mutex_segmento_en_modificacion;
-Mutex mutex_tabla_pagina_en_modificacion;
-Mutex mutex_segmento_modificando;
-Mutex mutex_limpiando_memoria;
-Mutex mutex_pagina_auxiliar;
-Mutex mutex_pagina_referenciada_aux;
-Mutex mutex_pagina_referenciada_aux2;
-Mutex mutex_segmento_aux;
-Mutex mutex_crear_pagina_nueva;
-Mutex LRUMutex, ACCIONLRU;
-Mutex JOURNALHecho;
-Mutex mutex_memoria;
-Mutex mutex_bitmap;
-Semaforo paginasSinUsar; //TIENE CAPACIDAD HASTA PARA cantPaginasTotales
+pthread_mutex_t memoria_mutex_paginas_disponibles;
+pthread_mutex_t mutex_segmento_en_modificacion;
+pthread_mutex_t mutex_tabla_pagina_en_modificacion;
+pthread_mutex_t mutex_segmento_modificando;
+pthread_mutex_t mutex_limpiando_memoria;
+pthread_mutex_t mutex_pagina_auxiliar;
+pthread_mutex_t mutex_pagina_referenciada_aux;
+pthread_mutex_t mutex_pagina_referenciada_aux2;
+pthread_mutex_t mutex_segmento_aux;
+pthread_mutex_t mutex_crear_pagina_nueva;
+pthread_mutex_t LRUMutex, ACCIONLRU;
+pthread_mutex_t JOURNALHecho;
+pthread_mutex_t mutex_memoria;
+pthread_mutex_t mutex_bitmap;
+pthread_mutex_t mutex_bloque_LRU_modificando;
+
+Mutex mutex_borrar_datos_de_1_segmento;
+Mutex mutex_drop;
+
+pthread_mutex_t mutex_info_request;
+
+
+//Semaforo paginasSinUsar; //TIENE CAPACIDAD HASTA PARA cantPaginasTotales
 int cantPaginasDisponibles, cantPaginasTotales;
 
-
-void* bloque_memoria;
-
-int max_valor_key;
-
+/*
+ * ESTRUCTURAS
+ */
 typedef struct{
     int puerto;
     char* ip_fs;
@@ -102,12 +122,11 @@ typedef struct pagina_referenciada{
 //	int numero;
 //	struct pagina* valor_pagina;
 //	struct tabla_paginas* siguientePagina;
-	int vecesAccedido;
+//	int vecesAccedido;
 //	u_int16_t key;
-	pagina_a_devolver* pag;
+//	pagina_a_devolver* pag;
 	int nropagina; //RELACIONAR UNA PAGINA EN MEMORIA
-	u_int16_t key;
-	bool flag;
+//	u_int16_t key;
 	struct pagina_referenciada* sig;
 }pagina_referenciada;
 
@@ -117,6 +136,23 @@ typedef struct nodoSegmento{
 	pagina_referenciada* paginasAsocida;
 	struct nodoSegmento* siguienteSegmento;
 }segmento;
+
+typedef struct nodoLRU {
+//	char* nombreTabla;
+	int nroPagina;
+	double timestamp;
+	bool estado;
+}nodoLRU;
+
+typedef struct datosRequest{
+	int tamanioReq1;
+	char* req1;
+	int tamanioReq2;
+	char* req2;
+	int tamanioReq3;
+	char* req3;
+}datosRequest;
+
 
 //memoria_principal* memoria;
 segmento* tablaSegmentos;
@@ -128,6 +164,13 @@ pagina_referenciada* aux_tabla_paginas2;
 pagina* aux_crear_pagina;
 pagina_a_devolver* aux_devolver_pagina;
 segmento* aux_segmento;
+
+void* bloque_memoria;
+void* bloque_LRU;
+
+int max_valor_key;
+
+
 
 int main();
 
@@ -147,6 +190,7 @@ char* lectura_consola();
 void terminar_memoria(t_log* g_log);
 void inicioLogYConfig();
 void liberar_todo_por_cierre_de_modulo();
+void cerrarTodosLosHilosPendientes();
 
 /*---------------------------------------------------
  * FUNCIONES PARA LA CONSOLA
@@ -159,6 +203,8 @@ void validarComando(char*,t_log*);
 int buscarComando(char*,t_log*);
 int enviarComando(char**, t_log*);
 
+void imprimirPorPantallaTodosLosComandosDisponibles();
+
 /*---------------------------------------------------
  * FUNCIONES PARA LAS CONEXIONES
  *---------------------------------------------------*/
@@ -170,7 +216,14 @@ void crearHIloEscucharKernel();
 void escucharConexionKernel();
 void crearHIloEscuchaLFS();
 
+void hiloInsert(request_t* req);
+void hiloSelect(request_t* req);
+void hiloDescribe(request_t* req);
+void hiloDrop(request_t* req);
 
+int funcionDescribe(char* nombreTablaAIr);
+int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bool estadoAPoner);
+int funcionSelect(char* nombreTablaAIr, u_int16_t keyBuscada, pagina_a_devolver** datos_a_devolver);
 /*---------------------------------------------------
  * PROCESO JOURNAL
  *---------------------------------------------------*/
@@ -192,7 +245,7 @@ void modificarTiempoRetardoGossiping(int nuevoCampo);
 
 void modificarTiempoRetardoJournal(int nuevoCampo);
 
-void modificarTIempoRetardo(int nuevoCampo, char* campoAModificar);
+void modificarTIempoRetardo(int nuevoCampo, int campoAModificar);
 
 /*---------------------------------------------------
  * FUNCIONES OBTENER VALORES MEDIANTE UNA KEY
@@ -225,7 +278,10 @@ pagina_a_devolver* selectPaginaPorPosicion(int pos, void* info);
 	* @DESC: Crea una lista
 	*/
 
-	void tabla_pagina_crear(u_int16_t key, char* valor, bool flag_modificado, pagina_referenciada** devolver);
+	void tabla_pagina_crear(
+			u_int16_t key, char* valor, bool flag_modificado,
+			pagina_referenciada** devolver, char* nombreTabla,
+			bool existeSegmento, segmento* segmetnoApuntado);
 //	pagina * pagina_crear(long timestamp, int16_t key, char * valor);
 	pagina* pagina_crear(long timestampNuevo, u_int16_t key, char * valor, char* nombreTabla);
 	//EL DE ABAJO CREA LA UNIDAD, EL DE ARRIBA DESPUES MANDA A BUSCAR EL SEGMENTO
@@ -250,32 +306,13 @@ pagina_a_devolver* selectPaginaPorPosicion(int pos, void* info);
 	void* obtenerInfoDePagina(int i, void* informacion);
 	void* accederYObtenerInfoDePaginaEnPosicion(int posicion, void* info);
 
-
-	/**
-	* @NAME: list_destroy
-	* @DESC: Destruye una lista sin liberar
-	* los elementos contenidos en los nodos
-	*/
-
-
 	void tabla_pagina_destruir(pagina_referenciada*);
 	void pagina_destruir(pagina*);
 
 
 	bool chequear_si_memoria_tiene_espacio(int espacioAOcupar);
 
-	/**
-	* @NAME: list_destroy_and_destroy_elements
-	* @DESC: Destruye una lista y sus elementos
-	*/
-
-
 	void pagina_destruir_y_vaciar_elementos(pagina *);
-
-	/**
-	* @NAME: list_add
-	* @DESC: Agrega un elemento al final de la lista
-	*/
 
 	void segmento_agregar_pagina(segmento*, pagina_referenciada*);
 	void pagina_agregar_valores(pagina_referenciada*, pagina*);
@@ -288,42 +325,18 @@ pagina_a_devolver* selectPaginaPorPosicion(int pos, void* info);
 	int pagina_agregar_inicio_valores(pagina_referenciada*, pagina*);
 
 
-	void valores_reemplazar_items(pagina* valor_pag, int timestamp, char* valor);
-	/**
-	* @NAME: list_remove
-	* @DESC: Remueve un elemento de la lista de
-	* una determinada posicion y lo retorna.
-	*/
-	void * segmento_sacar(segmento *);
-	void * tabla_sacar(segmento *);
 
-	/**
-	* @NAME: list_clean
-	* @DESC: Quita todos los elementos de la lista.
-	* HECHO
-	*/
-
-	//DEVUELVEN EL VALOR DEL TAMAÑO DE MEMORIA
-	//QUE FUE LIBERADO
-//	void limpiar_memoria(memoria_principal* mem);
 
 	int limpiar_valores_pagina(pagina* val);
 	int limpiar_paginas(pagina_referenciada* pag);
 	int limpiar_valores_pagina(pagina* valores);
 
-	/**
-	* @NAME: list_clean
-	* @DESC: Quita y destruye todos los elementos de la lista
-	*/
 	void limpiar_y_destruir_todo_lo_de_segmento(segmento *);
-
+	void limpiar_todos_los_elementos_de_1_segmento(segmento* segmentoABorrar);
+	void liberarTodosLasTablasDePaginas(pagina_referenciada* ref);
+	void liberarPosicionLRU(int posicionAIr);
 
 	bool chequear_si_memoria_tiene_espacio(int tamanio);
-
-	//Busca una tabla entre los segmentos de memoria
-	//Si no lo encuentra devuelve un ERROR sino solo 1
-//	int buscar_tabla_especifica(char* nombreTablaABuscar, segmento* segmentoBuscado);
-
 
 //	int obtener_valores(int16_t key, segmento* segmentoHost, valor_pagina* valorADevolver);
 	int buscar_tabla_especifica(char* nombreTablaABuscar, segmento* segmentoBuscado);
@@ -331,20 +344,29 @@ pagina_a_devolver* selectPaginaPorPosicion(int pos, void* info);
 /*
  * NUEVAS FUNCIONES
  */
-	int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner);
 
-	void LRU(pagina* paginaCreada, int* nroAsignado, char* value);
+
+	void LRU(pagina* paginaCreada, int* nroAsignado,
+			char* value, bool flag_modificado,	char* nombreTabla);
 
 	pagina* actualizarPosicionAPagina(pagina* unaPagina, int nuevaPos);
 
 	String obtenerNombreTablaDePath(String path);
 
-	void pasarValoresALisandra(char* datos);
+	int pasarValoresALisandra(char* datos);
 
-	int buscarPaginaDisponible(u_int16_t key);
+	int buscarPaginaDisponible(u_int16_t key, bool existiaTabla, char* nombreTabla, segmento* segmetnoApuntado);
+
+	void modificar_bloque_LRU(char* nombreTabla, double timestamp, int nroPosicion, bool estado,
+			bool vieneDeInsert);
+
+	int buscarEnBloqueLRUElProximoAQuitar(char** nombreTablaADevolver);
+
+	void borrarSegmentoPasadoPorParametro(segmento* unSegmento);
+
+	void selectHardcodeado(char* nombreTablaAIr, u_int16_t keyBuscada, void* dato);
 
 
-void selectHardcodeado(int cant, int inicio, void* info);
 void insertHardcodeado(int cant, int inicio, void* info, char* valorNuevo, char* nombreTabla);
 
 #endif /* MEMORIA_H_ */
