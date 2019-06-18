@@ -89,10 +89,11 @@ void consola_prueba() {
 		datosDeRequest->req2 = malloc(datosDeRequest->tamanioReq2);
 		datosDeRequest->req3 = malloc(datosDeRequest->tamanioReq3);
 	printf("\n\n");
+	imprimirPorPantallaTodosLosComandosDisponibles();
 	int i;
 	while(!fin){
 		retardo_memoria(arc_config->retardo_mem);
-		imprimirPorPantallaTodosLosComandosDisponibles();
+
 		pthread_mutex_lock(&mutex_info_request);
 		linea = readline(">>");
 		req = parser(linea);
@@ -366,7 +367,7 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 
 	//		log_info(log_memoria, "[INSERT] Se ha creado una tabla de pagina, el nro de su posicion es '%d'", nroTablaCreada);
 			tabla_pagina_crear(keyBuscada, valorAPoner, estadoAPoner,
-					&ref, nombreTabla, false, NULL);
+					&ref, nombreTabla, true, NULL);
 			if(estadoAPoner) {
 				log_info(log_memoria,
 			"[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|TRUE",
@@ -531,13 +532,14 @@ int funcionDrop(char* nombre) {
 		mutexDesbloquear(&mutex_segmento_en_modificacion);
 		return 1;
 	}
-	printf("[FUNCION DROP] Empiezo a buscar el anterior de ese segmento");
+//	printf("[FUNCION DROP] Empiezo a buscar el anterior de ese segmento");
 	log_info(log_memoria, "[FUNCION DROP] Empiezo a buscar el anterior de ese segmento");
 	while(segmentoAnterior->siguienteSegmento != segmentoBuscado) {
 		segmentoAnterior = segmentoAnterior->siguienteSegmento;
 	}
 
 	segmentoAnterior->siguienteSegmento=segmentoBuscado->siguienteSegmento;
+	log_info(log_memoria, "[FUNCION DROP] Libero todo el segmento: <%s>", segmentoBuscado->path_tabla);
 	limpiar_todos_los_elementos_de_1_segmento(segmentoBuscado);
 	mutexDesbloquear(&ACCIONLRU);
 	mutexDesbloquear(&mutex_segmento_en_modificacion);

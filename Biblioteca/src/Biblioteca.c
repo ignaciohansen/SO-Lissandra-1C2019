@@ -22,7 +22,7 @@ void abortarProcesoPorUnErrorImportante(t_log* log, char* mensaje){
 }
 
 //--------------------------------------- Funcion timestamp -------------------------------------
-
+/*
 double  timestamp(void) {
 	struct timeval t;
 	gettimeofday(&t, NULL);
@@ -31,7 +31,7 @@ double  timestamp(void) {
 	return a;
 //	return (unsigned)time(NULL);
 }
-
+*/
 //--------------------------------------- Funciones para Socket -------------------------------------
 
 void socketConfigurar(Conexion* conexion, String ip, String puerto,t_log* logger) {

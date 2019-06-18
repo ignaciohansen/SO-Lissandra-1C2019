@@ -6,7 +6,15 @@
  */
 
 #include "gestionMemoria.h"
-//#include "../Biblioteca/src/Biblioteca.c"
+
+double  timestamp(void) {
+	struct timeval t;
+	gettimeofday(&t, NULL);
+	unsigned long long result = (((unsigned long long)t.tv_sec)*1000+((unsigned long long)t.tv_usec)/1000);
+	double a = result;
+	return a;
+//	return (unsigned)time(NULL);
+}
 
 void* accederYObtenerInfoDePaginaEnPosicion(int posicion, void* info){
 	log_info(log_memoria, "[ACCEDIENDO A DATOS] Por acceder a la memoria a la posicion '%d'", posicion);
@@ -52,7 +60,10 @@ void asignarNuevaPaginaALaPosicion(
 	memcpy(pagNew, bloque_memoria+posLibre*(sizeof(pagina)+max_valor_key), sizeof(pagina));
 	memcpy(valorString, bloque_memoria+posLibre*(sizeof(pagina)+max_valor_key)+sizeof(pagina)-1, max_valor_key);
 //	printf("\n\nNOMBRE QUE DEBO INGRESAR A BLOQUE LRU: %s\n\n\n", nombreTabla);
-	modificar_bloque_LRU(nombreTabla, timestamp(), posLibre, estadoAsignado, true);
+	double a = timestamp();
+/*	printf("[TIMESTAMP NUEVO]\nDATOS INGRESADOS:\nTIMESTAMP: <%f>\n\n",
+					timestamp);*/
+	modificar_bloque_LRU(nombreTabla, a, posLibre, estadoAsignado, true);
 /*
 	printf("[asignarNuevaTablaAPosicionLibre]POSICION %d\nVALORES EN BLOQUE: KEY|VALUE|TIMESTAMP %d|%s|%f\nVALORES ORIGINALES: KEY|VALUE|TIMESTAMP %d|%s|%f\n",
 				pagNew->nroPosicion, pagNew->key, valorString, pagNew->timestamp,
@@ -248,19 +259,20 @@ int buscarEnBloqueLRUElProximoAQuitar(char** nombreTablaCorrespondienteASacarTab
 		memcpy(nodo, bloque_LRU+i*desplazamiento, sizeof(nodoLRU));
 		if(nodo->estado == true){
 			//SIGNIFICA QUE NO FUE MODIFICADO
-		/*	printf("TIMESTAMP ACTUAL = %f\nTIMESTAMP A COMPARAR: %f\n\n",
-					menortimestamp, nodo->timestamp);*/
+	//		printf("TIMESTAMP ACTUAL = %f\nTIMESTAMP A COMPARAR: %f\n",
+	//				menortimestamp, nodo->timestamp);
 			if(menortimestamp > nodo->timestamp){
-			//	printf("ENTRO AQUI\n\n");
+
 				menortimestamp = nodo->timestamp;
 				potencialCandidato = i;
+	//			printf("NUEVO TIMESTAMP MINIMO: %f\n\n", menortimestamp);
 			}
 		}
 	}
 	//printf("[ALGORITMO LRU]\nLRU FINALIZADO\nCandidato a quitar elegido fue: <%d>",potencialCandidato);
 	log_info(log_memoria, "[ALGORITMO LRU]\nLRU FINALIZADO\nCandidato a quitar elegido fue: <%d>",
 			potencialCandidato);
-	if(i<0){
+	if(potencialCandidato<0){
 		*nombreTablaCorrespondienteASacarTablaDePagina=NULL;
 	} else {
 		memcpy(*nombreTablaCorrespondienteASacarTablaDePagina,
@@ -563,11 +575,12 @@ void tabla_pagina_crear(
 			"[Crear Tabla y pagina] Verifico si hay espacio libre en Memoria");
 	posicionAsignada = buscarPaginaDisponible(key, existeSegmento, nombreTabla, segmetnoApuntado);
 	if(posicionAsignada==-1){
+		mutexBloquear(&LRUMutex);
 		log_info(log_memoria,
 				"[Crear Tabla y pagina] NO hay espacio libre por lo tanto activo el LRU");
 		//SIGNIFICA QUE LLEGO AL TOPE DE PAGINAS EN MEMORIA
 		//O SEA ESTAN TODAS OCUPADAS, APLICO LRU
-		mutexBloquear(&LRUMutex);
+
 		LRU(crear_pagina(key, valor, -1), &posicionAsignada, valor, flag_modificado, nombreTabla);
 
 		pag_ref->nropagina=posicionAsignada;
@@ -774,7 +787,8 @@ void vaciar_tabla_paginas_y_memoria(){
 
 
 
-void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo, int nroPosicion) {
+void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo,
+		int nroPosicion) {
 	mutexBloquear(&mutex_tabla_pagina_en_modificacion);
 	mutexBloquear(&mutex_memoria);
 	pagina* aux = malloc(sizeof(pagina));
@@ -798,7 +812,7 @@ void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo, 
 			aux->key);
 
 
-//	printf("\n\nEN MODIFICACION NUEVO TIMESTAMP: %d - %f\n\n", aux->key, aux->timestamp);
+	printf("\n\nEN MODIFICACION NUEVO TIMESTAMP: %d - %f\n\n", aux->key, aux->timestamp);
 
 
 	memcpy(bloque_memoria+posAIr*(sizeof(pagina)+max_valor_key), aux, sizeof(pagina));
@@ -807,7 +821,7 @@ void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo, 
 			"[MOdificar valor pagina] key: '%d', VALOR NUEVO: %s",
 			aux->key, valorNuevo);
 
-	modificar_bloque_LRU("xs", aux->timestamp, nroPosicion, true, false);
+	modificar_bloque_LRU("%", aux->timestamp, nroPosicion, true, false);
 
 	log_info(log_memoria,
 			"[MOdificar valor tabla pagina] Actualizar FLAG de tabla pagina asociada a la key: %d",
@@ -838,6 +852,7 @@ void modificar_bloque_LRU(char* nombreTabla, double timestamp, int nroPosicion, 
 	log_info(log_memoria, "[MODIFICAR BLOQUE LRU]\nActualizar bloque LRU");
 	nodoLRU* nuevoNodo = malloc(sizeof(nodoLRU));
 	int desplazamiento = sizeof(nodoLRU)+tamanioPredefinidoParaNombreTabla;
+	char* nombreDeTabla = malloc(tamanioPredefinidoParaNombreTabla);
 	if(vieneDeFuncionInsert){
 //		nuevoNodo->nombreTabla = malloc(strlen(nombreTabla));
 //		memcpy(nuevoNodo->nombreTabla, nombreTabla, strlen(nombreTabla)+1);
@@ -848,6 +863,8 @@ void modificar_bloque_LRU(char* nombreTabla, double timestamp, int nroPosicion, 
 		memcpy(bloque_LRU+nroPosicion*desplazamiento, nuevoNodo, sizeof(nodoLRU));
 		memcpy(bloque_LRU+nroPosicion*desplazamiento+sizeof(nodoLRU), nombreTabla,
 					strlen(nombreTabla)+1);
+		memcpy(nombreDeTabla, bloque_LRU+nroPosicion*desplazamiento+sizeof(nodoLRU),
+						tamanioPredefinidoParaNombreTabla);
 		/*
 		printf("\n\n\nNOMBRE TABLA INGRESADA: <<<%s>>>", nombreTabla);
 		char* auxnombre = malloc(tamanioPredefinidoParaNombreTabla);
@@ -859,19 +876,27 @@ void modificar_bloque_LRU(char* nombreTabla, double timestamp, int nroPosicion, 
 
 		free(auxnombre);
 		*/
+		printf("[MODIFICAR BLOQUE LRU]\nDATOS INGRESADOS:\nNOMBRE TABLA <%s>\nNUMERO PAGINA: <%d>\nTIMESTAMP: <%f>\nESTADO PAGINA: <%d>",
+				nombreDeTabla, nroPosicion, timestamp, estado);
 		log_info(log_memoria, "[MODIFICAR BLOQUE LRU]\nDATOS INGRESADOS:\nNOMBRE TABLA <%s>\nNUMERO PAGINA: <%d>\nTIMESTAMP: <%f>\nESTADO PAGINA: <%d>",
-				nombreTabla, nroPosicion, timestamp, estado);
+				nombreDeTabla, nroPosicion, timestamp, estado);
 	//	free(nuevoNodo->nombreTabla);
 	} else {
-		memcpy(nuevoNodo, bloque_LRU+nroPosicion*sizeof(nuevoNodo), sizeof(nodoLRU));
+
+		memcpy(nuevoNodo, bloque_LRU+nroPosicion*desplazamiento, sizeof(nodoLRU));
+		memcpy(nombreDeTabla, bloque_LRU+nroPosicion*desplazamiento+sizeof(nodoLRU),
+				tamanioPredefinidoParaNombreTabla);
 		nuevoNodo->timestamp=timestamp;
-		if(estado==true){
+		if(estado==false){
 			nuevoNodo->estado = estado;
 		}
 
 		memcpy(bloque_LRU+nroPosicion*desplazamiento, nuevoNodo, sizeof(nodoLRU));
+		printf("[MODIFICAR MODIFICADO LRU]\nDATOS INGRESADOS:\nNOMBRE TABLA <%s>\nNUMERO PAGINA: <%d>\nTIMESTAMP: <%f>\nESTADO PAGINA: <%d>",
+				nombreDeTabla, nroPosicion, timestamp, estado);
 		log_info(log_memoria, "[MODIFICAR BLOQUE LRU]\nDATOS ACTUALIZADOS DE LA POSICION: <%d>",
 				nroPosicion);
+		free(nombreDeTabla);
 	}
 //	free(nuevoNodo->nombreTabla);
 	free(nuevoNodo);
