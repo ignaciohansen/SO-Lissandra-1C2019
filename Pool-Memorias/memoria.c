@@ -367,7 +367,7 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 
 	//		log_info(log_memoria, "[INSERT] Se ha creado una tabla de pagina, el nro de su posicion es '%d'", nroTablaCreada);
 			tabla_pagina_crear(keyBuscada, valorAPoner, estadoAPoner,
-					&ref, nombreTabla, true, NULL);
+					&ref, nombreTabla, estadoAPoner, NULL);
 			if(estadoAPoner) {
 				log_info(log_memoria,
 			"[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|TRUE",
@@ -391,7 +391,7 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 			//EXISTE EL SEGMENTO, SOLO CREO LA TABLA Y LA PAGINA Y SE LA ASIGNO A LA COLA DE TABLA DE PAGINAS DE SEGMENTO
 
 			tabla_pagina_crear(keyBuscada, valorAPoner, estadoAPoner,
-					&ref, nombreTabla, true, segmentoBuscado);
+					&ref, nombreTabla, estadoAPoner, segmentoBuscado);
 
 			if(estadoAPoner) {
 				printf("[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|TRUE",
