@@ -516,6 +516,7 @@ int funcionDrop(char* nombre) {
 	if(segmentoBuscado==NULL){
 		log_info(log_memoria, "[FUNCION DROP] No se encontro <%s> -> DevuelvoError", nombre);
 		//NO HAY NADA ASI QUE DEVUELVO ERROR
+		mutexDesbloquear(&ACCIONLRU);
 		mutexDesbloquear(&mutex_segmento_en_modificacion);
 		return -1;
 	}
