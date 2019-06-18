@@ -8,11 +8,11 @@
 #include "LissandraFileSystem.h"
 /*
  * REQUERIMIENTOS:
- *  - �� verificarExistenciaTabla    () ? Nota: est�� hecho el m��todo de verificarExistenciaTabla()
+ *  - ������ verificarExistenciaTabla    () ? Nota: est������ hecho el m������todo de verificarExistenciaTabla()
  *  - crearTabla(nombre, tipoConsistencia, nroParticiones, compactationTime)  // e.g.: CREATE TABLA1 SC 4 60000
  *  - describe(nombre)
  *  - bool      :verificarExistenciaTabla(nombre)
- *  - obtenerMetadata(nombre)                           // ver que hacer ac��
+ *  - obtenerMetadata(nombre)                           // ver que hacer ac������
  *  - crearMemtable()
  *  - << todo lo necesario para gestionar las memTables >>
  *  - registro**:escanearTabla    (nombre,key)          // retorna un array de punterosa registros.
@@ -215,13 +215,13 @@ bool cargarConfiguracion() {
 
 		if (config_has_property(archivoCOnfig, "TAMANIO_VALUE")) {
 
-			log_info(logger, "Almacenando el tamaño del valor de una key");
+			log_info(logger, "Almacenando el tamanio del valor de una key");
 
 			//Por lo que dice el texto
 			configFile->tamanio_value = config_get_int_value(archivoCOnfig,
 					"TAMANIO_VALUE");
 
-			log_info(logger, "El tamaño del valor es: %d",
+			log_info(logger, "El tamanio del valor es: %d",
 					configFile->tamanio_value);
 
 		} else {
@@ -871,16 +871,16 @@ int obtenerMetadata() {
 
 		if (config_has_property(metadataFile, "BLOCK_SIZE")) {
 
-			log_info(logger, "Almacenando tamaño de bloque");
+			log_info(logger, "Almacenando tamanio de bloque");
 			// PROBLEMA.
 			metadataLFS->block_size = config_get_int_value(metadataFile,
 					"BLOCK_SIZE");
 
-			log_info(logger, "el tamaño del bloque es: %d", metadataLFS->block_size);
+			log_info(logger, "el tamanio del bloque es: %d", metadataLFS->block_size);
 
 		} else {
 
-			log_error(logger, "El metadata no contiene el tamañano de bloque [BLOCK_SIZE]");
+			log_error(logger, "El metadata no contiene el tama��ano de bloque [BLOCK_SIZE]");
 
 		} // if (config_has_property(metadataFile, "CONSISTENCY"))
 
@@ -979,54 +979,67 @@ void esperarTiempoDump() {
 	while(true){
 
 		//hacer en otra funcion
-		int timestamp_actual = time(NULL);
+		//int timestamp_actual = time(NULL);
 		//char timestamp_actual[11];
 		//sprintf(timestamp_actual, "%d", aux);
 
 
-	int tiempoEjecucion = (timestamp_actual - timestamp_inicio) / (dumps_a_dividir*1000);
+	//int tiempoEjecucion = (timestamp_actual - timestamp_inicio) / (dumps_a_dividir*1000);
 	//log_info(logger,"el tiempo de ejecucion es: %d",tiempoEjecucion);
-		if( tiempoEjecucion >= configFile->tiempo_dump){
-			log_info(logger, "Es tiempo de dump, hay cosas?");
+		//if( tiempoEjecucion >= configFile->tiempo_dump){
+			sleep(10);
+			log_info(logger, "Es tiempo de dump, hay cosas en la memtable?");
 			if(dictionary_size(memtable) > 0){
-				log_info(logger, "Hay, se hace el dump");
+				log_info(logger, "Se encontraron cosas, se hace el dump");
 				realizarDump();
 				cantidad_de_dumps++;
 			}
 			else{
-				//nada
+				log_info(logger, "La memtable esta vacia");
 			}
-
-			dumps_a_dividir++;
-		}
-		else {
+			log_info(logger, "Se limpia diccionario");
+			dictionary_clean(memtable);
+		//	dumps_a_dividir++;
+		//}
+		//else {
 			//no hace nada
 		}
 
 	}
 
 
-}
+
 
 void realizarDump(){
 	for(int i=0;i<dictionary_size(memtable);i++){
 		char* tabla = list_get(listaTablasInsertadas,i);
+		log_info(logger,"la tabla insertada en la memtable es %s",tabla);
 		char* path = armarPathTablaParaDump(tabla);
 		crearArchivoTemporal(path,tabla);
 	}
 }
 
 char* armarPathTablaParaDump(char* tabla){
-	char* path_archivo_temporal = malloc(sizeof(char)*50);
+	char *nombreArchivoTemporal= malloc(sizeof(char) * 3);
+	char* path_archivo_temporal = malloc(string_length(TABLE_PATH)+string_length(configFile->punto_montaje)+string_length(tabla)+string_length(nombreArchivoTemporal)+string_length(PATH_TMP)+2);
+
 	path_archivo_temporal = string_new();
+
+	string_append(&path_archivo_temporal,configFile->punto_montaje);
 
 	string_append(&path_archivo_temporal,TABLE_PATH);
 
 	string_append(&path_archivo_temporal, tabla);
 
-	sprintf(path_archivo_temporal, "%d", cantidad_de_dumps);
+	string_append(&path_archivo_temporal, "/");
 
-	string_append(&path_archivo_temporal, ".tmp");
+	sprintf(nombreArchivoTemporal, "%d", cantidad_de_dumps);
+
+	string_append(&path_archivo_temporal, nombreArchivoTemporal);
+
+	string_append(&path_archivo_temporal, PATH_TMP);
+
+	log_info(logger,"la ruta es %s",path_archivo_temporal);
 
 	return path_archivo_temporal;
 
@@ -1039,9 +1052,20 @@ void crearArchivoTemporal(char* path,char* tabla){
 
 	FILE* temporal;
 	temporal = fopen(path, "w");
-	t_list* listaRegistrosTabla = dictionary_get(memtable,tabla);
-	for(int i = 0; i<list_size(listaRegistrosTabla);i++){
-		fputs(list_get(listaRegistrosTabla,i),temporal);
+	log_info(logger,"creamos el archivo, ahora  lo llenamos");
+	t_list* listaRegistrosTabla;
+	listaRegistrosTabla = list_create();
+	void* registrosTabla = dictionary_get(memtable,tabla);
+	list_add(listaRegistrosTabla,registrosTabla);
+	int tam = list_size(listaRegistrosTabla);
+	log_info(logger,"tamanio de registros insertados en esa tabla: %d",tam);
+
+	for(int i = 0; i<tam;i++){
+		char *lineaTemporal = malloc(sizeof(char)*50);
+		lineaTemporal = string_new();
+		string_append(&lineaTemporal, list_get(listaRegistrosTabla,i));
+		log_info(logger,"linea a insertar en el tmp: %s",lineaTemporal);
+		fputs(lineaTemporal,temporal);
 	}
 	fclose(temporal);
 }
@@ -1119,14 +1143,14 @@ void escanearParticion(int particion) {
 
 		if (config_has_property(particionFile, "SIZE")) {
 
-			log_info(logger, "Almacenando el tamaño de la particion");
+			log_info(logger, "Almacenando el tamanio de la particion");
 
 			particionTabla->size = config_get_int_value(particionFile, "SIZE");
 
-			log_info(logger, "el tamaño de la particion  es: %d",
+			log_info(logger, "el tamanio de la particion  es: %d",
 					particionTabla->size);
 		} else {
-			log_error(logger, "El metadata de la tabla no contiene el tamaño");
+			log_error(logger, "El metadata de la tabla no contiene el tamanio");
 
 		}
 		if (config_has_property(particionFile, "BLOCKS")) {

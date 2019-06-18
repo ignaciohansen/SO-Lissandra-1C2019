@@ -19,12 +19,13 @@
 
 
 #define PATH_BIN ".bin"
+#define PATH_TMP ".tmp"
 #define PATH_BLOQUES "/Bloques/"
 #define PATH_LFILESYSTEM_CONFIG "../Config/LFS_CONFIG.txt"
 #define PATH_LFILESYSTEM_METADATA "/Metadata/Metadata"
 #define PATH_LFILESYSTEM_BITMAP "/Metadata/Bitmap.bin"
 #define LOG_PATH "../Log/LOG_LFS.txt"
-#define TABLE_PATH "../Tables/"
+#define TABLE_PATH "/Tables/"
 
 #define atoa(x) #x
 
