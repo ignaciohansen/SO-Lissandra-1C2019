@@ -108,6 +108,7 @@ void consola_prueba() {
 				} else {
 					imprimirError(log_memoria, "[COMANDO INSERT]\nEl comando INSERT esta mal ingresado");
 				}
+				mutexDesbloquear(&mutex_info_request);
 				break;
 			case SELECT:
 				if(req.cant_args == 2){
@@ -118,6 +119,7 @@ void consola_prueba() {
 				} else {
 					imprimirError(log_memoria, "[COMANDO SELECT]\nEl comando SELECT esta mal ingresado");
 				}
+				mutexDesbloquear(&mutex_info_request);
 				//HAY UN TEMA CON EL TEMA DEL REQ.ARGS 0 Y ES QUE SI NO PONGO NOMBRE
 				//MANDA SARASA, REVISALO LUEGO Y CORREGILO
 				break;
@@ -146,6 +148,7 @@ void consola_prueba() {
 				} else {
 					imprimirError(log_memoria, "[COMANDO DROP]\nEl comando DROP esta mal ingresado");
 				}
+				mutexDesbloquear(&mutex_info_request);
 		//		borrar_request(req);
 				break;
 			case RETARDO_MEMORIA:
@@ -157,6 +160,7 @@ void consola_prueba() {
 					modificarTIempoRetardo(retardo, RETARDO_MEMORIA);
 				} else {
 					imprimirError(log_memoria, "[COMANDO RETARDO]\nEl comando RETARDO esta mal ingresado");
+					mutexDesbloquear(&mutex_info_request);
 				}
 
 	//			imprimirPorPantallaTodosLosComandosDisponibles();
@@ -171,6 +175,7 @@ void consola_prueba() {
 					modificarTIempoRetardo(retardo, RETARDO_FS);
 				} else {
 					imprimirError(log_memoria, "[COMANDO RETARDO]\nEl comando RETARDO esta mal ingresado");
+					mutexDesbloquear(&mutex_info_request);
 				}
 
 		//		imprimirPorPantallaTodosLosComandosDisponibles();
@@ -184,6 +189,7 @@ void consola_prueba() {
 					modificarTIempoRetardo(retardo, RETARDO_GOSSIPING);
 				} else {
 					imprimirError(log_memoria, "[COMANDO RETARDO]\nEl comando RETARDO esta mal ingresado");
+					mutexDesbloquear(&mutex_info_request);
 				}
 
 		//		imprimirPorPantallaTodosLosComandosDisponibles();
@@ -197,12 +203,14 @@ void consola_prueba() {
 					modificarTIempoRetardo(retardo, RETARDO_JOURNAL);
 				} else {
 					imprimirError(log_memoria, "[COMANDO RETARDO]\nEl comando RETARDO esta mal ingresado");
+					mutexDesbloquear(&mutex_info_request);
 				}
 
 		//		imprimirPorPantallaTodosLosComandosDisponibles();
 				break;
 			case SALIR:
 			//	borrar_request(req);
+				mutexDesbloquear(&mutex_info_request);
 				imprimirAviso(log_memoria, "\nEMPIEZA A CERRARSE TODO EL MODULO DE MEMORIA\n\n");
 				fin = 1;
 				break;
@@ -220,13 +228,12 @@ void consola_prueba() {
 }
 
 void hiloDrop(request_t* req){
-	if(stringEstaVacio(req->args[0])){
+	/*if(stringEstaVacio(req->args[0])){
 		imprimirError(log_memoria, "NO SE HA INGRESADO 1 NOMBRE CORRECTO\n");
 		return;
-	}
+	}*/
 	char* nombre = malloc(strlen(req->args[0]));
 	memcpy(nombre, req->args[0], strlen(req->args[0])+1);
-	mutexDesbloquear(&mutex_info_request);
 	if(funcionDrop(nombre)==-1){
 		imprimirError1(log_memoria, "\nERROR, La tabla ya fue eliminada o no existe: <%s>\n", nombre);
 	}
@@ -262,7 +269,6 @@ void hiloInsert(request_t* req){
 	memcpy(nombreTabla, req->args[0], strlen(req->args[0])+1);
 	u_int16_t keyBuscada = atoi(req->args[1]);
 	memcpy(valorAPoner, req->args[2], strlen(req->args[2])+1);
-	mutexDesbloquear(&mutex_info_request);
 
 //	printf("PRUEBAS: \nVALUE A PONER: [%s] [%s]\n\n", nombreTabla, valorAPoner);
 	if(funcionInsert(nombreTabla, keyBuscada, valorAPoner, true)== -1){
@@ -278,7 +284,6 @@ void hiloSelect(request_t* req){
 	u_int16_t keyBuscado = atoi(req->args[1]);
 	pagina_a_devolver* pagina_y_valor = malloc(sizeof(pagina_a_devolver));
 	memcpy(nombreTablaABuscar, req->args[0], strlen(req->args[0])+1);
-	mutexDesbloquear(&mutex_info_request);
 
 //	void* informacion = malloc(sizeof(pagina)+max_valor_key);
 
@@ -505,13 +510,8 @@ int funcionDrop(char* nombre) {
 	log_info(log_memoria, "[FUNCION DROP] EN FUNCION DROP");
 
 	mutexBloquear(&mutex_segmento_en_modificacion);
-	if(stringIguales(tablaSegmentos->path_tabla, nombre)){
-		log_info(log_memoria, "[FUNCION DROP] Se encontro <%s> y es el primero de todos", nombre);
-		tablaSegmentos = tablaSegmentos->siguienteSegmento;
-		limpiar_todos_los_elementos_de_1_segmento(segmentoAnterior);
-		mutexDesbloquear(&mutex_segmento_en_modificacion);
-		return 1;
-	}
+
+//	printf("[FUNCION DROP] aqui\n\n");
 	segmentoBuscado = buscarSegmentoPorNombreTabla(nombre);
 	if(segmentoBuscado==NULL){
 		log_info(log_memoria, "[FUNCION DROP] No se encontro <%s> -> DevuelvoError", nombre);
@@ -519,14 +519,28 @@ int funcionDrop(char* nombre) {
 		mutexDesbloquear(&mutex_segmento_en_modificacion);
 		return -1;
 	}
+	if(strcmp(nombre, tablaSegmentos->path_tabla)==0){
+		printf("[FUNCION DROP] Se encontro <%s> y es el primero de todos\n",
+				tablaSegmentos->path_tabla);
+		log_info(log_memoria, "[FUNCION DROP] Se encontro <%s> y es el primero de todos",
+				tablaSegmentos->path_tabla);
+		tablaSegmentos = tablaSegmentos->siguienteSegmento;
+		limpiar_todos_los_elementos_de_1_segmento(segmentoAnterior);
+		mutexDesbloquear(&ACCIONLRU);
+		mutexDesbloquear(&mutex_segmento_en_modificacion);
+		return 1;
+	}
+	printf("[FUNCION DROP] Empiezo a buscar el anterior de ese segmento");
 	log_info(log_memoria, "[FUNCION DROP] Empiezo a buscar el anterior de ese segmento");
 	while(segmentoAnterior->siguienteSegmento != segmentoBuscado) {
 		segmentoAnterior = segmentoAnterior->siguienteSegmento;
 	}
+
 	segmentoAnterior->siguienteSegmento=segmentoBuscado->siguienteSegmento;
 	limpiar_todos_los_elementos_de_1_segmento(segmentoBuscado);
-	mutexDesbloquear(&mutex_segmento_en_modificacion);
 	mutexDesbloquear(&ACCIONLRU);
+	mutexDesbloquear(&mutex_segmento_en_modificacion);
+
 	return 1;
 }
 
@@ -543,13 +557,13 @@ int funcionDescribe(char* nombreTablaAIr){
 				"[FUNCION DESCRIBRE] DESCRIBE FALLA, no hay tablas cargadas en memoria");
 			return -1;
 		}
-		/*
+
 		while(segmentoBuscado!=NULL){
 			printf("Obteniend datos de [%s]", segmentoBuscado->path_tabla);
 
 			ref = segmentoBuscado->paginasAsocida;
 			while(ref!=NULL){
-				keyObtenida = selectPaginaPorPosicion(ref->nropagina, info, true);
+				keyObtenida = selectPaginaPorPosicion(ref->nropagina, true);
 				imprimirMensaje2(log_memoria, "\nDESCRIBE: Segmento|Key = [%s]-[%d]\n",
 						segmentoBuscado->path_tabla, keyObtenida->key);
 				ref = ref->sig;
@@ -560,13 +574,13 @@ int funcionDescribe(char* nombreTablaAIr){
 			printf("[%s]", segmentoBuscado->path_tabla);
 			segmentoBuscado = segmentoBuscado->siguienteSegmento;
 		}
-		*/
+
 	} else {
 		log_info(log_memoria, "[FUNCION DESCRIBRE] En DESCRIBE de <%s>", nombreTablaAIr);
 		segmentoBuscado = buscarSegmentoPorNombreTabla(nombreTablaAIr);
 
-		/*
-		 * if(segmentoBuscado==NULL){
+
+		 if(segmentoBuscado==NULL){
 			imprimirError1(log_memoria,
 					"[FUNCION DESCRIBRE] DESCRIBE FALLA, no existe la tabla <%s>",
 					nombreTablaAIr);
@@ -580,7 +594,7 @@ int funcionDescribe(char* nombreTablaAIr){
 				ref = ref->sig;
 				free(keyObtenida);
 			}
-			*/
+
 	}
 	free(info);
 	return 0;
