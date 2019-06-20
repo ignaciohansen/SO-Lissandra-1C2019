@@ -5,10 +5,10 @@
  *      Author: utnso
  */
 
-/*
+
 #ifndef MEMORIA_H_
 #define MEMORIA_H_
-*/
+
 //#include "estructurasMemoria.h"
 #include "estructuras.h"
 #include "retardos.h"
@@ -24,7 +24,7 @@
 #include <commons/config.h>
 #include <commons/collections/queue.h>
 #include "parser.h"
-#include "../Biblioteca/src/Biblioteca.c"
+#include "../Biblioteca/src/Biblioteca.h"
 
 
 #define PATH_MEMORIA_CONFIG "../Config/MEMORIA.txt"
@@ -37,9 +37,6 @@ t_header* buffer;
 
 int socketEscuchaKernel,conexionEntrante,recibiendoMensaje;
 int sockeConexionLF, resultado_sendMsj;
-int tablaPaginaArmada;
-short memoriaArmada;
-int tamanio, limpiandoMemoria;
 char* linea;
 char* argumentosComando;
 char** argumentosParseados;
@@ -57,7 +54,7 @@ pthread_t hiloConsolaMemoria;
  ----------------------------------------------------------------------------------*/
 
 
-
+void iniciarSemaforosYMutex();
 
 
 int main();
@@ -66,7 +63,6 @@ int main();
 /*---------------------------------------------------
  * FUNCIONES PARA MEMORIA PRINCIPAL
  ---------------------------------------------------*/
-void armarMemoriaPrincipal();
 //void obtenerInfoDePagina(int i, void** informacion);
 
 /*---------------------------------------------------
@@ -77,7 +73,6 @@ void cargarConfiguracion();
 char* lectura_consola();
 void terminar_memoria(t_log* g_log);
 void inicioLogYConfig();
-void liberar_todo_por_cierre_de_modulo();
 void cerrarTodosLosHilosPendientes();
 
 /*---------------------------------------------------
@@ -109,10 +104,6 @@ void hiloSelect(request_t* req);
 void hiloDescribe(request_t* req);
 void hiloDrop(request_t* req);
 
-int funcionDescribe(char* nombreTablaAIr);
-int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bool estadoAPoner);
-int funcionSelect(char* nombreTablaAIr, u_int16_t keyBuscada, pagina_a_devolver** datos_a_devolver,
-		char** valorADevolver);
 /*---------------------------------------------------
  * PROCESO JOURNAL
  *---------------------------------------------------*/
@@ -140,4 +131,4 @@ void modificarTIempoRetardo(int nuevoCampo, int campoAModificar);
  * FUNCIONES OBTENER VALORES MEDIANTE UNA KEY
  *---------------------------------------------------*/
 
-//#endif /* MEMORIA_H_ */
+#endif /* MEMORIA_H_ */

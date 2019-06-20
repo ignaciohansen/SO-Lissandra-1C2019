@@ -12,6 +12,21 @@
 #include "estructuras.h"
 //#include "memoria.h"
 
+/* FUNCIONES EXTERNAS */
+
+void armarMemoriaPrincipal();
+int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bool estadoAPoner);
+int funcionSelect(char* nombreTablaAIr, u_int16_t keyBuscada,pagina_a_devolver** dato, char** valorADevolver);
+int funcionDrop(char* nombre);
+int funcionDescribe(char* nombreTablaAIr);
+void liberar_todo_por_cierre_de_modulo();
+
+
+/* FUNCIONES INTERNAS A LA BIBLIOTECA */
+
+void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo,int nroPosicion);
+double  timestamp(void);
+void liberar_todo_segmento(void);
 
 //ESTE DE AQUI ABAJO DEVUELVE LA POSICION EN DONDE SE ENCUENTA LA KEY BUSCADA
 //si no lo encunetra devuelve ERROR O -1
@@ -32,6 +47,9 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteVa
 
 	pagina_a_devolver* selectObtenerDatos(int nroDePaginaAIr, bool necesitoValue);
 	int buscarEntreTodasLasTablaPaginasLaKey(pagina_referenciada* tablasAsociadasASegmento,	u_int16_t keyBuscada);
+	int buscarEntreLosSegmentosLaPosicionXNombreTablaYKey
+		(char* nombreTabla, u_int16_t keyBuscada,
+			segmento** segmentoBuscado, int* nroDePagina);
 
 	segmento* buscarSegmentoPorNumero(int numeroABuscar);
 	segmento* buscarSegmentoPorNombreTabla(char* nombreTabla);
