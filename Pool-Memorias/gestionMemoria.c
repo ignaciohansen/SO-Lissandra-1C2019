@@ -27,6 +27,16 @@ int tamanio, limpiandoMemoria;
 void armarMemoriaPrincipal() {
 	tablaPaginaArmada = 0;
 	memoriaArmada = 0;
+
+	/* NO SÉ SI ESTO SE USA
+	 * DE USARSE TIENE SENTIDO QUE ESTÉ EN ESTA FUNCIÓN,NO?
+	 * */
+	aux_crear_pagina = malloc(sizeof(pagina));
+	aux_devolver_pagina = malloc(sizeof(pagina_a_devolver));
+	aux_segmento = malloc(sizeof(segmento));
+	aux_tabla_paginas = malloc(sizeof(pagina_referenciada));
+	aux_tabla_paginas2 = malloc(sizeof(pagina_referenciada));
+
 	log_info(log_memoria,
 			"[ARMAR MEMORIA] Armo el bloque de memoria, guardo su tamaño");
 

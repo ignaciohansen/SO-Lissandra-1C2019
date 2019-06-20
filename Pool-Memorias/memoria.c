@@ -2,9 +2,7 @@
 #include "gestionMemoria.h"
 //#include "../Biblioteca/src/Biblioteca.c"
 
-void terminar_memoria(t_log* g_log);
-int buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(char* nombreTabla, u_int16_t keyBuscada,
-		segmento** segmentoBuscado, int* nroDePagina);
+//void terminar_memoria(t_log* g_log);
 
 int main() {
 
@@ -15,11 +13,7 @@ int main() {
 //	crearConexionesConOtrosProcesos(); // conecta con LFS y puede que con kernel.
 
 	printf("HACIENDO MEMORIA");
-	aux_crear_pagina = malloc(sizeof(pagina));
-	aux_devolver_pagina = malloc(sizeof(pagina_a_devolver));
-	aux_segmento = malloc(sizeof(segmento));
-	aux_tabla_paginas = malloc(sizeof(pagina_referenciada));
-	aux_tabla_paginas2 = malloc(sizeof(pagina_referenciada));
+
 //	aux_tabla_paginas=malloc(sizeof(tabla_pagina));
 
 	arc_config->max_value_key = 20;
