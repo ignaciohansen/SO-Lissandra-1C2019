@@ -8,6 +8,7 @@
 #include "gestionMemoria.h"
 #include "memoria.h"
 #include <string.h>
+#include "estructuras.h"
 
 /* VARIABLES GLOBALES */
 /*
@@ -111,6 +112,37 @@ void armarMemoriaPrincipal() {
 	limpiandoMemoria = 0;
 }
 
+int loggearEstadoActual(FILE* fp)
+{
+	if(tablaSegmentos==NULL){
+		log_info(log_memoria, "[LOGGEANDO ESTADO ACUTAL MEMORIA] No se ha inicializado la tabla de segmentos");
+		return -1;
+	}
+	segmento *aux_segmento = tablaSegmentos;
+	pagina_referenciada *aux_pagina;
+	int nro_pagina;
+	pagina_a_devolver *algo;
+
+
+	log_info(log_memoria, "[LOGGEANDO ESTADO ACUTAL MEMORIA]");
+	fprintf(fp,"\n\n****************ESTADO DE TABLAS****************\n");
+	while(aux_segmento != NULL){
+		fprintf(fp,"\n\nTABLA %s",aux_segmento->path_tabla);
+		aux_pagina = aux_segmento->paginasAsocida;
+		fprintf(fp, "\n%10s;%10s;%20s", "key","value","timestamp");
+		while(aux_pagina != NULL){
+			nro_pagina = aux_pagina->nropagina;
+			algo = selectPaginaPorPosicion(nro_pagina,true);
+//			log_info(logger, "%d;%s;%lf", algo->key, algo->value, algo->timestamp);
+			fprintf(fp, "\n%10d;%10s;%20.0lf", algo->key, algo->value, algo->timestamp);
+			aux_pagina = aux_pagina->sig;
+		}
+		fprintf(fp,"\n\n");
+		aux_segmento = aux_segmento->siguienteSegmento;
+	}
+
+	return 1;
+}
 
 int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bool estadoAPoner, double timestamp_val){
 	log_info(log_memoria, "[INSERT] EN funcion INSERT");
@@ -244,14 +276,14 @@ int funcionSelect(char* nombreTablaAIr, u_int16_t keyBuscada,
 //	mutexBloquear(&mutex_bloque_LRU_modificando);
 //	void* informacion = malloc(sizeof(pagina)+max_valor_key);
 	log_info(log_memoria,
-"[FUNCION SELECT] ENTRANDO POR NUEVA PETICION\nValor de key de los datos solicitados:\n\nSEGMENTO: % s \nKEY: %d",
+"[FUNCION SELECT] ENTRANDO POR NUEVA PETICION. Valor de key de los datos solicitados: SEGMENTO: % s KEY: %d",
 			nombreTablaAIr,
 			keyBuscada);
 	direccionPagina = buscarEntreLosSegmentosLaPosicionXNombreTablaYKey
 			(nombreTablaAIr, keyBuscada, &seg, &nroDePagina);
 
 	if(direccionPagina==-1){
-		imprimirError2(log_memoria, "[FUNCION SELECT] ERROR, NO SE ENCONTRO NADA\n\nSEGMENTO BUSCADO: <%s>\nKEY BUSCADA: <%d>\n\n DEVUELVO ERROR",
+		imprimirError2(log_memoria, "[FUNCION SELECT] ERROR, NO SE ENCONTRO NADA. SEGMENTO BUSCADO: <%s>. KEY BUSCADA: <%d>.DEVUELVO ERROR",
 					nombreTablaAIr, keyBuscada);
 //			free(informacion);
 			return 0;
@@ -441,6 +473,9 @@ void liberar_todo_por_cierre_de_modulo() {
 				">>>>>>>>>>>>>>>FIN DE PROCESO MEMORIA<<<<<<<<<<<<<<<");
 		log_destroy(log_memoria);
 		log_memoria = NULL;
+	}
+	if (tablas_fp != NULL){
+		fclose(tablas_fp);
 	}
 }
 

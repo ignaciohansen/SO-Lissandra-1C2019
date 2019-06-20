@@ -15,6 +15,7 @@
 /* FUNCIONES EXTERNAS */
 
 void armarMemoriaPrincipal();
+int loggearEstadoActual(FILE *fp);
 int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bool estadoAPoner, double timestamp_val);
 int funcionSelect(char* nombreTablaAIr, u_int16_t keyBuscada,pagina_a_devolver** dato, char** valorADevolver);
 int funcionDrop(char* nombre);
