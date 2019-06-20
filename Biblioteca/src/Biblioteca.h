@@ -7,6 +7,9 @@
 
 //--------------------------------------- Includes -------------------------------------
 
+#ifndef BIBLIOTECA_INC
+#define BIBLIOTECA_INC
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -117,6 +120,7 @@ typedef struct{
 	int unsigned cantArgumentos;
 }t_header;
 
+/*
 const char* comandosPermitidos[] =
 {
 	"select",
@@ -130,7 +134,7 @@ const char* comandosPermitidos[] =
 	"metrics",
 	"salir"
 	
-};
+};*/
 
 
 enum comandos{
@@ -167,7 +171,6 @@ typedef enum
 	KERNEL,
 	RECHAZADO
 } id_com_t;
-
 
 //FUNCIONES PARA ABORTAR UN PROCESO
 void abortarProcesoPorUnError(t_log log, char* mensaje);
@@ -255,6 +258,28 @@ void archivoLogInformarDebug(ArchivoLog archivoLog, String mensajeDebug);
 String archivoLogNivelLogAString(NivelLog nivelLog);
 NivelLog archivoLogStingANivelLog(String stringNivelLog);
 void archivoLogValidar(String rutaArchivo);
+
+void imprimirMensaje(ArchivoLog archivoLog, String mensaje);
+void imprimirMensaje1(ArchivoLog archivoLog, String mensaje, void* algo1);
+void imprimirMensaje2(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2);
+void imprimirMensaje3(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3);
+void imprimirMensaje4(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3, void* algo4);
+void imprimirAviso(ArchivoLog archivoLog, String mensaje);
+void imprimirAviso1(ArchivoLog archivoLog, String mensaje, void* algo1);
+void imprimirAviso2(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2);
+void imprimirAviso3(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3);
+void imprimirAviso4(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3, void* algo4);
+void imprimirError(ArchivoLog archivoLog, String mensaje);
+void imprimirError1(ArchivoLog archivoLog, String mensaje, void* algo1);
+void imprimirError2(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2);
+void imprimirError3(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3);
+void imprimirError4(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3, void* algo4);
+void imprimirVerde(ArchivoLog archivoLog, String mensaje);
+void imprimirVerde1(ArchivoLog archivoLog, String mensaje, void* algo1);
+void imprimirVerde2(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2);
+void imprimirVerde3(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3);
+void imprimirVerde4(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3, void* algo4);
+void imprimirMensajeProceso(String mensaje);
 
 //--------------------------------------- Funciones para Semaforo -------------------------------------
 
@@ -415,3 +440,4 @@ void borrar_buffer(buffer_com_t buf);
 
 void borrar_mensaje(msg_com_t msg);
 
+#endif
