@@ -21,10 +21,13 @@ int funcionDrop(char* nombre);
 int funcionDescribe(char* nombreTablaAIr);
 void liberar_todo_por_cierre_de_modulo();
 
+void insertCrearPaginaConNuevoSegmento(char* nombreTabla, u_int16_t keyBuscada,
+		pagina_referenciada* ref, char* valorAPoner, bool estadoAPoner,
+		segmento* segmentoBuscado, double timestamp_val);
 
 /* FUNCIONES INTERNAS A LA BIBLIOTECA */
 
-void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo,int nroPosicion, double timestamp_val);
+void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo, double timestamp_val);
 double  timestamp(void);
 void liberar_todo_segmento(void);
 
@@ -49,7 +52,7 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteVa
 	int buscarEntreTodasLasTablaPaginasLaKey(pagina_referenciada* tablasAsociadasASegmento,	u_int16_t keyBuscada);
 	int buscarEntreLosSegmentosLaPosicionXNombreTablaYKey
 		(char* nombreTabla, u_int16_t keyBuscada,
-			segmento** segmentoBuscado, int* nroDePagina);
+			segmento** segmentoBuscado);
 
 	segmento* buscarSegmentoPorNumero(int numeroABuscar);
 	segmento* buscarSegmentoPorNombreTabla(char* nombreTabla);
@@ -128,14 +131,17 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteVa
  */
 
 
-	void LRU(pagina* paginaCreada, int* nroAsignado,
-			char* value, bool flag_modificado,	char* nombreTabla);
+	int LRU(
+	/*		pagina* paginaCreada, int* nroAsignado,
+			char* value, bool flag_modificado,	char* nombreTabla
+			*/
+			);
 
 	pagina* actualizarPosicionAPagina(pagina* unaPagina, int nuevaPos);
 
 	char* obtenerNombreTablaDePath(char* path);
 
-	int pasarValoresALisandra(char* datos);
+	int pasarValoresALisandra(datosJournal* datos);
 
 	int buscarPaginaDisponible(u_int16_t key, bool existiaTabla, char* nombreTabla, segmento* segmetnoApuntado);
 
@@ -156,8 +162,10 @@ void insertHardcodeado(int cant, int inicio, void* info, char* valorNuevo, char*
  */
 
 void JOURNAL();
+void procesoJournal();
 datosJournal* obtener_todos_journal();
 bool bloque_LRU_en_posicion_fue_modificado(int pos, char** nombreADevolver);
 
+bool bitmapLleno();
 
 #endif

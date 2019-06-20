@@ -266,7 +266,7 @@ void hiloInsert(request_t* req){
 	memcpy(valorAPoner, req->args[2], strlen(req->args[2])+1);
 
 	//printf("PRUEBAS: \nVALUE A PONER: [%s] [%s]\n\n", nombreTabla, valorAPoner);
-	if(funcionInsert(nombreTabla, keyBuscada, valorAPoner, true)== -1){
+	if(funcionInsert(nombreTabla, keyBuscada, valorAPoner, true, -1)== -1){
 		imprimirError(log_memoria, "[FUNCION INSERT]\n\nERROR: Mayor al pasar max value\n\n");
 	}
 	free(valorAPoner);
@@ -333,7 +333,7 @@ void insertHardcodeado(int cant, int inicio, void* info, char* valorNuevo, char*
 	log_info(log_memoria, "\n\n[X Insertar datos] Insertando datos en '%s'\n\nValor a poner ['%s']\n", nombreTabla, valorNuevo);
 	// for(i=inicio; i<cant+inicio; i++){
 	     printf("\nComienzo el insert NRO %d\n", i);
-	     if(funcionInsert(nombreTabla, cant, valorNuevo, true)!=-1){
+	     if(funcionInsert(nombreTabla, cant, valorNuevo, true, -1)!=-1){
 	        printf("Se hizo el insert NRO %d\n", i);
 
 	    } else {
@@ -1010,3 +1010,40 @@ if (configFile != NULL) {
  * FUNCIONES PARA LA ADMINISTRACION DE MEMORIA
  *-----------------------------------------------------*/
 
+void JOURNAL() {
+	log_info(log_memoria, "[JOURNAL] EN JOURNAL");
+	char* datosAPasar;
+	datosJournal* journalAPasar;
+	journalAPasar = obtener_todos_journal();
+	log_info(log_memoria, "[JOURNAL] PROCEDO A ENVIAR LA INFORAMCION A LISANDRA");
+
+	log_info(log_memoria, "[JOURNAL] ENVIO EL MENSAJE A LISANDRA");
+	pasarValoresALisandra(datosAPasar);
+	log_info(log_memoria, "[JOURNAL] TAMAÑO ENVIADO");
+
+	log_info(log_memoria, "[JOURNAL] Lisandra responde que recibio el mensaje");
+
+	log_info(log_memoria, "[JOURNAL] JOURNAL HECHO, LISANDRA LA HA RECIBIDO BIEN, LIMPIO TODO");
+
+	liberarDatosJournal(journalAPasar);
+	mutexBloquear(&mutex_bloquear_select_por_limpieza);
+	limpiezaGlobalDeMemoriaYSegmentos();
+	mutexDesbloquear(&mutex_bloquear_select_por_limpieza);
+}
+
+int pasarValoresALisandra(datosJournal* datos){
+
+
+	retardo_fs(arc_config->retardo_fs);
+}
+
+void procesoJournal(){
+	mutexBloquear(&JOURNALHecho);
+	hiloCancelar(journalHilo);
+	log_info(log_memoria, "[procesoJournal] Memoria esta full, procedo a hacer Journal");
+//	retardo_journal(arc_config->retardo_journal);
+	JOURNAL();
+	log_info(log_memoria, "[procesoJournal] JOURNAL REALIZADO, PROCEDO A REINICIAR EL HILO JOURNAL");
+	hiloDetach(journalHilo);
+	mutexDesbloquear(&JOURNALHecho);
+}

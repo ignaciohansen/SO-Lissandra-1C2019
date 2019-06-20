@@ -17,10 +17,13 @@
 #include <commons/config.h>
 #include <commons/collections/queue.h>
 #include "commons/bitarray.h"
+#include <pthread.h>
 
 //#include "parser.h"
 //#include "retardos.h"
 //#include "memoria.h"
+
+pthread_t* journalHilo;
 
 t_log* log_memoria;
 t_bitarray* bitmap;
@@ -132,6 +135,7 @@ typedef struct datosJournal{
 	char* value;
 	double timestamp;
 	u_int16_t key;
+	struct datosJournal* sig;
 } datosJournal;
 
 //memoria_principal* memoria;
