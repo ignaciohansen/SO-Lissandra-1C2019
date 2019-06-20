@@ -112,7 +112,7 @@ void armarMemoriaPrincipal() {
 }
 
 
-int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bool estadoAPoner){
+int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bool estadoAPoner, double timestamp_val){
 	log_info(log_memoria, "[INSERT] EN funcion INSERT");
 	if(strlen(valorAPoner)>=max_valor_key){
 		log_error(log_memoria, "[INSERT] El valor VALUE '%s' es mayor que el max value KEY\nMOTIVO: %d Mayor que %d",
@@ -154,7 +154,7 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 			//tabla_pagina_crear(keyBuscada, valorAPoner, estadoAPoner,
 			//		&ref, nombreTabla, estadoAPoner, NULL);
 			tabla_pagina_crear(keyBuscada, valorAPoner, estadoAPoner,
-								&ref, nombreTabla, false, segmentoBuscado);
+								&ref, nombreTabla, false, segmentoBuscado, timestamp_val);
 			if(estadoAPoner) {
 				log_info(log_memoria,
 			"[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|TRUE",
@@ -177,7 +177,7 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 			//EXISTE EL SEGMENTO, SOLO CREO LA TABLA Y LA PAGINA Y SE LA ASIGNO A LA COLA DE TABLA DE PAGINAS DE SEGMENTO
 
 			tabla_pagina_crear(keyBuscada, valorAPoner, estadoAPoner,
-					&ref, nombreTabla, true, segmentoBuscado);
+					&ref, nombreTabla, true, segmentoBuscado, timestamp_val);
 
 			if(estadoAPoner) {
 				printf("[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|TRUE",
@@ -233,7 +233,7 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 		free(ref);
 
 	//	free(segmentoBuscado);
-		modificarValoresDeTablaYMemoriaAsociadasAKEY(posicionAIr, valorAPoner, nroPosicion);
+		modificarValoresDeTablaYMemoriaAsociadasAKEY(posicionAIr, valorAPoner, nroPosicion, timestamp_val);
 	}
 //	mutexDesbloquear(&mutex_bloque_LRU_modificando);
 
@@ -750,17 +750,19 @@ void borrarSegmentoPasadoPorParametro(segmento* unSegmento){
 
 
 
-pagina* crear_pagina(int16_t key, char * valor, int posAsignada) {
+pagina* crear_pagina(int16_t key, char * valor, int posAsignada, double timestamp_val) {
 	log_info(log_memoria, "[CREANDO PAGINA Y VALOR] Por crear pagina y valor");
 	pagina* pag = malloc(sizeof(pagina));
 	pag->nroPosicion = posAsignada;
 	pag->key = key;
 //	aux_pagina->timestamp = timestamp();
 	//SI TIENE TIMESTAMP EN 0 LE ASIGNAMOS EL ACTUAL
-	double algo =timestamp();
-	pag->timestamp = algo;
+	if(timestamp_val == -1)
+		pag->timestamp = timestamp();
+	else
+		pag->timestamp = timestamp_val;
 
-	log_info(log_memoria, "[CREANDO PAGINA Y VALOR]KEY|VALOR|TIMESTAMP: %d|%s|%f", key, valor, algo);
+	log_info(log_memoria, "[CREANDO PAGINA Y VALOR]KEY|VALOR|TIMESTAMP: %d|%s|%f", key, valor, pag->timestamp);
 	log_info(log_memoria, "[CREANDO PAGINA Y VALOR] Pagina creada y tambien su valor");
 	return pag;
 }
@@ -1004,7 +1006,8 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteVa
 void tabla_pagina_crear(
 		u_int16_t key, char* valor, bool flag_modificado,
 		pagina_referenciada** devolver, char* nombreTabla,
-		bool existeSegmento, segmento* segmetnoApuntado) {
+		bool existeSegmento, segmento* segmetnoApuntado,
+		double timestamp_val) {
 	log_info(log_memoria, "[Crear Tabla y pagina] En crear Tabla de pagina y pagina nueva porque no estan con la key %d", key);
 
 	pagina_referenciada* pag_ref = malloc(sizeof(pagina_referenciada));
@@ -1025,7 +1028,7 @@ void tabla_pagina_crear(
 				"[Crear Tabla y pagina] NO hay espacio libre por lo tanto activo el LRU");
 		//SIGNIFICA QUE LLEGO AL TOPE DE PAGINAS EN MEMORIA
 		//O SEA ESTAN TODAS OCUPADAS, APLICO LRU
-		LRU(crear_pagina(key, valor, -1), &posicionAsignada, valor, flag_modificado, nombreTabla);
+		LRU(crear_pagina(key, valor, -1,timestamp_val), &posicionAsignada, valor, flag_modificado, nombreTabla);
 		pag_ref->nropagina=posicionAsignada;
 	//	printf("\nNUMERO DE PAGINA ASIGNADA:\n<%d>\n", pag_ref->nropagina);
 		mutexDesbloquear(&LRUMutex);
@@ -1045,7 +1048,7 @@ void tabla_pagina_crear(
 		log_info(log_memoria,
 				"[Crear Tabla y pagina] Procedo a asignar la tabla y la pagina a dicha posicion");
 
-		asignarNuevaPaginaALaPosicion(posicionAsignada, crear_pagina(key, valor, posicionAsignada),
+		asignarNuevaPaginaALaPosicion(posicionAsignada, crear_pagina(key, valor, posicionAsignada,timestamp_val),
 				valor, flag_modificado, nombreTabla);
 		pag_ref->nropagina=posicionAsignada;
 
@@ -1235,7 +1238,7 @@ void vaciar_tabla_paginas_y_memoria(){
 
 
 void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo,
-		int nroPosicion) {
+		int nroPosicion, double timestamp_val) {
 	mutexBloquear(&mutex_tabla_pagina_en_modificacion);
 	mutexBloquear(&mutex_memoria);
 	pagina* aux = malloc(sizeof(pagina));
@@ -1244,7 +1247,17 @@ void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo,
 	memcpy(aux, bloque_memoria+posAIr*(sizeof(pagina)+max_valor_key), sizeof(pagina));
 //	printf("1 hecho\n");
 
-	aux->timestamp = timestamp();
+	if(timestamp_val == -1)
+		timestamp_val = timestamp();
+	if(timestamp_val <= aux->timestamp){
+		log_info(log_memoria, "[Modificar valores de pagina] El timestamp es anterior al almacenado. Ignorando cambios");
+		free(aux);
+		log_info(log_memoria,"[Modificar valores de pagina] Saliendo");
+		mutexDesbloquear(&mutex_memoria);
+		mutexDesbloquear(&mutex_tabla_pagina_en_modificacion);
+		return;
+	}
+	aux->timestamp = timestamp_val;
 	log_info(log_memoria, "[Modificar valor pagina] Incremento el acceso a la pagina '%d' de la key '%d'", posAIr, aux->key);
 	incrementarAccesoDeKey(posAIr, true, true);
 
