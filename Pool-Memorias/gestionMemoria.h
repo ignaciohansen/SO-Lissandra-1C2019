@@ -40,7 +40,7 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteVa
 /*---------------------------------------------------
  * FUNCIONES PARA ADMINISTRAR LA MEMORIA
  *---------------------------------------------------*/
-	void incrementarAccesoDeKey(int posBUscado);
+	void incrementarAccesoDeKey(int pos, bool estadoAPoner, bool vieneDeInsert);
 
 	void agregarNuevaPaginaALaPosicion(pagina_a_devolver* pagina, int posicion);
 
@@ -113,7 +113,7 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteVa
 	int limpiar_paginas(pagina_referenciada* pag);
 	int limpiar_valores_pagina(pagina* valores);
 
-	void limpiar_y_destruir_todo_lo_de_segmento(segmento *);
+	void limpiar_y_destruir_todo_segmento();
 	void limpiar_todos_los_elementos_de_1_segmento(segmento* segmentoABorrar);
 	void liberarTodosLasTablasDePaginas(pagina_referenciada* ref);
 	void liberarPosicionLRU(int posicionAIr);
@@ -150,5 +150,14 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteVa
 
 
 void insertHardcodeado(int cant, int inicio, void* info, char* valorNuevo, char* nombreTabla);
+
+/*
+ *							JOURNAL
+ */
+
+void JOURNAL();
+datosJournal* obtener_todos_journal();
+bool bloque_LRU_en_posicion_fue_modificado(int pos, char** nombreADevolver);
+
 
 #endif

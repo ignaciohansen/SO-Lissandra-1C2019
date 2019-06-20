@@ -17,6 +17,7 @@
 #include <commons/config.h>
 #include <commons/collections/queue.h>
 #include "commons/bitarray.h"
+
 //#include "parser.h"
 //#include "retardos.h"
 //#include "memoria.h"
@@ -49,6 +50,8 @@ pthread_mutex_t mutex_drop;
 
 pthread_mutex_t mutex_info_request;
 
+pthread_mutex_t mutex_bloquear_select_por_limpieza;
+
 
 //Semaforo paginasSinUsar; //TIENE CAPACIDAD HASTA PARA cantPaginasTotales
 int cantPaginasDisponibles, cantPaginasTotales;
@@ -61,12 +64,7 @@ typedef struct{
     int puerto;
     char* ip_fs;
     int puerto_fs;
-/*
-    char* ip_seeds[10];    // esto debe ser flexible
-    int puerto_seeds[10];  // esto debe ser flexible
-*/
     char* ip_seeds;
-    //SACO EL [10] A PUERTO_SEEDS
     char** puerto_seeds;
     int retardo_mem;
     int retardo_fs;
@@ -74,7 +72,6 @@ typedef struct{
     int retardo_journal;
     int retardo_gossiping;
     int memory_number;
-
     //NUEVO CAMPO AÑADIDO, MAXIMO VALOR EN BYTE DE LA KEY
     //ESTA SOLO SE OBTIENE A PARTIR DE CONECTAR CON FS
     int max_value_key;
@@ -130,6 +127,12 @@ typedef struct datosRequest{
 	char* req3;
 }datosRequest;
 
+typedef struct datosJournal{
+	char* nombreTabla;
+	char* value;
+	double timestamp;
+	u_int16_t key;
+} datosJournal;
 
 //memoria_principal* memoria;
 segmento* tablaSegmentos;

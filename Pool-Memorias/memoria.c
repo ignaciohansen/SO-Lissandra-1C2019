@@ -1,7 +1,7 @@
 #include "memoria.h"
 #include "gestionMemoria.h"
 //#include "../Biblioteca/src/Biblioteca.c"
-
+#include "../Biblioteca/src/Biblioteca.h"
 //void terminar_memoria(t_log* g_log);
 
 int main() {
@@ -393,6 +393,8 @@ void iniciarSemaforosYMutex() {
 		mutexIniciar(&mutex_retardo_gossiping);
 		mutexIniciar(&mutex_retardo_fs);
 		mutexIniciar(&mutex_retardo_journal);
+
+	mutexIniciar(&mutex_bloquear_select_por_limpieza);
 
 //	iniciarSemaforosRetados();
 
@@ -1003,28 +1005,7 @@ if (configFile != NULL) {
 
 }
 
-/*-----------------------------------------------------
- * FUNCIONES DE JOURNAL
- *-----------------------------------------------------*/
 
-void JOURNAL() {
-	log_info(log_memoria, "[JOURNAL] EN JOURNAL");
-	char* datosAPasar;
-	log_info(log_memoria, "[JOURNAL] PROCEDO A ENVIAR LA INFORAMCION A LISANDRA");
-
-	log_info(log_memoria, "[JOURNAL] ENVIO LA CANTIDAD EXACTA DE CARACTERES QUE LE VOY A ENVIAR");
-	pasarValoresALisandra(datosAPasar);
-	log_info(log_memoria, "[JOURNAL] TAMAÑO ENVIADO");
-
-	log_info(log_memoria, "[JOURNAL] Lisandra responde que se puede enviar todo, procedo a hacerlo");
-
-	log_info(log_memoria, "[JOURNAL] JOURNAL HECHO, LISANDRA LA HA RECIBIDO BIEN");
-}
-
-//PROTOTIPO
-int pasarValoresALisandra(char* datos){
-	retardo_fs(arc_config->retardo_fs);
-}
 /*-----------------------------------------------------
  * FUNCIONES PARA LA ADMINISTRACION DE MEMORIA
  *-----------------------------------------------------*/

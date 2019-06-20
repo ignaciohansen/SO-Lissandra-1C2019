@@ -108,7 +108,7 @@ void hiloDrop(request_t* req);
  * PROCESO JOURNAL
  *---------------------------------------------------*/
 
-void JOURNAL();
+//void JOURNAL();
 
 //void pasar_valores_modificados_a_Lisandra(segmento* elSegmento, unidad_memoria* unidad_de_memoria);
 
