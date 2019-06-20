@@ -111,8 +111,8 @@ t_metadata_LFS* metadataLFS;
 sem_t semaforoQueries;
 
 t_dictionary* memtable;
-t_list * listaTablasRepetidas;
 t_list * listaTablasInsertadas;
+t_list* listaRegistrosMemtable;
 
 /*--------------------------------------------------------------------------------------------
  * 									Elementos de comandos
@@ -123,6 +123,7 @@ char* tablaAverificar; // directorio de la tabla
 char* path_tabla_metadata;
 char* archivoParticion;
 char* registroPorAgregar;
+int primerVoidEsRegistro = 1;
 
 int comandoSelect(char* tabla, char* key);
 void comandoInsertSinTimestamp(char* tabla,char* key,char* value);
@@ -166,7 +167,7 @@ int cantidad_de_dumps = 0;
 int dumps_a_dividir =1;
 
 void esperarTiempoDump();
-char* armarPathTablaParaDump(char* tabla);
+char* armarPathTablaParaDump(char* tabla,int dumps);
 void crearArchivoTemporal(char* path,char* tabla);
 void realizarDump();
 
