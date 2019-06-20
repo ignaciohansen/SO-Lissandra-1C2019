@@ -1,3 +1,6 @@
+#ifndef PARSER_INC
+#define PARSER_INC
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -33,3 +36,5 @@ void borrar_request(request_t req);
 * @DESC: recibe un request en un string y lo devuelve en una estructura del tipo request_t
 */
 request_t parser(char* req);
+
+#endif
