@@ -61,6 +61,7 @@ typedef struct{
     int puerto;
     char* ip_fs;
     int puerto_fs;
+    char* ip;
 /*
     char* ip_seeds[10];    // esto debe ser flexible
     int puerto_seeds[10];  // esto debe ser flexible

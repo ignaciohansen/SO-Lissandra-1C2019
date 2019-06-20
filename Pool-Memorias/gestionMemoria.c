@@ -74,7 +74,7 @@ void armarMemoriaPrincipal() {
 
 
 	cantPaginasDisponibles = tamanioMemoria/tamanioPagina;
-	cantPaginasDisponibles = 4;
+//	cantPaginasDisponibles = 4;
 
 //memoria->paginasTotales = cantPaginasDisponibles;
 	cantPaginasTotales = cantPaginasDisponibles;
@@ -1180,6 +1180,8 @@ void liberar_toda_tabla_paginas(pagina_referenciada* pag){
 void vaciar_tabla_paginas_y_memoria(){
 	pagina* pag;
 	printf("\nFALTA UN MALLOC!!!!!!!!!!!!!!!!!");
+	printf("\nFunción vaciar_tabla_paginas_y_memoria\n");
+	getchar();
 	/* SI ESTO SE USA ACÁ FALTA UN MALLOC*/
 	pag->key=-1;
 	pag->nroPosicion=-1;
