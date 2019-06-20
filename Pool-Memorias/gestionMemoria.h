@@ -12,6 +12,22 @@
 #include "estructuras.h"
 //#include "memoria.h"
 
+/* FUNCIONES EXTERNAS */
+
+void armarMemoriaPrincipal();
+int loggearEstadoActual(FILE *fp);
+int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bool estadoAPoner, double timestamp_val);
+int funcionSelect(char* nombreTablaAIr, u_int16_t keyBuscada,pagina_a_devolver** dato, char** valorADevolver);
+int funcionDrop(char* nombre);
+int funcionDescribe(char* nombreTablaAIr);
+void liberar_todo_por_cierre_de_modulo();
+
+
+/* FUNCIONES INTERNAS A LA BIBLIOTECA */
+
+void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo,int nroPosicion, double timestamp_val);
+double  timestamp(void);
+void liberar_todo_segmento(void);
 
 //ESTE DE AQUI ABAJO DEVUELVE LA POSICION EN DONDE SE ENCUENTA LA KEY BUSCADA
 //si no lo encunetra devuelve ERROR O -1
@@ -32,6 +48,9 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteVa
 
 	pagina_a_devolver* selectObtenerDatos(int nroDePaginaAIr, bool necesitoValue);
 	int buscarEntreTodasLasTablaPaginasLaKey(pagina_referenciada* tablasAsociadasASegmento,	u_int16_t keyBuscada);
+	int buscarEntreLosSegmentosLaPosicionXNombreTablaYKey
+		(char* nombreTabla, u_int16_t keyBuscada,
+			segmento** segmentoBuscado, int* nroDePagina);
 
 	segmento* buscarSegmentoPorNumero(int numeroABuscar);
 	segmento* buscarSegmentoPorNombreTabla(char* nombreTabla);
@@ -45,11 +64,11 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteVa
 	void tabla_pagina_crear(
 			u_int16_t key, char* valor, bool flag_modificado,
 			pagina_referenciada** devolver, char* nombreTabla,
-			bool existeSegmento, segmento* segmetnoApuntado);
+			bool existeSegmento, segmento* segmetnoApuntado, double timestamp_val);
 //	pagina * pagina_crear(long timestamp, int16_t key, char * valor);
 	pagina* pagina_crear(long timestampNuevo, u_int16_t key, char * valor, char* nombreTabla);
 	//EL DE ABAJO CREA LA UNIDAD, EL DE ARRIBA DESPUES MANDA A BUSCAR EL SEGMENTO
-	pagina* crear_pagina(int16_t key, char * valor, int posicionAsignada);
+	pagina* crear_pagina(int16_t key, char * valor, int posicionAsignada, double timestamp_val);
 
 
 	/*

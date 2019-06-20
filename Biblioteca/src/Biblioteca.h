@@ -7,6 +7,9 @@
 
 //--------------------------------------- Includes -------------------------------------
 
+#ifndef BIBLIOTECA_INC
+#define BIBLIOTECA_INC
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -117,6 +120,7 @@ typedef struct{
 	int unsigned cantArgumentos;
 }t_header;
 
+/*
 const char* comandosPermitidos[] =
 {
 	"select",
@@ -130,7 +134,7 @@ const char* comandosPermitidos[] =
 	"metrics",
 	"salir"
 	
-};
+};*/
 
 
 enum comandos{
@@ -147,30 +151,9 @@ enum comandos{
 	
 };
 
-/* Tipos de datos */
-
-//Tipos de mensaje soportados
-typedef enum
-{
-	GOSSIPING,
-	REQUEST,
-	ERRORCOMANDO,
-	HANDSHAKECOMANDO,
-	DESCONECTADO //Lo agregué para poder detectar y manejar la caída del servidor
-} conexion_t;
-
-//Identificación del tipo de proceso
-typedef enum
-{
-	LFS,
-	MEMORIA,
-	KERNEL,
-	RECHAZADO
-} id_com_t;
-
-
 //FUNCIONES PARA ABORTAR UN PROCESO
 void abortarProcesoPorUnError(t_log log, char* mensaje);
+void abortarProcesoPorUnErrorImportante(t_log* log, char* mensaje);
 
 //--------------------------------------- Funcion timestamp -------------------------------------
 
@@ -255,6 +238,28 @@ void archivoLogInformarDebug(ArchivoLog archivoLog, String mensajeDebug);
 String archivoLogNivelLogAString(NivelLog nivelLog);
 NivelLog archivoLogStingANivelLog(String stringNivelLog);
 void archivoLogValidar(String rutaArchivo);
+
+void imprimirMensaje(ArchivoLog archivoLog, String mensaje);
+void imprimirMensaje1(ArchivoLog archivoLog, String mensaje, void* algo1);
+void imprimirMensaje2(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2);
+void imprimirMensaje3(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3);
+void imprimirMensaje4(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3, void* algo4);
+void imprimirAviso(ArchivoLog archivoLog, String mensaje);
+void imprimirAviso1(ArchivoLog archivoLog, String mensaje, void* algo1);
+void imprimirAviso2(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2);
+void imprimirAviso3(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3);
+void imprimirAviso4(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3, void* algo4);
+void imprimirError(ArchivoLog archivoLog, String mensaje);
+void imprimirError1(ArchivoLog archivoLog, String mensaje, void* algo1);
+void imprimirError2(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2);
+void imprimirError3(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3);
+void imprimirError4(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3, void* algo4);
+void imprimirVerde(ArchivoLog archivoLog, String mensaje);
+void imprimirVerde1(ArchivoLog archivoLog, String mensaje, void* algo1);
+void imprimirVerde2(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2);
+void imprimirVerde3(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3);
+void imprimirVerde4(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3, void* algo4);
+void imprimirMensajeProceso(String mensaje);
 
 //--------------------------------------- Funciones para Semaforo -------------------------------------
 
@@ -372,11 +377,48 @@ void fileLimpiar(String ruta);
 
 /************************************PROTOCOLO ****************************************************/
 
+/* Tipos de datos */
+
+//Tipos de mensaje soportados
+typedef enum
+{
+	GOSSIPING,
+	REQUEST,
+	ERRORCOMANDO,
+	HANDSHAKECOMANDO,
+	RESPUESTA,
+	DESCONECTADO //Lo agregué para poder detectar y manejar la caída del servidor
+} conexion_t;
+
+//Identificación del tipo de proceso
+typedef enum
+{
+	LFS,
+	MEMORIA,
+	KERNEL,
+	RECHAZADO
+} id_com_t;
+
+//Tipo de respuestas a pedidos
+typedef enum{
+	RESP_OK, //Cualquier pedido
+	RESP_TABLA_NO_EXISTE, //SELECT-DROP
+	RESP_KEY_NO_EXISTE, //SELECT
+	RESP_MEM_FULL, //SELECT-INSERT
+	RESP_ERROR_GENERAL
+} resp_tipo_com_t;
+
 //String de tamaño 'tam'
 typedef struct{
 	int tam;
 	char *str;
 } str_com_t;
+
+//Respuestas a pedidos
+typedef struct{
+	resp_tipo_com_t tipo;
+	str_com_t msg;
+} resp_com_t;
 
 //Por el momento dijimos que un request es un string
 typedef str_com_t req_com_t;
@@ -403,15 +445,43 @@ typedef struct{
 	buffer_com_t payload;
 } msg_com_t;
 
-buffer_com_t serializar_request(req_com_t msg);
+//Estructura para un cliente. Contiene socket de conexión e identificación
+typedef struct{
+	int socket;
+	id_com_t id;
+} cliente_com_t;
+
 
 int enviar_request(int socket, req_com_t enviar);
-
+int enviar_respuesta(int socket, resp_com_t enviar);
+int enviar_handshake(int socket, handshake_com_t enviar);
 msg_com_t recibir_mensaje(int conexion);
-
 req_com_t procesar_request(msg_com_t msg);
-
+resp_com_t procesar_respuesta(msg_com_t msg);
+handshake_com_t procesar_handshake(msg_com_t msg);
 void borrar_buffer(buffer_com_t buf);
-
 void borrar_mensaje(msg_com_t msg);
+void borrar_request_com(req_com_t req);
+void borrar_respuesta(resp_com_t resp);
+void borrar_handshake(handshake_com_t hs);
 
+/**
+* @NAME: iniciar_servidor
+* @DESC: Inicializa el servidor en el ip y puerto indicado
+*/
+int iniciar_servidor(char*ip,char*puerto);
+
+/**
+* @NAME: esperar_cliente
+* @DESC: Espera un cliente en el socket servidor y espera su handshake.
+* 	  	 Nos devuelve una estructura con el socket y la identificación.
+*/
+cliente_com_t esperar_cliente(int servidor);
+
+/**
+* @NAME: conectar_a_servidor
+* @DESC: Establece la conexión con el servidor y le envia la identificación
+*/
+int conectar_a_servidor(char *ip,char *puerto, id_com_t id);
+
+#endif
