@@ -8,7 +8,7 @@
 #define COMPILAR_MAIN_MEMORIA
 #ifdef COMPILAR_MAIN_MEMORIA
 #include "parser.h"
-#include "../Biblioteca/src/Biblioteca.c"
+//#include "../Biblioteca/src/Biblioteca.c"
 #include "memoria.h"
 #include "gestionMemoria.h"
 
@@ -54,7 +54,6 @@ int main(void)
 
 	pthread_join(consola_h,NULL);
 
-	pthread_kill(consola_h, NULL);
 	pthread_kill(servidor_h, NULL);
 	liberar_todo_por_cierre_de_modulo();
 
