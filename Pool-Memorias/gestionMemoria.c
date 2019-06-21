@@ -460,7 +460,9 @@ void liberar_todo_por_cierre_de_modulo() {
 	bitmapDestruir(bitmap);
 	log_info(log_memoria, "[LIBERAR] BITMAP destruido");
 	log_info(log_memoria, "[LIBERAR] Por liberar Struct configuracion");
-	free(arc_config);
+
+	liberar_config();
+
 	log_info(log_memoria, "[LIBERAR] Struct configuracion Liberada");
 	if (log_memoria != NULL) {
 		log_info(log_memoria, "[LIBERAR] Liberando log_memoria");
@@ -472,6 +474,40 @@ void liberar_todo_por_cierre_de_modulo() {
 	if (tablas_fp != NULL){
 		fclose(tablas_fp);
 	}
+}
+
+void liberar_config(void)
+{
+	log_info(log_memoria, "[LIBERANDO CONFIG]");
+	if(arc_config->ip != NULL)
+		free(arc_config->ip);
+	if(arc_config->ip_fs != NULL)
+		free(arc_config->ip_fs);
+
+
+	if(arc_config->ip_seeds != NULL){
+		int i = 0;
+		char * aux = arc_config->ip_seeds[0];
+		while(aux!=NULL){
+			free(aux);
+			i++;
+			aux = arc_config->ip_seeds[i];
+		}
+		free(arc_config->ip_seeds);
+	}
+
+	if(arc_config->puerto_seeds != NULL){
+		int i = 0;
+		char * aux = arc_config->puerto_seeds[0];
+		while(aux!=NULL){
+			free(aux);
+			i++;
+			aux = arc_config->puerto_seeds[i];
+		}
+		free(arc_config->puerto_seeds);
+	}
+	free(arc_config);
+
 }
 
 

@@ -21,6 +21,7 @@ int funcionSelect(char* nombreTablaAIr, u_int16_t keyBuscada,pagina_a_devolver**
 int funcionDrop(char* nombre);
 int funcionDescribe(char* nombreTablaAIr);
 void liberar_todo_por_cierre_de_modulo();
+void liberar_config(void);
 
 void insertCrearPaginaConNuevoSegmento(char* nombreTabla, u_int16_t keyBuscada,
 		pagina_referenciada* ref, char* valorAPoner, bool estadoAPoner,

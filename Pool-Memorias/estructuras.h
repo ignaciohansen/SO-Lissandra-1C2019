@@ -69,7 +69,7 @@ typedef struct{
     char* ip_fs;
     int puerto_fs;
     char* ip;
-    char* ip_seeds;
+    char** ip_seeds;
     char** puerto_seeds;
     int retardo_mem;
     int retardo_fs;

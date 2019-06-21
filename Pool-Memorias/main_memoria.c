@@ -8,7 +8,6 @@
 #define COMPILAR_MAIN_MEMORIA
 #ifdef COMPILAR_MAIN_MEMORIA
 #include "parser.h"
-//#include "../Biblioteca/src/Biblioteca.c"
 #include "memoria.h"
 #include "gestionMemoria.h"
 
@@ -353,6 +352,10 @@ char* resolver_pedido(request_t req, int socket_lfs, bool deboDevolver)
 	if(deboDevolver){
 		return ret_val;
 	}
+
+	if(ret_val == ret_ok_generico){
+			free(ret_ok_generico);
+	}
 //	free(ret_val);
 //	free(ret_ok_generico);
 	return NULL;
@@ -559,8 +562,8 @@ char* select_memoria(char *nombre_tabla, uint16_t key)
 	if(funcionSelect(nombre_tabla, key, &pagina, &valorAux)!=0){
 		pag =
 			buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(nombre_tabla, key, &seg);
-//		free(pagina->value);
-//		free(pagina);
+		free(pagina->value);
+		free(pagina);
 		pagina = selectPaginaPorPosicion(pag,informacion);
 		imprimirAviso1(log_memoria,"[WRAPPER DE SELECT] Valor encontrado: %s",pagina->value);
 		//printf("\nSEGMENTO <%s>\nKEY<%d>: VALUE: %s\n", nombre_tabla, pagina->key,pagina->value);
