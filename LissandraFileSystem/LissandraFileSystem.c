@@ -84,8 +84,8 @@ void LisandraSetUP() {
 	log_info(logger, "la configuracion y la metadata se levantaron ok");
 
 	memtable = dictionary_create();
-	listaTablasRepetidas = list_create();
 	listaTablasInsertadas = list_create();
+	listaRegistrosMemtable = list_create();
 }
 
 int abrirServidorLissandra() {
@@ -1014,12 +1014,12 @@ void realizarDump(){
 	for(int i=0;i<dictionary_size(memtable);i++){
 		char* tabla = list_get(listaTablasInsertadas,i);
 		log_info(logger,"la tabla insertada en la memtable es %s",tabla);
-		char* path = armarPathTablaParaDump(tabla);
+		char* path = armarPathTablaParaDump(tabla,cantidad_de_dumps);
 		crearArchivoTemporal(path,tabla);
 	}
 }
 
-char* armarPathTablaParaDump(char* tabla){
+char* armarPathTablaParaDump(char* tabla,int dumps){
 	char *nombreArchivoTemporal= malloc(sizeof(char) * 3);
 	char* path_archivo_temporal = malloc(string_length(TABLE_PATH)+string_length(configFile->punto_montaje)+string_length(tabla)+string_length(nombreArchivoTemporal)+string_length(PATH_TMP)+2);
 
@@ -1033,7 +1033,7 @@ char* armarPathTablaParaDump(char* tabla){
 
 	string_append(&path_archivo_temporal, "/");
 
-	sprintf(nombreArchivoTemporal, "%d", cantidad_de_dumps);
+	sprintf(nombreArchivoTemporal, "%d", dumps);
 
 	string_append(&path_archivo_temporal, nombreArchivoTemporal);
 
@@ -1055,19 +1055,25 @@ void crearArchivoTemporal(char* path,char* tabla){
 	log_info(logger,"creamos el archivo, ahora  lo llenamos");
 	t_list* listaRegistrosTabla;
 	listaRegistrosTabla = list_create();
-	void* registrosTabla = dictionary_get(memtable,tabla);
-	list_add(listaRegistrosTabla,registrosTabla);
+	listaRegistrosTabla = dictionary_get(memtable,tabla);
 	int tam = list_size(listaRegistrosTabla);
 	log_info(logger,"tamanio de registros insertados en esa tabla: %d",tam);
 
+	char *lineaTemporal = malloc(sizeof(char)*50);
+	lineaTemporal = string_new();
+
 	for(int i = 0; i<tam;i++){
-		char *lineaTemporal = malloc(sizeof(char)*50);
-		lineaTemporal = string_new();
-		string_append(&lineaTemporal, list_get(listaRegistrosTabla,i));
+
+		lineaTemporal = list_get(listaRegistrosTabla,i);
+
+		string_append(&lineaTemporal,"/n");
 		log_info(logger,"linea a insertar en el tmp: %s",lineaTemporal);
 		fputs(lineaTemporal,temporal);
+		fputs("/n",temporal);
+
 	}
 	fclose(temporal);
+	free(lineaTemporal);
 }
 
 
@@ -1256,14 +1262,29 @@ log_info(logger, "Vamos a eliminar el archivo binario  de la tabla: %s",archivoP
 
 int retParticion = remove(archivoParticion);
 
-if (retParticion == 0) // Eliminamos el archivo
+if (retParticion == 0){ // Eliminamos el archivo
 			log_info(logger, "El archivo fue eliminado satisfactoriamente\n");
-		else
+}else{
 			log_info(logger, "No se pudo eliminar el archivo\n");
 
 }
+}
+
+for(int j=0;j<=cantidad_de_dumps;j++ ){
 
 
+char* archivoTemporal = armarPathTablaParaDump(tabla,j);
+
+log_info(logger, "Vamos a eliminar el archivo temporal  de la tabla: %s",archivoTemporal);
+
+int retTemporal = remove(archivoTemporal);
+
+if (retTemporal == 0){ // Eliminamos el archivo
+			log_info(logger, "El archivo fue eliminado satisfactoriamente\n");}
+		else{
+			log_info(logger, "No se pudo eliminar el archivo\n");}
+
+}
 
 log_info(logger, "Vamos a eliminar el metadata de la tabla: %s", path_tabla_metadata);
 
@@ -1271,10 +1292,10 @@ log_info(logger, "Vamos a eliminar el metadata de la tabla: %s", path_tabla_meta
 
 		log_info(logger, "Resultado de remove del metadata de la tabla%d", retMet);
 
-		if (retMet == 0) // Eliminamos el archivo
-			log_info(logger, "El archivo fue eliminado satisfactoriamente\n");
-		else
-			log_info(logger, "No se pudo eliminar el archivo\n");
+		if (retMet == 0){ // Eliminamos el archivo
+			log_info(logger, "El archivo fue eliminado satisfactoriamente\n");}
+		else{
+			log_info(logger, "No se pudo eliminar el archivo\n");}
 
 	log_info(logger, "Vamos a eliminar el directorio: %s", tablaAverificar);
 
@@ -1282,10 +1303,10 @@ log_info(logger, "Vamos a eliminar el metadata de la tabla: %s", path_tabla_meta
 
 	log_info(logger, "Resultado de remove de la tabla %d", retTab);
 
-	if (retTab == 0) // Eliminamos el archivo
-		log_info(logger, "El archivo fue eliminado satisfactoriamente\n");
-	else
-		log_info(logger, "No se pudo eliminar el archivo\n");
+	if (retTab == 0){ // Eliminamos el archivo
+		log_info(logger, "El archivo fue eliminado satisfactoriamente\n");}
+	else{
+		log_info(logger, "No se pudo eliminar el archivo\n");}
 
 }
 
@@ -1492,24 +1513,23 @@ log_info(logger,"valor tablaRepetida %d",tablaRepetida);
 if(tablaRepetida){
 	log_info(logger,"Encontre una tabla repetida");
 
-	void* tablaYaExistente = dictionary_get(memtable,tabla);
+	listaRegistrosMemtable = dictionary_get(memtable,tabla);
 
-log_info(logger,"Ya existe este registro en la memtable y es la siguiente: %s",tablaYaExistente);
+list_add(listaRegistrosMemtable,registroPorAgregar);
 
-list_add(listaTablasRepetidas,tablaYaExistente);
-list_add(listaTablasRepetidas,registroPorAgregar);
 
-void* primeraPos = list_get(listaTablasRepetidas, 0);
-void* segundaPos = list_get(listaTablasRepetidas, 1);
+dictionary_put(memtable,tabla,listaRegistrosMemtable);
 
-log_info(logger,"Se va a agregar el siguiente registro en la primera pos de la lista %s",primeraPos);
-log_info(logger,"Se va a agregar el siguiente registro en la segunda pos de la lista %s",segundaPos);
-
-dictionary_put(memtable,tabla,listaTablasRepetidas);
 
 
 }else{
-	dictionary_put(memtable,tabla,registroPorAgregar);
+
+	list_clean(listaRegistrosMemtable);
+
+	list_add(listaRegistrosMemtable,registroPorAgregar);
+
+	dictionary_put(memtable,tabla,listaRegistrosMemtable);
+
 
 }
 
@@ -1517,11 +1537,16 @@ dictionary_put(memtable,tabla,listaTablasRepetidas);
 list_add(listaTablasInsertadas,tabla);
 
 
-void* resultado = dictionary_get(memtable,tabla);
+t_list* resultado = dictionary_get(memtable,tabla);
+
+for(int i =0;i<list_size(resultado);i++){
+void* elementoDiccionario = list_get(resultado, i);
+log_info(logger,"Elementos ingresados en el diccionario %s",elementoDiccionario);
+}
 
 int i = dictionary_size(memtable);
 
-log_info(logger,"cantidad de elementos memtable: %d", i);
+log_info(logger,"cantidad de tablas memtable: %d", i);
 
 
 }
@@ -1546,7 +1571,6 @@ void cerrarTodo() {
 
 	sem_destroy(&semaforoQueries);
 	dictionary_destroy(memtable);
-	list_destroy(listaTablasRepetidas);
 	list_destroy(listaTablasInsertadas);
 	fclose(archivoBitmap);
 }
