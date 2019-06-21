@@ -45,8 +45,7 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteVa
 /*---------------------------------------------------
  * FUNCIONES PARA ADMINISTRAR LA MEMORIA
  *---------------------------------------------------*/
-	void incrementarAccesoDeKey(int pos, bool estadoAPoner, bool vieneDeInsert);
-
+	void actualizarTiempoUltimoAcceso(int pos, bool estadoAPoner, bool vieneDeInsert);
 	void agregarNuevaPaginaALaPosicion(pagina_a_devolver* pagina, int posicion);
 
 

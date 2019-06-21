@@ -130,7 +130,7 @@ int loggearEstadoActual(FILE* fp)
 		fprintf(fp, "\n%10s;%10s;%20s", "key","value","timestamp");
 		while(aux_pagina != NULL){
 			nro_pagina = aux_pagina->nropagina;
-			algo = selectPaginaPorPosicion(nro_pagina,true);
+			algo = selectPaginaPorPosicion(nro_pagina,false);
 //			log_info(logger, "%d;%s;%lf", algo->key, algo->value, algo->timestamp);
 			fprintf(fp, "\n%10d;%10s;%20.0lf", algo->key, algo->value, algo->timestamp);
 			aux_pagina = aux_pagina->sig;
@@ -828,8 +828,8 @@ pagina* crear_pagina(int16_t key, char * valor, int posAsignada, double timestam
 	return pag;
 }
 
-void incrementarAccesoDeKey(int pos, bool estadoAPoner, bool vieneDeInsert){
-	log_info(log_memoria, "[INCREMENTAR ACCESO EN 1] Entrando, modifico en tabla LRU el timestamp de '%d'"
+void actualizarTiempoUltimoAcceso(int pos, bool estadoAPoner, bool vieneDeInsert){
+	log_info(log_memoria, "[ACTUALIZAR TIMESTAMP ACCESO] Entrando, modifico en tabla LRU el timestamp de '%d'"
 			, pos);
 
 	modificar_bloque_LRU("", timestamp(), pos, estadoAPoner, vieneDeInsert);
@@ -1038,12 +1038,12 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteVa
 
 
 	memcpy(pag, info, sizeof(pagina));
-	log_info(log_memoria, "[OBTENIENDO DATOS] Incremento el valor de Acceso para la pagina con key '%d'", pag->key);
+	log_info(log_memoria, "[OBTENIENDO DATOS] Actualizando el tiempo del último acceso para la pagina con key '%d'", pag->key);
 	if(deboDevolverEsteValor){
-		incrementarAccesoDeKey(pag->nroPosicion, false, false);
+		actualizarTiempoUltimoAcceso(pag->nroPosicion, false, false);
 	}
 	memcpy(bloque_memoria+posicion*(sizeof(pagina)+max_valor_key), pag, sizeof(pagina));
-	log_info(log_memoria, "[asignarNuevaTablaAPosicionLibre] Cantidad de accesos de la pagina NRO '%d' de la key '%d' ACTUALIZADA",
+	log_info(log_memoria, "[asignarNuevaTablaAPosicionLibre] Último acceso de la pagina NRO '%d' de la key '%d' ACTUALIZADA",
 			posicion, pag->key);
 
 //	memcpy(bloque_memoria+posicion*(sizeof(pagina)+max_valor_key)+sizeof(pagina)-1,valorAPoner, max_valor_key);
@@ -1321,7 +1321,7 @@ void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo, 
 	}
 	aux->timestamp = timestamp_val;
 	log_info(log_memoria, "[Modificar valor pagina] Incremento el acceso a la pagina '%d' de la key '%d'", posAIr, aux->key);
-	incrementarAccesoDeKey(posAIr, true, true);
+	actualizarTiempoUltimoAcceso(posAIr, true, true);
 
 	//strcpy(valorString, valorNuevo);
 

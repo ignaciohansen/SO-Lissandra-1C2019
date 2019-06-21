@@ -14,7 +14,7 @@
 int conectar_a_lfs(void);
 int levantar_servidor_memoria(void);
 void* hilo_consola(int * socket_p);
-char* resolver_pedido(request_t req, int socket_lfs, bool deboDevolver);
+char* resolver_pedido(request_t req, int socket_lfs);
 char *resolver_select(int socket_lfs,request_t req);
 int resolver_insert(request_t req, int modif);
 char *resolver_describe(int socket_lfs,request_t req);
@@ -118,7 +118,7 @@ int conectar_a_lfs(void)
 void* hilo_consola(int * socket_p){
 	request_t req;
 	int socket_lfs = *socket_p;
-	char *linea_leida;
+	char *linea_leida, *respuesta;
 	int fin = 0;
 	imprimirAviso(log_memoria,"[CONSOLA] Entrando a hilo consola");
 	imprimirPorPantallaTodosLosComandosDisponibles();
@@ -136,8 +136,9 @@ void* hilo_consola(int * socket_p){
 			case CREATE:
 			case DROP:
 			case JOURNALCOMANDO:
-				resolver_pedido(req,socket_lfs, false);
-	//			free(resAFree);
+				respuesta = resolver_pedido(req,socket_lfs);
+				imprimirMensaje1(log_memoria,"\n[CONSOLA] Respuesta obtenida: %s",respuesta);
+				free(respuesta);
 				break;
 			default:
 				printf("\nNO IMPLEMENTADO\n");
@@ -204,7 +205,7 @@ void * hilo_cliente(int * socket_p)
 				borrar_mensaje(msg);
 				req_parseado = parser(request.str);
 				borrar_request_com(request);
-				respuesta = resolver_pedido(req_parseado,socket_lfs, true);
+				respuesta = resolver_pedido(req_parseado,socket_lfs);
 				imprimirAviso1(log_memoria,"[CLIENTE] La resupuesta obtenida para el pedido es %s",respuesta);
 				if(responder_request(socket_cliente,respuesta,RESP_OK) != -1) {
 					imprimirAviso(log_memoria,"[CLIENTE] La resupuesta fue enviada con éxito al cliente");
@@ -275,7 +276,7 @@ int rechazar_cliente(int socket)
 	return 1;
 }
 
-char* resolver_pedido(request_t req, int socket_lfs, bool deboDevolver)
+char* resolver_pedido(request_t req, int socket_lfs)
 {
 	char *ret_val=NULL;
 	char *ret_ok_generico = malloc(3);
@@ -349,16 +350,7 @@ char* resolver_pedido(request_t req, int socket_lfs, bool deboDevolver)
 	}
 	fprintf(tablas_fp,"\nEjecutado comando %s",req.request_str);
 	loggearEstadoActual(tablas_fp);
-	if(deboDevolver){
-		return ret_val;
-	}
-
-	if(ret_val == ret_ok_generico){
-			free(ret_ok_generico);
-	}
-//	free(ret_val);
-//	free(ret_ok_generico);
-	return NULL;
+	return ret_val;
 }
 
 
