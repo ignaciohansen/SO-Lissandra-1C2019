@@ -46,14 +46,14 @@ int main(void)
 
 	pthread_t servidor_h, consola_h;
 
-	pthread_create(&servidor_h,NULL,hilo_servidor,&socket_servidor);
+	pthread_create(&servidor_h,NULL,(void *)hilo_servidor,&socket_servidor);
 	pthread_detach(servidor_h);
 
-	pthread_create(&consola_h,NULL,hilo_consola,&socket_lfs);
+	pthread_create(&consola_h,NULL,(void *)hilo_consola,&socket_lfs);
 
 	pthread_join(consola_h,NULL);
 
-	pthread_kill(servidor_h, NULL);
+	pthread_kill(servidor_h, SIGKILL);
 	liberar_todo_por_cierre_de_modulo();
 
 	return 1;
@@ -147,26 +147,27 @@ void* hilo_consola(int * socket_p){
 		borrar_request(req);
 	}
 	printf("\nSaliendo de hilo consola\n");
+	return NULL;
 }
 
 void* hilo_servidor(int * socket_p){
 	int socket = *socket_p;
 	cliente_com_t cliente;
 	pthread_t thread;
-	imprimirAviso(log_memoria,"[SERVIDOR] Entrando a hilo de escucha del servidor de la memoria");
+	imprimirMensaje(log_memoria,"[SERVIDOR] Entrando a hilo de escucha del servidor de la memoria");
 	while(1){
-		imprimirAviso(log_memoria,"[SERVIDOR] Esperando recibir un cliente");
+		imprimirMensaje(log_memoria,"[SERVIDOR] Esperando recibir un cliente");
 		cliente = esperar_cliente(socket);
-		imprimirAviso(log_memoria,"[SERVIDOR] Cliente intentando conectarse");
+		imprimirMensaje(log_memoria,"[SERVIDOR] Cliente intentando conectarse");
 		switch(cliente.id){
 			case MEMORIA:
 				dar_bienvenida_cliente(cliente.socket);
-				pthread_create(&thread,NULL,hilo_cliente, &cliente.socket );
+				pthread_create(&thread,NULL,(void *)hilo_cliente, &cliente.socket );
 				pthread_detach(thread);
 				break;
 			case KERNEL:
 				dar_bienvenida_cliente(cliente.socket);
-				pthread_create(&thread,NULL,hilo_cliente, &cliente.socket );
+				pthread_create(&thread,NULL,(void *)hilo_cliente, &cliente.socket );
 				pthread_detach(thread);
 				break;
 			default:
@@ -175,40 +176,40 @@ void* hilo_servidor(int * socket_p){
 				break;
 		}
 	}
-
+	return NULL;
 }
 
 void * hilo_cliente(int * socket_p)
 {
-	imprimirAviso(log_memoria,"[CLIENTE] Entrando a hilo de atención a un cliente");
+	imprimirMensaje(log_memoria,"[CLIENTE] Entrando a hilo de atención a un cliente");
 	int socket_cliente = *socket_p;
 	int socket_lfs = conectar_a_lfs();
 	if(socket_lfs == -1){
 		imprimirError(log_memoria,"[CLIENTE] No pude conectarme al lfs");
 	}
 	else{
-		imprimirAviso(log_memoria,"[CLIENTE] Ya tengo un canal para comunicarme con el lfs");
+		imprimirMensaje(log_memoria,"[CLIENTE] Ya tengo un canal para comunicarme con el lfs");
 	}
-	imprimirAviso(log_memoria,"[CLIENTE] Empiezo a esperar mensajes");
+	imprimirMensaje(log_memoria,"[CLIENTE] Empiezo a esperar mensajes");
 	msg_com_t msg;
 	bool fin = false;
 	while(fin == false){
 		msg = recibir_mensaje(socket_cliente);
-		imprimirAviso(log_memoria,"[CLIENTE] Recibí un mensaje");
+		imprimirMensaje(log_memoria,"[CLIENTE] Recibí un mensaje");
 		req_com_t request;
 		request_t req_parseado;
 		char *respuesta;
 		switch(msg.tipo){
 			case REQUEST:
-				imprimirAviso(log_memoria,"[CLIENTE] El mensaje recibido es un request");
+				imprimirMensaje(log_memoria,"[CLIENTE] El mensaje recibido es un request");
 				request = procesar_request(msg);
 				borrar_mensaje(msg);
 				req_parseado = parser(request.str);
 				borrar_request_com(request);
 				respuesta = resolver_pedido(req_parseado,socket_lfs);
-				imprimirAviso1(log_memoria,"[CLIENTE] La resupuesta obtenida para el pedido es %s",respuesta);
+				imprimirMensaje1(log_memoria,"[CLIENTE] La resupuesta obtenida para el pedido es %s",respuesta);
 				if(responder_request(socket_cliente,respuesta,RESP_OK) != -1) {
-					imprimirAviso(log_memoria,"[CLIENTE] La resupuesta fue enviada con éxito al cliente");
+					imprimirMensaje(log_memoria,"[CLIENTE] La resupuesta fue enviada con éxito al cliente");
 				}
 				else {
 					imprimirError(log_memoria,"[CLIENTE] La resupuesta no pudo ser enviada al cliente");
@@ -216,7 +217,7 @@ void * hilo_cliente(int * socket_p)
 				free(respuesta);
 				break;
 			case DESCONECTADO:
-				imprimirAviso(log_memoria,"[CLIENTE] El cliente se desconectó");
+				imprimirMensaje(log_memoria,"[CLIENTE] El cliente se desconectó");
 				borrar_mensaje(msg);
 				//close(socket_cliente);
 				if(socket_lfs != -1)
@@ -229,7 +230,8 @@ void * hilo_cliente(int * socket_p)
 				break;
 		}
 	}
-	imprimirAviso(log_memoria,"[CLIENTE] Finalizando el hilo");
+	imprimirMensaje(log_memoria,"[CLIENTE] Finalizando el hilo");
+	return NULL;
 }
 
 int responder_request(int socket,char *msg, resp_tipo_com_t tipo_resp)

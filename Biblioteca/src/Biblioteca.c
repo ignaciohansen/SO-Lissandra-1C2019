@@ -9,6 +9,7 @@
  */
 
 #include "Biblioteca.h"
+#include <arpa/inet.h>
 
 /*
  * FUNCIONES PARA ABORTAR UN PROCESO

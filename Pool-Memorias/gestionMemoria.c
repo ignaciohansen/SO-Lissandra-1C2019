@@ -266,7 +266,7 @@ int funcionSelect(char* nombreTablaAIr, u_int16_t keyBuscada,
 	mutexBloquear(&mutex_bloquear_select_por_limpieza);
 	mutexDesbloquear(&mutex_bloquear_select_por_limpieza);
 
-	int direccionPagina, nroDePagina;
+	int direccionPagina;
 	segmento *seg;
 
 //	mutexBloquear(&mutex_bloque_LRU_modificando);
@@ -317,7 +317,6 @@ int funcionDrop(char* nombre) {
 	mutexBloquear(&ACCIONLRU);
 	segmento* segmentoBuscado;
 	segmento* segmentoAnterior = tablaSegmentos;
-	pagina_referenciada* ref;
 	log_info(log_memoria, "[FUNCION DROP] EN FUNCION DROP");
 
 	mutexBloquear(&mutex_segmento_en_modificacion);
@@ -901,7 +900,6 @@ segmento* segmento_crear(char* pathNombreTabla, pagina_referenciada* paginaRef) 
 void segmento_asociar_nueva_pagina(segmento* unSegmento, pagina_referenciada* ref){
 	mutexBloquear(&mutex_segmento_modificando);
 	unSegmento->cantPaginasAsociadas +=1;
-	int cantidad = unSegmento->cantPaginasAsociadas;
 	log_info(log_memoria, "[ASOCIANDO NUEVA PAGINA A SEGMENTO] Por asociar la pagina '%d' al segmento '%s'",
 			ref->nropagina, unSegmento->path_tabla);
 
@@ -1177,6 +1175,7 @@ int LRU(
 				log_info(log_memoria, "[LRU con candidato] LRU TERMINADO");
 			}
 	mutexDesbloquear(&ACCIONLRU);
+	return 1;
 }
 
 void limpiar_todos_los_elementos_de_1_segmento(segmento* segmentoABorrar){
@@ -1251,12 +1250,12 @@ void liberar_toda_tabla_paginas(pagina_referenciada* pag){
 	log_info(log_memoria, "[LIBERAR TABLA DE PAGINAS] TERMINADO");
 }
 
-void vaciar_tabla_paginas_y_memoria(){
+/*void vaciar_tabla_paginas_y_memoria(){
 	pagina* pag;
 	printf("\nFALTA UN MALLOC!!!!!!!!!!!!!!!!!");
 	printf("\nFunción vaciar_tabla_paginas_y_memoria\n");
 	getchar();
-	/* SI ESTO SE USA ACÁ FALTA UN MALLOC*/
+	// SI ESTO SE USA ACÁ FALTA UN MALLOC
 	pag->key=-1;
 	pag->nroPosicion=-1;
 	pag->timestamp=-1;
@@ -1297,7 +1296,7 @@ void vaciar_tabla_paginas_y_memoria(){
 	mutexDesbloquear(&mutex_tabla_pagina_en_modificacion);
 
 
-}
+}*/
 
 
 
@@ -1518,7 +1517,7 @@ datosJournal* obtener_todos_journal(){
 		}
 		free(nombreTabla);
 	}
-	datosJournal* extra = datosDevolver;
+//	datosJournal* extra = datosDevolver;
 /*
 	while(extra!=NULL){
 		printf("\nOBTENGO DATOS:\nNombre: [%s]\nKey: [%d]\nTimestamp: [%f]\nVALUE: [%s]\n\n",

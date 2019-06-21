@@ -23,7 +23,7 @@
 //#include "retardos.h"
 //#include "memoria.h"
 
-pthread_t* journalHilo;
+pthread_t journalHilo;
 
 t_log* log_memoria;
 FILE* tablas_fp;
