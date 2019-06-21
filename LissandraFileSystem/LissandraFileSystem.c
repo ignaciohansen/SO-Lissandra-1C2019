@@ -30,15 +30,7 @@ int main() {
 	sem_init(&semaforoQueries, 0, 1);
 	list_queries = list_create();
 
-
-
 	LisandraSetUP(); // CONFIGURACION Y SETEO SOCKET
-
-	//hacer en otra funcion
-	int timestamp_inicio = time(NULL);
-	//sprintf(timestamp_inicio, "%d", aux);
-
-	log_info(logger, "el timestamp_inicio es: %d", timestamp_inicio);
 
 	cargarBitmap();
 
@@ -669,9 +661,7 @@ int buscarComando(char* comando, t_log* logger) {
 
 	int i = 0;
 
-	for (i; i <= salir && strcmp(comandosPermitidos[i], comando); i++) {
-
-	}
+	for (i; i <= salir && strcmp(comandosPermitidos[i], comando); i++) {	}
 
 	log_info(logger, "Se devuelve el valor %d", i);
 
@@ -736,12 +726,9 @@ int verificarTabla(char* tabla) {
 	        tabla[i] = toupper(tabla[i]);
 	        }
 
-	log_info(logger, "%s", tablaAverificar);
 	string_append(&tablaAverificar, tabla_Path);
 	string_append(&tablaAverificar, tabla);
 	log_info(logger, "Concatenamos: %s a tablaAVerificar", tabla);
-	path_tabla_metadata = string_duplicate(tablaAverificar);
-	string_append(&path_tabla_metadata, "/metadata");
 	log_info(logger,
 			"[VERIFICADO] La direccion de la tabla que se quiere verificar es: %s",
 			tablaAverificar);
@@ -752,11 +739,10 @@ int verificarTabla(char* tabla) {
 
 	if (file == NULL) {
 		log_error(logger, "[ERROR] No existe la tabla");
-		perror("Error al abrir tabla/archivo");
 		return -1;
 
 	} else {
-		log_error(logger, "[ OK ] Metadata de tabla abierto. \n");
+		log_info(logger, "[ OK ] La tabla ya existe.");
 		fclose(file);
 		return 0;
 	}
@@ -764,6 +750,10 @@ int verificarTabla(char* tabla) {
 }
 
 int obtenerMetadataTabla(char* tabla) {
+
+
+	path_tabla_metadata = string_duplicate(tablaAverificar);
+	string_append(&path_tabla_metadata, "/metadata");
 
 	log_info(logger, "[obtenerMetadata] (+) metadata a abrir : %s",
 			path_tabla_metadata);
@@ -978,15 +968,6 @@ void esperarTiempoDump() {
 
 	while(true){
 
-		//hacer en otra funcion
-		//int timestamp_actual = time(NULL);
-		//char timestamp_actual[11];
-		//sprintf(timestamp_actual, "%d", aux);
-
-
-	//int tiempoEjecucion = (timestamp_actual - timestamp_inicio) / (dumps_a_dividir*1000);
-	//log_info(logger,"el tiempo de ejecucion es: %d",tiempoEjecucion);
-		//if( tiempoEjecucion >= configFile->tiempo_dump){
 			sleep(10);
 			log_info(logger, "Es tiempo de dump, hay cosas en la memtable?");
 			if(dictionary_size(memtable) > 0){
@@ -999,15 +980,10 @@ void esperarTiempoDump() {
 			}
 			log_info(logger, "Se limpia diccionario");
 			dictionary_clean(memtable);
-		//	dumps_a_dividir++;
-		//}
-		//else {
-			//no hace nada
+
 		}
 
 	}
-
-
 
 
 void realizarDump(){
@@ -1061,15 +1037,20 @@ void crearArchivoTemporal(char* path,char* tabla){
 
 	char *lineaTemporal = malloc(sizeof(char)*50);
 	lineaTemporal = string_new();
+	t_registroMemtable* registro;
 
 	for(int i = 0; i<tam;i++){
 
-		lineaTemporal = list_get(listaRegistrosTabla,i);
-
-		string_append(&lineaTemporal,"/n");
+		registro = list_get(listaRegistrosTabla,i);
+		string_append(&lineaTemporal,"timestamp");
+		string_append(&lineaTemporal,";");
+		string_append(&lineaTemporal,"key");
+		string_append(&lineaTemporal,";");
+		string_append(&lineaTemporal,registro->value);
+		string_append(&lineaTemporal,"\n");
 		log_info(logger,"linea a insertar en el tmp: %s",lineaTemporal);
 		fputs(lineaTemporal,temporal);
-		fputs("/n",temporal);
+
 
 	}
 	fclose(temporal);
@@ -1347,6 +1328,28 @@ char* desenmascararValue(char* value){
 
 }
 
+t_registroMemtable* armarEstructura(char* value, char* key , char* timestamp){
+
+	t_registroMemtable* registroMemtable;
+	registroMemtable = malloc(sizeof(t_registroMemtable));
+
+	registroMemtable->value = value;
+	double timestampRegistro = atof(timestamp);
+	registroMemtable->timestamp = timestampRegistro;
+	u_int16_t keyRegistro = strtol(key,NULL,16);
+	registroMemtable->key = keyRegistro;
+
+	//log_info(logger,"El registro quedo conformado por: \n");
+	//log_info(logger,"Value = %s ",registroMemtable->value);
+	//log_info(logger,"Timestamp = %f ",registroMemtable->timestamp);
+	//log_info(logger,"Key = %x ",registroMemtable->key);
+	//log_info(logger,"Se procede a agregar el registro a la memtable");
+
+	return registroMemtable;
+
+
+}
+
 int comandoSelect(char* tabla, char* key) {
 
 	if (verificarTabla(tabla) == -1) {
@@ -1478,16 +1481,22 @@ comandoInsert(tabla,key,value,timestamp);
 
 void comandoInsert(char* tabla,char* key,char* value,char* timestamp) {
 
+
+
+if(verificarTabla(tabla) == 0){
+
 bool verificarValue = validarValue(value);
 bool verificarKey = validarKey(key);
 bool algunoContiene =  (verificarValue || verificarKey);
 
 if(!algunoContiene){
+
 char* valueDesenmascarado = desenmascararValue(value);
 
-registroPorAgregar = malloc(
-			string_length(key) + string_length(value)
-					+ string_length(timestamp));
+t_registroMemtable* registroPorAgregarE = armarEstructura(valueDesenmascarado,key,timestamp);
+
+/*
+registroPorAgregar = malloc(string_length(key) + string_length(value) + string_length(timestamp));
 
 registroPorAgregar = string_new();
 
@@ -1504,6 +1513,7 @@ registroPorAgregar = string_new();
 
 
 	log_info(logger,"Se va a agregar el siguiente registro %s",registroPorAgregar);
+*/
 
 // Verifico que la key ya exista en el memtable, aca se hace el dump
 
@@ -1515,8 +1525,8 @@ if(tablaRepetida){
 
 	listaRegistrosMemtable = dictionary_get(memtable,tabla);
 
-list_add(listaRegistrosMemtable,registroPorAgregar);
-
+//list_add(listaRegistrosMemtable,registroPorAgregar);
+list_add(listaRegistrosMemtable,registroPorAgregarE);
 
 dictionary_put(memtable,tabla,listaRegistrosMemtable);
 
@@ -1526,7 +1536,8 @@ dictionary_put(memtable,tabla,listaRegistrosMemtable);
 
 	list_clean(listaRegistrosMemtable);
 
-	list_add(listaRegistrosMemtable,registroPorAgregar);
+	//list_add(listaRegistrosMemtable,registroPorAgregar);
+	list_add(listaRegistrosMemtable,registroPorAgregarE);
 
 	dictionary_put(memtable,tabla,listaRegistrosMemtable);
 
@@ -1539,15 +1550,27 @@ list_add(listaTablasInsertadas,tabla);
 
 t_list* resultado = dictionary_get(memtable,tabla);
 
+log_info(logger,"Registros agregados en el diccionario");
+
 for(int i =0;i<list_size(resultado);i++){
-void* elementoDiccionario = list_get(resultado, i);
-log_info(logger,"Elementos ingresados en el diccionario %s",elementoDiccionario);
+
+//void* elementoDiccionario = list_get(resultado, i);
+//log_info(logger,"Elementos ingresados en el diccionario %s",elementoDiccionario);
+
+t_registroMemtable* elementoDiccionario = list_get(resultado, i);
+
+log_info(logger,"Value = %s ",elementoDiccionario->value);
+log_info(logger,"Timestamp = %f ",elementoDiccionario->timestamp);
+log_info(logger,"Key = %x ",elementoDiccionario->key);
+
 }
 
 int i = dictionary_size(memtable);
 
 log_info(logger,"cantidad de tablas memtable: %d", i);
 
+
+}
 
 }
 
