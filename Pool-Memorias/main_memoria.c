@@ -283,9 +283,9 @@ char* resolver_pedido(request_t req, int socket_lfs)
 	strcpy(ret_ok_generico,"OK");
 	switch(req.command){
 		case INSERT:
-			imprimirAviso(log_memoria,"\n\n[RESOLVIENDO PEDIDO] Voy a resolver INSERT\n\n");
+			imprimirMensaje(log_memoria,"\n\n[RESOLVIENDO PEDIDO] Voy a resolver INSERT\n\n");
 			if(resolver_insert(req,true) != -1){
-				imprimirAviso(log_memoria,"[RESOLVIENDO PEDIDO] INSERT hecho correctamente");
+				imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] INSERT hecho correctamente");
 				ret_val = ret_ok_generico;
 			}
 			else{
@@ -293,29 +293,29 @@ char* resolver_pedido(request_t req, int socket_lfs)
 			}
 			break;
 		case SELECT:
-			imprimirAviso(log_memoria,"\n\n[RESOLVIENDO PEDIDO] Voy a resolver SELECT\n\n");
+			imprimirMensaje(log_memoria,"\n\n[RESOLVIENDO PEDIDO] Voy a resolver SELECT\n\n");
 			ret_val = resolver_select(socket_lfs,req);
 			if(ret_val != NULL){
-				imprimirAviso1(log_memoria,"[RESOLVIENDO PEDIDO] SELECT hecho correctamente. Valor %s obtenido",ret_val);
+				imprimirMensaje1(log_memoria,"[RESOLVIENDO PEDIDO] SELECT hecho correctamente. Valor %s obtenido",ret_val);
 			}
 			else{
-				imprimirError(log_memoria,"[RESOLVIENDO PEDIDO] El SELECT no pudo realizarse");
+				imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] El SELECT no pudo realizarse");
 			}
 			break;
 		case DESCRIBE:
 			imprimirAviso(log_memoria,"\n\n[RESOLVIENDO PEDIDO] Voy a resolver DESCRIBE\n\n");
 			ret_val = resolver_describe(socket_lfs,req);
 			if(ret_val != NULL){
-				imprimirAviso1(log_memoria,"[RESOLVIENDO PEDIDO] DESCRIBE hecho correctamente. Valor %s obtenido",ret_val);
+				imprimirMensaje1(log_memoria,"[RESOLVIENDO PEDIDO] DESCRIBE hecho correctamente. Valor %s obtenido",ret_val);
 			}
 			else{
 				imprimirError(log_memoria,"[RESOLVIENDO PEDIDO] El DESCRIBE no pudo realizarse");
 			}
 			break;
 		case DROP:
-			imprimirAviso(log_memoria,"\n\n[RESOLVIENDO PEDIDO] Voy a resolver DROP\n\n");
+			imprimirMensaje(log_memoria,"\n\n[RESOLVIENDO PEDIDO] Voy a resolver DROP\n\n");
 			if(resolver_drop(socket_lfs,req) != -1){
-				imprimirAviso(log_memoria,"[RESOLVIENDO PEDIDO] DROP hecho correctamente");
+				imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] DROP hecho correctamente");
 				ret_val = ret_ok_generico;
 			}
 			else{
@@ -323,9 +323,9 @@ char* resolver_pedido(request_t req, int socket_lfs)
 			}
 			break;
 		case CREATE:
-			imprimirAviso(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver CREATE\n\n");
+			imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver CREATE\n\n");
 			if(resolver_create(socket_lfs,req) != NULL){
-				imprimirAviso(log_memoria,"[RESOLVIENDO PEDIDO] CREATE hecho correctamente");
+				imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] CREATE hecho correctamente");
 				ret_val = ret_ok_generico;
 			}
 			else{
@@ -333,9 +333,9 @@ char* resolver_pedido(request_t req, int socket_lfs)
 			}
 			break;
 		case JOURNALCOMANDO:
-			imprimirAviso(log_memoria,"\n\n[RESOLVIENDO PEDIDO] Voy a resolver JOURNAL\n\n");
+			imprimirMensaje(log_memoria,"\n\n[RESOLVIENDO PEDIDO] Voy a resolver JOURNAL\n\n");
 			if(resolver_journal(socket_lfs,req) != -1){
-				imprimirAviso(log_memoria,"[RESOLVIENDO PEDIDO] JOURNAL hecho correctamente");
+				imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] JOURNAL hecho correctamente");
 				ret_val = ret_ok_generico;
 			}
 			else{
@@ -356,14 +356,15 @@ char* resolver_pedido(request_t req, int socket_lfs)
 
 int resolver_drop(int socket_lfs,request_t req)
 {
+	imprimirMensaje(log_memoria,"[RESOLVIENDO DROP] Voy a resolver DROP");
 	if(req.cant_args != 1){
-		imprimirError(log_memoria,"[RESOLVIENDO INSERT] Cantidad incorrecta de parámetros");
+		imprimirError(log_memoria,"[RESOLVIENDO DROP] Cantidad incorrecta de parámetros");
 		return -1;
 	}
 	char *nombre_tabla = malloc(strlen(req.args[0])+1);
 	strcpy(nombre_tabla,req.args[0]);
 	if(funcionDrop(nombre_tabla)==-1){
-		imprimirError1(log_memoria, "[RESOLVIENDO DROP] La tabla ya fue eliminada o no existe en memoria: <%s>", nombre_tabla);
+		imprimirAviso1(log_memoria, "[RESOLVIENDO DROP] La tabla ya fue eliminada o no existe en memoria: <%s>", nombre_tabla);
 	}
 
 	//Le envio el DROP al filesystem
@@ -383,7 +384,7 @@ int resolver_drop(int socket_lfs,request_t req)
 		resp_com_t recibido = procesar_respuesta(msg);
 		borrar_mensaje(msg);
 		if(recibido.tipo == RESP_OK){
-			imprimirAviso(log_memoria, "[RESOLVIENDO DROP] El filesystem realizó el DROP con éxito");
+			imprimirMensaje(log_memoria, "[RESOLVIENDO DROP] El filesystem realizó el DROP con éxito");
 		}
 		else{
 			imprimirError(log_memoria, "[RESOLVIENDO DROP] El filesystem no pudo realizar el DROP con éxito.");
@@ -391,7 +392,7 @@ int resolver_drop(int socket_lfs,request_t req)
 			return -1;
 		}
 		if(recibido.msg.tam >0)
-			imprimirAviso1(log_memoria,"[RESOLVIENDO DROP] El filesystem contestó al DROP con %s",recibido.msg.str);
+			imprimirMensaje1(log_memoria,"[RESOLVIENDO DROP] El filesystem contestó al DROP con %s",recibido.msg.str);
 		borrar_respuesta(recibido);
 	}
 	else{
@@ -415,7 +416,7 @@ char *resolver_create(int socket_lfs,request_t req)
 	a_enviar.str = malloc(a_enviar.tam);
 	strcpy(a_enviar.str,req.request_str);
 
-	imprimirAviso1(log_memoria, "[RESOLVIENDO CREATE] Voy a enviar request a lfs: %s",a_enviar.str);
+	imprimirMensaje1(log_memoria, "[RESOLVIENDO CREATE] Voy a enviar request a lfs: %s",a_enviar.str);
 	if(enviar_request(socket_lfs,a_enviar) == -1){
 		imprimirError(log_memoria,"[RESOLVIENDO CREATE] Error al enviar el request");
 		borrar_request_com(a_enviar);
@@ -423,7 +424,7 @@ char *resolver_create(int socket_lfs,request_t req)
 	}
 	borrar_request_com(a_enviar);
 
-	imprimirAviso(log_memoria, "[RESOLVIENDO CREATE] Request enviado. Esperando respuesta");
+	imprimirMensaje(log_memoria, "[RESOLVIENDO CREATE] Request enviado. Esperando respuesta");
 
 	msg_com_t msg = recibir_mensaje(socket_lfs);
 	if(msg.tipo != RESPUESTA){
@@ -432,17 +433,17 @@ char *resolver_create(int socket_lfs,request_t req)
 		return NULL;
 	}
 
-	imprimirAviso(log_memoria, "[RESOLVIENDO CREATE] Respuesta recibida");
+	imprimirMensaje(log_memoria, "[RESOLVIENDO CREATE] Respuesta recibida");
 	resp_com_t resp = procesar_respuesta(msg);
 	borrar_mensaje(msg);
 	if(resp.tipo == RESP_OK){
-		imprimirAviso(log_memoria, "[RESOLVIENDO CREATE] El lfs pudo completar el pedido OK");
+		imprimirMensaje(log_memoria, "[RESOLVIENDO CREATE] El lfs pudo completar el pedido OK");
 		if(resp.msg.tam == 0){
-			imprimirAviso(log_memoria, "[RESOLVIENDO CREATE] La respuesta vino vacía");
+			imprimirMensaje(log_memoria, "[RESOLVIENDO CREATE] La respuesta vino vacía");
 			ret_val = NULL;
 		}
 		else{
-			imprimirAviso1(log_memoria, "[RESOLVIENDO CREATE] La respuesta del lfs fue: %s",resp.msg.str);
+			imprimirMensaje1(log_memoria, "[RESOLVIENDO CREATE] La respuesta del lfs fue: %s",resp.msg.str);
 			ret_val = malloc(resp.msg.tam);
 			strcpy(ret_val,resp.msg.str);
 		}
@@ -465,7 +466,7 @@ int resolver_journal(int socket_lfs,request_t req)
 	datosJournal *datos_modificados = obtener_todos_journal();
 	datosJournal *aux = datos_modificados;
 
-	imprimirAviso(log_memoria, "[RESOLVIENDO JOURNAL] DATOS MODIFICADOS: ");
+	imprimirMensaje(log_memoria, "[RESOLVIENDO JOURNAL] DATOS MODIFICADOS: ");
 	while(aux!=NULL){
 		imprimirAviso3(log_memoria, "%s %d %s", aux->nombreTabla, aux->key, aux->value);
 		aux = aux->sig;
@@ -519,6 +520,7 @@ int resolver_journal(int socket_lfs,request_t req)
 
 int resolver_insert(request_t req, int modif)
 {
+	imprimirMensaje(log_memoria,"[RESOLVIENDO INSERT] Voy a resolver INSERT");
 	double timestamp_val;
 	if(req.cant_args == 3)
 		 timestamp_val = -1;
@@ -531,7 +533,7 @@ int resolver_insert(request_t req, int modif)
 	char *nombre_tabla = req.args[0];
 	uint16_t key = atoi(req.args[1]);
 	char *valor = req.args[2];
-	imprimirAviso3(log_memoria,"[RESOLVIENDO INSERT] Voy a agregar %s en la key %d de la tabla %s",valor,key,nombre_tabla);
+	imprimirMensaje3(log_memoria,"[RESOLVIENDO INSERT] Voy a agregar %s en la key %d de la tabla %s",valor,key,nombre_tabla);
 	if(funcionInsert(nombre_tabla, key, valor, modif, timestamp_val)== -1){
 		imprimirError(log_memoria, "[RESOLVIENDO INSERT]ERROR: Mayor al pasar max value");
 		return -1;
@@ -543,7 +545,7 @@ char* select_memoria(char *nombre_tabla, uint16_t key)
 {
 	pagina_a_devolver* pagina = malloc(sizeof(pagina_a_devolver));
 
-	imprimirAviso2(log_memoria,"[WRAPPER DE SELECT] Quiero obtener la key %d de la tabla %s",key,nombre_tabla);
+	imprimirMensaje2(log_memoria,"[WRAPPER DE SELECT] Quiero obtener la key %d de la tabla %s",key,nombre_tabla);
 	segmento *seg;
 	int pag;
 	bool encontrada = false;
@@ -557,12 +559,12 @@ char* select_memoria(char *nombre_tabla, uint16_t key)
 		free(pagina->value);
 		free(pagina);
 		pagina = selectPaginaPorPosicion(pag,informacion);
-		imprimirAviso1(log_memoria,"[WRAPPER DE SELECT] Valor encontrado: %s",pagina->value);
+		imprimirMensaje1(log_memoria,"[WRAPPER DE SELECT] Valor encontrado: %s",pagina->value);
 		//printf("\nSEGMENTO <%s>\nKEY<%d>: VALUE: %s\n", nombre_tabla, pagina->key,pagina->value);
 		encontrada = true;
-		imprimirAviso(log_memoria,"[WRAPPER DE SELECT] POR AQUIIIIII");
+//		imprimirMensaje(log_memoria,"[WRAPPER DE SELECT] POR AQUIIIIII");
 	} else {
-		imprimirError(log_memoria,"[WRAPPER DE SELECT] Valor no encontrado");
+		imprimirAviso(log_memoria,"[WRAPPER DE SELECT] Valor no encontrado");
 		//printf("\nERROR <%s><%d>\n", nombre_tabla, key);
 	}
 	free(informacion);
@@ -570,13 +572,13 @@ char* select_memoria(char *nombre_tabla, uint16_t key)
 
 		char* valorADevolver = malloc(strlen(pagina->value));
 		memcpy(valorADevolver, pagina->value, strlen(pagina->value)+1);
-		log_info(log_memoria, "[WRAPPER DE SELECT] Se encontro lo buscado %s", valorADevolver);
+		imprimirMensaje1(log_memoria, "[WRAPPER DE SELECT] Se encontro lo buscado %s", valorADevolver);
 		free(pagina->value);
 		free(pagina);
 		free(valorAux);
 		return valorADevolver;
 	}
-	log_info(log_memoria, "[WRAPPER DE SELECT] NO Se encontro lo buscado");
+	imprimirAviso(log_memoria, "[WRAPPER DE SELECT] NO Se encontro lo buscado");
 	free(valorAux);
 	free(pagina->value);
 	free(pagina);
@@ -585,6 +587,7 @@ char* select_memoria(char *nombre_tabla, uint16_t key)
 
 char *resolver_select(int socket_lfs,request_t req)
 {
+	imprimirMensaje(log_memoria,"[RESOLVIENDO SELECT] Voy a resolver SELECT");
 	if(req.cant_args != 2)
 	{
 		imprimirError(log_memoria,"[RESOLVIENDO SELECT] Cantidad de argumentos incorrecta. Reintente");
@@ -603,13 +606,13 @@ char *resolver_select(int socket_lfs,request_t req)
 			enviar.tam = strlen(req.request_str)+1;
 			enviar.str = malloc(enviar.tam);
 			strcpy(enviar.str,req.request_str);
-			imprimirAviso(log_memoria,"[RESOLVIENDO SELECT] Voy a mandar select al lfs\n");
+			imprimirMensaje(log_memoria,"[RESOLVIENDO SELECT] Voy a mandar select al lfs\n");
 			if(enviar_request(socket_lfs,enviar) == -1){
 				imprimirError(log_memoria,"[RESOLVIENDO SELECT] ERROR al conectarse con lfs para enviar select\n");
 				return NULL;
 			}
 			borrar_request_com(enviar);
-			imprimirAviso(log_memoria,"[RESOLVIENDO SELECT] Espero respuesta del lfs");
+			imprimirMensaje(log_memoria,"[RESOLVIENDO SELECT] Espero respuesta del lfs");
 
 			//Espero la respuesta
 			msg_com_t msg;
@@ -617,14 +620,14 @@ char *resolver_select(int socket_lfs,request_t req)
 			request_t req_lfs;
 
 			msg = recibir_mensaje(socket_lfs);
-			imprimirAviso(log_memoria,"[RESOLVIENDO SELECT] Recibi respuesta del lfs");
+			imprimirMensaje(log_memoria,"[RESOLVIENDO SELECT] Recibi respuesta del lfs");
 			if(msg.tipo == RESPUESTA){
 				resp = procesar_respuesta(msg);
 				//ASUMO QUE ME VA A LLEGAR ALGO DEL TIPO: INSERT <TABLA> <KEY> <VALOR> <TIMESTAMP>
-				imprimirAviso(log_memoria,"\nAVISO, el lfs contesto\n");
+				imprimirMensaje(log_memoria,"\nAVISO, el lfs contesto\n");
 				if(resp.tipo == RESP_OK){
-					imprimirAviso(log_memoria,"[RESOLVIENDO SELECT] El lfs pudo resolver el select con exito");
-					imprimirAviso1(log_memoria,"[RESOLVIENDO SELECT] REPUESTA: %s",resp.msg.str);
+					imprimirMensaje(log_memoria,"[RESOLVIENDO SELECT] El lfs pudo resolver el select con exito");
+					imprimirMensaje1(log_memoria,"[RESOLVIENDO SELECT] REPUESTA: %s",resp.msg.str);
 					req_lfs = parser(resp.msg.str);
 					borrar_respuesta(resp);
 					if(req_lfs.command != INSERT){
@@ -632,7 +635,7 @@ char *resolver_select(int socket_lfs,request_t req)
 					}
 					else{
 						resolver_insert(req_lfs,false);
-						imprimirAviso(log_memoria,"[RESOLVIENDO SELECT] Agregué el valor a memoria");
+						imprimirMensaje(log_memoria,"[RESOLVIENDO SELECT] Agregué el valor a memoria");
 						if(req_lfs.cant_args >= 3){
 							valor = malloc(strlen(req_lfs.args[2])+1);
 							strcpy(valor,req_lfs.args[2]);
@@ -659,14 +662,14 @@ char *resolver_select(int socket_lfs,request_t req)
 char *resolver_describe(int socket_lfs, request_t req)
 {
 	char *ret_val;
-	imprimirAviso(log_memoria, "[RESOLVIENDO DESCRIBE] Entro a función");
+	imprimirMensaje(log_memoria, "[RESOLVIENDO DESCRIBE] Entro a función");
 	req_com_t a_enviar;
 
 	a_enviar.tam = strlen(req.request_str)+1;
 	a_enviar.str = malloc(a_enviar.tam);
 	strcpy(a_enviar.str,req.request_str);
 
-	imprimirAviso1(log_memoria, "[RESOLVIENDO DESCRIBE] Voy a enviar request a lfs: %s",a_enviar.str);
+	imprimirMensaje1(log_memoria, "[RESOLVIENDO DESCRIBE] Voy a enviar request a lfs: %s",a_enviar.str);
 	if(enviar_request(socket_lfs,a_enviar) == -1){
 		imprimirError(log_memoria,"[RESOLVIENDO DESCRIBE] Error al enviar el request");
 		borrar_request_com(a_enviar);
@@ -674,7 +677,7 @@ char *resolver_describe(int socket_lfs, request_t req)
 	}
 	borrar_request_com(a_enviar);
 
-	imprimirAviso(log_memoria, "[RESOLVIENDO DESCRIBE] Request enviado. Esperando respuesta");
+	imprimirMensaje(log_memoria, "[RESOLVIENDO DESCRIBE] Request enviado. Esperando respuesta");
 
 	msg_com_t msg = recibir_mensaje(socket_lfs);
 	if(msg.tipo != RESPUESTA){
@@ -683,17 +686,17 @@ char *resolver_describe(int socket_lfs, request_t req)
 		return NULL;
 	}
 
-	imprimirAviso(log_memoria, "[RESOLVIENDO DESCRIBE] Respuesta recibida");
+	imprimirMensaje(log_memoria, "[RESOLVIENDO DESCRIBE] Respuesta recibida");
 	resp_com_t resp = procesar_respuesta(msg);
 	borrar_mensaje(msg);
 	if(resp.tipo == RESP_OK){
-		imprimirAviso(log_memoria, "[RESOLVIENDO DESCRIBE] El lfs pudo completar el pedido OK");
+		imprimirMensaje(log_memoria, "[RESOLVIENDO DESCRIBE] El lfs pudo completar el pedido OK");
 		if(resp.msg.tam == 0){
-			imprimirAviso(log_memoria, "[RESOLVIENDO DESCRIBE] La respuesta vino vacía");
+			imprimirMensaje(log_memoria, "[RESOLVIENDO DESCRIBE] La respuesta vino vacía");
 			ret_val = NULL;
 		}
 		else{
-			imprimirAviso1(log_memoria, "[RESOLVIENDO DESCRIBE] La respuesta del lfs fue: %s",resp.msg.str);
+			imprimirMensaje1(log_memoria, "[RESOLVIENDO DESCRIBE] La respuesta del lfs fue: %s",resp.msg.str);
 			ret_val = malloc(resp.msg.tam);
 			strcpy(ret_val,resp.msg.str);
 		}

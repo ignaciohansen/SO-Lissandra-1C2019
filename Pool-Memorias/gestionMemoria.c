@@ -73,7 +73,7 @@ void armarMemoriaPrincipal() {
 
 
 	cantPaginasDisponibles = tamanioMemoria/tamanioPagina;
-	cantPaginasDisponibles = 3;
+//	cantPaginasDisponibles = 3;
 
 //memoria->paginasTotales = cantPaginasDisponibles;
 	cantPaginasTotales = cantPaginasDisponibles;
@@ -1151,6 +1151,7 @@ int LRU(
 				free(nombreTablaQueDeboBuscar);
 				printf("\nLINEA 1079 LRU: Se activo JOURNAL\n");
 				log_info(log_memoria, "[LRU sin candidato] NO hay nada que se puede quitar, por lo tanto se fuerza un JOURNAL");
+				mutexDesbloquear(&ACCIONLRU);
 				return -1;
 	//			procesoJournal();
 	//			log_info(log_memoria, "[LRU sin candidato] JOURNAL HECHO, lo asigno a la primera posicion");

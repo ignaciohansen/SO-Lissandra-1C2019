@@ -879,164 +879,170 @@ return 0;
  *-----------------------------------------------------------------------------*/
 void cargarConfiguracion() {
 
-log_info(log_memoria, "[CONFIGURANDO MODULO] RESERVAR MEMORIA.");
-arc_config = malloc(sizeof(t_memoria_config));
+	log_info(log_memoria, "[CONFIGURANDO MODULO] RESERVAR MEMORIA.");
+	arc_config = malloc(sizeof(t_memoria_config));
 
-log_info(log_memoria, "[CONFIGURANDO MODULO] BUSCANDO CONFIGURACION.");
+	// Lo inicializo así no generó segmentation fault al salir (puedo saber cuáles aloqué)
+	arc_config->ip = NULL;
+	arc_config->ip_fs = NULL;
+	arc_config->ip_seeds = NULL;
+	arc_config->puerto_seeds = NULL;
 
-configFile = config_create(PATH_MEMORIA_CONFIG);
+	log_info(log_memoria, "[CONFIGURANDO MODULO] BUSCANDO CONFIGURACION.");
 
-if (configFile != NULL) {
+	configFile = config_create(PATH_MEMORIA_CONFIG);
 
-	log_info(log_memoria, "[CONFIGURANDO MODULO] LEYENDO CONFIGURACION...");
+	if (configFile != NULL) {
 
-	if (config_has_property(configFile, "PUERTO")) {
+		log_info(log_memoria, "[CONFIGURANDO MODULO] LEYENDO CONFIGURACION...");
 
-		arc_config->puerto = config_get_int_value(configFile, "PUERTO");
-		log_info(log_memoria, "PUERTO PARA MODULO MEMORIA: %d",
-				arc_config->puerto);
+		if (config_has_property(configFile, "PUERTO")) {
 
-	} else {
-		log_error(log_memoria, "[ERROR] NO HAY PUERTO CONFIGURADO");
-	} // PUERTO
+			arc_config->puerto = config_get_int_value(configFile, "PUERTO");
+			log_info(log_memoria, "PUERTO PARA MODULO MEMORIA: %d",
+					arc_config->puerto);
 
-	if (config_has_property(configFile, "IP")) {
+		} else {
+			log_error(log_memoria, "[ERROR] NO HAY PUERTO CONFIGURADO");
+		} // PUERTO
 
-			arc_config->ip = config_get_string_value(configFile, "IP");
-			log_info(log_memoria, "[CONFIGURANDO MODULO] IP DE ESCUCHA: %s",
-					arc_config->ip);
+		if (config_has_property(configFile, "IP")) {
+
+				arc_config->ip = config_get_string_value(configFile, "IP");
+				log_info(log_memoria, "[CONFIGURANDO MODULO] IP DE ESCUCHA: %s",
+						arc_config->ip);
+
+			} else {
+				log_error(log_memoria, "[ERROR] NO HAY IP CONFIGURADA");
+			} // IP
+
+
+		if (config_has_property(configFile, "IP_FS")) {
+
+			arc_config->ip_fs = config_get_string_value(configFile, "IP_FS");
+			log_info(log_memoria, "[CONFIGURANDO MODULO] IP DE FILESYSTEM: %s",
+					arc_config->ip_fs);
 
 		} else {
 			log_error(log_memoria, "[ERROR] NO HAY IP CONFIGURADA");
-		} // IP
+		} // IP FS
 
+		if (config_has_property(configFile, "PUERTO_FS")) {
 
-	if (config_has_property(configFile, "IP_FS")) {
+			arc_config->puerto_fs = config_get_int_value(configFile, "PUERTO_FS");
+			log_info(log_memoria, "[CONFIGURANDO MODULO] PUERTO DE FILESYSTEM: %d",
+					arc_config->puerto_fs);
 
-		arc_config->ip_fs = config_get_string_value(configFile, "IP_FS");
-		log_info(log_memoria, "[CONFIGURANDO MODULO] IP DE FILESYSTEM: %s",
-				arc_config->ip_fs);
+		} else {
+			log_error(log_memoria, "[ERROR] NO HAY PUERTO PARA MODULO FS");
+		} // PUERTO FS
+
+		if (config_has_property(configFile, "IP_SEEDS")) {
+
+			arc_config->ip_seeds = config_get_array_value(configFile, "IP_SEEDS");
+			log_info(log_memoria, "[CONFIGURANDO MODULO] IP DE SEEDS: %s",
+					arc_config->ip_fs);
+
+		} else {
+			log_error(log_memoria, "[ERROR] NO HAY IPS PARA SEEDS");
+		} // IP SEEDS
+
+		if (config_has_property(configFile, "PUERTO_SEEDS")) {
+			arc_config->puerto_seeds = config_get_array_value(configFile,
+					"PUERTO_SEEDS");
+			log_info(log_memoria, "[CONFIGURANDO MODULO] PUERTOS PARA SEEDS: %d",
+					arc_config->puerto_seeds);
+
+		} else {
+			log_error(log_memoria,
+					"[ERROR] NO SE ENCONTRARON LOS PUERTOS DE SEEDS");
+		} // PUERTOS SEEDS
+
+		if (config_has_property(configFile, "RETARDO_MEM")) {
+
+			arc_config->retardo_mem = config_get_int_value(configFile,
+					"RETARDO_MEM");
+			log_info(log_memoria, "[CONFIGURANDO MODULO] RETARTDO MEMORIA: %d",
+					arc_config->retardo_mem);
+
+		} else {
+			log_error(log_memoria, "[ERROR] NO HAY RETARDO CONFIGURADO");
+		} // RETARDO DE MEMORIA
+
+		if (config_has_property(configFile, "RETARDO_FS")) {
+
+			arc_config->retardo_fs = config_get_int_value(configFile, "RETARDO_FS");
+			log_info(log_memoria, "[CONFIGURANDO MODULO] RETARDO DEL FS: %d",
+					arc_config->retardo_fs);
+
+		} else {
+			log_error(log_memoria, "[ERROR] NO HAY RETARDO DE FS CONFIGURADO");
+		} // RETARDO FS
+
+		if (config_has_property(configFile, "TAM_MEM")) {
+
+			arc_config->tam_mem = config_get_int_value(configFile, "TAM_MEM");
+			log_info(log_memoria, "[CONFIGURANDO MODULO] TAMAÑO DE MEMORIA: %d",
+					arc_config->tam_mem);
+
+		} else {
+			log_error(log_memoria, "[ERROR]NO HAY TAMAÑO DE MEMORIA CONFIGURADO");
+		} // TAMAÑO DE MEMORIA
+
+		if (config_has_property(configFile, "RETARDO_JOURNAL")) {
+
+			arc_config->retardo_journal = config_get_int_value(configFile,
+					"RETARDO_MEM");
+			log_info(log_memoria,
+					"[CONFIGURANDO MODULO] RETARDO DEL JOURNALING: %d",
+					arc_config->retardo_journal);
+
+		} else {
+			log_error(log_memoria,
+					"[ERROR] NO HAY RETARDO DE JOURNALING CONFIGURADO");
+		} // RETARDO JOURNALING
+
+		if (config_has_property(configFile, "RETARDO_GOSSIPING")) {
+
+			arc_config->retardo_gossiping = config_get_int_value(configFile,
+					"RETARDO_GOSSIPING");
+			log_info(log_memoria, "[CONFIGURANDO MODULO] RETARDO DE GOSSIPING: %d",
+					arc_config->retardo_gossiping);
+
+		} else {
+			log_error(log_memoria,
+					"[ERROR] NO HAY RETARDO DE GOSSIPING CONFIGURADO");
+		} // RETARDO GOSSIPING
+
+		if (config_has_property(configFile, "MEMORY_NUMBER")) {
+
+			arc_config->memory_number = config_get_int_value(configFile,
+					"MEMORY_NUMBER");
+			log_info(log_memoria, "[CONFIGURANDO MODULO] NUMERO DE MEMORIA: %d",
+					arc_config->retardo_mem);
+
+		} else {
+			log_error(log_memoria, "[ERROR] NO HAY NUMERO DE MEMORIA CONFIGURADO");
+		} // MEMORY NUMBER
+
+		if (config_has_property(configFile, "MAX_VAL_KEY")) {
+
+		arc_config->max_value_key = config_get_int_value(configFile,
+				"MAX_VAL_KEY");
+		log_info(log_memoria, "[CONFIGURANDO MODULO] MAXIMO TAM PARA KEY: %d",
+					arc_config->max_value_key);
+
+		} else {
+			arc_config->max_value_key = 10;
+			log_error(log_memoria, "[ERROR] NO HAY TAMANIO MAXIMO PARA LA KEY. SETEANDO POR DEFAULT: 10");
+		} // MEMORY NUMBER
 
 	} else {
-		log_error(log_memoria, "[ERROR] NO HAY IP CONFIGURADA");
-	} // IP FS
 
-	if (config_has_property(configFile, "PUERTO_FS")) {
-
-		arc_config->puerto_fs = config_get_int_value(configFile, "PUERTO_FS");
-		log_info(log_memoria, "[CONFIGURANDO MODULO] PUERTO DE FILESYSTEM: %d",
-				arc_config->puerto_fs);
-
-	} else {
-		log_error(log_memoria, "[ERROR] NO HAY PUERTO PARA MODULO FS");
-	} // PUERTO FS
-
-	if (config_has_property(configFile, "IP_SEEDS")) {
-
-		arc_config->ip_seeds = config_get_array_value(configFile, "IP_SEEDS");
-		log_info(log_memoria, "[CONFIGURANDO MODULO] IP DE SEEDS: %s",
-				arc_config->ip_fs);
-
-	} else {
-		log_error(log_memoria, "[ERROR] NO HAY IPS PARA SEEDS");
-	} // IP SEEDS
-
-	if (config_has_property(configFile, "PUERTO_SEEDS")) {
-		arc_config->puerto_seeds = config_get_array_value(configFile,
-				"PUERTO_SEEDS");
-		log_info(log_memoria, "[CONFIGURANDO MODULO] PUERTOS PARA SEEDS: %d",
-				arc_config->puerto_seeds);
-
-	} else {
 		log_error(log_memoria,
-				"[ERROR] NO SE ENCONTRARON LOS PUERTOS DE SEEDS");
-	} // PUERTOS SEEDS
+				"[WARNING] NO HAY ARCHIVO DE CONFIGURACION DE MODULO MEMORIA"); // ERROR: SIN ARCHIVO CONFIGURACION
 
-	if (config_has_property(configFile, "RETARDO_MEM")) {
-
-		arc_config->retardo_mem = config_get_int_value(configFile,
-				"RETARDO_MEM");
-		log_info(log_memoria, "[CONFIGURANDO MODULO] RETARTDO MEMORIA: %d",
-				arc_config->retardo_mem);
-
-	} else {
-		log_error(log_memoria, "[ERROR] NO HAY RETARDO CONFIGURADO");
-	} // RETARDO DE MEMORIA
-
-	if (config_has_property(configFile, "RETARDO_FS")) {
-
-		arc_config->retardo_fs = config_get_int_value(configFile, "RETARDO_FS");
-		log_info(log_memoria, "[CONFIGURANDO MODULO] RETARDO DEL FS: %d",
-				arc_config->retardo_fs);
-
-	} else {
-		log_error(log_memoria, "[ERROR] NO HAY RETARDO DE FS CONFIGURADO");
-	} // RETARDO FS
-
-	if (config_has_property(configFile, "TAM_MEM")) {
-
-		arc_config->tam_mem = config_get_int_value(configFile, "TAM_MEM");
-		log_info(log_memoria, "[CONFIGURANDO MODULO] TAMAÑO DE MEMORIA: %d",
-				arc_config->tam_mem);
-
-	} else {
-		log_error(log_memoria, "[ERROR]NO HAY TAMAÑO DE MEMORIA CONFIGURADO");
-	} // TAMAÑO DE MEMORIA
-
-	if (config_has_property(configFile, "RETARDO_JOURNAL")) {
-
-		arc_config->retardo_journal = config_get_int_value(configFile,
-				"RETARDO_MEM");
-		log_info(log_memoria,
-				"[CONFIGURANDO MODULO] RETARDO DEL JOURNALING: %d",
-				arc_config->retardo_journal);
-
-	} else {
-		log_error(log_memoria,
-				"[ERROR] NO HAY RETARDO DE JOURNALING CONFIGURADO");
-	} // RETARDO JOURNALING
-
-	if (config_has_property(configFile, "RETARDO_GOSSIPING")) {
-
-		arc_config->retardo_gossiping = config_get_int_value(configFile,
-				"RETARDO_GOSSIPING");
-		log_info(log_memoria, "[CONFIGURANDO MODULO] RETARDO DE GOSSIPING: %d",
-				arc_config->retardo_gossiping);
-
-	} else {
-		log_error(log_memoria,
-				"[ERROR] NO HAY RETARDO DE GOSSIPING CONFIGURADO");
-	} // RETARDO GOSSIPING
-
-	if (config_has_property(configFile, "MEMORY_NUMBER")) {
-
-		arc_config->memory_number = config_get_int_value(configFile,
-				"MEMORY_NUMBER");
-		log_info(log_memoria, "[CONFIGURANDO MODULO] NUMERO DE MEMORIA: %d",
-				arc_config->retardo_mem);
-
-	} else {
-		log_error(log_memoria, "[ERROR] NO HAY NUMERO DE MEMORIA CONFIGURADO");
-	} // MEMORY NUMBER
-
-	if (config_has_property(configFile, "MAX_VAL_KEY")) {
-
-	arc_config->max_value_key = config_get_int_value(configFile,
-			"MAX_VAL_KEY");
-	log_info(log_memoria, "[CONFIGURANDO MODULO] MAXIMO TAM PARA KEY: %d",
-				arc_config->max_value_key);
-
-	} else {
-		arc_config->max_value_key = 10;
-		log_error(log_memoria, "[ERROR] NO HAY TAMANIO MAXIMO PARA LA KEY. SETEANDO POR DEFAULT: 10");
-	} // MEMORY NUMBER
-
-} else {
-
-	log_error(log_memoria,
-			"[WARNING] NO HAY ARCHIVO DE CONFIGURACION DE MODULO MEMORIA"); // ERROR: SIN ARCHIVO CONFIGURACION
-
-}
+	}
 
 }
 
