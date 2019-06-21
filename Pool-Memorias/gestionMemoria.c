@@ -134,6 +134,8 @@ int loggearEstadoActual(FILE* fp)
 //			log_info(logger, "%d;%s;%lf", algo->key, algo->value, algo->timestamp);
 			fprintf(fp, "\n%10d;%10s;%20.0lf", algo->key, algo->value, algo->timestamp);
 			aux_pagina = aux_pagina->sig;
+			free(algo->value);
+			free(algo);
 		}
 		fprintf(fp,"\n\n");
 		aux_segmento = aux_segmento->siguienteSegmento;
@@ -414,7 +416,6 @@ int funcionDescribe(char* nombreTablaAIr){
 void liberar_todo_por_cierre_de_modulo() {
 	//ESTE TIENE 1 ERROR, REVISARLO LUEGO
 	//	cerrarTodosLosHilosPendientes();
-
 	log_info(log_memoria,
 			"[LIBERAR] Por liberar Segmentos y sus tablas de paginas");
 	liberar_todo_segmento();
@@ -513,11 +514,14 @@ void asignarNuevaPaginaALaPosicion(
 	mutexBloquear(&mutex_memoria);
 	mutexBloquear(&mutex_bitmap);
 
-	//AQUI SE GUARDA LA PAGINA
-	memcpy(bloque_memoria+posLibre*(sizeof(pagina)+max_valor_key), pagina_nueva, sizeof(pagina));
+	int desplazamieto = sizeof(pagina)+max_valor_key;
+	//AQUI SE GUARDA   LA PAGINA
+	memcpy(bloque_memoria+posLibre*desplazamieto, pagina_nueva, sizeof(pagina));
 	log_info(log_memoria, "[asignarNuevaTablaAPosicionLibre] Pagina guardada");
 
-	memcpy(bloque_memoria+posLibre*(sizeof(pagina)+max_valor_key)+sizeof(pagina)-1,valorAPoner, max_valor_key);
+	memcpy(bloque_memoria+
+			posLibre*desplazamieto+sizeof(pagina)-1,
+			valorAPoner, max_valor_key);
 	log_info(log_memoria, "[asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada, actualizo el BITMAP ocupando la posicion '%d'", posLibre);
 //	free(stringValor);
 	bitmapOcuparBit(bitmap, posLibre);
@@ -526,8 +530,8 @@ void asignarNuevaPaginaALaPosicion(
 	pagina* pagNew = malloc(sizeof(pagina));
 	char valorString[max_valor_key];
 
-	memcpy(pagNew, bloque_memoria+posLibre*(sizeof(pagina)+max_valor_key), sizeof(pagina));
-	memcpy(valorString, bloque_memoria+posLibre*(sizeof(pagina)+max_valor_key)+sizeof(pagina)-1, max_valor_key);
+	memcpy(pagNew, bloque_memoria+posLibre*desplazamieto, sizeof(pagina));
+	memcpy(valorString, bloque_memoria+posLibre*desplazamieto+sizeof(pagina)-1, max_valor_key);
 //	printf("\n\nNOMBRE QUE DEBO INGRESAR A BLOQUE LRU: %s\n\n\n", nombreTabla);
 	double a = timestamp();
 /*	printf("[TIMESTAMP NUEVO]\nDATOS INGRESADOS:\nTIMESTAMP: <%f>\n\n",

@@ -8,7 +8,7 @@
 #define COMPILAR_MAIN_MEMORIA
 #ifdef COMPILAR_MAIN_MEMORIA
 #include "parser.h"
-#include "../Biblioteca/src/Biblioteca.h"
+#include "../Biblioteca/src/Biblioteca.c"
 #include "memoria.h"
 #include "gestionMemoria.h"
 
@@ -53,6 +53,9 @@ int main(void)
 	pthread_create(&consola_h,NULL,hilo_consola,&socket_lfs);
 
 	pthread_join(consola_h,NULL);
+
+	pthread_kill(consola_h, NULL);
+	pthread_kill(servidor_h, NULL);
 	liberar_todo_por_cierre_de_modulo();
 
 	return 1;
@@ -120,6 +123,7 @@ void* hilo_consola(int * socket_p){
 	char *linea_leida;
 	int fin = 0;
 	imprimirAviso(log_memoria,"[CONSOLA] Entrando a hilo consola");
+	imprimirPorPantallaTodosLosComandosDisponibles();
 	while(!fin){
 		linea_leida=readline("\n>");
 		req = parser(linea_leida);
@@ -140,6 +144,7 @@ void* hilo_consola(int * socket_p){
 				printf("\nNO IMPLEMENTADO\n");
 				break;
 		}
+		borrar_request(req);
 	}
 	printf("\nSaliendo de hilo consola\n");
 }
@@ -543,6 +548,8 @@ char* select_memoria(char *nombre_tabla, uint16_t key)
 	if(funcionSelect(nombre_tabla, key, &pagina, &valorAux)!=0){
 		pag = buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(
 				nombre_tabla,key,&seg);
+		free(pagina->value);
+		free(pagina);
 		pagina = selectPaginaPorPosicion(pag,informacion);
 		imprimirAviso1(log_memoria,"[WRAPPER DE SELECT] Valor encontrado: %s",pagina->value);
 		//printf("\nSEGMENTO <%s>\nKEY<%d>: VALUE: %s\n", nombre_tabla, pagina->key,pagina->value);
@@ -553,8 +560,16 @@ char* select_memoria(char *nombre_tabla, uint16_t key)
 	}
 	free(informacion);
 	if(encontrada){
-		return pagina->value;
+		char* valorADevolver = malloc(strlen(pagina->value)+1);
+		memcpy(valorADevolver, pagina->value, strlen(pagina->value));
+		free(pagina->value);
+		free(pagina);
+		free(valorAux);
+		return valorADevolver;
 	}
+	free(valorAux);
+	free(pagina->value);
+	free(pagina);
 	return NULL;
 }
 
@@ -628,6 +643,7 @@ char *resolver_select(int socket_lfs,request_t req)
 	if(valor != NULL){
 		printf("\nValor obtenido: %s",valor);
 	}
+	free(valor);
 	return valor;
 }
 
