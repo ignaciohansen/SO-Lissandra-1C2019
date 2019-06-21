@@ -29,6 +29,7 @@
 
 #define PATH_MEMORIA_CONFIG "../Config/MEMORIA.txt"
 #define LOG_PATH "../Log/logMEMORIA.txt"
+#define LOG_TABLAS_PATH "../Log/log_TABLAS_MEMORIA.txt"
 #define MAXSIZE_COMANDO 200
 #define ERROR -1
 

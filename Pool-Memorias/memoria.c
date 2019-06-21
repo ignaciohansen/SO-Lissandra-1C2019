@@ -4,6 +4,8 @@
 #include "../Biblioteca/src/Biblioteca.h"
 //void terminar_memoria(t_log* g_log);
 
+//#define MAIN_1
+#ifdef MAIN_1
 int main() {
 
 	// LOGGING
@@ -72,6 +74,7 @@ int main() {
     	liberar_todo_por_cierre_de_modulo();
     	return 0;
 }
+
 
 void consola_prueba() {
 	int fin = 0;
@@ -221,7 +224,7 @@ void consola_prueba() {
 	}
 	free(datosDeRequest);
 }
-
+#endif
 void hiloDrop(request_t* req){
 	/*if(stringEstaVacio(req->args[0])){
 		imprimirError(log_memoria, "NO SE HA INGRESADO 1 NOMBRE CORRECTO\n");
@@ -257,7 +260,7 @@ void hiloDescribe(request_t* req){
 		}
 	}
 }
-
+/*
 void hiloInsert(request_t* req){
 	char* nombreTabla = malloc(strlen(req->args[0]));
 	char* valorAPoner = malloc(strlen(req->args[2]));
@@ -272,7 +275,7 @@ void hiloInsert(request_t* req){
 	free(valorAPoner);
 	free(nombreTabla);
 //	imprimirPorPantallaTodosLosComandosDisponibles();
-}
+}*/
 
 void hiloSelect(request_t* req){
 	char* nombreTablaABuscar =malloc(strlen(req->args[0]));
@@ -328,7 +331,7 @@ void imprimirPorPantallaTodosLosComandosDisponibles(){
 }
 
 
-void insertHardcodeado(int cant, int inicio, void* info, char* valorNuevo, char* nombreTabla){
+/*void insertHardcodeado(int cant, int inicio, void* info, char* valorNuevo, char* nombreTabla){
 	int i=0;
 	log_info(log_memoria, "\n\n[X Insertar datos] Insertando datos en '%s'\n\nValor a poner ['%s']\n", nombreTabla, valorNuevo);
 	// for(i=inicio; i<cant+inicio; i++){
@@ -340,7 +343,7 @@ void insertHardcodeado(int cant, int inicio, void* info, char* valorNuevo, char*
 	    	printf("ERROR CON %s\n", valorNuevo);
 	    }
 
-}
+}*/
 
 void selectHardcodeado(char* nombreTablaAIr, u_int16_t keyBuscada, void* dato){
 	pagina_a_devolver* pag = malloc(sizeof(pagina_a_devolver));
@@ -360,6 +363,15 @@ void inicioLogYConfig() {
 			" \n ========== Iniciación de Pool de Memoria ========== \n \n ");
 
 	log_info(log_memoria, "[LOGYCONFIG](1) LOG CREADO. ");
+
+	tablas_fp = fopen(LOG_TABLAS_PATH, "w");
+	if(tablas_fp == NULL){
+		log_info(log_memoria, "[LOGYCONFIG](1) No se pudo crear el archivo de seguimiento de tablas\n");;
+	}
+	else{
+		fprintf(tablas_fp,"ARCHIVO PARA SEGUIMIENTO DE TABLAS\n\n\n");
+		log_info(log_memoria, "[LOGYCONFIG] Logger de seguimiento de tablas creado en %s",LOG_TABLAS_PATH);
+	}
 
 	cargarConfiguracion();
 	log_info(log_memoria,
@@ -792,7 +804,7 @@ void escucharConexionKernel() {
 /*-----------------------------------------------------------------------------
  * FUNCIONALIDADES PARA LA CONSOLA
  *-----------------------------------------------------------------------------*/
-
+/*
 void ejecutarHiloConsola() {
 	log_info(log_memoria, "[HILO CONSOLA]Inicializando HILO CONSOLA");
 
@@ -803,7 +815,7 @@ void ejecutarHiloConsola() {
 	pthread_join(hiloConsolaMemoria, NULL);
 	log_info(log_memoria, "[HILO CONSOLA]HILO CONSOLA en ejecucion");
 }
-
+*/
 char* lectura_consola() {
 char* linea = (char*) readline(">");
 return linea;
@@ -887,6 +899,17 @@ if (configFile != NULL) {
 	} else {
 		log_error(log_memoria, "[ERROR] NO HAY PUERTO CONFIGURADO");
 	} // PUERTO
+
+	if (config_has_property(configFile, "IP")) {
+
+			arc_config->ip = config_get_string_value(configFile, "IP");
+			log_info(log_memoria, "[CONFIGURANDO MODULO] IP DE ESCUCHA: %s",
+					arc_config->ip);
+
+		} else {
+			log_error(log_memoria, "[ERROR] NO HAY IP CONFIGURADA");
+		} // IP
+
 
 	if (config_has_property(configFile, "IP_FS")) {
 
@@ -994,6 +1017,18 @@ if (configFile != NULL) {
 
 	} else {
 		log_error(log_memoria, "[ERROR] NO HAY NUMERO DE MEMORIA CONFIGURADO");
+	} // MEMORY NUMBER
+
+	if (config_has_property(configFile, "MAX_VAL_KEY")) {
+
+	arc_config->max_value_key = config_get_int_value(configFile,
+			"MAX_VAL_KEY");
+	log_info(log_memoria, "[CONFIGURANDO MODULO] MAXIMO TAM PARA KEY: %d",
+				arc_config->max_value_key);
+
+	} else {
+		arc_config->max_value_key = 10;
+		log_error(log_memoria, "[ERROR] NO HAY TAMANIO MAXIMO PARA LA KEY. SETEANDO POR DEFAULT: 10");
 	} // MEMORY NUMBER
 
 } else {

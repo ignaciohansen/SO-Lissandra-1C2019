@@ -153,6 +153,7 @@ enum comandos{
 
 //FUNCIONES PARA ABORTAR UN PROCESO
 void abortarProcesoPorUnError(t_log log, char* mensaje);
+void abortarProcesoPorUnErrorImportante(t_log* log, char* mensaje);
 
 //--------------------------------------- Funcion timestamp -------------------------------------
 
@@ -458,6 +459,7 @@ msg_com_t recibir_mensaje(int conexion);
 req_com_t procesar_request(msg_com_t msg);
 resp_com_t procesar_respuesta(msg_com_t msg);
 handshake_com_t procesar_handshake(msg_com_t msg);
+void borrar_buffer(buffer_com_t buf);
 void borrar_mensaje(msg_com_t msg);
 void borrar_request_com(req_com_t req);
 void borrar_respuesta(resp_com_t resp);

@@ -26,6 +26,7 @@
 pthread_t* journalHilo;
 
 t_log* log_memoria;
+FILE* tablas_fp;
 t_bitarray* bitmap;
 
 pthread_mutex_t memoria_mutex_paginas_disponibles;
@@ -67,6 +68,7 @@ typedef struct{
     int puerto;
     char* ip_fs;
     int puerto_fs;
+    char* ip;
     char* ip_seeds;
     char** puerto_seeds;
     int retardo_mem;
