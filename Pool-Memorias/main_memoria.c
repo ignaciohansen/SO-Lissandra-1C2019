@@ -15,7 +15,7 @@
 int conectar_a_lfs(void);
 int levantar_servidor_memoria(void);
 void* hilo_consola(int * socket_p);
-char* resolver_pedido(request_t req, int socket_lfs);
+char* resolver_pedido(request_t req, int socket_lfs, bool deboDevolver);
 char *resolver_select(int socket_lfs,request_t req);
 int resolver_insert(request_t req, int modif);
 char *resolver_describe(int socket_lfs,request_t req);
@@ -138,8 +138,8 @@ void* hilo_consola(int * socket_p){
 			case CREATE:
 			case DROP:
 			case JOURNALCOMANDO:
-				char* resAFree = resolver_pedido(req,socket_lfs);
-				free(resAFree);
+				resolver_pedido(req,socket_lfs, false);
+	//			free(resAFree);
 				break;
 			default:
 				printf("\nNO IMPLEMENTADO\n");
@@ -206,7 +206,7 @@ void * hilo_cliente(int * socket_p)
 				borrar_mensaje(msg);
 				req_parseado = parser(request.str);
 				borrar_request_com(request);
-				respuesta = resolver_pedido(req_parseado,socket_lfs);
+				respuesta = resolver_pedido(req_parseado,socket_lfs, true);
 				imprimirAviso1(log_memoria,"[CLIENTE] La resupuesta obtenida para el pedido es %s",respuesta);
 				if(responder_request(socket_cliente,respuesta,RESP_OK) != -1) {
 					imprimirAviso(log_memoria,"[CLIENTE] La resupuesta fue enviada con éxito al cliente");
@@ -277,7 +277,7 @@ int rechazar_cliente(int socket)
 	return 1;
 }
 
-char* resolver_pedido(request_t req, int socket_lfs)
+char* resolver_pedido(request_t req, int socket_lfs, bool deboDevolver)
 {
 	char *ret_val=NULL;
 	char *ret_ok_generico = malloc(3);
@@ -351,7 +351,11 @@ char* resolver_pedido(request_t req, int socket_lfs)
 	}
 	fprintf(tablas_fp,"\nEjecutado comando %s",req.request_str);
 	loggearEstadoActual(tablas_fp);
-	return ret_val;
+	if(deboDevolver){
+		return ret_val;
+	}
+	free(ret_ok_generico);
+	return NULL;
 }
 
 
