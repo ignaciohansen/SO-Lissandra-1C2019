@@ -284,7 +284,7 @@ char* resolver_pedido(request_t req, int socket_lfs, bool deboDevolver)
 	strcpy(ret_ok_generico,"OK");
 	switch(req.command){
 		case INSERT:
-			imprimirAviso(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver INSERT");
+			imprimirAviso(log_memoria,"\n\n[RESOLVIENDO PEDIDO] Voy a resolver INSERT\n\n");
 			if(resolver_insert(req,true) != -1){
 				imprimirAviso(log_memoria,"[RESOLVIENDO PEDIDO] INSERT hecho correctamente");
 				ret_val = ret_ok_generico;
@@ -294,7 +294,7 @@ char* resolver_pedido(request_t req, int socket_lfs, bool deboDevolver)
 			}
 			break;
 		case SELECT:
-			imprimirAviso(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver SELECT");
+			imprimirAviso(log_memoria,"\n\n[RESOLVIENDO PEDIDO] Voy a resolver SELECT\n\n");
 			ret_val = resolver_select(socket_lfs,req);
 			if(ret_val != NULL){
 				imprimirAviso1(log_memoria,"[RESOLVIENDO PEDIDO] SELECT hecho correctamente. Valor %s obtenido",ret_val);
@@ -304,7 +304,7 @@ char* resolver_pedido(request_t req, int socket_lfs, bool deboDevolver)
 			}
 			break;
 		case DESCRIBE:
-			imprimirAviso(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver DESCRIBE");
+			imprimirAviso(log_memoria,"\n\n[RESOLVIENDO PEDIDO] Voy a resolver DESCRIBE\n\n");
 			ret_val = resolver_describe(socket_lfs,req);
 			if(ret_val != NULL){
 				imprimirAviso1(log_memoria,"[RESOLVIENDO PEDIDO] DESCRIBE hecho correctamente. Valor %s obtenido",ret_val);
@@ -314,7 +314,7 @@ char* resolver_pedido(request_t req, int socket_lfs, bool deboDevolver)
 			}
 			break;
 		case DROP:
-			imprimirAviso(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver DROP");
+			imprimirAviso(log_memoria,"\n\n[RESOLVIENDO PEDIDO] Voy a resolver DROP\n\n");
 			if(resolver_drop(socket_lfs,req) != -1){
 				imprimirAviso(log_memoria,"[RESOLVIENDO PEDIDO] DROP hecho correctamente");
 				ret_val = ret_ok_generico;
@@ -324,7 +324,7 @@ char* resolver_pedido(request_t req, int socket_lfs, bool deboDevolver)
 			}
 			break;
 		case CREATE:
-			imprimirAviso(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver CREATE");
+			imprimirAviso(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver CREATE\n\n");
 			if(resolver_create(socket_lfs,req) != NULL){
 				imprimirAviso(log_memoria,"[RESOLVIENDO PEDIDO] CREATE hecho correctamente");
 				ret_val = ret_ok_generico;
@@ -334,7 +334,7 @@ char* resolver_pedido(request_t req, int socket_lfs, bool deboDevolver)
 			}
 			break;
 		case JOURNALCOMANDO:
-			imprimirAviso(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver JOURNAL");
+			imprimirAviso(log_memoria,"\n\n[RESOLVIENDO PEDIDO] Voy a resolver JOURNAL\n\n");
 			if(resolver_journal(socket_lfs,req) != -1){
 				imprimirAviso(log_memoria,"[RESOLVIENDO PEDIDO] JOURNAL hecho correctamente");
 				ret_val = ret_ok_generico;
@@ -354,7 +354,8 @@ char* resolver_pedido(request_t req, int socket_lfs, bool deboDevolver)
 	if(deboDevolver){
 		return ret_val;
 	}
-	free(ret_ok_generico);
+//	free(ret_val);
+//	free(ret_ok_generico);
 	return NULL;
 }
 
@@ -518,6 +519,7 @@ int resolver_journal(int socket_lfs,request_t req)
 		borrar_mensaje(msg);
 	}
 	*/
+	liberar_todo_segmento();
 	return 1;
 }
 
@@ -549,33 +551,38 @@ char* select_memoria(char *nombre_tabla, uint16_t key)
 
 	imprimirAviso2(log_memoria,"[WRAPPER DE SELECT] Quiero obtener la key %d de la tabla %s",key,nombre_tabla);
 	segmento *seg;
-	int pag, encontrada = 0;
+	int pag;
+	bool encontrada = false;
 	char* valorAux = malloc(max_valor_key);
 	void* informacion = malloc(sizeof(pagina)+max_valor_key);
 	pagina->value = malloc(max_valor_key);
 
 	if(funcionSelect(nombre_tabla, key, &pagina, &valorAux)!=0){
-		pag = buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(
-				nombre_tabla,key,&seg);
-		free(pagina->value);
-		free(pagina);
+		pag =
+			buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(nombre_tabla, key, &seg);
+//		free(pagina->value);
+//		free(pagina);
 		pagina = selectPaginaPorPosicion(pag,informacion);
 		imprimirAviso1(log_memoria,"[WRAPPER DE SELECT] Valor encontrado: %s",pagina->value);
 		//printf("\nSEGMENTO <%s>\nKEY<%d>: VALUE: %s\n", nombre_tabla, pagina->key,pagina->value);
-		encontrada = 1;
+		encontrada = true;
+		imprimirAviso(log_memoria,"[WRAPPER DE SELECT] POR AQUIIIIII");
 	} else {
 		imprimirError(log_memoria,"[WRAPPER DE SELECT] Valor no encontrado");
 		//printf("\nERROR <%s><%d>\n", nombre_tabla, key);
 	}
 	free(informacion);
 	if(encontrada){
-		char* valorADevolver = malloc(strlen(pagina->value)+1);
-		memcpy(valorADevolver, pagina->value, strlen(pagina->value));
+
+		char* valorADevolver = malloc(strlen(pagina->value));
+		memcpy(valorADevolver, pagina->value, strlen(pagina->value)+1);
+		log_info(log_memoria, "[WRAPPER DE SELECT] Se encontro lo buscado %s", valorADevolver);
 		free(pagina->value);
 		free(pagina);
 		free(valorAux);
 		return valorADevolver;
 	}
+	log_info(log_memoria, "[WRAPPER DE SELECT] NO Se encontro lo buscado");
 	free(valorAux);
 	free(pagina->value);
 	free(pagina);
@@ -652,7 +659,6 @@ char *resolver_select(int socket_lfs,request_t req)
 	if(valor != NULL){
 		printf("\nValor obtenido: %s",valor);
 	}
-	free(valor);
 	return valor;
 }
 

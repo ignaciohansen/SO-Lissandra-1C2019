@@ -73,7 +73,7 @@ void armarMemoriaPrincipal() {
 
 
 	cantPaginasDisponibles = tamanioMemoria/tamanioPagina;
-//	cantPaginasDisponibles = 3;
+	cantPaginasDisponibles = 3;
 
 //memoria->paginasTotales = cantPaginasDisponibles;
 	cantPaginasTotales = cantPaginasDisponibles;
@@ -1409,7 +1409,7 @@ bool bloque_LRU_en_posicion_i_tiene_flag_activado(int posicion){
 
 void liberarDatosJournal(datosJournal* datos){
 	datosJournal* aux;
-	log_info(log_memoria, "[JOURNAL] LIBERANDO DATOSJOURNAL");
+	log_info(log_memoria, "\n[JOURNAL] LIBERANDO DATOSJOURNAL");
 
 	while(datos!=NULL){
 		free(datos->value);
@@ -1418,7 +1418,7 @@ void liberarDatosJournal(datosJournal* datos){
 		free(datos);
 		datos = aux;
 	}
-	log_info(log_memoria, "[JOURNAL] DATOSJOURNAL LIBERADO");
+	log_info(log_memoria, "\n[JOURNAL] DATOSJOURNAL LIBERADO");
 
 }
 
@@ -1453,9 +1453,13 @@ datosJournal* obtener_todos_journal(){
 	char* nombreTabla;
 	char* valor = malloc(max_valor_key);
 	pagina* pag = malloc(sizeof(pagina));
+	log_info(log_memoria, "\n[OBTENER TODO JOURNAL] ENTRANDO");
 	for(posicion=0;posicion<cantPaginasTotales;posicion++){
+
 		nombreTabla =malloc(tamanioPredefinidoParaNombreTabla);
 		if(bloque_LRU_en_posicion_fue_modificado(posicion, &nombreTabla)){
+			log_info(log_memoria, "\n[OBTENER TODO JOURNAL] Obtengo datos de la posicion %d",
+					posicion);
 			datosJournal* datos = malloc(sizeof(datosJournal));
 
 			memcpy(pag,
@@ -1471,17 +1475,20 @@ datosJournal* obtener_todos_journal(){
 					max_valor_key);
 			datos->sig= datosDevolver;
 			datosDevolver = datos;
+			log_info(log_memoria, "\n[OBTENER TODO JOURNAL] Datos de la posicion %d\n"
+					"TABLA: %s\nKEY: %d\nValor: %s\nTimestamp: %f",
+					posicion, datos->nombreTabla, datos->key, datos->value, datos->timestamp);
 		}
 		free(nombreTabla);
 	}
-	printf("\n\n\n");
 	datosJournal* extra = datosDevolver;
+/*
 	while(extra!=NULL){
 		printf("\nOBTENGO DATOS:\nNombre: [%s]\nKey: [%d]\nTimestamp: [%f]\nVALUE: [%s]\n\n",
 				extra->nombreTabla, extra->key, extra->timestamp, extra->value);
 		extra = extra->sig;
 	}
-
+*/
 //	datosAPasar = datos;
 //	sleep(5);
 	free(valor);
@@ -1491,14 +1498,24 @@ datosJournal* obtener_todos_journal(){
 
 
 bool bloque_LRU_en_posicion_fue_modificado(int pos, char** nombreADevolver){
+	//REVISO PRIMERO BITMAP
+	log_info(log_memoria, "\n[bloque_LRU_en_posicion_fue_modificado]\nENTRANDO");
+	if(!bitmapBitOcupado(bitmap, pos)){
+		log_info(log_memoria, "\n[bloque_LRU_en_posicion_fue_modificado]\n La posicion %d no fue ocupada, devuelvo FALSE", pos);
+		return false;
+	}
 	nodoLRU* nodoSolicitado = malloc(sizeof(nodoLRU));
+	log_info(log_memoria, "\n[bloque_LRU_en_posicion_fue_modificado]\nObteniendo datos de la posicion %d", pos);
 	memcpy(nodoSolicitado, bloque_LRU+pos*(sizeof(nodoLRU)+tamanioPredefinidoParaNombreTabla), sizeof(nodoLRU));
 	memcpy(*nombreADevolver, bloque_LRU+pos*(sizeof(nodoLRU)+tamanioPredefinidoParaNombreTabla)+
-			sizeof(nodoLRU), tamanioPredefinidoParaNombreTabla);
+			sizeof(nodoLRU)-1, tamanioPredefinidoParaNombreTabla);
 	if(nodoSolicitado->estado){
+		log_info(log_memoria, "\n[bloque_LRU_en_posicion_fue_modificado]\n BLOQUE %d modifcado, devuelvo TRUE", pos);
+
 		free(nodoSolicitado);
 		return true;
 	}
+	log_info(log_memoria, "\n[bloque_LRU_en_posicion_fue_modificado]\n La posicion %d no fue modifcada, devuelvo FALSE", pos);
 	free(nodoSolicitado);
 	return false;
 }
