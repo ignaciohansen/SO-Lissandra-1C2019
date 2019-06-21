@@ -935,7 +935,7 @@ void imprimirAviso1(ArchivoLog archivoLog, String mensaje, void* algo1) {
 	printf(mensaje, algo1 );
 	printf(BLANCO);
 	puts("");
-	log_info(archivoLog, mensaje, algo1);
+	log_warning(archivoLog, mensaje, algo1);
 }
 
 void imprimirAviso2(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2) {
@@ -966,7 +966,7 @@ void imprimirError(ArchivoLog archivoLog, String mensaje) {
 	printf(ROJO);
 	puts(mensaje);
 	printf(BLANCO);
-	log_info(archivoLog, mensaje);
+	log_error(archivoLog, mensaje);
 }
 void imprimirError1(ArchivoLog archivoLog, String mensaje, void* algo1) {
 	printf(ROJO);
@@ -981,7 +981,7 @@ void imprimirError2(ArchivoLog archivoLog, String mensaje, void* algo1, void* al
 	printf(mensaje, algo1, algo2);
 	printf(BLANCO);
 	puts("");
-	log_info(archivoLog, mensaje, algo1, algo2);
+	log_error(archivoLog, mensaje, algo1, algo2);
 }
 
 void imprimirError3(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3) {
@@ -1013,7 +1013,7 @@ void imprimirVerde1(ArchivoLog archivoLog, String mensaje, void* algo1) {
 	printf(mensaje, algo1);
 	printf(BLANCO);
 	puts("");
-	log_error(archivoLog, mensaje, algo1);
+	log_info(archivoLog, mensaje, algo1);
 }
 
 void imprimirVerde2(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2) {
@@ -1029,7 +1029,7 @@ void imprimirVerde3(ArchivoLog archivoLog, String mensaje, void* algo1, void* al
 	printf(mensaje, algo1, algo2, algo3);
 	printf(BLANCO);
 	puts("");
-	log_error(archivoLog, mensaje, algo1, algo2, algo3);
+	log_info(archivoLog, mensaje, algo1, algo2, algo3);
 }
 
 void imprimirVerde4(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3, void* algo4) {
@@ -1037,7 +1037,7 @@ void imprimirVerde4(ArchivoLog archivoLog, String mensaje, void* algo1, void* al
 	printf(mensaje, algo1, algo2, algo3, algo4);
 	printf(BLANCO);
 	puts("");
-	log_error(archivoLog, mensaje, algo1, algo2, algo3, algo4);
+	log_info(archivoLog, mensaje, algo1, algo2, algo3, algo4);
 }
 
 void imprimirMensajeProceso(String mensaje) {
