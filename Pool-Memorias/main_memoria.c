@@ -138,7 +138,8 @@ void* hilo_consola(int * socket_p){
 			case CREATE:
 			case DROP:
 			case JOURNALCOMANDO:
-				resolver_pedido(req,socket_lfs);
+				char* resAFree = resolver_pedido(req,socket_lfs);
+				free(resAFree);
 				break;
 			default:
 				printf("\nNO IMPLEMENTADO\n");
@@ -207,10 +208,13 @@ void * hilo_cliente(int * socket_p)
 				borrar_request_com(request);
 				respuesta = resolver_pedido(req_parseado,socket_lfs);
 				imprimirAviso1(log_memoria,"[CLIENTE] La resupuesta obtenida para el pedido es %s",respuesta);
-				if(responder_request(socket_cliente,respuesta,RESP_OK) != -1)
+				if(responder_request(socket_cliente,respuesta,RESP_OK) != -1) {
 					imprimirAviso(log_memoria,"[CLIENTE] La resupuesta fue enviada con éxito al cliente");
-				else
+				}
+				else {
 					imprimirError(log_memoria,"[CLIENTE] La resupuesta no pudo ser enviada al cliente");
+				}
+				free(respuesta);
 				break;
 			case DESCONECTADO:
 				imprimirAviso(log_memoria,"[CLIENTE] El cliente se desconectó");
@@ -369,6 +373,7 @@ int resolver_drop(int socket_lfs,request_t req)
 	enviar.str = malloc(enviar.tam);
 	strcpy(enviar.str,"DROP ");
 	strcat(enviar.str,nombre_tabla);
+	free(nombre_tabla);
 	if(enviar_request(socket_lfs,enviar) == -1){
 		imprimirError(log_memoria, "[RESOLVIENDO DROP] No se puedo enviar el drop al filesystem");
 	}
