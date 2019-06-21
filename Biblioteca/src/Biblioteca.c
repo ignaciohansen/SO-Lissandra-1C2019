@@ -1195,6 +1195,8 @@ int enviar_respuesta(int socket, resp_com_t enviar)
 msg_com_t recibir_mensaje(int conexion)
 {
 	msg_com_t recibido;
+	recibido.payload.tam = 0;
+	recibido.payload.stream = NULL;
 
 	//Primero recibo el tipo
 	if(recv(conexion, &(recibido.tipo), sizeof(conexion_t), MSG_WAITALL) == 0){
@@ -1301,7 +1303,7 @@ void borrar_respuesta(resp_com_t resp)
 
 void borrar_buffer(buffer_com_t buf)
 {
-	if(buf.tam>0)
+	if(buf.tam>0 && buf.stream != NULL)
 		free(buf.stream);
 }
 

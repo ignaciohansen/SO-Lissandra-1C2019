@@ -166,6 +166,7 @@ void JOURNAL();
 void procesoJournal();
 datosJournal* obtener_todos_journal();
 bool bloque_LRU_en_posicion_fue_modificado(int pos, char** nombreADevolver);
+void liberarDatosJournal(datosJournal* datos);
 
 bool bitmapLleno();
 

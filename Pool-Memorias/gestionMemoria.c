@@ -8,7 +8,7 @@
 #include "gestionMemoria.h"
 #include "memoria.h"
 #include <string.h>
-#include "../Biblioteca/src/Biblioteca.c"
+#include "../Biblioteca/src/Biblioteca.h"
 #include "estructuras.h"
 
 /* VARIABLES GLOBALES */
@@ -1471,20 +1471,20 @@ datosJournal* obtener_todos_journal(){
 		free(nombreTabla);
 	}
 	printf("\n\n\n");
-	int i;
 	datosJournal* extra = datosDevolver;
-	for(i=0; i<cantPaginasTotales;i++){
+	while(extra!=NULL){
 		printf("\nOBTENGO DATOS:\nNombre: [%s]\nKey: [%d]\nTimestamp: [%f]\nVALUE: [%s]\n\n",
 				extra->nombreTabla, extra->key, extra->timestamp, extra->value);
 		extra = extra->sig;
 	}
 
 //	datosAPasar = datos;
-	sleep(5);
+//	sleep(5);
 	free(valor);
 	free(pag);
 	return datosDevolver;
 }
+
 
 bool bloque_LRU_en_posicion_fue_modificado(int pos, char** nombreADevolver){
 	nodoLRU* nodoSolicitado = malloc(sizeof(nodoLRU));

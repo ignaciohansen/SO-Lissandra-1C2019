@@ -161,6 +161,13 @@ int cantidadBloquesOcupadosBitmap();
  *--------------------------------------------------------------------------------------------
  */
 
+typedef struct{
+char* value;
+double timestamp;
+u_int16_t key;
+
+}t_registroMemtable;
+
 
 int timestamp_inicio;
 int cantidad_de_dumps = 0;
