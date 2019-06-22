@@ -377,6 +377,9 @@ void fileLimpiar(String ruta);
 
 /************************************PROTOCOLO ****************************************************/
 
+#define LARGO_IP 20
+#define LARGO_PUERTO 10
+
 /* Tipos de datos */
 
 //Tipos de mensaje soportados
@@ -433,6 +436,18 @@ typedef struct
 	str_com_t msg;
 } handshake_com_t;
 
+//Registro de la tabla de gossiping
+typedef struct{
+	int numMemoria;
+	char ip[LARGO_IP], puerto[LARGO_PUERTO];
+} seed_com_t;
+
+//Tabla de gossiping. Contiene 'cant' registros
+typedef struct{
+	int cant;
+	seed_com_t *seeds;
+} gos_com_t;
+
 //Buffer. Similar a un string pero sin caracter de fin de cadena
 typedef struct{
 	int tam;
@@ -455,15 +470,18 @@ typedef struct{
 int enviar_request(int socket, req_com_t enviar);
 int enviar_respuesta(int socket, resp_com_t enviar);
 int enviar_handshake(int socket, handshake_com_t enviar);
+int enviar_gossiping(int socket, gos_com_t enviar);
 msg_com_t recibir_mensaje(int conexion);
 req_com_t procesar_request(msg_com_t msg);
 resp_com_t procesar_respuesta(msg_com_t msg);
 handshake_com_t procesar_handshake(msg_com_t msg);
+gos_com_t procesar_gossiping(msg_com_t msg);
 void borrar_buffer(buffer_com_t buf);
 void borrar_mensaje(msg_com_t msg);
 void borrar_request_com(req_com_t req);
 void borrar_respuesta(resp_com_t resp);
 void borrar_handshake(handshake_com_t hs);
+void borrar_gossiping(gos_com_t gos);
 
 /**
 * @NAME: iniciar_servidor
