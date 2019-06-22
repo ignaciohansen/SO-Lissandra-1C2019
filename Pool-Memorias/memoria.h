@@ -25,7 +25,7 @@
 #include <commons/collections/queue.h>
 #include "parser.h"
 #include "../Biblioteca/src/Biblioteca.h"
-
+#include "../Biblioteca/src/Gossiping.h"
 
 #define PATH_MEMORIA_CONFIG "../Config/MEMORIA.txt"
 #define LOG_PATH "../Log/logMEMORIA.txt"

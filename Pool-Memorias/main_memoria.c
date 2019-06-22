@@ -7,6 +7,10 @@
 
 #define COMPILAR_MAIN_MEMORIA
 #ifdef COMPILAR_MAIN_MEMORIA
+
+//#define EJECUTAR_GOSSIPING
+
+
 #include "parser.h"
 #include "memoria.h"
 #include "gestionMemoria.h"
@@ -26,12 +30,23 @@ void * hilo_cliente(int * socket_p);
 int dar_bienvenida_cliente(int socket);
 int rechazar_cliente(int socket);
 int responder_request(int socket,char *msg, resp_tipo_com_t tipo_resp);
+int inicializar_gossiping_memoria(void);
+int responder_gossiping(gos_com_t recibido,id_com_t id_proceso,int socket);
+
+//#define AUTOLANZAR_SERVER
+//#define AUTOLANZAR_CLIENTE
 
 int main(void)
 {
 	// LOGGING
 	printf("INICIANDO EL MODULO MEMORIA \n COMINEZA EL TP PIBE\n\n");
 	inicioLogYConfig();
+
+#ifdef AUTOLANZAR_SERVER
+	char cmd_server[100];
+	snprintf(cmd_server,99,"gnome-terminal -- ./servidor %s %d",arc_config->ip_fs,arc_config->puerto_fs);
+	system(cmd_server);
+#endif
 
 	max_valor_key = arc_config->max_value_key;
 	armarMemoriaPrincipal();
@@ -44,7 +59,19 @@ int main(void)
 	int socket_servidor = levantar_servidor_memoria();
 	//hilo_servidor(&socket_servidor);
 
-	pthread_t servidor_h, consola_h;
+#ifdef AUTOLANZAR_CLIENTE
+	char cmd_cliente[100];
+	snprintf(cmd_cliente,99,"gnome-terminal -- ./cliente %s %d",arc_config->ip,arc_config->puerto);
+	system(cmd_cliente);
+#endif
+
+	pthread_t servidor_h, consola_h, gossiping_h;
+	id_com_t mi_id = MEMORIA;
+
+#ifdef EJECUTAR_GOSSIPING
+	inicializar_gossiping_memoria();
+	iniciar_hilo_gossiping(&mi_id,&gossiping_h);
+#endif
 
 	pthread_create(&servidor_h,NULL,(void *)hilo_servidor,&socket_servidor);
 	pthread_detach(servidor_h);
@@ -54,8 +81,13 @@ int main(void)
 	pthread_join(consola_h,NULL);
 
 	pthread_kill(servidor_h, SIGKILL);
+	pthread_kill(gossiping_h, SIGKILL);
+
 	liberar_todo_por_cierre_de_modulo();
 
+#ifdef EJECUTAR_GOSSIPING
+	liberar_memoria_gossiping();
+#endif
 	return 1;
 }
 
@@ -202,6 +234,7 @@ void * hilo_cliente(int * socket_p)
 		imprimirMensaje(log_memoria,"[CLIENTE] Recibí un mensaje");
 		req_com_t request;
 		request_t req_parseado;
+		gos_com_t gossip;
 		char *respuesta;
 		switch(msg.tipo){
 			case REQUEST:
@@ -220,6 +253,17 @@ void * hilo_cliente(int * socket_p)
 				}
 				free(respuesta);
 				break;
+			case GOSSIPING:
+				imprimirMensaje(log_memoria,"[CLIENTE] El mensaje recibido es un pedido de gossiping");
+				gossip = procesar_gossiping(msg);
+				borrar_mensaje(msg);
+				if(responder_gossiping(gossip,MEMORIA,socket_cliente) != -1) {
+					imprimirMensaje(log_memoria,"[CLIENTE] La resupuesta fue enviada con éxito al cliente");
+				}
+				else {
+					imprimirError(log_memoria,"[CLIENTE] La resupuesta no pudo ser enviada al cliente");
+				}
+				break;
 			case DESCONECTADO:
 				imprimirMensaje(log_memoria,"[CLIENTE] El cliente se desconectó");
 				borrar_mensaje(msg);
@@ -236,6 +280,20 @@ void * hilo_cliente(int * socket_p)
 	}
 	imprimirMensaje(log_memoria,"[CLIENTE] Finalizando el hilo");
 	return NULL;
+}
+
+int responder_gossiping(gos_com_t recibido,id_com_t id_proceso,int socket)
+{
+#ifdef EJECUTAR_GOSSIPING
+	gos_com_t conocidas = armar_vector_seeds(id_proceso);
+	incorporar_seeds_gossiping(recibido);
+	if(enviar_gossiping(socket,conocidas) == -1){
+		borrar_gossiping(conocidas);
+		return -1;
+	}
+	borrar_gossiping(conocidas);
+#endif
+	return 1;
 }
 
 int responder_request(int socket,char *msg, resp_tipo_com_t tipo_resp)
@@ -718,4 +776,32 @@ char *resolver_describe(int socket_lfs, request_t req)
 	return ret_val;
 }
 
+int inicializar_gossiping_memoria(void)
+{
+	imprimirMensaje(log_memoria,"[INICIALIZANDO GOSSIPING MEMORIA] Entrando a función");
+	if(arc_config == NULL || log_memoria == NULL){
+		imprimirAviso(log_memoria,"[INICIALIZANDO GOSSIPING MEMORIA] Es necesario tener cargado config y log");
+		return -1;
+	}
+	char puerto[LARGO_PUERTO], retardo_str[20];
+	snprintf(puerto,LARGO_PUERTO-1,"%d",arc_config->puerto);
+	snprintf(retardo_str,19,"%d",arc_config->retardo_gossiping);
+	imprimirMensaje1(log_memoria,"[INICIALIZANDO GOSSIPING MEMORIA] El gossiping se hará cada %s milisegundos", retardo_str);
+	inicializar_estructuras_gossiping(log_memoria,arc_config->retardo_gossiping);
+	agregar_seed(arc_config->memory_number,arc_config->ip,puerto);
+	if(arc_config->ip_seeds != NULL && arc_config->puerto_seeds != NULL){
+		int i = 0;
+		char *aux_ip = arc_config->ip_seeds[0];
+		char *aux_puerto = arc_config->puerto_seeds[0];
+		while(aux_ip != NULL && aux_puerto != NULL){
+			imprimirMensaje2(log_memoria,"[INICIALIZANDO GOSSIPING MEMORIA] Agregando seed %s %s",aux_ip,aux_puerto);
+			agregar_seed(-1,aux_ip,aux_puerto);
+			i++;
+			aux_ip = arc_config->ip_seeds[i];
+			aux_puerto = arc_config->puerto_seeds[i];
+		}
+	}
+	imprimirMensaje(log_memoria,"[INICIALIZANDO GOSSIPING MEMORIA] Todas las memorias agregadas");
+	return 1;
+}
 #endif
