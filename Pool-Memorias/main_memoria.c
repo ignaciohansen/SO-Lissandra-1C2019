@@ -121,9 +121,12 @@ void* hilo_consola(int * socket_p){
 	char *linea_leida, *respuesta;
 	int fin = 0;
 	imprimirAviso(log_memoria,"[CONSOLA] Entrando a hilo consola");
+	using_history();
 	imprimirPorPantallaTodosLosComandosDisponibles();
 	while(!fin){
 		linea_leida=readline("\n>");
+		if(linea_leida)
+			add_history(linea_leida);
 		req = parser(linea_leida);
 		free(linea_leida);
 		switch(req.command){
@@ -146,6 +149,7 @@ void* hilo_consola(int * socket_p){
 		}
 		borrar_request(req);
 	}
+	clear_history();
 	printf("\nSaliendo de hilo consola\n");
 	return NULL;
 }
