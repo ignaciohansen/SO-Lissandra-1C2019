@@ -120,22 +120,6 @@ typedef struct{
 	int unsigned cantArgumentos;
 }t_header;
 
-/*
-const char* comandosPermitidos[] =
-{
-	"select",
-	"insert",
-	"create",
-	"describe",
-	"drop",
-	"journal",
-	"add",
-	"run",
-	"metrics",
-	"salir"
-	
-};*/
-
 
 enum comandos{
 	Select = 0,

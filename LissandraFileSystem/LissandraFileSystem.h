@@ -125,6 +125,21 @@ char* archivoParticion;
 char* registroPorAgregar;
 int primerVoidEsRegistro = 1;
 
+const char* comandosPermitidos[] =
+{
+	"select",
+	"insert",
+	"create",
+	"describe",
+	"drop",
+	"journal",
+	"add",
+	"run",
+	"metrics",
+	"salir"
+
+};
+
 int comandoSelect(char* tabla, char* key);
 void comandoInsertSinTimestamp(char* tabla,char* key,char* value);
 void comandoInsert(char* tabla,char* key,char* value,char* timestamp);
@@ -162,6 +177,7 @@ int cantidadBloquesOcupadosBitmap();
  */
 
 typedef struct{
+int tam_registro;
 char* value;
 double timestamp;
 u_int16_t key;
