@@ -9,6 +9,7 @@
  */
 
 #include "Biblioteca.h"
+#include <arpa/inet.h>
 
 /*
  * FUNCIONES PARA ABORTAR UN PROCESO
@@ -1170,6 +1171,54 @@ buffer_com_t serializar_respuesta(resp_com_t resp)
 	return buf;
 }
 
+buffer_com_t serializar_gossiping(gos_com_t msg)
+{
+	buffer_com_t buf;
+	int desp=0, tam_payload;
+	conexion_t tipo_conexion=GOSSIPING;
+
+	//Calculo el tamaño del payload
+	//El payload contiene cantidad de tablas (n) y nro memoria, ip y puerto n veces
+	tam_payload = sizeof(int)+(sizeof(int)+LARGO_IP+LARGO_PUERTO)*msg.cant;
+
+	//Aloco en memoria el stream
+	//El stream contiene el tipo de conexión, el tamaño del payload y el payload
+	buf.tam = sizeof(conexion_t)+sizeof(int)+tam_payload;
+	buf.stream = malloc(buf.tam);
+
+	//Ahora cargo el stream con los datos que necesito
+
+	//Primero el tipo
+	memcpy(buf.stream+desp,&tipo_conexion,sizeof(conexion_t));
+	desp += sizeof(conexion_t);
+
+	//Después el tamaño del payload
+	memcpy(buf.stream+desp,&tam_payload,sizeof(int));
+	desp += sizeof(int);
+
+	//Ahora la cantidad de tablas de gossiping
+	memcpy(buf.stream+desp,&(msg.cant),sizeof(int));
+	desp += sizeof(int);
+
+	//Ahora la info de cada una de las tablas
+	for(int i=0; i<msg.cant; i++)
+	{
+		//Número de memoria
+		memcpy(buf.stream+desp,&(msg.seeds[i].numMemoria),sizeof(int));
+		desp += sizeof(int);
+
+		//Ip
+		memcpy(buf.stream+desp,(msg.seeds[i].ip),LARGO_IP);
+		desp += LARGO_IP;
+
+		//Ip
+		memcpy(buf.stream+desp,(msg.seeds[i].puerto),LARGO_PUERTO);
+		desp += LARGO_PUERTO;
+	}
+
+	return buf;
+}
+
 int enviar_request(int socket, req_com_t enviar)
 {
 	int retval = 0;
@@ -1192,6 +1241,17 @@ int enviar_respuesta(int socket, resp_com_t enviar)
 	return retval;
 }
 
+int enviar_gossiping(int socket, gos_com_t enviar)
+{
+	int retval = 0;
+	buffer_com_t serializado;
+	serializado = serializar_gossiping(enviar);
+	if(send(socket, serializado.stream, serializado.tam, 0)==-1)
+		retval = -1;
+	borrar_buffer(serializado);
+	return retval;
+}
+
 msg_com_t recibir_mensaje(int conexion)
 {
 	msg_com_t recibido;
@@ -1200,14 +1260,12 @@ msg_com_t recibir_mensaje(int conexion)
 
 	//Primero recibo el tipo
 	if(recv(conexion, &(recibido.tipo), sizeof(conexion_t), MSG_WAITALL) == 0){
-		//printf("\nError al recibir el mensaje");
 		recibido.tipo = DESCONECTADO;
 		return recibido;
 	}
 
 	//Ahora recibo el tamaño
 	if(recv(conexion, &(recibido.payload.tam), sizeof(int), MSG_WAITALL) == 0){
-			//printf("\nError al recibir el mensaje");
 			recibido.tipo = DESCONECTADO;
 			return recibido;
 	}
@@ -1217,7 +1275,6 @@ msg_com_t recibir_mensaje(int conexion)
 
 	//Ahora recibo el payload de tamaño ya conocido
 	if(recv(conexion, recibido.payload.stream, recibido.payload.tam, MSG_WAITALL) == 0){
-			//printf("\nError al recibir el mensaje");
 			recibido.tipo = DESCONECTADO;
 			return recibido;
 	}
@@ -1287,6 +1344,34 @@ resp_com_t procesar_respuesta(msg_com_t msg)
 	}
 	return resp;
 
+}
+
+gos_com_t procesar_gossiping(msg_com_t msg)
+{
+	gos_com_t gossip;
+	int desp = 0;
+
+	//Tengo que desempaquetar el stream
+
+	//Primero tengo la cantidad de tablas
+	memcpy(&gossip.cant, msg.payload.stream+desp, sizeof(int));
+	desp += sizeof(int);
+
+	//Ahora ya sé cuantas tablas tengo
+	gossip.seeds = malloc(sizeof(seed_com_t)*gossip.cant);
+
+	for(int i=0; i<gossip.cant; i++)
+	{
+		memcpy(&gossip.seeds[i].numMemoria, msg.payload.stream+desp, sizeof(int));
+		desp += sizeof(int);
+		memcpy(gossip.seeds[i].ip, msg.payload.stream+desp, LARGO_IP);
+		desp += LARGO_IP;
+		memcpy(gossip.seeds[i].puerto, msg.payload.stream+desp, LARGO_PUERTO);
+		desp += LARGO_PUERTO;
+
+	}
+
+	return gossip;
 }
 
 void borrar_request_com(req_com_t req)
@@ -1375,7 +1460,7 @@ int conectar_a_servidor(char *ip,char *puerto, id_com_t id)
 
 	freeaddrinfo(server_info);
 
-	printf("\nMe conecté!");
+//	printf("\nMe conecté!");
 
 	//ENVIAR HANDSHAKE CON TIPO CLIENTE
 	handshake_com_t hs;
@@ -1387,7 +1472,7 @@ int conectar_a_servidor(char *ip,char *puerto, id_com_t id)
 	enviar_handshake(socket_cliente, hs);
 	borrar_handshake(hs);
 
-	printf("\nMe presenté!");
+//	printf("\nMe presenté!");
 	return socket_cliente;
 }
 
@@ -1473,6 +1558,12 @@ void borrar_string(str_com_t str)
 void borrar_handshake(handshake_com_t hs)
 {
 	borrar_string(hs.msg);
+}
+
+void borrar_gossiping(gos_com_t gos)
+{
+	if(gos.seeds != NULL && gos.cant > 0)
+		free(gos.seeds);
 }
 
 

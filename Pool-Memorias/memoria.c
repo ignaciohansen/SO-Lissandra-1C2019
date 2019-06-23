@@ -225,41 +225,42 @@ void consola_prueba() {
 	free(datosDeRequest);
 }
 #endif
-void hiloDrop(request_t* req){
-	/*if(stringEstaVacio(req->args[0])){
-		imprimirError(log_memoria, "NO SE HA INGRESADO 1 NOMBRE CORRECTO\n");
-		return;
-	}*/
-	char* nombre = malloc(strlen(req->args[0]));
-	memcpy(nombre, req->args[0], strlen(req->args[0])+1);
-	if(funcionDrop(nombre)==-1){
-		imprimirError1(log_memoria, "\nERROR, La tabla ya fue eliminada o no existe: <%s>\n", nombre);
-	}
-	free(nombre);
-}
 
-void hiloDescribe(request_t* req){
-	char* nombre;
-	if(req->cant_args == 0){
-		mutexDesbloquear(&mutex_info_request);
-		//ES DESCRIBE DE TODAS LAS COSAS EN MEMORIA
-	//	printf("\n\nENTRA AQUI Y AGRADEZCO\n");
-		nombre = "";
-	//	sleep(5);
-		if(funcionDescribe(nombre)==-1){
-			printf("\nERROR, NO existe la METADATA de los segmentos\n");
-		}
-	} else {
-		nombre = malloc(strlen(req->args[0]));
-		memcpy(nombre, req->args[0], strlen(req->args[0])+1);
-		mutexDesbloquear(&mutex_info_request);
-		if(funcionDescribe(nombre)==-1){
-			printf("\nERROR, NO existe la METADATA de <%s>\n", nombre);
-		} else {
-			free(nombre);
-		}
-	}
-}
+//void hiloDrop(request_t* req){
+//	/*if(stringEstaVacio(req->args[0])){
+//		imprimirError(log_memoria, "NO SE HA INGRESADO 1 NOMBRE CORRECTO\n");
+//		return;
+//	}*/
+//	char* nombre = malloc(strlen(req->args[0]));
+//	memcpy(nombre, req->args[0], strlen(req->args[0])+1);
+//	if(funcionDrop(nombre)==-1){
+//		imprimirError1(log_memoria, "\nERROR, La tabla ya fue eliminada o no existe: <%s>\n", nombre);
+//	}
+//	free(nombre);
+//}
+//
+//void hiloDescribe(request_t* req){
+//	char* nombre;
+//	if(req->cant_args == 0){
+//		mutexDesbloquear(&mutex_info_request);
+//		//ES DESCRIBE DE TODAS LAS COSAS EN MEMORIA
+//	//	printf("\n\nENTRA AQUI Y AGRADEZCO\n");
+//		nombre = "";
+//	//	sleep(5);
+//		if(funcionDescribe(nombre)==-1){
+//			printf("\nERROR, NO existe la METADATA de los segmentos\n");
+//		}
+//	} else {
+//		nombre = malloc(strlen(req->args[0]));
+//		memcpy(nombre, req->args[0], strlen(req->args[0])+1);
+//		mutexDesbloquear(&mutex_info_request);
+//		if(funcionDescribe(nombre)==-1){
+//			printf("\nERROR, NO existe la METADATA de <%s>\n", nombre);
+//		} else {
+//			free(nombre);
+//		}
+//	}
+//}
 /*
 void hiloInsert(request_t* req){
 	char* nombreTabla = malloc(strlen(req->args[0]));
@@ -277,41 +278,41 @@ void hiloInsert(request_t* req){
 //	imprimirPorPantallaTodosLosComandosDisponibles();
 }*/
 
-void hiloSelect(request_t* req){
-	char* nombreTablaABuscar =malloc(strlen(req->args[0]));
-	u_int16_t keyBuscado = atoi(req->args[1]);
-	pagina_a_devolver* pagina_y_valor = malloc(sizeof(pagina_a_devolver));
-	memcpy(nombreTablaABuscar, req->args[0], strlen(req->args[0])+1);
-
-//	void* informacion = malloc(sizeof(pagina)+max_valor_key);
-
-	char* valorABuscar = malloc(max_valor_key);
-	pagina_y_valor->value = malloc(max_valor_key);
-
-	if(funcionSelect(nombreTablaABuscar, keyBuscado, &pagina_y_valor, &valorABuscar)!=-1){
-		printf("\nSALI DE FUNCION SELECT\n");
-	//	memcpy(pagina_y_valor->value, valorABuscar, max_valor_key);
-	/*	pag = buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(
-				nombreTablaABuscar,keyBuscado,&seg,&aux);
-		printf("\nAQUI 2\n");
-		pagina = selectPaginaPorPosicion(pag,informacion);
-		*/
-
-		printf("\n******************"
-				"DATOS DEL SELECT"
-				"******************\n"
-				"SEGMENTO [%s]\nKEY [%d]\nVALUE: [%s]\n", nombreTablaABuscar,
-				pagina_y_valor->key,pagina_y_valor->value);
-
-	} else {
-		printf("\nERROR <%s><%d>\n", nombreTablaABuscar, keyBuscado);
-	}
-	free(valorABuscar);
-	free(nombreTablaABuscar);
-	free(pagina_y_valor->value);
-	free(pagina_y_valor);
-
-}
+//void hiloSelect(request_t* req){
+//	char* nombreTablaABuscar =malloc(strlen(req->args[0]));
+//	u_int16_t keyBuscado = atoi(req->args[1]);
+//	pagina_a_devolver* pagina_y_valor = malloc(sizeof(pagina_a_devolver));
+//	memcpy(nombreTablaABuscar, req->args[0], strlen(req->args[0])+1);
+//
+////	void* informacion = malloc(sizeof(pagina)+max_valor_key);
+//
+//	char* valorABuscar = malloc(max_valor_key);
+//	pagina_y_valor->value = malloc(max_valor_key);
+//
+//	if(funcionSelect(nombreTablaABuscar, keyBuscado, &pagina_y_valor, &valorABuscar)!=-1){
+//		printf("\nSALI DE FUNCION SELECT\n");
+//	//	memcpy(pagina_y_valor->value, valorABuscar, max_valor_key);
+//	/*	pag = buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(
+//				nombreTablaABuscar,keyBuscado,&seg,&aux);
+//		printf("\nAQUI 2\n");
+//		pagina = selectPaginaPorPosicion(pag,informacion);
+//		*/
+//
+//		printf("\n******************"
+//				"DATOS DEL SELECT"
+//				"******************\n"
+//				"SEGMENTO [%s]\nKEY [%d]\nVALUE: [%s]\n", nombreTablaABuscar,
+//				pagina_y_valor->key,pagina_y_valor->value);
+//
+//	} else {
+//		printf("\nERROR <%s><%d>\n", nombreTablaABuscar, keyBuscado);
+//	}
+//	free(valorABuscar);
+//	free(nombreTablaABuscar);
+//	free(pagina_y_valor->value);
+//	free(pagina_y_valor);
+//
+//}
 
 void imprimirPorPantallaTodosLosComandosDisponibles(){
 	printf("\n--------------------------------------------------------\n"
@@ -345,11 +346,11 @@ void imprimirPorPantallaTodosLosComandosDisponibles(){
 
 }*/
 
-void selectHardcodeado(char* nombreTablaAIr, u_int16_t keyBuscada, void* dato){
-	pagina_a_devolver* pag = malloc(sizeof(pagina_a_devolver));
-//	funcionSelect(nombreTablaAIr, keyBuscada, &pag);
-	free(pag);
-}
+//void selectHardcodeado(char* nombreTablaAIr, u_int16_t keyBuscada, void* dato){
+//	pagina_a_devolver* pag = malloc(sizeof(pagina_a_devolver));
+////	funcionSelect(nombreTablaAIr, keyBuscada, &pag);
+//	free(pag);
+//}
 
 void cerrarTodosLosHilosPendientes() {
 	hiloCancelar(hiloConsolaMemoria);
@@ -446,9 +447,9 @@ void modificarTiempoRetardoJournal(int nuevoCampo) {
 }
 
 void modificarTIempoRetardo(int nuevoCampo, int campoAModificar) {
-	t_config* configFile;
+//	t_config* configFile;
 //	configFile = config_create(PATH_MEMORIA_CONFIG);
-	if (configFile == ERROR) {
+	if (arc_config == NULL) {
 		log_error(log_memoria,
 				"[MODIFICAR TIEMPO RETARDO]NO se abrio el archivo de configuracion");
 		imprimirError(log_memoria,
@@ -494,32 +495,32 @@ void modificarTIempoRetardo(int nuevoCampo, int campoAModificar) {
  * FUNCIONALIDADES PARA LA CONEXION ENTRE PROCESOS
  *-----------------------------------------------------------------------------*/
 
-void crearConexionesConOtrosProcesos() {
+//void crearConexionesConOtrosProcesos() {
+//
+//	log_info(log_memoria, "[HILOS] (+)");
+//
+//	pthread_t hiloClienteLFS;
+//	pthread_create(&hiloClienteLFS, NULL,
+//			(void*) conectarConServidorLisandraFileSystem, NULL);
+//
+//	pthread_detach(hiloClienteLFS);
+//	log_info(log_memoria, "[HILOS] LANZADO CLIENTE LFS");
+//
+//	pthread_t hiloServidorKernel;
+//	pthread_create(&hiloServidorKernel, NULL, (void*) levantarServidor, NULL);
+//
+//	pthread_detach(hiloServidorKernel);
+//
+//	log_info(log_memoria, "[HILOS] LANZADO  SERVIDOR KERNEL");
+//
+//	conectarConServidorLisandraFileSystem();
+//	levantarServidor();
+//	log_info(log_memoria, "[HILOS] (-)");
+//	while (1)
+//		;
+//}
 
-	log_info(log_memoria, "[HILOS] (+)");
-
-	pthread_t hiloClienteLFS;
-	pthread_create(&hiloClienteLFS, NULL,
-			(void*) conectarConServidorLisandraFileSystem, NULL);
-
-	pthread_detach(hiloClienteLFS);
-	log_info(log_memoria, "[HILOS] LANZADO CLIENTE LFS");
-
-	pthread_t hiloServidorKernel;
-	pthread_create(&hiloServidorKernel, NULL, (void*) levantarServidor, NULL);
-
-	pthread_detach(hiloServidorKernel);
-
-	log_info(log_memoria, "[HILOS] LANZADO  SERVIDOR KERNEL");
-
-	conectarConServidorLisandraFileSystem();
-	levantarServidor();
-	log_info(log_memoria, "[HILOS] (-)");
-	while (1)
-		;
-}
-
-void conectarConServidorLisandraFileSystem() {
+/*void conectarConServidorLisandraFileSystem() {
 	imprimirAviso(log_memoria, "[CONEXION LSF]INICIAMOS LA CONEXION CON LFS");
 	sockeConexionLF = nuevoSocket(log_memoria);
 
@@ -542,7 +543,7 @@ void conectarConServidorLisandraFileSystem() {
 	log_info(log_memoria, "[CONEXION LSF]PUERTO A CONECTAR: %d ",
 			arc_config->puerto_fs);
 	log_info(log_memoria, "[CONEXION LSF]PRUEBA: %d ", arc_config->puerto_fs);
-	char* ipLFS = "127.0.0.1";
+//	char* ipLFS = "127.0.0.1";
 	int resultado_Conectar = conectarSocket(sockeConexionLF, "0",
 			arc_config->puerto_fs, log_memoria);
 	// ## Acá IP de LFS Hardcodeada (#001#)
@@ -578,18 +579,18 @@ void conectarConServidorLisandraFileSystem() {
 
 		buffer = malloc(sizeof(char));
 
-		/*
-
-		 recibiendoMensaje = socketRecibir(sockeConexionLF, buffer, 13,  log_memoria);
-
-		 if(resultado_sendMsj == ERROR){
-		 imprimirError(log_memoria, "Error al recibir mensaje de LSF. salimos");
-		 return;
-		 }
 
 
-		 imprimirVerde1(log_memoria,"Se ha recibido un mensaje de LISANDRA\n\nMENSAJE RECIBIDO: %s", buffer);
-		 */
+//		 recibiendoMensaje = socketRecibir(sockeConexionLF, buffer, 13,  log_memoria);
+//
+//		 if(resultado_sendMsj == ERROR){
+//		 imprimirError(log_memoria, "Error al recibir mensaje de LSF. salimos");
+//		 return;
+//		 }
+//
+//
+//		 imprimirVerde1(log_memoria,"Se ha recibido un mensaje de LISANDRA\n\nMENSAJE RECIBIDO: %s", buffer);
+
 
 		recibiendoMensaje = socketRecibir(sockeConexionLF, buffer, 3,
 				log_memoria);
@@ -625,137 +626,137 @@ void conectarConServidorLisandraFileSystem() {
 		} // while (1)
 		  //	return;
 
-		/*char* msj = malloc(10*sizeof(char));
-		 msj = "PruebaK\n";
-		 resultado_sendMsj = socketEnviar(socket_CMemoria,msj,strlen(msj),log_kernel);
-		 if(resultado_sendMsj == ERROR){
-		 log_error(log_kernel,"Error al enviar mensaje a memoria. Salimos");
-		 return;
-		 }
-		 log_info(log_kernel,"El mensaje se envio correctamente");*/
+//		char* msj = malloc(10*sizeof(char));
+//		 msj = "PruebaK\n";
+//		 resultado_sendMsj = socketEnviar(socket_CMemoria,msj,strlen(msj),log_kernel);
+//		 if(resultado_sendMsj == ERROR){
+//		 log_error(log_kernel,"Error al enviar mensaje a memoria. Salimos");
+//		 return;
+//		 }
+//		 log_info(log_kernel,"El mensaje se envio correctamente");
 	}
-}
+}*/
 
-void levantarServidor() {
-
-	str_com_t string;
-
-	msg_com_t recibido;
-
-	// SOCKET
-	socketEscuchaKernel = nuevoSocket(log_memoria);  // CREAR SOCKET
-	if (socketEscuchaKernel == ERROR) {                // CASO DE ERROR.
-		log_error(log_memoria,
-				" ¡¡¡ ERROR AL CREAR SOCKET. SE TERMINA EL PROCESO. !!! ");
-		return;
-	}
-	log_info(log_memoria, "SOCKET CREADO.Valor: %d.", socketEscuchaKernel);
-
-	// PUERTO
-	log_info(log_memoria, " *** SE VA A ASOCIAR SOCKET CON PUERTO ... *** ");
-	log_info(log_memoria, "PUERTO A USAR: %d.", arc_config->puerto);
-
-	// ASOCIAR "SOCKET" CON "PUERTO".
-	asociarSocket(socketEscuchaKernel     // SOCKET
-			, arc_config->puerto      // PUERTO
-			, log_memoria); // LOG
-	log_info(log_memoria, " *** PUERTO ASOCIADO A SOCKET EXITOSAMENTE. *** ");
-
-	// ESCUCHAR
-	socketEscuchar(socketEscuchaKernel    // SOCKET
-			, 10, log_memoria); // LOG
-	while (1) {
-		log_info(log_memoria, " +++ esperando conexiones... +++ ");
-		conexionEntrante = aceptarConexionSocket(socketEscuchaKernel,
-				log_memoria);
-		if (conexionEntrante == ERROR) {
-			log_error(log_memoria, "ERROR AL CONECTAR.");
-			return;
-		}
-		/*buffer = malloc(sizeof(t_header));
-		 recibiendoMensaje = socketRecibir(conexionEntrante, buffer,
-		 sizeof(t_header), log_memoria);
-
-		 printf("Recibimos por socket el comando: %d\n", buffer->comando);
-		 log_info(log_memoria, "El mensaje que se recibio fue con el comando %d",
-		 buffer->comando);
-
-		 printf("Recibimos por socket el tamanio que vendra en el body: %d\n",
-		 buffer->tamanio);
-		 log_info(log_memoria,
-		 "Recibimos un tamanio que vendra en el body de: %d",
-		 buffer->tamanio);
-
-		 printf(
-		 "Recibimos por socket la cantidad de argumentos que vendran en el body: %d\n",
-		 buffer->cantArgumentos);
-		 log_info(log_memoria,
-		 "Recibimos la cantidad de argumentos que vendran en el body de: %d",
-		 buffer->cantArgumentos);
-
-		 log_info(log_memoria,
-		 "El valor de retorno de la funcion que recibio el mensaje fue: %d",
-		 recibiendoMensaje);
-		 log_info(log_memoria, "El tamanio de la estructura t_header es: %d",
-		 sizeof(t_header));
-		 if (recibiendoMensaje == sizeof(t_header)) {
-
-		 log_info(log_memoria,
-		 "Por enviar confirmacion a Kernel de que recibimos correctamente");
-
-		 log_info(log_memoria,
-		 "El tamanio de la confirmacion que enviamos es de: %d",
-		 sizeof(recibiendoMensaje));
-		 int resultadoEnvio = socketEnviar(conexionEntrante,
-		 &recibiendoMensaje, sizeof(recibiendoMensaje), log_memoria);
-
-		 log_info(log_memoria,
-		 "Por hacer un malloc de: %d para guardar el body. ",
-		 buffer->tamanio);
-		 argumentosComando = malloc(buffer->tamanio);
-
-		 memset(argumentosComando, '\0', buffer->tamanio);
-
-		 recibiendoMensaje = socketRecibir(conexionEntrante,
-		 argumentosComando, buffer->tamanio, log_memoria);
-
-		 log_info(log_memoria, "Recibimos el/los argumentos: %s",
-		 argumentosComando);
-		 printf("Recibimos el/los argumentos: %s \n", argumentosComando);
-
-		 log_info(log_memoria, "Por parsear los argumentos.");
-
-		 argumentosParseados = string_split(argumentosComando, SEPARADOR);
-
-		 for (int i = 0; argumentosParseados[i] != NULL; i++) {
-
-		 log_info(log_memoria,
-		 "Parseando queda en la posicion %i: el valor: %s", i,
-		 argumentosParseados[i]);
-		 printf("Parseando queda en la posicion %i: el valor: %s \n", i,
-		 argumentosParseados[i]);
-
-		 }*/
-
-		/*
-		log_info(log_memoria, "Por llamar a recibir mensaje");
-		recibido = recibir_mensaje(conexionEntrante);
-
-		printf("\n\n***Me llego un request***");
-		log_info(log_memoria, "***Me llego un request***");
-
-		string = procesar_request(recibido);
-		borrar_mensaje(recibido);
-		printf("\n\nRequest: %s", string.str);
-		log_info(log_memoria, "Request: %s", string.str);
-*/
-
-		log_info(log_memoria, "Fin de parseo");
-		printf("Fin de parseo. \n");
-
+//void levantarServidor() {
+//
+//	str_com_t string;
+//
+//	msg_com_t recibido;
+//
+//	// SOCKET
+//	socketEscuchaKernel = nuevoSocket(log_memoria);  // CREAR SOCKET
+//	if (socketEscuchaKernel == ERROR) {                // CASO DE ERROR.
+//		log_error(log_memoria,
+//				" ¡¡¡ ERROR AL CREAR SOCKET. SE TERMINA EL PROCESO. !!! ");
+//		return;
 //	}
-	}
-}
+//	log_info(log_memoria, "SOCKET CREADO.Valor: %d.", socketEscuchaKernel);
+//
+//	// PUERTO
+//	log_info(log_memoria, " *** SE VA A ASOCIAR SOCKET CON PUERTO ... *** ");
+//	log_info(log_memoria, "PUERTO A USAR: %d.", arc_config->puerto);
+//
+//	// ASOCIAR "SOCKET" CON "PUERTO".
+//	asociarSocket(socketEscuchaKernel     // SOCKET
+//			, arc_config->puerto      // PUERTO
+//			, log_memoria); // LOG
+//	log_info(log_memoria, " *** PUERTO ASOCIADO A SOCKET EXITOSAMENTE. *** ");
+//
+//	// ESCUCHAR
+//	socketEscuchar(socketEscuchaKernel    // SOCKET
+//			, 10, log_memoria); // LOG
+//	while (1) {
+//		log_info(log_memoria, " +++ esperando conexiones... +++ ");
+//		conexionEntrante = aceptarConexionSocket(socketEscuchaKernel,
+//				log_memoria);
+//		if (conexionEntrante == ERROR) {
+//			log_error(log_memoria, "ERROR AL CONECTAR.");
+//			return;
+//		}
+//		/*buffer = malloc(sizeof(t_header));
+//		 recibiendoMensaje = socketRecibir(conexionEntrante, buffer,
+//		 sizeof(t_header), log_memoria);
+//
+//		 printf("Recibimos por socket el comando: %d\n", buffer->comando);
+//		 log_info(log_memoria, "El mensaje que se recibio fue con el comando %d",
+//		 buffer->comando);
+//
+//		 printf("Recibimos por socket el tamanio que vendra en el body: %d\n",
+//		 buffer->tamanio);
+//		 log_info(log_memoria,
+//		 "Recibimos un tamanio que vendra en el body de: %d",
+//		 buffer->tamanio);
+//
+//		 printf(
+//		 "Recibimos por socket la cantidad de argumentos que vendran en el body: %d\n",
+//		 buffer->cantArgumentos);
+//		 log_info(log_memoria,
+//		 "Recibimos la cantidad de argumentos que vendran en el body de: %d",
+//		 buffer->cantArgumentos);
+//
+//		 log_info(log_memoria,
+//		 "El valor de retorno de la funcion que recibio el mensaje fue: %d",
+//		 recibiendoMensaje);
+//		 log_info(log_memoria, "El tamanio de la estructura t_header es: %d",
+//		 sizeof(t_header));
+//		 if (recibiendoMensaje == sizeof(t_header)) {
+//
+//		 log_info(log_memoria,
+//		 "Por enviar confirmacion a Kernel de que recibimos correctamente");
+//
+//		 log_info(log_memoria,
+//		 "El tamanio de la confirmacion que enviamos es de: %d",
+//		 sizeof(recibiendoMensaje));
+//		 int resultadoEnvio = socketEnviar(conexionEntrante,
+//		 &recibiendoMensaje, sizeof(recibiendoMensaje), log_memoria);
+//
+//		 log_info(log_memoria,
+//		 "Por hacer un malloc de: %d para guardar el body. ",
+//		 buffer->tamanio);
+//		 argumentosComando = malloc(buffer->tamanio);
+//
+//		 memset(argumentosComando, '\0', buffer->tamanio);
+//
+//		 recibiendoMensaje = socketRecibir(conexionEntrante,
+//		 argumentosComando, buffer->tamanio, log_memoria);
+//
+//		 log_info(log_memoria, "Recibimos el/los argumentos: %s",
+//		 argumentosComando);
+//		 printf("Recibimos el/los argumentos: %s \n", argumentosComando);
+//
+//		 log_info(log_memoria, "Por parsear los argumentos.");
+//
+//		 argumentosParseados = string_split(argumentosComando, SEPARADOR);
+//
+//		 for (int i = 0; argumentosParseados[i] != NULL; i++) {
+//
+//		 log_info(log_memoria,
+//		 "Parseando queda en la posicion %i: el valor: %s", i,
+//		 argumentosParseados[i]);
+//		 printf("Parseando queda en la posicion %i: el valor: %s \n", i,
+//		 argumentosParseados[i]);
+//
+//		 }*/
+//
+//		/*
+//		log_info(log_memoria, "Por llamar a recibir mensaje");
+//		recibido = recibir_mensaje(conexionEntrante);
+//
+//		printf("\n\n***Me llego un request***");
+//		log_info(log_memoria, "***Me llego un request***");
+//
+//		string = procesar_request(recibido);
+//		borrar_mensaje(recibido);
+//		printf("\n\nRequest: %s", string.str);
+//		log_info(log_memoria, "Request: %s", string.str);
+//*/
+//
+//		log_info(log_memoria, "Fin de parseo");
+//		printf("Fin de parseo. \n");
+//
+////	}
+//	}
+//}
 
 void crearHIloEscucharKernel() {
 	pthread_t hiloEscucharKernel;
@@ -805,74 +806,74 @@ void escucharConexionKernel() {
  * FUNCIONALIDADES PARA LA CONSOLA
  *-----------------------------------------------------------------------------*/
 /*
-void ejecutarHiloConsola() {
-	log_info(log_memoria, "[HILO CONSOLA]Inicializando HILO CONSOLA");
-
-	hiloCrear(&hiloConsolaMemoria, (void*)consola_prueba, NULL);
-//	pthread_create(&hiloConsolaMemoria, NULL, consola_prueba(), NULL);
-	log_info(log_memoria, "[HILO CONSOLA]Se crea HILO CONSOLA");
-	//DUDAS RESPECTO A ESTE HILO, SI PONGO ESTO EMPIEZA A EJECUTAR Y NO PERMITIRA QUE OTROS ENTREN O QUE?
-	pthread_join(hiloConsolaMemoria, NULL);
-	log_info(log_memoria, "[HILO CONSOLA]HILO CONSOLA en ejecucion");
-}
-*/
-char* lectura_consola() {
-char* linea = (char*) readline(">");
-return linea;
-}
-
-
-void menu() {
-
-printf("Los comandos que se pueden ingresar son: \n"
-		"COMANDOS \n"
-		"Insert \n"
-		"Select \n"
-		"Create \n"
-		"Describe \n"
-		"Drop \n"
-		"Journal  \n"
-		"SALIR \n"
-		"\n");
-
-}
-
-
-int enviarComando(char** comando, t_log* logger) {
-
-log_info(logger, "En funcion enviarComando");
-
-char* msj = malloc(7 * sizeof(char));
-
-msj = comando;
-
-log_info(logger, "El mensaje que vamos a enviar es: %s", msj);
-
-//AQUI TENGO UNA DUDA, LA CONEXION:
-
-//LA CONEXION SE INICIA EN
-//conectarConServidorLisandraFileSystem
-//POR LO TANTO YA TENGO EL INT DE ESO ASI QUE NO TENGO QUE VOLVER A
-//INICIARLA
-//	sockeConexionLF = conexionKernel();
-
-log_info("Vamos a enviar a memoria por el socket %d", sockeConexionLF);
-
-resultado_sendMsj = socketEnviar(sockeConexionLF, msj, strlen(msj),
-		log_memoria);
-
-if (resultado_sendMsj == ERROR) {
-
-	log_error(log_memoria, "Error al enviar mensaje a memoria. Salimos");
-
-	return ERROR;
-}
-
-log_info(log_memoria, "El mensaje se envio correctamente: %s", msj);
-
-return 0;
-
-}
+//void ejecutarHiloConsola() {
+//	log_info(log_memoria, "[HILO CONSOLA]Inicializando HILO CONSOLA");
+//
+//	hiloCrear(&hiloConsolaMemoria, (void*)consola_prueba, NULL);
+////	pthread_create(&hiloConsolaMemoria, NULL, consola_prueba(), NULL);
+//	log_info(log_memoria, "[HILO CONSOLA]Se crea HILO CONSOLA");
+//	//DUDAS RESPECTO A ESTE HILO, SI PONGO ESTO EMPIEZA A EJECUTAR Y NO PERMITIRA QUE OTROS ENTREN O QUE?
+//	pthread_join(hiloConsolaMemoria, NULL);
+//	log_info(log_memoria, "[HILO CONSOLA]HILO CONSOLA en ejecucion");
+//}
+//*/
+//char* lectura_consola() {
+//char* linea = (char*) readline(">");
+//return linea;
+//}
+//
+//
+//void menu() {
+//
+//printf("Los comandos que se pueden ingresar son: \n"
+//		"COMANDOS \n"
+//		"Insert \n"
+//		"Select \n"
+//		"Create \n"
+//		"Describe \n"
+//		"Drop \n"
+//		"Journal  \n"
+//		"SALIR \n"
+//		"\n");
+//
+//}
+//
+//
+//int enviarComando(char** comando, t_log* logger) {
+//
+//log_info(logger, "En funcion enviarComando");
+//
+//char* msj = malloc(7 * sizeof(char));
+//
+//msj = comando;
+//
+//log_info(logger, "El mensaje que vamos a enviar es: %s", msj);
+//
+////AQUI TENGO UNA DUDA, LA CONEXION:
+//
+////LA CONEXION SE INICIA EN
+////conectarConServidorLisandraFileSystem
+////POR LO TANTO YA TENGO EL INT DE ESO ASI QUE NO TENGO QUE VOLVER A
+////INICIARLA
+////	sockeConexionLF = conexionKernel();
+//
+//log_info("Vamos a enviar a memoria por el socket %d", sockeConexionLF);
+//
+//resultado_sendMsj = socketEnviar(sockeConexionLF, msj, strlen(msj),
+//		log_memoria);
+//
+//if (resultado_sendMsj == ERROR) {
+//
+//	log_error(log_memoria, "Error al enviar mensaje a memoria. Salimos");
+//
+//	return ERROR;
+//}
+//
+//log_info(log_memoria, "El mensaje se envio correctamente: %s", msj);
+//
+//return 0;
+//
+//}
 
 /*-----------------------------------------------------------------------------
  * FUNCIONALIDADES PARA LA CARGA DE LA CONFIGURACION Y EL LOG
@@ -1053,13 +1054,13 @@ void cargarConfiguracion() {
 
 void JOURNAL() {
 	log_info(log_memoria, "[JOURNAL] EN JOURNAL");
-	char* datosAPasar;
+//	char* datosAPasar=NULL;
 	datosJournal* journalAPasar;
 	journalAPasar = obtener_todos_journal();
 	log_info(log_memoria, "[JOURNAL] PROCEDO A ENVIAR LA INFORAMCION A LISANDRA");
 
 	log_info(log_memoria, "[JOURNAL] ENVIO EL MENSAJE A LISANDRA");
-	pasarValoresALisandra(datosAPasar);
+	pasarValoresALisandra(journalAPasar);
 	log_info(log_memoria, "[JOURNAL] TAMAÑO ENVIADO");
 
 	log_info(log_memoria, "[JOURNAL] Lisandra responde que recibio el mensaje");
@@ -1076,6 +1077,7 @@ int pasarValoresALisandra(datosJournal* datos){
 
 
 	retardo_fs(arc_config->retardo_fs);
+	return 1;
 }
 
 void procesoJournal(){

@@ -5,6 +5,8 @@
  *      Author: utnso
  */
 #include "retardos.h"
+#include <unistd.h>
+#include "gestionMemoria.h"
 //#include "../Biblioteca/src/Biblioteca.c"
 
 void retardo_memoria(int milisegundos){
