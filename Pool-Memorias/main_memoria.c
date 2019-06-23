@@ -76,12 +76,18 @@ int main(void)
 	pthread_create(&servidor_h,NULL,(void *)hilo_servidor,&socket_servidor);
 	pthread_detach(servidor_h);
 
-	pthread_create(&consola_h,NULL,(void *)hilo_consola,&socket_lfs);
 
+
+
+	pthread_create(&consola_h,NULL,(void *)hilo_consola,&socket_lfs);
+//pthread_detach(journalHilo);
+	pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
+		pthread_detach(journalHilo);
 	pthread_join(consola_h,NULL);
 
 	pthread_kill(servidor_h, SIGKILL);
 	pthread_kill(gossiping_h, SIGKILL);
+	pthread_kill(journalHilo, SIGKILL);
 
 	liberar_todo_por_cierre_de_modulo();
 
@@ -155,6 +161,7 @@ void* hilo_consola(int * socket_p){
 	imprimirAviso(log_memoria,"[CONSOLA] Entrando a hilo consola");
 	using_history();
 	imprimirPorPantallaTodosLosComandosDisponibles();
+
 	while(!fin){
 		linea_leida=readline("\n>");
 		if(linea_leida)

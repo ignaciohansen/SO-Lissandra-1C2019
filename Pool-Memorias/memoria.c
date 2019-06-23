@@ -993,7 +993,7 @@ void cargarConfiguracion() {
 		if (config_has_property(configFile, "RETARDO_JOURNAL")) {
 
 			arc_config->retardo_journal = config_get_int_value(configFile,
-					"RETARDO_MEM");
+					"RETARDO_JOURNAL");
 			log_info(log_memoria,
 					"[CONFIGURANDO MODULO] RETARDO DEL JOURNALING: %d",
 					arc_config->retardo_journal);
@@ -1053,7 +1053,8 @@ void cargarConfiguracion() {
  *-----------------------------------------------------*/
 
 void JOURNAL() {
-	log_info(log_memoria, "[JOURNAL] EN JOURNAL");
+//	log_info(log_memoria, "[JOURNAL] EN JOURNAL");
+	imprimirAviso(log_memoria, "\n\nREALIZANDO JOURNAL\n\n");
 //	char* datosAPasar=NULL;
 	datosJournal* journalAPasar;
 	journalAPasar = obtener_todos_journal();
@@ -1071,6 +1072,14 @@ void JOURNAL() {
 	mutexBloquear(&mutex_bloquear_select_por_limpieza);
 	limpiezaGlobalDeMemoriaYSegmentos();
 	mutexDesbloquear(&mutex_bloquear_select_por_limpieza);
+	if(activo_retardo_journal){
+		pthread_mutex_unlock(&JOURNALHecho);
+		printf("\nREINICIO HILO JOURNAL\n");
+//		pthread_cancel(journalHilo);
+//		pthread_cancel(journalHilo);
+	//	pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
+//		pthread_detach(journalHilo);
+	}
 }
 
 int pasarValoresALisandra(datosJournal* datos){
@@ -1084,6 +1093,7 @@ void procesoJournal(){
 	mutexBloquear(&JOURNALHecho);
 	hiloCancelar(journalHilo);
 	log_info(log_memoria, "[procesoJournal] Memoria esta full, procedo a hacer Journal");
+	printf("EN PROCESO JOURNAL\n\n");
 //	retardo_journal(arc_config->retardo_journal);
 	JOURNAL();
 	log_info(log_memoria, "[procesoJournal] JOURNAL REALIZADO, PROCEDO A REINICIAR EL HILO JOURNAL");

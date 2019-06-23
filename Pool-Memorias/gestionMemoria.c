@@ -1147,14 +1147,14 @@ int LRU(
 
 	if(candidatoAQuitar<0){
 				free(nombreTablaQueDeboBuscar);
-				printf("\nLINEA 1079 LRU: Se activo JOURNAL\n");
+				printf("\FULL MEMORIA: Se activo JOURNAL\n");
 				log_info(log_memoria, "[LRU sin candidato] NO hay nada que se puede quitar, por lo tanto se fuerza un JOURNAL");
-				mutexDesbloquear(&ACCIONLRU);
-				return -1;
-	//			procesoJournal();
-	//			log_info(log_memoria, "[LRU sin candidato] JOURNAL HECHO, lo asigno a la primera posicion");
-	//			paginaCreada->nroPosicion=0;
-	//			asignarNuevaPaginaALaPosicion(0, paginaCreada, valor, flag_modificado, nombreTabla);
+
+
+				procesoJournal();
+			//	log_info(log_memoria, "[LRU sin candidato] JOURNAL HECHO, lo asigno a la primera posicion");
+			//	paginaCreada->nroPosicion=0;
+			//	asignarNuevaPaginaALaPosicion(0, paginaCreada, valor, flag_modificado, nombreTabla);
 			} else {
 				log_info(log_memoria, "[LRU con candidato] Pondre la pagina en la posicion a reemplazar: %d", candidatoAQuitar);
 	//			paginaCreada->nroPosicion=candidatoAQuitar;
@@ -1387,6 +1387,13 @@ void modificar_bloque_LRU(char* nombreTabla, double timestamp, int nroPosicion, 
 					strlen(nombreTabla)+1);
 		memcpy(nombreDeTabla, bloque_LRU+nroPosicion*desplazamiento+sizeof(nodoLRU),
 						tamanioPredefinidoParaNombreTabla);
+		if(verificarSiEstaFUll()){
+			imprimirAviso(log_memoria,
+					"\n--------------------------------------------------------------------"
+					"MEMORIA FULL, SE DEBE REALIZAR 1 JOURNAL SI SE INGRESA ALGO NUEVO"
+					"--------------------------------------------------------------------\n"
+					);
+		}
 		/*
 		printf("\n\n\nNOMBRE TABLA INGRESADA: <<<%s>>>", nombreTabla);
 		char* auxnombre = malloc(tamanioPredefinidoParaNombreTabla);
@@ -1426,6 +1433,24 @@ void modificar_bloque_LRU(char* nombreTabla, double timestamp, int nroPosicion, 
 //	free(nuevoNodo->nombreTabla);
 	free(nuevoNodo);
 //	mutexDesbloquear(&LRUMutex);
+}
+
+bool verificarSiEstaFUll(){
+	int i = 0;
+	nodoLRU* nuevoNodo = malloc(sizeof(nodoLRU));
+	int desplazamiento = sizeof(nodoLRU)+tamanioPredefinidoParaNombreTabla;
+	log_info(log_memoria, "[VERIFICANDO SI ESTA FULL] ENTRANDO");
+	for(i=0;i<cantPaginasTotales;i++){
+		memcpy(nuevoNodo, bloque_LRU+i*desplazamiento, sizeof(nodoLRU));
+		if(nuevoNodo->estado == 0){
+			log_info(log_memoria, "[VERIFICANDO SI ESTA FULL] 1 NOdo no fue modificado por lo tanto no esta FULL\n");
+			free(nuevoNodo);
+			return false;
+		}
+	}
+	free(nuevoNodo);
+	log_info(log_memoria, "[VERIFICANDO SI ESTA FULL] Esta FULL\n");
+	return true;
 }
 
 /*-----------------------------------------------------

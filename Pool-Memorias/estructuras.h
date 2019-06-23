@@ -25,6 +25,7 @@
 
 pthread_t journalHilo;
 
+
 t_log* log_memoria;
 FILE* tablas_fp;
 t_bitarray* bitmap;
@@ -55,6 +56,9 @@ pthread_mutex_t mutex_drop;
 pthread_mutex_t mutex_info_request;
 
 pthread_mutex_t mutex_bloquear_select_por_limpieza;
+
+//RETARDO JOURNAL
+bool activo_retardo_journal;
 
 
 //Semaforo paginasSinUsar; //TIENE CAPACIDAD HASTA PARA cantPaginasTotales

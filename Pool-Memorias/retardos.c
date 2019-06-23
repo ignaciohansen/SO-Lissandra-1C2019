@@ -32,10 +32,12 @@ void retardo_gossiping(int milisegundos){
 
 void retardo_journal(int milisegundos){
 	while(1){
-		pthread_mutex_lock(&mutex_retardo_journal);
+		printf("\n\nPROXIMO JOURNAL EN %d milisegundos\n\n>",milisegundos);
+		activo_retardo_journal=false;
 		usleep(milisegundos*1000);
 		//LUEGO DE ESTO EMPIEZA UN JOURNAL;
+		pthread_mutex_lock(&JOURNALHecho);
+		activo_retardo_journal = true;
 		JOURNAL();
-		pthread_mutex_unlock(&mutex_retardo_journal);
 	}
 }
