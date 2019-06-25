@@ -14,6 +14,7 @@
 #include "parser.h"
 #include "memoria.h"
 #include "gestionMemoria.h"
+//#include "../Biblioteca/src/Inotify.c"
 
 int conectar_a_lfs(void);
 int levantar_servidor_memoria(void);
@@ -65,13 +66,15 @@ int main(void)
 	system(cmd_cliente);
 #endif
 
-	pthread_t servidor_h, consola_h, gossiping_h;
+	pthread_t servidor_h, consola_h, gossiping_h, inotify_c;
 	id_com_t mi_id = MEMORIA;
 
 #ifdef EJECUTAR_GOSSIPING
 	inicializar_gossiping_memoria();
 	iniciar_hilo_gossiping(&mi_id,&gossiping_h);
 #endif
+//	pthread_create(&inotify_c,NULL, inotifyAutomatico,PATH_MEMORIA_CONFIG);
+//	pthread_detach(inotify_c);
 
 	pthread_create(&servidor_h,NULL,(void *)hilo_servidor,&socket_servidor);
 	pthread_detach(servidor_h);

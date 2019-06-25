@@ -169,6 +169,13 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 			nombreTabla, keyBuscada);
 	mutexBloquear(&JOURNALHecho);
 	mutexDesbloquear(&JOURNALHecho);
+	log_info(log_memoria, "[INSERT] Verifico si debo realizar LRU");
+	mutexBloquear(&verificarSiBitmapLleno);
+	if(bitmapLleno()){
+		log_info(log_memoria, "[INSERT] Debo realizar un LRU");
+		LRU();
+	}
+	mutexDesbloquear(&verificarSiBitmapLleno);
 	int posicionAIr =
 			buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(nombreTabla, keyBuscada,
 															&segmentoBuscado);
@@ -176,16 +183,7 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 	if(posicionAIr==-1){
 		log_info(log_memoria, "[INSERT] NO se encontro la posicion a donde debo ir");
 		log_info(log_memoria, "[INSERT] Verifico 1* si esta FULL memoria");
-		if(bitmapLleno()){
-			log_info(log_memoria, "[INSERT] Debo realizar un LRU");
-			if(!LRU()){
-				//ERROR
-				log_info(log_memoria, "[INSERT] JOURNAL SOLICITADO, NECESITO AUTORIZACION DE KERNEL");
-				return -1;
-			}
-			return 1;
 
-		}
 		//CASO B, verifico si se encontro el segmento, caso contrario debo tambien crearlo
 		if(segmentoBuscado==NULL){
 			insertCrearPaginaConNuevoSegmento(nombreTabla, keyBuscada,
@@ -1127,7 +1125,7 @@ void tabla_pagina_crear(
 	return;
 }
 
-int LRU(
+void LRU(
 		/*
 	 	pagina* paginaCreada, int* nroAsignado, char* valor, bool flag_modificado,
 		char* nombreTabla
@@ -1147,7 +1145,7 @@ int LRU(
 
 	if(candidatoAQuitar<0){
 				free(nombreTablaQueDeboBuscar);
-				printf("\FULL MEMORIA: Se activo JOURNAL\n");
+				imprimirAviso(log_memoria, "\n\nJOURNAL FORZOSO ACTIVADO\n\n");
 				log_info(log_memoria, "[LRU sin candidato] NO hay nada que se puede quitar, por lo tanto se fuerza un JOURNAL");
 
 
@@ -1175,7 +1173,7 @@ int LRU(
 				log_info(log_memoria, "[LRU con candidato] LRU TERMINADO");
 			}
 	mutexDesbloquear(&ACCIONLRU);
-	return 1;
+	return;
 }
 
 void limpiar_todos_los_elementos_de_1_segmento(segmento* segmentoABorrar){

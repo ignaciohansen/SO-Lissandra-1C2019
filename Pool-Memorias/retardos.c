@@ -31,8 +31,8 @@ void retardo_gossiping(int milisegundos){
 }
 
 void retardo_journal(int milisegundos){
-//	while(1){
-		printf("\n\nPROXIMO JOURNAL EN %d milisegundos\n\n>",milisegundos);
+	while(1){
+		imprimirAviso1(log_memoria, "\n\nPROXIMO JOURNAL EN %d milisegundos\n\n>",milisegundos);
 		activo_retardo_journal=false;
 		usleep(milisegundos*1000);
 		//LUEGO DE ESTO EMPIEZA UN JOURNAL;
@@ -40,8 +40,10 @@ void retardo_journal(int milisegundos){
 	//	memcpy(journalAutomatico, "**********JOURNAL AUTOMATICO ACTIVADO**********\n\n", strlen("**********JOURNAL AUTOMATICO ACTIVADO**********\n\n")+1);
 
 		pthread_mutex_lock(&JOURNALHecho);
+		mutexBloquear(&verificarSiBitmapLleno);
 		activo_retardo_journal = true;
 		JOURNAL();
-		retardo_journal(milisegundos);
-//	}
+		mutexDesbloquear(&verificarSiBitmapLleno);
+	//	retardo_journal(milisegundos);
+	}
 }

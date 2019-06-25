@@ -57,6 +57,8 @@ pthread_mutex_t mutex_info_request;
 
 pthread_mutex_t mutex_bloquear_select_por_limpieza;
 
+pthread_mutex_t verificarSiBitmapLleno;
+
 //RETARDO JOURNAL
 bool activo_retardo_journal;
 
