@@ -14,7 +14,7 @@
 #include "parser.h"
 #include "memoria.h"
 #include "gestionMemoria.h"
-//#include "../Biblioteca/src/Inotify.c"
+#include "../Biblioteca/src/Inotify.h"
 
 int conectar_a_lfs(void);
 int levantar_servidor_memoria(void);
@@ -73,18 +73,18 @@ int main(void)
 	inicializar_gossiping_memoria();
 	iniciar_hilo_gossiping(&mi_id,&gossiping_h);
 #endif
-//	pthread_create(&inotify_c,NULL, inotifyAutomatico,PATH_MEMORIA_CONFIG);
-//	pthread_detach(inotify_c);
 
 	pthread_create(&servidor_h,NULL,(void *)hilo_servidor,&socket_servidor);
 	pthread_detach(servidor_h);
 
-
+	char* path_de_memoria = malloc(strlen(PATH_MEMORIA_CONFIG)+1);
+	strcpy(path_de_memoria, PATH_MEMORIA_CONFIG);
+	pthread_create(&inotify_c,NULL, inotifyAutomatico,path_de_memoria);
 
 
 	pthread_create(&consola_h,NULL,(void *)hilo_consola,&socket_lfs);
 //pthread_detach(journalHilo);
-
+	pthread_detach(inotify_c);
 	pthread_join(consola_h,NULL);
 
 	//ESTO ESTA MAL, PERO QUIERO VER SI FUNCA LO MIO
