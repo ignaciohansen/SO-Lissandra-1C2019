@@ -418,7 +418,7 @@ char* resolver_pedido(request_t req, int socket_lfs)
 			pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
 			pthread_detach(journalHilo);
 			mutexDesbloquear(&JOURNALHecho);
-		//	pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
+
 
 			break;
 		default:
