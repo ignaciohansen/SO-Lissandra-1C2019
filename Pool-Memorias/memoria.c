@@ -381,7 +381,7 @@ void inicioLogYConfig() {
 
 /*-----------------------------------------------------------------------------
  * MEMORIA PRINCIPAL
- *-----------------------------------------------------------------------------*/
+ *--------------------------------------------------verificarSiBitmapLleno---------------------------*/
 
 void iniciarSemaforosYMutex() {
 	log_info(log_memoria, "[SEMAFOROS] Iniciando semaforos y mutexs");
@@ -408,6 +408,8 @@ void iniciarSemaforosYMutex() {
 		mutexIniciar(&mutex_retardo_journal);
 
 	mutexIniciar(&mutex_bloquear_select_por_limpieza);
+
+	mutexIniciar(&verificarSiBitmapLleno);
 
 //	iniciarSemaforosRetados();
 

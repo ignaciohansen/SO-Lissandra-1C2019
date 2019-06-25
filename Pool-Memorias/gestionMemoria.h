@@ -132,7 +132,7 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteVa
  */
 
 
-	int LRU(
+	void LRU(
 	/*		pagina* paginaCreada, int* nroAsignado,
 			char* value, bool flag_modificado,	char* nombreTabla
 			*/
