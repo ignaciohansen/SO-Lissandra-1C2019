@@ -36,12 +36,12 @@ int main() {
 
 	pthread_t* hiloListening, hiloConsola, hiloEjecutor, hiloDump;
 	pthread_create(&hiloConsola, NULL, (void*) consola, NULL);
-	pthread_create(&hiloListening, NULL, (void*) listenSomeLQL, NULL);
+//	pthread_create(&hiloListening, NULL, (void*) listenSomeLQL, NULL);
 	pthread_create(&hiloDump, NULL, (void*) esperarTiempoDump, NULL);
 
 	//pthread_create(&hiloEjecutor , NULL,(void*) consola, NULL);
 
-	pthread_join(hiloListening, NULL);
+//	pthread_join(hiloListening, NULL);
 	pthread_join(hiloConsola, NULL);
 	pthread_join(hiloDump, NULL);
 
@@ -327,7 +327,8 @@ t_bitarray* crearBitarray() {
 
 	fwrite(bitarrayAux, bytesAEscribir, 1, archivoBitmap);
 
-	imprimirMensajeProceso("[BITMAP CREADO] ya se puede operar con los bloques");
+	imprimirMensajeProceso(
+			"[BITMAP CREADO] ya se puede operar con los bloques");
 
 	return bitarray_create_with_mode(bitarrayAux, bytesAEscribir, MSB_FIRST);
 
@@ -454,15 +455,16 @@ void consola() {
 
 void menu() {
 
-	printf("Los comandos que se pueden ingresar son: \n"
-			"COMANDOS [ARGUMENTOS] (* -> opcional) \n"
-			"insert [TABLA] [KEY] [VALUE] [TIMESTAMP]* \n"
-			"select [TABLA] [KEY]\n"
-			"create [TABLA] [TIPO_CONSISTENCIA] [NRO_PARTICION] [TIEMPO_COMPACTACION]\n"
-			"describe [TABLA]*\n"
-			"drop [TABLA]\n"
-			"SALIR \n"
-			"\n");
+	printf(
+			"Los comandos que se pueden ingresar son: \n"
+					"COMANDOS [ARGUMENTOS] (* -> opcional) \n"
+					"insert [TABLA] [KEY] [VALUE] [TIMESTAMP]* \n"
+					"select [TABLA] [KEY]\n"
+					"create [TABLA] [TIPO_CONSISTENCIA] [NRO_PARTICION] [TIEMPO_COMPACTACION]\n"
+					"describe [TABLA]*\n"
+					"drop [TABLA]\n"
+					"SALIR \n"
+					"\n");
 
 }
 
@@ -1027,41 +1029,42 @@ void crearArchivoTemporal(char* path, char* tabla) {
 
 	// path objetivo: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA/cantidad_de_dumps.tmp
 
-	int posicion = 1;//obtenerPrimerBloqueLibreBitmap();
+	int posicion = 1; //obtenerPrimerBloqueLibreBitmap();
 	if (posicion >= 0) {
 		//ocuparBloqueLibreBitmap(posicion);
 		FILE* temporal;
 		temporal = fopen(path, "w");
 		log_info(logger, "creamos el archivo, ahora  lo llenamos");
-		t_list* listaRegistrosTabla;
-		listaRegistrosTabla = list_create();
-		listaRegistrosTabla = dictionary_get(memtable, tabla);
-		int tam = list_size(listaRegistrosTabla);
-		log_info(logger, "tamanio de registros insertados en esa tabla: %d",
-				tam);
+		//t_list* listaRegistrosTabla;
+		//listaRegistrosTabla = list_create();
+		t_list* listaRegistrosTabla = dictionary_get(memtable, tabla);
+		int cantidad_registros = list_size(listaRegistrosTabla);
+		log_info(logger, "cantidad de registros insertados en esa tabla: %d",
+				cantidad_registros);
 
-		char *lineaTemporal = malloc(sizeof(char) * 50);
-		lineaTemporal = string_new();
+		char *registroAInsertar = malloc(sizeof(char) * 100); //configFile->tamanio_value + sizeof(u_int16_t) + sizeof(double)
+		registroAInsertar = string_new();
 		t_registroMemtable* registro;
 
-		for (int i = 0; i < tam; i++) {
+		for (int i = 0; i < cantidad_registros; i++) {
 
 			registro = list_get(listaRegistrosTabla, i);
-			string_append(&lineaTemporal, "timestamp");
-			string_append(&lineaTemporal, ";");
-			string_append(&lineaTemporal, "key");
-			string_append(&lineaTemporal, ";");
-			string_append(&lineaTemporal, registro->value);
-			string_append(&lineaTemporal, "\n");
-			log_info(logger, "linea a insertar en el tmp: %s", lineaTemporal);
-			fputs(lineaTemporal, temporal);
+			string_append(&registroAInsertar, "timestamp");
+			string_append(&registroAInsertar, ";");
+			string_append(&registroAInsertar, "key");
+			string_append(&registroAInsertar, ";");
+			string_append(&registroAInsertar, registro->value);
+			string_append(&registroAInsertar, "\n");
+			log_info(logger, "linea a insertar en el tmp: %s",
+					registroAInsertar);
+			fputs(registroAInsertar, temporal);
 
 		}
 		fclose(temporal);
 		//free(lineaTemporal);
-	}
-	else{
-		log_error(logger, "No se pudo realizar el dump pq no hay lugar en el bitmap");
+	} else {
+		log_error(logger,
+				"No se pudo realizar el dump pq no hay lugar en el bitmap");
 	}
 }
 
@@ -1527,59 +1530,61 @@ void comandoInsert(char* tabla, char* key, char* value, char* timestamp) {
 			if (tablaRepetida) {
 				log_info(logger, "Encontre una tabla repetida");
 
-				listaRegistrosMemtable = dictionary_get(memtable, tabla);
+				t_list* tableRegisters =
+						dictionary_get(memtable, tabla);
 
 				//list_add(listaRegistrosMemtable,registroPorAgregar);
-				list_add(listaRegistrosMemtable, registroPorAgregarE);
+				list_add(tableRegisters, registroPorAgregarE);
 
-				dictionary_put(memtable, tabla, listaRegistrosMemtable);
+				//dictionary_put(memtable, tabla, listaRegistrosMemtable);
 
 			} else {
 
-				list_clean(listaRegistrosMemtable);
+				//list_clean(listaRegistrosMemtable);
 
 				//list_add(listaRegistrosMemtable,registroPorAgregar);
-				list_add(listaRegistrosMemtable, registroPorAgregarE);
+				t_list* listaAux = list_create();
+				list_add(listaAux, registroPorAgregarE);
 
-				dictionary_put(memtable, tabla, listaRegistrosMemtable);
+				dictionary_put(memtable, tabla, listaAux);
 
 			}
 
 			// Lista utilizada para ver despues las keys a dumpear
-			char* aux = malloc(strlen(tabla) +1);
+			char* aux = malloc(strlen(tabla) + 1);
 			strcpy(aux, tabla);
 			list_add(listaTablasInsertadas, tabla);
 
-			t_list* resultado = dictionary_get(memtable, tabla);
-
-			log_info(logger, "Registros agregados en el diccionario");
-
-			t_registroMemtable* elementoDiccionario;
-
-			for (int i = 0; i < list_size(resultado); i++) {
-
-				//void* elementoDiccionario = list_get(resultado, i);
-				//log_info(logger,"Elementos ingresados en el diccionario %s",elementoDiccionario);
-
-				elementoDiccionario = list_get(resultado, i);
-
-				log_info(logger, "Tamaño del registro = %d ",
-						elementoDiccionario->tam_registro);
-				log_info(logger, "Value = %s ", elementoDiccionario->value);
-				log_info(logger, "Timestamp = %f ",
-						elementoDiccionario->timestamp);
-				log_info(logger, "Key = %x ", elementoDiccionario->key);
-
-			}
-
-			int i = dictionary_size(memtable);
-
-			log_info(logger, "cantidad de tablas memtable: %d", i);
+//			t_list* resultado = dictionary_get(memtable, tabla);
+//
+//			log_info(logger, "Registros agregados en el diccionario");
+//
+//			t_registroMemtable* elementoDiccionario;
+//
+//			for (int i = 0; i < list_size(resultado); i++) {
+//
+//				//void* elementoDiccionario = list_get(resultado, i);
+//				//log_info(logger,"Elementos ingresados en el diccionario %s",elementoDiccionario);
+//
+//				elementoDiccionario = list_get(resultado, i);
+//
+//				log_info(logger, "Tamaño del registro = %d ",
+//						elementoDiccionario->tam_registro);
+//				log_info(logger, "Value = %s ", elementoDiccionario->value);
+//				log_info(logger, "Timestamp = %f ",
+//						elementoDiccionario->timestamp);
+//				log_info(logger, "Key = %x ", elementoDiccionario->key);
+//
+//			}
+//
+//			int i = dictionary_size(memtable);
+//
+//			log_info(logger, "cantidad de tablas memtable: %d", i);
 
 			/*free(valueDesenmascarado);
-			free(registroPorAgregarE);
-			free(resultado);
-			free(elementoDiccionario);*/
+			 free(registroPorAgregarE);
+			 free(resultado);
+			 free(elementoDiccionario);*/
 		}
 
 	}
