@@ -1058,7 +1058,7 @@ void JOURNAL() {
 //	char* datosAPasar=NULL;
 	datosJournal* journalAPasar;
 	journalAPasar = obtener_todos_journal();
-	log_info(log_memoria, "[JOURNAL] PROCEDO A ENVIAR LA INFORAMCION A LISANDRA");
+	log_info(log_memoria, "[JOURNAL] PROCEDO A ENVIAR LA INFORMACION A LISANDRA");
 
 	log_info(log_memoria, "[JOURNAL] ENVIO EL MENSAJE A LISANDRA");
 	pasarValoresALisandra(journalAPasar);
@@ -1073,8 +1073,11 @@ void JOURNAL() {
 	limpiezaGlobalDeMemoriaYSegmentos();
 	mutexDesbloquear(&mutex_bloquear_select_por_limpieza);
 	if(activo_retardo_journal){
+		fprintf(tablas_fp,"\nEjecutado comando 1 JOURNAL AUTOMATICO");
+		activo_retardo_journal=false;
+		loggearEstadoActual(tablas_fp);
 		pthread_mutex_unlock(&JOURNALHecho);
-		printf("\nREINICIO HILO JOURNAL\n");
+		printf("\nHILO JOURNAL HECHO, VUELVO A REALIZARLO\n");
 //		pthread_cancel(journalHilo);
 //		pthread_cancel(journalHilo);
 	//	pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
@@ -1097,6 +1100,7 @@ void procesoJournal(){
 //	retardo_journal(arc_config->retardo_journal);
 	JOURNAL();
 	log_info(log_memoria, "[procesoJournal] JOURNAL REALIZADO, PROCEDO A REINICIAR EL HILO JOURNAL");
+	pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
 	hiloDetach(journalHilo);
 	mutexDesbloquear(&JOURNALHecho);
 }

@@ -160,15 +160,15 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 	mutexBloquear(&ACCIONLRU);
 	mutexDesbloquear(&ACCIONLRU);
 
-	mutexBloquear(&JOURNALHecho);
-	mutexDesbloquear(&JOURNALHecho);
+
 
 	log_info(log_memoria, "[INSERT] EN funcion INSERT");
 	segmento* segmentoBuscado = NULL;
 	pagina_referenciada* ref = malloc(sizeof(pagina_referenciada));
 	log_info(log_memoria, "[INSERT] Me pongo a buscar el segmento y la tabla en base a '%s' y '%d'",
 			nombreTabla, keyBuscada);
-
+	mutexBloquear(&JOURNALHecho);
+	mutexDesbloquear(&JOURNALHecho);
 	int posicionAIr =
 			buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(nombreTabla, keyBuscada,
 															&segmentoBuscado);

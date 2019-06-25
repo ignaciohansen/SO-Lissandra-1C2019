@@ -81,13 +81,12 @@ int main(void)
 
 	pthread_create(&consola_h,NULL,(void *)hilo_consola,&socket_lfs);
 //pthread_detach(journalHilo);
-	pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
-		pthread_detach(journalHilo);
+
 	pthread_join(consola_h,NULL);
 
-	pthread_kill(servidor_h, SIGKILL);
-	pthread_kill(gossiping_h, SIGKILL);
-	pthread_kill(journalHilo, SIGKILL);
+	//ESTO ESTA MAL, PERO QUIERO VER SI FUNCA LO MIO
+//	pthread_cancel(servidor_h, SIGKILL);
+//	pthread_cancel(gossiping_h, SIGKILL);
 
 	liberar_todo_por_cierre_de_modulo();
 
@@ -161,7 +160,8 @@ void* hilo_consola(int * socket_p){
 	imprimirAviso(log_memoria,"[CONSOLA] Entrando a hilo consola");
 	using_history();
 	imprimirPorPantallaTodosLosComandosDisponibles();
-
+	pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
+	pthread_detach(journalHilo);
 	while(!fin){
 		linea_leida=readline("\n>");
 		if(linea_leida)
@@ -404,6 +404,9 @@ char* resolver_pedido(request_t req, int socket_lfs)
 			}
 			break;
 		case JOURNALCOMANDO:
+			mutexBloquear(&JOURNALHecho);
+			pthread_cancel(journalHilo);
+
 			imprimirMensaje(log_memoria,"\n\n[RESOLVIENDO PEDIDO] Voy a resolver JOURNAL\n\n");
 			if(resolver_journal(socket_lfs,req) != -1){
 				imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] JOURNAL hecho correctamente");
@@ -412,6 +415,11 @@ char* resolver_pedido(request_t req, int socket_lfs)
 			else{
 				imprimirError(log_memoria,"[RESOLVIENDO PEDIDO] El JOURNAL no pudo realizarse");
 			}
+			pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
+			pthread_detach(journalHilo);
+			mutexDesbloquear(&JOURNALHecho);
+		//	pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
+
 			break;
 		default:
 			break;
