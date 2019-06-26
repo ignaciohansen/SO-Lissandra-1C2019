@@ -21,10 +21,10 @@
 #define PATH_BIN ".bin"
 #define PATH_TMP ".tmp"
 #define PATH_BLOQUES "/Bloques/"
-#define PATH_LFILESYSTEM_CONFIG "../Config/LFS_CONFIG.txt"
+#define PATH_LFILESYSTEM_CONFIG "/home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Config/LFS_CONFIG.txt"
 #define PATH_LFILESYSTEM_METADATA "/Metadata/Metadata"
 #define PATH_LFILESYSTEM_BITMAP "/Metadata/Bitmap.bin"
-#define LOG_PATH "../Log/LOG_LFS.txt"
+#define LOG_PATH "/home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Log/LOG_LFS.txt"
 #define TABLE_PATH "/Tables/"
 
 #define atoa(x) #x
