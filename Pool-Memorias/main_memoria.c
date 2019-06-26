@@ -14,7 +14,7 @@
 #include "parser.h"
 #include "memoria.h"
 #include "gestionMemoria.h"
-#include "../Biblioteca/src/Inotify.h"
+#include "Inotify.h"
 
 int conectar_a_lfs(void);
 int levantar_servidor_memoria(void);

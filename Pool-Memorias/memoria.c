@@ -881,7 +881,7 @@ void escucharConexionKernel() {
  * FUNCIONALIDADES PARA LA CARGA DE LA CONFIGURACION Y EL LOG
  *-----------------------------------------------------------------------------*/
 void cargarConfiguracion() {
-
+	printf("\n\n**********CARGANDO CONFIGURACION**********\n\n");
 	log_info(log_memoria, "[CONFIGURANDO MODULO] RESERVAR MEMORIA.");
 	arc_config = malloc(sizeof(t_memoria_config));
 

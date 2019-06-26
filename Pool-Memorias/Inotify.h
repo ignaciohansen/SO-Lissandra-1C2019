@@ -8,12 +8,9 @@
 #ifndef INOTIFY_H_
 #define INOTIFY_H_
 
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <sys/types.h>
 #include <sys/inotify.h>
+
+//void inotifyAutomatico(char* pathDelArchivoAEscuchar);
 
 // El tamaño de un evento es igual al tamaño de la estructura de inotify
 // mas el tamaño maximo de nombre de archivo que nosotros soportemos
