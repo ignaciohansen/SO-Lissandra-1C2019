@@ -972,27 +972,29 @@ void esperarTiempoDump() {
 
 		sleep(15);
 		log_info(logger, "Es tiempo de dump, hay cosas en la memtable?");
-		if (dictionary_size(memtable) > 0) {
+		if (list_size(listaTablasInsertadas) > 0) {
 			log_info(logger, "Se encontraron cosas, se hace el dump");
 			realizarDump();
 			cantidad_de_dumps++;
 		} else {
 			log_info(logger, "La memtable esta vacia");
 		}
-		log_info(logger, "Se limpia diccionario");
-		dictionary_clean(memtable);
+
 
 	}
 
 }
 
 void realizarDump() {
-	for (int i = 0; i < dictionary_size(memtable); i++) {
+	for (int i = 0; i < list_size(listaTablasInsertadas); i++) {
 		char* tabla = list_get(listaTablasInsertadas, i);
 		log_info(logger, "la tabla insertada en la memtable es %s", tabla);
 		char* path = armarPathTablaParaDump(tabla, cantidad_de_dumps);
 		crearArchivoTemporal(path, tabla);
 	}
+	log_info(logger, "Se limpia diccionario y la listaTablasInsertadas");
+	dictionary_clean(memtable);
+	list_clean(listaTablasInsertadas);
 }
 
 char* armarPathTablaParaDump(char* tabla, int dumps) {
@@ -1044,11 +1046,11 @@ void crearArchivoTemporal(char* path, char* tabla) {
 
 		char *registroAInsertar = malloc(sizeof(char) * 100); //configFile->tamanio_value + sizeof(u_int16_t) + sizeof(double)
 		registroAInsertar = string_new();
-		t_registroMemtable* registro;
+		//t_registroMemtable* registro;
 
 		for (int i = 0; i < cantidad_registros; i++) {
 
-			registro = list_get(listaRegistrosTabla, i);
+			t_registroMemtable* registro = list_get(listaRegistrosTabla, i);
 			string_append(&registroAInsertar, "timestamp");
 			string_append(&registroAInsertar, ";");
 			string_append(&registroAInsertar, "key");
@@ -1057,9 +1059,9 @@ void crearArchivoTemporal(char* path, char* tabla) {
 			string_append(&registroAInsertar, "\n");
 			log_info(logger, "linea a insertar en el tmp: %s",
 					registroAInsertar);
-			fputs(registroAInsertar, temporal);
 
 		}
+		fputs(registroAInsertar, temporal);
 		fclose(temporal);
 		//free(lineaTemporal);
 	} else {
