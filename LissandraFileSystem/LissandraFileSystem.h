@@ -188,6 +188,8 @@ u_int16_t key;
 int timestamp_inicio;
 int cantidad_de_dumps = 0;
 int dumps_a_dividir =1;
+int indiceTablaParaTamanio;
+int tamanioRegistros[];
 
 void esperarTiempoDump();
 char* armarPathTablaParaDump(char* tabla,int dumps);

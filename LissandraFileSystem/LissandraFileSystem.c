@@ -988,9 +988,11 @@ void esperarTiempoDump() {
 void realizarDump() {
 	for (int i = 0; i < list_size(listaTablasInsertadas); i++) {
 		char* tabla = list_get(listaTablasInsertadas, i);
+		indiceTablaParaTamanio = i;
 		log_info(logger, "la tabla insertada en la memtable es %s", tabla);
 		char* path = armarPathTablaParaDump(tabla, cantidad_de_dumps);
 		crearArchivoTemporal(path, tabla);
+		tamanioRegistros[i] = 0;
 	}
 	log_info(logger, "Se limpia diccionario y la listaTablasInsertadas");
 	dictionary_clean(memtable);
@@ -1032,7 +1034,7 @@ void crearArchivoTemporal(char* path, char* tabla) {
 	// path objetivo: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA/cantidad_de_dumps.tmp
 
 	int posicion = 1; //obtenerPrimerBloqueLibreBitmap();
-	if (posicion >= 0) {
+	if (posicion == 1) {
 		//ocuparBloqueLibreBitmap(posicion);
 		FILE* temporal;
 		temporal = fopen(path, "w");
@@ -1051,19 +1053,20 @@ void crearArchivoTemporal(char* path, char* tabla) {
 		for (int i = 0; i < cantidad_registros; i++) {
 
 			t_registroMemtable* registro = list_get(listaRegistrosTabla, i);
+			tamanioRegistros[indiceTablaParaTamanio] += registro->tam_registro;
 			string_append(&registroAInsertar, "timestamp");
 			string_append(&registroAInsertar, ";");
 			string_append(&registroAInsertar, "key");
 			string_append(&registroAInsertar, ";");
 			string_append(&registroAInsertar, registro->value);
 			string_append(&registroAInsertar, "\n");
-			log_info(logger, "linea a insertar en el tmp: %s",
-					registroAInsertar);
 
 		}
+		log_info(logger, "Tamanio total de los registros de la %s es: %d",tabla,tamanioRegistros[indiceTablaParaTamanio]);
+		log_info(logger, "Datos a insertar en el tmp: \n%s",registroAInsertar);
 		fputs(registroAInsertar, temporal);
 		fclose(temporal);
-		//free(lineaTemporal);
+		free(registroAInsertar);
 	} else {
 		log_error(logger,
 				"No se pudo realizar el dump pq no hay lugar en el bitmap");
@@ -1549,13 +1552,14 @@ void comandoInsert(char* tabla, char* key, char* value, char* timestamp) {
 				list_add(listaAux, registroPorAgregarE);
 
 				dictionary_put(memtable, tabla, listaAux);
+				list_add(listaTablasInsertadas, tabla);
 
 			}
 
 			// Lista utilizada para ver despues las keys a dumpear
 			char* aux = malloc(strlen(tabla) + 1);
 			strcpy(aux, tabla);
-			list_add(listaTablasInsertadas, tabla);
+
 
 //			t_list* resultado = dictionary_get(memtable, tabla);
 //
