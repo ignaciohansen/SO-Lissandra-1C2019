@@ -109,6 +109,8 @@ typedef struct{
 t_metadata_LFS* metadataLFS;
 
 sem_t semaforoQueries;
+Mutex memtable_mx;
+Mutex listaTablasInsertadas_mx;
 
 t_dictionary* memtable;
 t_list * listaTablasInsertadas;

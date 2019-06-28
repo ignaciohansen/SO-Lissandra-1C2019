@@ -28,6 +28,8 @@ int main() {
 	pantallaLimpiar();
 
 	sem_init(&semaforoQueries, 0, 1);
+	mutexIniciar(&memtable_mx);
+	mutexIniciar(&listaTablasInsertadas_mx);
 	list_queries = list_create();
 
 	LisandraSetUP(); // CONFIGURACION Y SETEO SOCKET
@@ -970,9 +972,12 @@ void esperarTiempoDump() {
 
 	while (true) {
 
-		sleep(15);
+		sleep(2);
 		log_info(logger, "Es tiempo de dump, hay cosas en la memtable?");
-		if (list_size(listaTablasInsertadas) > 0) {
+		mutexBloquear(&listaTablasInsertadas_mx);
+		int tam = list_size(listaTablasInsertadas);
+		mutexDesbloquear(&listaTablasInsertadas_mx);
+		if (tam > 0) {
 			log_info(logger, "Se encontraron cosas, se hace el dump");
 			realizarDump();
 			cantidad_de_dumps++;
@@ -986,7 +991,10 @@ void esperarTiempoDump() {
 }
 
 void realizarDump() {
-	for (int i = 0; i < list_size(listaTablasInsertadas); i++) {
+	mutexBloquear(&listaTablasInsertadas_mx);
+	int tam = list_size(listaTablasInsertadas);
+	mutexBloquear(&memtable_mx);
+	for (int i = 0; i < tam; i++) {
 		char* tabla = list_get(listaTablasInsertadas, i);
 		indiceTablaParaTamanio = i;
 		log_info(logger, "la tabla insertada en la memtable es %s", tabla);
@@ -996,7 +1004,9 @@ void realizarDump() {
 	}
 	log_info(logger, "Se limpia diccionario y la listaTablasInsertadas");
 	dictionary_clean(memtable);
+	mutexDesbloquear(&memtable_mx);
 	list_clean(listaTablasInsertadas);
+	mutexDesbloquear(&listaTablasInsertadas_mx);
 }
 
 char* armarPathTablaParaDump(char* tabla, int dumps) {
@@ -1048,7 +1058,6 @@ void crearArchivoTemporal(char* path, char* tabla) {
 
 		char *registroAInsertar = malloc(sizeof(char) * 100); //configFile->tamanio_value + sizeof(u_int16_t) + sizeof(double)
 		registroAInsertar = string_new();
-		//t_registroMemtable* registro;
 
 		for (int i = 0; i < cantidad_registros; i++) {
 
@@ -1508,84 +1517,34 @@ void comandoInsert(char* tabla, char* key, char* value, char* timestamp) {
 			t_registroMemtable* registroPorAgregarE = armarEstructura(
 					valueDesenmascarado, key, timestamp);
 
-			/*
-			 registroPorAgregar = malloc(string_length(key) + string_length(value) + string_length(timestamp));
-
-			 registroPorAgregar = string_new();
-
-
-			 string_append(&registroPorAgregar, timestamp);
-
-			 string_append(&registroPorAgregar, ";");
-
-			 string_append(&registroPorAgregar, key);
-
-			 string_append(&registroPorAgregar, ";");
-
-			 string_append(&registroPorAgregar, valueDesenmascarado);
-
-
-			 log_info(logger,"Se va a agregar el siguiente registro %s",registroPorAgregar);
-			 */
-
 			// Verifico que la key ya exista en el memtable, aca se hace el dump
+			mutexBloquear(&memtable_mx);
 			bool tablaRepetida = dictionary_has_key(memtable, tabla);
+			mutexDesbloquear(&memtable_mx);
 			log_info(logger, "valor tablaRepetida %d", tablaRepetida);
 
 			if (tablaRepetida) {
 				log_info(logger, "Encontre una tabla repetida");
 
-				t_list* tableRegisters =
-						dictionary_get(memtable, tabla);
-
-				//list_add(listaRegistrosMemtable,registroPorAgregar);
+				mutexBloquear(&memtable_mx);
+				t_list* tableRegisters = dictionary_get(memtable, tabla);
 				list_add(tableRegisters, registroPorAgregarE);
-
-				//dictionary_put(memtable, tabla, listaRegistrosMemtable);
+				mutexDesbloquear(&memtable_mx);
 
 			} else {
 
-				//list_clean(listaRegistrosMemtable);
-
-				//list_add(listaRegistrosMemtable,registroPorAgregar);
 				t_list* listaAux = list_create();
 				list_add(listaAux, registroPorAgregarE);
 
+				mutexBloquear(&memtable_mx);
 				dictionary_put(memtable, tabla, listaAux);
-				list_add(listaTablasInsertadas, tabla);
+				mutexDesbloquear(&memtable_mx);
+				mutexBloquear(&listaTablasInsertadas_mx);
+				list_add(listaTablasInsertadas, tabla); //puede llegar a romper, agregar un aux
+				mutexDesbloquear(&listaTablasInsertadas_mx);
 
 			}
 
-			// Lista utilizada para ver despues las keys a dumpear
-			char* aux = malloc(strlen(tabla) + 1);
-			strcpy(aux, tabla);
-
-
-//			t_list* resultado = dictionary_get(memtable, tabla);
-//
-//			log_info(logger, "Registros agregados en el diccionario");
-//
-//			t_registroMemtable* elementoDiccionario;
-//
-//			for (int i = 0; i < list_size(resultado); i++) {
-//
-//				//void* elementoDiccionario = list_get(resultado, i);
-//				//log_info(logger,"Elementos ingresados en el diccionario %s",elementoDiccionario);
-//
-//				elementoDiccionario = list_get(resultado, i);
-//
-//				log_info(logger, "Tamaño del registro = %d ",
-//						elementoDiccionario->tam_registro);
-//				log_info(logger, "Value = %s ", elementoDiccionario->value);
-//				log_info(logger, "Timestamp = %f ",
-//						elementoDiccionario->timestamp);
-//				log_info(logger, "Key = %x ", elementoDiccionario->key);
-//
-//			}
-//
-//			int i = dictionary_size(memtable);
-//
-//			log_info(logger, "cantidad de tablas memtable: %d", i);
 
 			/*free(valueDesenmascarado);
 			 free(registroPorAgregarE);
