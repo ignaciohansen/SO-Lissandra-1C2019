@@ -471,6 +471,8 @@ void liberar_todo_por_cierre_de_modulo() {
 		log_memoria = NULL;
 	}
 	if (tablas_fp != NULL){
+		fprintf(tablas_fp,"\n\n\n********FINALIZANDO********");
+		fprintf(tablas_fp,"\n\n\n");
 		fclose(tablas_fp);
 	}
 }

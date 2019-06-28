@@ -8,9 +8,6 @@
 #define COMPILAR_MAIN_MEMORIA
 #ifdef COMPILAR_MAIN_MEMORIA
 
-//#define EJECUTAR_GOSSIPING
-
-
 #include "parser.h"
 #include "memoria.h"
 #include "gestionMemoria.h"
@@ -35,6 +32,7 @@ int responder_gossiping(gos_com_t recibido,id_com_t id_proceso,int socket);
 
 //#define AUTOLANZAR_SERVER
 //#define AUTOLANZAR_CLIENTE
+//#define EJECUTAR_GOSSIPING
 
 int main(void)
 {
@@ -54,10 +52,8 @@ int main(void)
 	iniciarSemaforosYMutex();
 
 	int socket_lfs = conectar_a_lfs();
-	//hilo_consola(&socket_lfs);
 
 	int socket_servidor = levantar_servidor_memoria();
-	//hilo_servidor(&socket_servidor);
 
 #ifdef AUTOLANZAR_CLIENTE
 	char cmd_cliente[100];
@@ -66,9 +62,9 @@ int main(void)
 #endif
 
 	pthread_t servidor_h, consola_h, gossiping_h;
-	id_com_t mi_id = MEMORIA;
 
 #ifdef EJECUTAR_GOSSIPING
+	id_com_t mi_id = MEMORIA;
 	inicializar_gossiping_memoria();
 	iniciar_hilo_gossiping(&mi_id,&gossiping_h);
 #endif
