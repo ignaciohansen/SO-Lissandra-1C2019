@@ -9,6 +9,7 @@
 time_gos_t ahora(void);
 
 pthread_mutex_t gossip_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t gossip_table_mutex = PTHREAD_MUTEX_INITIALIZER;
 t_list *g_lista_seeds;
 t_log *logger_gossiping = NULL;
 bool gossiping_inicializado = false;
@@ -52,13 +53,19 @@ void incorporar_seeds_gossiping(gos_com_t nuevas)
 		i_mem = conozco_memoria(nuevas.seeds[i]);
 		if(i_mem == -1){
 			nueva_aux = malloc(sizeof(seed_com_t));
-			nueva_aux->numMemoria = nuevas.seeds[i].numMemoria;
+			if(i==0) //Solo doy de alta a la memoria con la que me estoy conectando
+				nueva_aux->numMemoria = nuevas.seeds[i].numMemoria;
+			else
+				nueva_aux->numMemoria = -1;
 			strcpy(nueva_aux->ip,nuevas.seeds[i].ip);
 			strcpy(nueva_aux->puerto,nuevas.seeds[i].puerto);
+			pthread_mutex_lock(&gossip_table_mutex);
 			list_add(g_lista_seeds,nueva_aux);
+			pthread_mutex_unlock(&gossip_table_mutex);
 			log_info(logger_gossiping,"[INCORPORAR SEEDS] Nueva memoria conocida. %d-%s-%s",nuevas.seeds[i].numMemoria,nuevas.seeds[i].ip,nuevas.seeds[i].puerto);
 		}
-		else{
+		else if(i==0){ //Solo doy de alta a la memoria con la que me estoy conectando
+			pthread_mutex_lock(&gossip_table_mutex);
 			seed_com_t *aux = list_get(g_lista_seeds,i_mem);
 			if(aux->numMemoria == -1 && nuevas.seeds[i].numMemoria != -1){
 				aux->numMemoria = nuevas.seeds[i].numMemoria;
@@ -67,12 +74,14 @@ void incorporar_seeds_gossiping(gos_com_t nuevas)
 			else{
 				log_info(logger_gossiping,"[INCORPORAR SEEDS] Memoria ya conocida. %d-%s-%s\n",nuevas.seeds[i].numMemoria,nuevas.seeds[i].ip,nuevas.seeds[i].puerto);
 			}
+			pthread_mutex_unlock(&gossip_table_mutex);
 		}
 	}
 }
 
 gos_com_t armar_vector_seeds(id_com_t id_proceso)
 {
+	pthread_mutex_lock(&gossip_table_mutex);
 	gos_com_t gos_tabla;
 	seed_com_t *aux;
 	gos_tabla.cant = list_size(g_lista_seeds);
@@ -86,6 +95,7 @@ gos_com_t armar_vector_seeds(id_com_t id_proceso)
 		gos_tabla.seeds[activas] = *aux;
 		activas++;
 	}
+	pthread_mutex_unlock(&gossip_table_mutex);
 	if(activas < gos_tabla.cant){
 		gos_tabla.cant = activas;
 		gos_tabla.seeds = realloc(gos_tabla.seeds,sizeof(seed_com_t)*gos_tabla.cant);
@@ -96,13 +106,18 @@ gos_com_t armar_vector_seeds(id_com_t id_proceso)
 int conozco_memoria(seed_com_t memoria)
 {
 	seed_com_t *aux;
+	int retval = -1;
+	pthread_mutex_lock(&gossip_table_mutex);
 	for(int i=0; i<list_size(g_lista_seeds);i++){
 		aux = list_get(g_lista_seeds,i);
-		if(strcmp(aux->ip,memoria.ip)==0 && strcmp(aux->puerto,memoria.puerto)==0)
-			return i;
+		if(strcmp(aux->ip,memoria.ip)==0 && strcmp(aux->puerto,memoria.puerto)==0){
+			retval = i;
+			break;
+		}
 	}
-	printf("No la conozco\n");
-	return -1;
+	pthread_mutex_unlock(&gossip_table_mutex);
+//	printf("No la conozco\n");
+	return retval;
 }
 
 void borrar_seed(seed_com_t *memoria)
@@ -120,8 +135,10 @@ void borrar_seed(seed_com_t *memoria)
 
 void registrar_memoria_caida(int i_mem)
 {
+	pthread_mutex_lock(&gossip_table_mutex);
 	seed_com_t *aux = list_get(g_lista_seeds,i_mem);
 	aux->numMemoria = -1;
+	pthread_mutex_unlock(&gossip_table_mutex);
 }
 
 void correr_gossiping(id_com_t id_proceso)
@@ -132,14 +149,25 @@ void correr_gossiping(id_com_t id_proceso)
 	msg_com_t msg;
 	gos_com_t nuevas;
 
-	pthread_mutex_lock(&gossip_mutex);
+//	pthread_mutex_lock(&gossip_mutex);
+
+	pthread_mutex_lock(&gossip_table_mutex);
 	//Me guardo las memorias conocidas hasta el momento. Son con las que haré gossiping ahora
 	t_list *copia_seeds = list_duplicate(g_lista_seeds);
+	pthread_mutex_unlock(&gossip_table_mutex);
+
+	gos_com_t conocidas;
 
 	//Me armo un vector con las memorias conocidas que presentaré a las demás memorias
-	gos_com_t conocidas = armar_vector_seeds(id_proceso);
+	if(id_proceso == MEMORIA)
+		conocidas = armar_vector_seeds(id_proceso);
+	else{
+		//El kernel no le presenta a las memorias las que él conoce
+		conocidas.seeds = NULL;
+		conocidas.cant = 0;
+	}
 
-	for(int i=1; i<list_size(copia_seeds); i++){ //La primera memoria siempre soy yo mismo
+	for(int i=1; i<list_size(copia_seeds); i++){ //La primera memoria siempre soy yo misma
 		seed_com_t *memoria = list_get(copia_seeds,i);
 
 		//Me conecto a la memoria
@@ -191,7 +219,7 @@ void correr_gossiping(id_com_t id_proceso)
 		close(conexion);
 	}
 	borrar_gossiping(conocidas);
-	pthread_mutex_unlock(&gossip_mutex);
+//	pthread_mutex_unlock(&gossip_mutex);
 	list_destroy(copia_seeds);
 }
 
@@ -217,7 +245,7 @@ void *hilo_gossiping(id_com_t * id_proceso)
 		imprimirMensaje(logger_gossiping,"[HILO GOSSIPING] Voy a correr gossiping");
 		correr_gossiping(*id_proceso);
 		t1 = ahora();
-		imprimirMensaje1(logger_gossiping,"[HILO GOSSIPING] Gossiping ejecutado. El siguiente es en %d segundos",(g_retardo_gos-(t1-t0))/1000);
+		imprimirMensaje1(logger_gossiping,"[HILO GOSSIPING] Terminé de ejecutar gossiping. El siguiente es en %d segundos",(g_retardo_gos-(t1-t0))/1000);
 		usleep((g_retardo_gos-(t1-t0))*1000);
 		t0 = ahora();
 	}

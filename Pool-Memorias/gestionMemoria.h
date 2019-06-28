@@ -132,7 +132,7 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteVa
  */
 
 
-	int LRU(
+	void LRU(
 	/*		pagina* paginaCreada, int* nroAsignado,
 			char* value, bool flag_modificado,	char* nombreTabla
 			*/
@@ -162,6 +162,7 @@ void insertHardcodeado(int cant, int inicio, void* info, char* valorNuevo, char*
  *							JOURNAL
  */
 
+bool verificarSiEstaFUll();
 void JOURNAL(void);
 void procesoJournal(void);
 datosJournal* obtener_todos_journal(void);

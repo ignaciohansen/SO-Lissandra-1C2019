@@ -23,6 +23,8 @@
  *
  *  NOTA: nombres de tablas no se distingue uppercase de lowercase. Doesn't do difference by cases.
  */
+
+
 int main() {
 
 	pantallaLimpiar();
@@ -34,14 +36,15 @@ int main() {
 
 	cargarBitmap();
 
-	pthread_t* hiloListening, hiloConsola, hiloEjecutor,hiloDump;
-	pthread_create(&hiloConsola, NULL, (void*) consola, NULL);
+	pthread_t* hiloListening, hiloConsola, hiloEjecutor, hiloDump, hiloINotify;	pthread_create(&hiloConsola, NULL, (void*) consola, NULL);
 	pthread_create(&hiloListening, NULL, (void*) listenSomeLQL, NULL);
+	pthread_create(&hiloINotify, NULL, inotifyAutomatico, PATH_LFILESYSTEM_CONFIG);
 	pthread_create(&hiloDump, NULL, (void*) esperarTiempoDump, NULL);
 
-	//pthread_create(&hiloEjecutor , NULL,(void*) consola, NULL);
+	pthread_create(&hiloEjecutor , NULL,(void*) consola, NULL);
 
 	pthread_join(hiloListening, NULL);
+	pthread_join(hiloINotify, NULL);
 	pthread_join(hiloConsola, NULL);
 	pthread_join(hiloDump, NULL);
 
@@ -49,6 +52,49 @@ int main() {
 
 	// consola();
 	return 0;
+}
+
+void inotifyAutomatico(char* pathDelArchivoAEscuchar){
+	int length, i = 0;
+    int fd;
+    int wd;
+    char buffer[BUF_LEN];
+    while(1){
+    fd = inotify_init();
+
+    if (fd < 0) {
+        perror("inotify_init");
+    }
+
+    wd = inotify_add_watch(fd, pathDelArchivoAEscuchar,
+        IN_MODIFY | IN_CREATE | IN_DELETE);
+    length = read(fd, buffer, BUF_LEN);
+
+    if (length < 0) {
+        perror("read");
+    }
+
+    while (i < length) {
+        struct inotify_event *event =
+            (struct inotify_event *) &buffer[i];
+        if (event->len) {
+            if (event->mask && IN_CREATE) {
+                printf("The file %s was created.\n", event->name);
+            } else if (event->mask && IN_DELETE) {
+                printf("The file %s was deleted.\n", event->name);
+            } else if (event->mask && IN_MODIFY) {
+                printf("The file %s was modified.\n", event->name);
+            }
+        }
+        i += EVENT_SIZE + event->len;
+    }
+    printf("\nSe han realizado cambios en %s\n", pathDelArchivoAEscuchar);
+    cargarConfiguracion();
+    }
+    (void) inotify_rm_watch(fd, wd);
+    (void) close(fd);
+
+    return;
 }
 
 /********************************************************************************************
@@ -65,10 +111,11 @@ void LisandraSetUP() {
 	imprimirVerde(logger,
 			"[LOG CREADO] continuamos cargando la estructura de configuracion.");
 
-	if (cargarConfiguracion() ) {
-		if(!obtenerMetadata()){
+	if (cargarConfiguracion()) {
+		if (!obtenerMetadata()) {
 			//SI SE CARGO BIEN LA CONFIGURACION ENTONCES PROCESO DE ABRIR UN SERVIDOR
-			imprimirMensajeProceso("Levantando el servidor del proceso Lisandra");
+			imprimirMensajeProceso(
+					"Levantando el servidor del proceso Lisandra");
 			abrirServidorLissandra();
 		}
 	}
@@ -258,74 +305,76 @@ bool cargarConfiguracion() {
 
 }
 
-int existeArchivo(char* path){
-    FILE* reader=fopen(path,"r");
-    if(reader==NULL)
-        return false;
-    fclose(reader);
-    return true;
+int existeArchivo(char* path) {
+	FILE* reader = fopen(path, "r");
+	if (reader == NULL)
+		return false;
+	fclose(reader);
+	return true;
 }
 
 void cargarBitmap() {
 
-	bitmapPath = malloc(sizeof(char)*50);
+	bitmapPath = malloc(sizeof(char) * 50);
 	bitmapPath = string_new();
 
 	string_append(&bitmapPath, configFile->punto_montaje);
 
 	string_append(&bitmapPath, PATH_LFILESYSTEM_BITMAP);
 
-	if(!existeArchivo(bitmapPath)) {
-		log_info(log,"Archivo de bitmap no existe");
-	}
-	else {
+	if (!existeArchivo(bitmapPath)) {
+		log_info(log, "Archivo de bitmap no existe");
+	} else {
 		log_info(logger, "existe archivo, se procede a cargar el bitmap");
 		bitarray = crearBitarray();
 	}
 
-	log_info(logger, "cantidad de bloques libres en el bitmap creado: %d", cantBloquesLibresBitmap());
+	log_info(logger, "cantidad de bloques libres en el bitmap creado: %d",
+			cantBloquesLibresBitmap());
 
 	//pruebas de las funciones bitmap
 	/*log_info(logger, "cantidad de bloques ocupados: %d", cantidadBloquesOcupadosBitmap());
 
-	ocuparBloqueLibreBitmap(0);
-	log_info(logger, "ocupando bloque: %d", 0);
-	log_info(logger, "se ocupo bien? tiene que ser 1: %d", estadoBloqueBitmap(0));
+	 ocuparBloqueLibreBitmap(0);
+	 log_info(logger, "ocupando bloque: %d", 0);
+	 log_info(logger, "se ocupo bien? tiene que ser 1: %d", estadoBloqueBitmap(0));
 
-	log_info(logger, "cantidad de bloques ocupados: %d = 1?", cantidadBloquesOcupadosBitmap());
-	log_info(logger, "primer bloque libre: %d", obtenerPrimerBloqueLibreBitmap());
+	 log_info(logger, "cantidad de bloques ocupados: %d = 1?", cantidadBloquesOcupadosBitmap());
+	 log_info(logger, "primer bloque libre: %d", obtenerPrimerBloqueLibreBitmap());
 
-	liberarBloqueBitmap(0);
-	log_info(logger, "okey... vamos a liberarlo");
-	log_info(logger, "se libero bien? tiene que ser 0: %d", estadoBloqueBitmap(0));
+	 liberarBloqueBitmap(0);
+	 log_info(logger, "okey... vamos a liberarlo");
+	 log_info(logger, "se libero bien? tiene que ser 0: %d", estadoBloqueBitmap(0));
 
-	log_info(logger, "cantidad de bloques ocupados: %d = 0?", cantidadBloquesOcupadosBitmap());*/
+	 log_info(logger, "cantidad de bloques ocupados: %d = 0?", cantidadBloquesOcupadosBitmap());*/
 }
 
 t_bitarray* crearBitarray() {
 
-	bytesAEscribir= metadataLFS->blocks / 8;
+	bytesAEscribir = metadataLFS->blocks / 8;
 
-	if(metadataLFS->blocks%8 != 0)
+	if (metadataLFS->blocks % 8 != 0)
 		bytesAEscribir++;
 
-	if(fopen(bitmapPath, "rb") == NULL){
+	if (fopen(bitmapPath, "rb") == NULL) {
 		return NULL;
 	}
 
 	char* bitarrayAux = malloc(bytesAEscribir);
-	bzero(bitarrayAux,bytesAEscribir);
+	bzero(bitarrayAux, bytesAEscribir);
 
-	archivoBitmap = fopen(bitmapPath, "wb"); //cuando se termina la ejecucion, hay que cerrarlo
+	archivoBitmap = fopen(bitmapPath, "wb");
 
-	if(archivoBitmap == NULL){
-		imprimirError(logger, "El archivoBitmap no se pudo abrir correctamente");
+	if (archivoBitmap == NULL) {
+		imprimirError(logger,
+				"El archivoBitmap no se pudo abrir correctamente");
 		exit(-1);
 	}
 
 	fwrite(bitarrayAux, bytesAEscribir, 1, archivoBitmap);
 
-	imprimirMensajeProceso("[BITMAP CREADO] ya se puede operar con los bloques");
+	imprimirMensajeProceso(
+			"[BITMAP CREADO] ya se puede operar con los bloques");
 
 	return bitarray_create_with_mode(bitarrayAux, bytesAEscribir, MSB_FIRST);
 
@@ -341,8 +390,8 @@ void persistirCambioBitmap() {
 int cantBloquesLibresBitmap() {
 	int cantidad = 0;
 
-	for(int i=0; i<bitarray_get_max_bit(bitarray); i++){
-		if(bitarray_test_bit(bitarray, i) == 0){
+	for (int i = 0; i < bitarray_get_max_bit(bitarray); i++) {
+		if (bitarray_test_bit(bitarray, i) == 0) {
 			cantidad++;
 		}
 	}
@@ -373,10 +422,10 @@ int liberarBloqueBitmap(int bloque) {
 
 int obtenerPrimerBloqueLibreBitmap() {
 
-	int posicion;
+	int posicion = -1;
 
-	for(int i=0; i<bitarray_get_max_bit(bitarray); i++){
-		if(bitarray_test_bit(bitarray, i) == 0){
+	for (int i = 0; i < bitarray_get_max_bit(bitarray); i++) {
+		if (bitarray_test_bit(bitarray, i) == 0) {
 			posicion = i;
 			break;
 		}
@@ -389,8 +438,8 @@ int obtenerPrimerBloqueOcupadoBitmap() {
 
 	int posicion;
 
-	for(int i=0; i<bitarray_get_max_bit(bitarray); i++){
-		if(bitarray_test_bit(bitarray, i) == 1){
+	for (int i = 0; i < bitarray_get_max_bit(bitarray); i++) {
+		if (bitarray_test_bit(bitarray, i) == 1) {
 			posicion = i;
 			break;
 		}
@@ -403,16 +452,14 @@ int cantidadBloquesOcupadosBitmap() {
 
 	int cantidad = 0;
 
-		for(int i=0; i<bitarray_get_max_bit(bitarray); i++){
-			if(bitarray_test_bit(bitarray, i) == 1){
-				cantidad++;
-			}
+	for (int i = 0; i < bitarray_get_max_bit(bitarray); i++) {
+		if (bitarray_test_bit(bitarray, i) == 1) {
+			cantidad++;
 		}
+	}
 
-		return cantidad;
+	return cantidad;
 }
-
-
 
 void consola() {
 
@@ -420,7 +467,7 @@ void consola() {
 
 	menu();
 
-	char bufferComando[MAXSIZE_COMANDO];
+	//char bufferComando[MAXSIZE_COMANDO];-> Implementacion anterior
 	char **comandoSeparado;
 
 	while (1) {
@@ -454,15 +501,16 @@ void consola() {
 
 void menu() {
 
-	printf("Los comandos que se pueden ingresar son: \n"
-			"COMANDOS \n"
-			"insert \n"
-			"select \n"
-			"create \n"
-			"describe \n"
-			"drop \n"
-			"SALIR \n"
-			"\n");
+	printf(
+			"Los comandos que se pueden ingresar son: \n"
+					"COMANDOS [ARGUMENTOS] (* -> opcional) \n"
+					"insert [TABLA] [KEY] [VALUE] [TIMESTAMP]* \n"
+					"select [TABLA] [KEY]\n"
+					"create [TABLA] [TIPO_CONSISTENCIA] [NRO_PARTICION] [TIEMPO_COMPACTACION]\n"
+					"describe [TABLA]*\n"
+					"drop [TABLA]\n"
+					"SALIR \n"
+					"\n");
 
 }
 
@@ -565,7 +613,7 @@ void validarComando(char** comando, int tamanio, t_log* logger) {
 			if (tamanio == 4) {
 				comandoInsertSinTimestamp(comando[1], comando[2], comando[3]);
 			} else {
-				comandoInsert(comando[1], comando[2],comando[3],comando[4]);
+				comandoInsert(comando[1], comando[2], comando[3], comando[4]);
 			}
 
 		}
@@ -638,13 +686,13 @@ void validarComando(char** comando, int tamanio, t_log* logger) {
 		break;
 
 	case salir: {
-			printf("Salir seleccionado\n");
-			log_info(logger, "Se selecciono Salir");
+		printf("Salir seleccionado\n");
+		log_info(logger, "Se selecciono Salir");
 
-			//cerrarTodo(); terminar
+		//cerrarTodo(); terminar
 
-		}
-			break;
+	}
+		break;
 
 	default: {
 		printf("Comando mal ingresado. \n");
@@ -661,7 +709,8 @@ int buscarComando(char* comando, t_log* logger) {
 
 	int i = 0;
 
-	for (i; i <= salir && strcmp(comandosPermitidos[i], comando); i++) {	}
+	for (i; i <= salir && strcmp(comandosPermitidos[i], comando); i++) {
+	}
 
 	log_info(logger, "Se devuelve el valor %d", i);
 
@@ -672,7 +721,7 @@ int buscarComando(char* comando, t_log* logger) {
 // LOGGEA todo lo que escucha.
 void listenSomeLQL() {
 
-	char bufferComando[MAXSIZE_COMANDO];
+	//char bufferComando[MAXSIZE_COMANDO];-> Implementacion anterior
 	char **comandoSeparado;
 
 	while (1) {
@@ -713,7 +762,6 @@ void listenSomeLQL() {
 
 }
 
-
 int verificarTabla(char* tabla) {
 
 	tablaAverificar = malloc(string_length(tabla_Path) + string_length(tabla));
@@ -722,9 +770,9 @@ int verificarTabla(char* tabla) {
 			"Se reservo memoria para contatenar punto de montaje con la tabla");
 	tablaAverificar = string_new();
 
-	 for(int i=0;i<strlen(tabla);i++){
-	        tabla[i] = toupper(tabla[i]);
-	        }
+	for (int i = 0; i < strlen(tabla); i++) {
+		tabla[i] = toupper(tabla[i]);
+	}
 
 	string_append(&tablaAverificar, tabla_Path);
 	string_append(&tablaAverificar, tabla);
@@ -732,6 +780,9 @@ int verificarTabla(char* tabla) {
 	log_info(logger,
 			"[VERIFICADO] La direccion de la tabla que se quiere verificar es: %s",
 			tablaAverificar);
+
+	path_tabla_metadata = string_duplicate(tablaAverificar);
+	string_append(&path_tabla_metadata, "/metadata");
 
 	FILE *file;
 
@@ -750,10 +801,6 @@ int verificarTabla(char* tabla) {
 }
 
 int obtenerMetadataTabla(char* tabla) {
-
-
-	path_tabla_metadata = string_duplicate(tablaAverificar);
-	string_append(&path_tabla_metadata, "/metadata");
 
 	log_info(logger, "[obtenerMetadata] (+) metadata a abrir : %s",
 			path_tabla_metadata);
@@ -843,7 +890,7 @@ int obtenerMetadata() {
 
 	metadataLFS = malloc(sizeof(t_metadata_LFS)); // Vatiable global.
 
-	char* metadataPath = malloc(sizeof(char)*50);
+	char* metadataPath = malloc(sizeof(char) * 50);
 	metadataPath = string_new();
 
 	string_append(&metadataPath, configFile->punto_montaje);
@@ -866,11 +913,13 @@ int obtenerMetadata() {
 			metadataLFS->block_size = config_get_int_value(metadataFile,
 					"BLOCK_SIZE");
 
-			log_info(logger, "el tamanio del bloque es: %d", metadataLFS->block_size);
+			log_info(logger, "el tamanio del bloque es: %d",
+					metadataLFS->block_size);
 
 		} else {
 
-			log_error(logger, "El metadata no contiene el tama��ano de bloque [BLOCK_SIZE]");
+			log_error(logger,
+					"El metadata no contiene el tama��ano de bloque [BLOCK_SIZE]");
 
 		} // if (config_has_property(metadataFile, "CONSISTENCY"))
 
@@ -878,14 +927,15 @@ int obtenerMetadata() {
 
 			log_info(logger, "Almacenando cantidad de bloques");
 
-			metadataLFS->blocks = config_get_int_value(metadataFile,
-					"BLOCKS");
+			metadataLFS->blocks = config_get_int_value(metadataFile, "BLOCKS");
 
-			log_info(logger, "La cantidad de bloques es: %d", metadataLFS->blocks);
+			log_info(logger, "La cantidad de bloques es: %d",
+					metadataLFS->blocks);
 
 		} else {
 
-			log_error(logger, "El metadata no contiene cantidad de bloques [BLOCKS]");
+			log_error(logger,
+					"El metadata no contiene cantidad de bloques [BLOCKS]");
 
 		} // if (config_has_property(metadataFile, "PARTITIONS"))
 
@@ -950,7 +1000,6 @@ void retornarValoresDirectorio() {
 
 	while ((ent = readdir(dir)) != NULL) {
 
-
 		if (strcmp(ent->d_name, ".") != 0 && strcmp(ent->d_name, "..") != 0) {
 			log_info(logger, "Tabla analizada= %s", ent->d_name);
 			verificarTabla(ent->d_name);
@@ -965,45 +1014,46 @@ void retornarValoresDirectorio() {
 
 void esperarTiempoDump() {
 
+	while (true) {
 
-	while(true){
-
-			sleep(10);
-			log_info(logger, "Es tiempo de dump, hay cosas en la memtable?");
-			if(dictionary_size(memtable) > 0){
-				log_info(logger, "Se encontraron cosas, se hace el dump");
-				realizarDump();
-				cantidad_de_dumps++;
-			}
-			else{
-				log_info(logger, "La memtable esta vacia");
-			}
-			log_info(logger, "Se limpia diccionario");
-			dictionary_clean(memtable);
-
+		sleep(15);
+		log_info(logger, "Es tiempo de dump, hay cosas en la memtable?");
+		if (dictionary_size(memtable) > 0) {
+			log_info(logger, "Se encontraron cosas, se hace el dump");
+			realizarDump();
+			cantidad_de_dumps++;
+		} else {
+			log_info(logger, "La memtable esta vacia");
 		}
+		log_info(logger, "Se limpia diccionario");
+		dictionary_clean(memtable);
 
 	}
 
+}
 
-void realizarDump(){
-	for(int i=0;i<dictionary_size(memtable);i++){
-		char* tabla = list_get(listaTablasInsertadas,i);
-		log_info(logger,"la tabla insertada en la memtable es %s",tabla);
-		char* path = armarPathTablaParaDump(tabla,cantidad_de_dumps);
-		crearArchivoTemporal(path,tabla);
+void realizarDump() {
+	for (int i = 0; i < dictionary_size(memtable); i++) {
+		char* tabla = list_get(listaTablasInsertadas, i);
+		log_info(logger, "la tabla insertada en la memtable es %s", tabla);
+		char* path = armarPathTablaParaDump(tabla, cantidad_de_dumps);
+		crearArchivoTemporal(path, tabla);
 	}
 }
 
-char* armarPathTablaParaDump(char* tabla,int dumps){
-	char *nombreArchivoTemporal= malloc(sizeof(char) * 3);
-	char* path_archivo_temporal = malloc(string_length(TABLE_PATH)+string_length(configFile->punto_montaje)+string_length(tabla)+string_length(nombreArchivoTemporal)+string_length(PATH_TMP)+2);
+char* armarPathTablaParaDump(char* tabla, int dumps) {
+	char *nombreArchivoTemporal = malloc(sizeof(char) * 3);
+	char* path_archivo_temporal = malloc(
+			string_length(TABLE_PATH) + string_length(configFile->punto_montaje)
+					+ string_length(tabla)
+					+ string_length(nombreArchivoTemporal)
+					+ string_length(PATH_TMP) + 2);
 
 	path_archivo_temporal = string_new();
 
-	string_append(&path_archivo_temporal,configFile->punto_montaje);
+	string_append(&path_archivo_temporal, configFile->punto_montaje);
 
-	string_append(&path_archivo_temporal,TABLE_PATH);
+	string_append(&path_archivo_temporal, TABLE_PATH);
 
 	string_append(&path_archivo_temporal, tabla);
 
@@ -1015,51 +1065,56 @@ char* armarPathTablaParaDump(char* tabla,int dumps){
 
 	string_append(&path_archivo_temporal, PATH_TMP);
 
-	log_info(logger,"la ruta es %s",path_archivo_temporal);
+	log_info(logger, "la ruta es %s", path_archivo_temporal);
 
 	return path_archivo_temporal;
 
 }
 
-
-void crearArchivoTemporal(char* path,char* tabla){
+void crearArchivoTemporal(char* path, char* tabla) {
 
 	// path objetivo: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA/cantidad_de_dumps.tmp
 
-	FILE* temporal;
-	temporal = fopen(path, "w");
-	log_info(logger,"creamos el archivo, ahora  lo llenamos");
-	t_list* listaRegistrosTabla;
-	listaRegistrosTabla = list_create();
-	listaRegistrosTabla = dictionary_get(memtable,tabla);
-	int tam = list_size(listaRegistrosTabla);
-	log_info(logger,"tamanio de registros insertados en esa tabla: %d",tam);
+	int posicion = 1; //obtenerPrimerBloqueLibreBitmap();
+	if (posicion >= 0) {
+		//ocuparBloqueLibreBitmap(posicion);
+		FILE* temporal;
+		temporal = fopen(path, "w");
+		log_info(logger, "creamos el archivo, ahora  lo llenamos");
+		//t_list* listaRegistrosTabla;
+		//listaRegistrosTabla = list_create();
+		t_list* listaRegistrosTabla = dictionary_get(memtable, tabla);
+		int cantidad_registros = list_size(listaRegistrosTabla);
+		log_info(logger, "cantidad de registros insertados en esa tabla: %d",
+				cantidad_registros);
 
-	char *lineaTemporal = malloc(sizeof(char)*50);
-	lineaTemporal = string_new();
-	t_registroMemtable* registro;
+		char *registroAInsertar = malloc(sizeof(char) * 100); //configFile->tamanio_value + sizeof(u_int16_t) + sizeof(double)
+		registroAInsertar = string_new();
+		t_registroMemtable* registro;
 
-	for(int i = 0; i<tam;i++){
+		for (int i = 0; i < cantidad_registros; i++) {
 
-		registro = list_get(listaRegistrosTabla,i);
-		string_append(&lineaTemporal,"timestamp");
-		string_append(&lineaTemporal,";");
-		string_append(&lineaTemporal,"key");
-		string_append(&lineaTemporal,";");
-		string_append(&lineaTemporal,registro->value);
-		string_append(&lineaTemporal,"\n");
-		log_info(logger,"linea a insertar en el tmp: %s",lineaTemporal);
-		fputs(lineaTemporal,temporal);
+			registro = list_get(listaRegistrosTabla, i);
+			string_append(&registroAInsertar, "timestamp");
+			string_append(&registroAInsertar, ";");
+			string_append(&registroAInsertar, "key");
+			string_append(&registroAInsertar, ";");
+			string_append(&registroAInsertar, registro->value);
+			string_append(&registroAInsertar, "\n");
+			log_info(logger, "linea a insertar en el tmp: %s",
+					registroAInsertar);
+			fputs(registroAInsertar, temporal);
 
-
+		}
+		fclose(temporal);
+		//free(lineaTemporal);
+	} else {
+		log_error(logger,
+				"No se pudo realizar el dump pq no hay lugar en el bitmap");
 	}
-	fclose(temporal);
-	free(lineaTemporal);
 }
 
-
 //DUMP
-
 
 int determinarParticion(int key, int particiones) {
 
@@ -1217,10 +1272,9 @@ char* buscarBloque(char* key) {
 
 		char linea[1024];
 
-		 while(fgets(linea, 1024, (FILE*) file)) {
-		        printf("LINEA: %s", linea);
-		    }
-
+		while (fgets(linea, 1024, (FILE*) file)) {
+			printf("LINEA: %s", linea);
+		}
 
 		fclose(file);
 
@@ -1230,53 +1284,57 @@ char* buscarBloque(char* key) {
 
 }
 
+void eliminarTablaCompleta(char* tabla) {
 
-void eliminarTablaCompleta(char* tabla){
+	obtenerMetadataTabla(tabla);
 
-obtenerMetadataTabla(tabla);
+	for (int i = 0; i < metadata->particiones; i++) {
 
-for(int i=0;i<metadata->particiones;i++ ){
+		rutaParticion(i);
 
-rutaParticion(i);
+		log_info(logger, "Vamos a eliminar el archivo binario  de la tabla: %s",
+				archivoParticion);
 
-log_info(logger, "Vamos a eliminar el archivo binario  de la tabla: %s",archivoParticion);
+		int retParticion = remove(archivoParticion);
 
-int retParticion = remove(archivoParticion);
-
-if (retParticion == 0){ // Eliminamos el archivo
+		if (retParticion == 0) { // Eliminamos el archivo
 			log_info(logger, "El archivo fue eliminado satisfactoriamente\n");
-}else{
+		} else {
 			log_info(logger, "No se pudo eliminar el archivo\n");
 
-}
-}
+		}
+	}
 
-for(int j=0;j<=cantidad_de_dumps;j++ ){
+	for (int j = 0; j <= cantidad_de_dumps; j++) {
 
+		char* archivoTemporal = armarPathTablaParaDump(tabla, j);
 
-char* archivoTemporal = armarPathTablaParaDump(tabla,j);
+		log_info(logger,
+				"Vamos a eliminar el archivo temporal  de la tabla: %s",
+				archivoTemporal);
 
-log_info(logger, "Vamos a eliminar el archivo temporal  de la tabla: %s",archivoTemporal);
+		int retTemporal = remove(archivoTemporal);
 
-int retTemporal = remove(archivoTemporal);
+		if (retTemporal == 0) { // Eliminamos el archivo
+			log_info(logger, "El archivo fue eliminado satisfactoriamente\n");
+		} else {
+			log_info(logger, "No se pudo eliminar el archivo\n");
+		}
 
-if (retTemporal == 0){ // Eliminamos el archivo
-			log_info(logger, "El archivo fue eliminado satisfactoriamente\n");}
-		else{
-			log_info(logger, "No se pudo eliminar el archivo\n");}
+	}
 
-}
-
-log_info(logger, "Vamos a eliminar el metadata de la tabla: %s", path_tabla_metadata);
+	log_info(logger, "Vamos a eliminar el metadata de la tabla: %s",
+			path_tabla_metadata);
 
 	int retMet = remove(path_tabla_metadata);
 
-		log_info(logger, "Resultado de remove del metadata de la tabla%d", retMet);
+	log_info(logger, "Resultado de remove del metadata de la tabla%d", retMet);
 
-		if (retMet == 0){ // Eliminamos el archivo
-			log_info(logger, "El archivo fue eliminado satisfactoriamente\n");}
-		else{
-			log_info(logger, "No se pudo eliminar el archivo\n");}
+	if (retMet == 0) { // Eliminamos el archivo
+		log_info(logger, "El archivo fue eliminado satisfactoriamente\n");
+	} else {
+		log_info(logger, "No se pudo eliminar el archivo\n");
+	}
 
 	log_info(logger, "Vamos a eliminar el directorio: %s", tablaAverificar);
 
@@ -1284,59 +1342,62 @@ log_info(logger, "Vamos a eliminar el metadata de la tabla: %s", path_tabla_meta
 
 	log_info(logger, "Resultado de remove de la tabla %d", retTab);
 
-	if (retTab == 0){ // Eliminamos el archivo
-		log_info(logger, "El archivo fue eliminado satisfactoriamente\n");}
-	else{
-		log_info(logger, "No se pudo eliminar el archivo\n");}
+	if (retTab == 0) { // Eliminamos el archivo
+		log_info(logger, "El archivo fue eliminado satisfactoriamente\n");
+	} else {
+		log_info(logger, "No se pudo eliminar el archivo\n");
+	}
 
 }
 
-bool validarValue(char* value){
+bool validarValue(char* value) {
 
-bool contienePuntoYcoma = stringContiene(value,";");
+	bool contienePuntoYcoma = stringContiene(value, ";");
 
-if(contienePuntoYcoma){
+	if (contienePuntoYcoma) {
 
-log_info(logger,"el value contiene ; por lo tanto no se agrega");
+		log_info(logger, "el value contiene ; por lo tanto no se agrega");
 
-}
+	}
 
-return contienePuntoYcoma;
-
-}
-
-bool validarKey(char* key){
-
-bool contienePuntoYcoma = stringContiene(key,";");
-
-if(contienePuntoYcoma){
-
-log_info(logger,"la key contiene ; por lo tanto no se agrega");
+	return contienePuntoYcoma;
 
 }
 
-return contienePuntoYcoma;
+bool validarKey(char* key) {
+
+	bool contienePuntoYcoma = stringContiene(key, ";");
+
+	if (contienePuntoYcoma) {
+
+		log_info(logger, "la key contiene ; por lo tanto no se agrega");
+
+	}
+
+	return contienePuntoYcoma;
 
 }
 
-char* desenmascararValue(char* value){
+char* desenmascararValue(char* value) {
 
-	char* valueSinPimeraComilla = stringTomarDesdePosicion(value,1);
-	char* valueDesenmascarado = strtok(valueSinPimeraComilla,"\"");
-	log_info(logger,"el value desenmascarado es %s",valueDesenmascarado);
+	char* valueSinPimeraComilla = stringTomarDesdePosicion(value, 1);
+	char* valueDesenmascarado = strtok(valueSinPimeraComilla, "\"");
+	log_info(logger, "el value desenmascarado es %s", valueDesenmascarado);
 	return valueDesenmascarado;
 
 }
 
-t_registroMemtable* armarEstructura(char* value, char* key , char* timestamp){
+t_registroMemtable* armarEstructura(char* value, char* key, char* timestamp) {
 
 	t_registroMemtable* registroMemtable;
 	registroMemtable = malloc(sizeof(t_registroMemtable));
 
+	int tam_registro = strlen(value) + 1 + sizeof(u_int16_t) + sizeof(double); //es un long no un double
+	registroMemtable->tam_registro = tam_registro;
 	registroMemtable->value = value;
 	double timestampRegistro = atof(timestamp);
 	registroMemtable->timestamp = timestampRegistro;
-	u_int16_t keyRegistro = strtol(key,NULL,16);
+	u_int16_t keyRegistro = strtol(key, NULL, 16);
 	registroMemtable->key = keyRegistro;
 
 	//log_info(logger,"El registro quedo conformado por: \n");
@@ -1346,7 +1407,6 @@ t_registroMemtable* armarEstructura(char* value, char* key , char* timestamp){
 	//log_info(logger,"Se procede a agregar el registro a la memtable");
 
 	return registroMemtable;
-
 
 }
 
@@ -1370,7 +1430,6 @@ int comandoSelect(char* tabla, char* key) {
 
 	}
 } // int comandoSelect(char* tabla, char* key)
-
 
 void comandoDrop(char* tabla) {
 
@@ -1397,7 +1456,7 @@ void comandoCreate(char* tabla, char* consistencia, char* particiones,
 
 		FILE* archivoMetadata;
 
-		archivoMetadata = fopen(path_tabla_metadata, "w+");
+		archivoMetadata = fopen(path_tabla_metadata, "w");
 
 		if (archivoMetadata != NULL) {
 			log_info(logger,
@@ -1449,133 +1508,134 @@ void comandoCreate(char* tabla, char* consistencia, char* particiones,
 
 			// FALTA ASIGNAR BLOQUE PARA LA PARTICION
 
-
 		} else {
 			log_info(logger, "No se pudo crear el archivo metadata \n");
 			fclose(archivoMetadata);
 		}
+	} else {
+		log_info(logger, "La tabla ya existe \n");
+		perror("La tabla ingresada ya existe");
+
 	}
-		else {
-			log_info(logger, "La tabla ya existe \n");
-			perror("La tabla ingresada ya existe");
-
-				}
-
 
 }
 
-void comandoInsertSinTimestamp(char* tabla,char* key,char* value) {
+void comandoInsertSinTimestamp(char* tabla, char* key, char* value) {
 
-int aux = time(NULL);
+	int aux = time(NULL);
 
-char timestamp[11];
+	char timestamp[11];
 
-sprintf(timestamp, "%d", aux);
+	sprintf(timestamp, "%d", aux);
 
-log_info(logger,"el timestamp a agregar es: %s",timestamp);
+	log_info(logger, "el timestamp a agregar es: %s", timestamp);
 
-comandoInsert(tabla,key,value,timestamp);
-
-}
-
-
-void comandoInsert(char* tabla,char* key,char* value,char* timestamp) {
-
-
-
-if(verificarTabla(tabla) == 0){
-
-bool verificarValue = validarValue(value);
-bool verificarKey = validarKey(key);
-bool algunoContiene =  (verificarValue || verificarKey);
-
-if(!algunoContiene){
-
-char* valueDesenmascarado = desenmascararValue(value);
-
-t_registroMemtable* registroPorAgregarE = armarEstructura(valueDesenmascarado,key,timestamp);
-
-/*
-registroPorAgregar = malloc(string_length(key) + string_length(value) + string_length(timestamp));
-
-registroPorAgregar = string_new();
-
-
-	string_append(&registroPorAgregar, timestamp);
-
-	string_append(&registroPorAgregar, ";");
-
-	string_append(&registroPorAgregar, key);
-
-	string_append(&registroPorAgregar, ";");
-
-	string_append(&registroPorAgregar, valueDesenmascarado);
-
-
-	log_info(logger,"Se va a agregar el siguiente registro %s",registroPorAgregar);
-*/
-
-// Verifico que la key ya exista en el memtable, aca se hace el dump
-
-bool tablaRepetida = dictionary_has_key(memtable,tabla);
-log_info(logger,"valor tablaRepetida %d",tablaRepetida);
-
-if(tablaRepetida){
-	log_info(logger,"Encontre una tabla repetida");
-
-	listaRegistrosMemtable = dictionary_get(memtable,tabla);
-
-//list_add(listaRegistrosMemtable,registroPorAgregar);
-list_add(listaRegistrosMemtable,registroPorAgregarE);
-
-dictionary_put(memtable,tabla,listaRegistrosMemtable);
-
-
-
-}else{
-
-	list_clean(listaRegistrosMemtable);
-
-	//list_add(listaRegistrosMemtable,registroPorAgregar);
-	list_add(listaRegistrosMemtable,registroPorAgregarE);
-
-	dictionary_put(memtable,tabla,listaRegistrosMemtable);
-
+	comandoInsert(tabla, key, value, timestamp);
 
 }
 
-// Lista utilizada para ver despues las keys a dumpear
-list_add(listaTablasInsertadas,tabla);
+void comandoInsert(char* tabla, char* key, char* value, char* timestamp) {
+
+	if (verificarTabla(tabla) == 0) {
+
+		bool verificarValue = validarValue(value);
+		bool verificarKey = validarKey(key);
+		bool algunoContiene = (verificarValue || verificarKey);
+
+		if (!algunoContiene) {
+
+			char* valueDesenmascarado = desenmascararValue(value);
+
+			t_registroMemtable* registroPorAgregarE = armarEstructura(
+					valueDesenmascarado, key, timestamp);
+
+			/*
+			 registroPorAgregar = malloc(string_length(key) + string_length(value) + string_length(timestamp));
+
+			 registroPorAgregar = string_new();
 
 
-t_list* resultado = dictionary_get(memtable,tabla);
+			 string_append(&registroPorAgregar, timestamp);
 
-log_info(logger,"Registros agregados en el diccionario");
+			 string_append(&registroPorAgregar, ";");
 
-for(int i =0;i<list_size(resultado);i++){
+			 string_append(&registroPorAgregar, key);
 
-//void* elementoDiccionario = list_get(resultado, i);
-//log_info(logger,"Elementos ingresados en el diccionario %s",elementoDiccionario);
+			 string_append(&registroPorAgregar, ";");
 
-t_registroMemtable* elementoDiccionario = list_get(resultado, i);
+			 string_append(&registroPorAgregar, valueDesenmascarado);
 
-log_info(logger,"Value = %s ",elementoDiccionario->value);
-log_info(logger,"Timestamp = %f ",elementoDiccionario->timestamp);
-log_info(logger,"Key = %x ",elementoDiccionario->key);
+
+			 log_info(logger,"Se va a agregar el siguiente registro %s",registroPorAgregar);
+			 */
+
+			// Verifico que la key ya exista en el memtable, aca se hace el dump
+			bool tablaRepetida = dictionary_has_key(memtable, tabla);
+			log_info(logger, "valor tablaRepetida %d", tablaRepetida);
+
+			if (tablaRepetida) {
+				log_info(logger, "Encontre una tabla repetida");
+
+				t_list* tableRegisters =
+						dictionary_get(memtable, tabla);
+
+				//list_add(listaRegistrosMemtable,registroPorAgregar);
+				list_add(tableRegisters, registroPorAgregarE);
+
+				//dictionary_put(memtable, tabla, listaRegistrosMemtable);
+
+			} else {
+
+				//list_clean(listaRegistrosMemtable);
+
+				//list_add(listaRegistrosMemtable,registroPorAgregar);
+				t_list* listaAux = list_create();
+				list_add(listaAux, registroPorAgregarE);
+
+				dictionary_put(memtable, tabla, listaAux);
+
+			}
+
+			// Lista utilizada para ver despues las keys a dumpear
+			char* aux = malloc(strlen(tabla) + 1);
+			strcpy(aux, tabla);
+			list_add(listaTablasInsertadas, tabla);
+
+//			t_list* resultado = dictionary_get(memtable, tabla);
+//
+//			log_info(logger, "Registros agregados en el diccionario");
+//
+//			t_registroMemtable* elementoDiccionario;
+//
+//			for (int i = 0; i < list_size(resultado); i++) {
+//
+//				//void* elementoDiccionario = list_get(resultado, i);
+//				//log_info(logger,"Elementos ingresados en el diccionario %s",elementoDiccionario);
+//
+//				elementoDiccionario = list_get(resultado, i);
+//
+//				log_info(logger, "Tamaño del registro = %d ",
+//						elementoDiccionario->tam_registro);
+//				log_info(logger, "Value = %s ", elementoDiccionario->value);
+//				log_info(logger, "Timestamp = %f ",
+//						elementoDiccionario->timestamp);
+//				log_info(logger, "Key = %x ", elementoDiccionario->key);
+//
+//			}
+//
+//			int i = dictionary_size(memtable);
+//
+//			log_info(logger, "cantidad de tablas memtable: %d", i);
+
+			/*free(valueDesenmascarado);
+			 free(registroPorAgregarE);
+			 free(resultado);
+			 free(elementoDiccionario);*/
+		}
+
+	}
 
 }
-
-int i = dictionary_size(memtable);
-
-log_info(logger,"cantidad de tablas memtable: %d", i);
-
-
-}
-
-}
-
-}
-
 
 void comandoDescribeEspecifico(char* tabla) {
 
@@ -1597,5 +1657,4 @@ void cerrarTodo() {
 	list_destroy(listaTablasInsertadas);
 	fclose(archivoBitmap);
 }
-
 

@@ -1,7 +1,7 @@
 #ifndef LFILESSYSTEM_H_
 #define LFILESSYSTEM_H_
 
-#include "../Biblioteca/src/Biblioteca.c"
+#include "../Biblioteca/src/Biblioteca.h"
 #include <commons/collections/list.h>
 #include <commons/collections/dictionary.h>
 #include <commons/bitarray.h>
@@ -16,16 +16,34 @@
 #include <errno.h>
 #include <time.h>
 
+#include <sys/inotify.h>
+
+//void inotifyAutomatico(char* pathDelArchivoAEscuchar);
+
+// El tamaño de un evento es igual al tamaño de la estructura de inotify
+// mas el tamaño maximo de nombre de archivo que nosotros soportemos
+// en este caso el tamaño de nombre maximo que vamos a manejar es de 24
+// caracteres. Esto es porque la estructura inotify_event tiene un array
+// sin dimension ( Ver C-Talks I - ANSI C ).
+#define EVENT_SIZE  ( sizeof (struct inotify_event) + 24 )
+
+// El tamaño del buffer es igual a la cantidad maxima de eventos simultaneos
+// que quiero manejar por el tamaño de cada uno de los eventos. En este caso
+// Puedo manejar hasta 1024 eventos simultaneos.
+#define BUF_LEN     ( 1024 * EVENT_SIZE )
+
+void inotifyAutomatico(char* pathDelArchivoAEscuchar);
+
 
 
 #define PATH_BIN ".bin"
 #define PATH_TMP ".tmp"
-#define PATH_BLOQUES "/Bloques/"
+#define PATH_BLOQUES "../Bloques/"
 #define PATH_LFILESYSTEM_CONFIG "../Config/LFS_CONFIG.txt"
-#define PATH_LFILESYSTEM_METADATA "/Metadata/Metadata"
-#define PATH_LFILESYSTEM_BITMAP "/Metadata/Bitmap.bin"
+#define PATH_LFILESYSTEM_METADATA "../Metadata/Metadata"
+#define PATH_LFILESYSTEM_BITMAP "../Metadata/Bitmap.bin"
 #define LOG_PATH "../Log/LOG_LFS.txt"
-#define TABLE_PATH "/Tables/"
+#define TABLE_PATH "../Tables/"
 
 #define atoa(x) #x
 
@@ -125,6 +143,21 @@ char* archivoParticion;
 char* registroPorAgregar;
 int primerVoidEsRegistro = 1;
 
+const char* comandosPermitidos[] =
+{
+	"select",
+	"insert",
+	"create",
+	"describe",
+	"drop",
+	"journal",
+	"add",
+	"run",
+	"metrics",
+	"salir"
+
+};
+
 int comandoSelect(char* tabla, char* key);
 void comandoInsertSinTimestamp(char* tabla,char* key,char* value);
 void comandoInsert(char* tabla,char* key,char* value,char* timestamp);
@@ -162,6 +195,7 @@ int cantidadBloquesOcupadosBitmap();
  */
 
 typedef struct{
+int tam_registro;
 char* value;
 double timestamp;
 u_int16_t key;

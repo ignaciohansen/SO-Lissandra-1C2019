@@ -21,9 +21,9 @@ pthread_mutex_t mutex_retardo_gossiping;
 pthread_mutex_t mutex_retardo_journal;
 
 void iniciarSemaforosRetados();
-void retardo_memoria(int milisegundos);
-void retardo_fs(int milisegundos);
-void retardo_gossiping(int milisegundos);
-void retardo_journal(int milisegundos);
+void retardo_memoria();
+void retardo_fs();
+void retardo_gossiping();
+void retardo_journal();
 
 #endif /* RETARDOS_H_ */

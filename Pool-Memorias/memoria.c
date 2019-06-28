@@ -381,7 +381,7 @@ void inicioLogYConfig() {
 
 /*-----------------------------------------------------------------------------
  * MEMORIA PRINCIPAL
- *-----------------------------------------------------------------------------*/
+ *--------------------------------------------------verificarSiBitmapLleno---------------------------*/
 
 void iniciarSemaforosYMutex() {
 	log_info(log_memoria, "[SEMAFOROS] Iniciando semaforos y mutexs");
@@ -408,6 +408,8 @@ void iniciarSemaforosYMutex() {
 		mutexIniciar(&mutex_retardo_journal);
 
 	mutexIniciar(&mutex_bloquear_select_por_limpieza);
+
+	mutexIniciar(&verificarSiBitmapLleno);
 
 //	iniciarSemaforosRetados();
 
@@ -879,7 +881,7 @@ void escucharConexionKernel() {
  * FUNCIONALIDADES PARA LA CARGA DE LA CONFIGURACION Y EL LOG
  *-----------------------------------------------------------------------------*/
 void cargarConfiguracion() {
-
+	printf("\n\n**********CARGANDO CONFIGURACION**********\n\n");
 	log_info(log_memoria, "[CONFIGURANDO MODULO] RESERVAR MEMORIA.");
 	arc_config = malloc(sizeof(t_memoria_config));
 
@@ -993,7 +995,7 @@ void cargarConfiguracion() {
 		if (config_has_property(configFile, "RETARDO_JOURNAL")) {
 
 			arc_config->retardo_journal = config_get_int_value(configFile,
-					"RETARDO_MEM");
+					"RETARDO_JOURNAL");
 			log_info(log_memoria,
 					"[CONFIGURANDO MODULO] RETARDO DEL JOURNALING: %d",
 					arc_config->retardo_journal);
@@ -1053,11 +1055,12 @@ void cargarConfiguracion() {
  *-----------------------------------------------------*/
 
 void JOURNAL() {
-	log_info(log_memoria, "[JOURNAL] EN JOURNAL");
+//	log_info(log_memoria, "[JOURNAL] EN JOURNAL");
+	imprimirAviso(log_memoria, "\n\nREALIZANDO JOURNAL\n\n");
 //	char* datosAPasar=NULL;
 	datosJournal* journalAPasar;
 	journalAPasar = obtener_todos_journal();
-	log_info(log_memoria, "[JOURNAL] PROCEDO A ENVIAR LA INFORAMCION A LISANDRA");
+	log_info(log_memoria, "[JOURNAL] PROCEDO A ENVIAR LA INFORMACION A LISANDRA");
 
 	log_info(log_memoria, "[JOURNAL] ENVIO EL MENSAJE A LISANDRA");
 	pasarValoresALisandra(journalAPasar);
@@ -1071,6 +1074,17 @@ void JOURNAL() {
 	mutexBloquear(&mutex_bloquear_select_por_limpieza);
 	limpiezaGlobalDeMemoriaYSegmentos();
 	mutexDesbloquear(&mutex_bloquear_select_por_limpieza);
+	if(activo_retardo_journal){
+		fprintf(tablas_fp,"\nEjecutado comando 1 JOURNAL AUTOMATICO");
+		activo_retardo_journal=false;
+		loggearEstadoActual(tablas_fp);
+		pthread_mutex_unlock(&JOURNALHecho);
+		printf("\nHILO JOURNAL HECHO, VUELVO A REALIZARLO\n");
+//		pthread_cancel(journalHilo);
+//		pthread_cancel(journalHilo);
+	//	pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
+//		pthread_detach(journalHilo);
+	}
 }
 
 int pasarValoresALisandra(datosJournal* datos){
@@ -1084,9 +1098,11 @@ void procesoJournal(){
 	mutexBloquear(&JOURNALHecho);
 	hiloCancelar(journalHilo);
 	log_info(log_memoria, "[procesoJournal] Memoria esta full, procedo a hacer Journal");
+	printf("EN PROCESO JOURNAL\n\n");
 //	retardo_journal(arc_config->retardo_journal);
 	JOURNAL();
 	log_info(log_memoria, "[procesoJournal] JOURNAL REALIZADO, PROCEDO A REINICIAR EL HILO JOURNAL");
+	pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
 	hiloDetach(journalHilo);
 	mutexDesbloquear(&JOURNALHecho);
 }

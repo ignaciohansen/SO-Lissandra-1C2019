@@ -11,6 +11,7 @@
 #include "parser.h"
 #include "memoria.h"
 #include "gestionMemoria.h"
+#include "Inotify.h"
 
 int conectar_a_lfs(void);
 int levantar_servidor_memoria(void);
@@ -61,7 +62,7 @@ int main(void)
 	system(cmd_cliente);
 #endif
 
-	pthread_t servidor_h, consola_h, gossiping_h;
+	pthread_t servidor_h, consola_h, gossiping_h, inotify_c;
 
 #ifdef EJECUTAR_GOSSIPING
 	id_com_t mi_id = MEMORIA;
@@ -72,12 +73,19 @@ int main(void)
 	pthread_create(&servidor_h,NULL,(void *)hilo_servidor,&socket_servidor);
 	pthread_detach(servidor_h);
 
-	pthread_create(&consola_h,NULL,(void *)hilo_consola,&socket_lfs);
+	char* path_de_memoria = malloc(strlen(PATH_MEMORIA_CONFIG)+1);
+	strcpy(path_de_memoria, PATH_MEMORIA_CONFIG);
+	pthread_create(&inotify_c,NULL, inotifyAutomatico,path_de_memoria);
 
+
+	pthread_create(&consola_h,NULL,(void *)hilo_consola,&socket_lfs);
+//pthread_detach(journalHilo);
+	pthread_detach(inotify_c);
 	pthread_join(consola_h,NULL);
 
-	pthread_kill(servidor_h, SIGKILL);
-	pthread_kill(gossiping_h, SIGKILL);
+	//ESTO ESTA MAL, PERO QUIERO VER SI FUNCA LO MIO
+//	pthread_cancel(servidor_h, SIGKILL);
+//	pthread_cancel(gossiping_h, SIGKILL);
 
 	liberar_todo_por_cierre_de_modulo();
 
@@ -151,6 +159,8 @@ void* hilo_consola(int * socket_p){
 	imprimirAviso(log_memoria,"[CONSOLA] Entrando a hilo consola");
 	using_history();
 	imprimirPorPantallaTodosLosComandosDisponibles();
+	pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
+	pthread_detach(journalHilo);
 	while(!fin){
 		linea_leida=readline("\n>");
 		if(linea_leida)
@@ -393,6 +403,9 @@ char* resolver_pedido(request_t req, int socket_lfs)
 			}
 			break;
 		case JOURNALCOMANDO:
+			mutexBloquear(&JOURNALHecho);
+			pthread_cancel(journalHilo);
+
 			imprimirMensaje(log_memoria,"\n\n[RESOLVIENDO PEDIDO] Voy a resolver JOURNAL\n\n");
 			if(resolver_journal(socket_lfs,req) != -1){
 				imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] JOURNAL hecho correctamente");
@@ -401,6 +414,11 @@ char* resolver_pedido(request_t req, int socket_lfs)
 			else{
 				imprimirError(log_memoria,"[RESOLVIENDO PEDIDO] El JOURNAL no pudo realizarse");
 			}
+			pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
+			pthread_detach(journalHilo);
+			mutexDesbloquear(&JOURNALHecho);
+
+
 			break;
 		default:
 			break;
