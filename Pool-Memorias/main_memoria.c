@@ -13,6 +13,12 @@
 #include "gestionMemoria.h"
 #include "Inotify.h"
 
+
+typedef struct{
+	int socket_cliente;
+	bool requiere_lfs;
+}hilo_cliente_args_t;
+
 int conectar_a_lfs(void);
 int levantar_servidor_memoria(void);
 void* hilo_consola(int * socket_p);
@@ -24,7 +30,7 @@ char *resolver_create(int socket_lfs,request_t req);
 int resolver_drop(int socket_lfs,request_t req);
 int resolver_journal(int socket_lfs,request_t req);
 void* hilo_servidor(int * socket_p);
-void * hilo_cliente(int * socket_p);
+void * hilo_cliente(hilo_cliente_args_t *args);
 int dar_bienvenida_cliente(int socket);
 int rechazar_cliente(int socket);
 int responder_request(int socket,char *msg, resp_tipo_com_t tipo_resp);
@@ -33,13 +39,21 @@ int responder_gossiping(gos_com_t recibido,id_com_t id_proceso,int socket);
 
 //#define AUTOLANZAR_SERVER
 //#define AUTOLANZAR_CLIENTE
-//#define EJECUTAR_GOSSIPING
+#define EJECUTAR_GOSSIPING
+#define TESTEAR_GOSSIPING
 
-int main(void)
+int main(int argc, char **argv)
 {
 	// LOGGING
 	printf("INICIANDO EL MODULO MEMORIA \n COMINEZA EL TP PIBE\n\n");
-	inicioLogYConfig();
+#ifdef TESTEAR_GOSSIPING
+	if(argc>1)
+		inicioLogYConfig(argv[1]);
+	else
+		inicioLogYConfig(PATH_MEMORIA_CONFIG);
+#else
+	inicioLogYConfig(PATH_MEMORIA_CONFIG);
+#endif
 
 #ifdef AUTOLANZAR_SERVER
 	char cmd_server[100];
@@ -70,13 +84,14 @@ int main(void)
 	iniciar_hilo_gossiping(&mi_id,&gossiping_h);
 #endif
 
-	/*pthread_create(&servidor_h,NULL,(void *)hilo_servidor,&socket_servidor);
-	pthread_detach(servidor_h);*/
+	pthread_create(&servidor_h,NULL,(void *)hilo_servidor,&socket_servidor);
+	pthread_detach(servidor_h);
 
 	pthread_create(&consola_h,NULL,(void *)hilo_consola,&socket_lfs);
 
 	char* path_de_memoria = malloc(strlen(PATH_MEMORIA_CONFIG)+1);
 	strcpy(path_de_memoria, PATH_MEMORIA_CONFIG);
+
 	pthread_create(&inotify_c,NULL, (void *)inotifyAutomatico,path_de_memoria);
 	pthread_detach(inotify_c);
 
@@ -203,14 +218,19 @@ void* hilo_servidor(int * socket_p){
 		cliente = esperar_cliente(socket);
 		imprimirMensaje(log_memoria,"[SERVIDOR] Cliente intentando conectarse");
 		switch(cliente.id){
+			hilo_cliente_args_t args;
 			case MEMORIA:
+				args.socket_cliente = cliente.socket;
+				args.requiere_lfs = false;
 				dar_bienvenida_cliente(cliente.socket);
-				pthread_create(&thread,NULL,(void *)hilo_cliente, &cliente.socket );
+				pthread_create(&thread,NULL,(void *)hilo_cliente, &args );
 				pthread_detach(thread);
 				break;
 			case KERNEL:
+				args.socket_cliente = cliente.socket;
+				args.requiere_lfs = true;
 				dar_bienvenida_cliente(cliente.socket);
-				pthread_create(&thread,NULL,(void *)hilo_cliente, &cliente.socket );
+				pthread_create(&thread,NULL,(void *)hilo_cliente, &args );
 				pthread_detach(thread);
 				break;
 			default:
@@ -222,16 +242,19 @@ void* hilo_servidor(int * socket_p){
 	return NULL;
 }
 
-void * hilo_cliente(int * socket_p)
+void * hilo_cliente(hilo_cliente_args_t *args)
 {
 	imprimirMensaje(log_memoria,"[CLIENTE] Entrando a hilo de atención a un cliente");
-	int socket_cliente = *socket_p;
-	int socket_lfs = conectar_a_lfs();
-	if(socket_lfs == -1){
-		imprimirError(log_memoria,"[CLIENTE] No pude conectarme al lfs");
-	}
-	else{
-		imprimirMensaje(log_memoria,"[CLIENTE] Ya tengo un canal para comunicarme con el lfs");
+	int socket_cliente = args->socket_cliente;
+	int socket_lfs = -1;
+	if(args->requiere_lfs){
+		socket_lfs = conectar_a_lfs();
+		if(socket_lfs == -1){
+			imprimirError(log_memoria,"[CLIENTE] No pude conectarme al lfs");
+		}
+		else{
+			imprimirMensaje(log_memoria,"[CLIENTE] Ya tengo un canal para comunicarme con el lfs");
+		}
 	}
 	imprimirMensaje(log_memoria,"[CLIENTE] Empiezo a esperar mensajes");
 	msg_com_t msg;
@@ -354,7 +377,7 @@ char* resolver_pedido(request_t req, int socket_lfs)
 	strcpy(ret_ok_generico,"OK");
 	switch(req.command){
 		case INSERT:
-			imprimirMensaje(log_memoria,"\n\n[RESOLVIENDO PEDIDO] Voy a resolver INSERT\n\n");
+			imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver INSERT");
 			if(resolver_insert(req,true) != -1){
 				imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] INSERT hecho correctamente");
 				ret_val = ret_ok_generico;
@@ -364,7 +387,7 @@ char* resolver_pedido(request_t req, int socket_lfs)
 			}
 			break;
 		case SELECT:
-			imprimirMensaje(log_memoria,"\n\n[RESOLVIENDO PEDIDO] Voy a resolver SELECT\n\n");
+			imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver SELECT");
 			ret_val = resolver_select(socket_lfs,req);
 			if(ret_val != NULL){
 				imprimirMensaje1(log_memoria,"[RESOLVIENDO PEDIDO] SELECT hecho correctamente. Valor %s obtenido",ret_val);
@@ -374,7 +397,7 @@ char* resolver_pedido(request_t req, int socket_lfs)
 			}
 			break;
 		case DESCRIBE:
-			imprimirAviso(log_memoria,"\n\n[RESOLVIENDO PEDIDO] Voy a resolver DESCRIBE\n\n");
+			imprimirAviso(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver DESCRIBE");
 			ret_val = resolver_describe(socket_lfs,req);
 			if(ret_val != NULL){
 				imprimirMensaje1(log_memoria,"[RESOLVIENDO PEDIDO] DESCRIBE hecho correctamente. Valor %s obtenido",ret_val);
@@ -384,7 +407,7 @@ char* resolver_pedido(request_t req, int socket_lfs)
 			}
 			break;
 		case DROP:
-			imprimirMensaje(log_memoria,"\n\n[RESOLVIENDO PEDIDO] Voy a resolver DROP\n\n");
+			imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver DROP");
 			if(resolver_drop(socket_lfs,req) != -1){
 				imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] DROP hecho correctamente");
 				ret_val = ret_ok_generico;
@@ -407,7 +430,7 @@ char* resolver_pedido(request_t req, int socket_lfs)
 			mutexBloquear(&JOURNALHecho);
 			pthread_cancel(journalHilo);
 
-			imprimirMensaje(log_memoria,"\n\n[RESOLVIENDO PEDIDO] Voy a resolver JOURNAL\n\n");
+			imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver JOURNAL");
 			if(resolver_journal(socket_lfs,req) != -1){
 				imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] JOURNAL hecho correctamente");
 				ret_val = ret_ok_generico;
@@ -541,59 +564,17 @@ char *resolver_create(int socket_lfs,request_t req)
 int resolver_journal(int socket_lfs,request_t req)
 {
 
-	//Consigo toda la info modificada de memoria
-	datosJournal *datos_modificados = obtener_todos_journal();
-	datosJournal *aux = datos_modificados;
+//	//Consigo toda la info modificada de memoria
+//	datosJournal *datos_modificados = obtener_todos_journal();
+//	datosJournal *aux = datos_modificados;
+//
+//	imprimirMensaje(log_memoria, "[RESOLVIENDO JOURNAL] DATOS MODIFICADOS: ");
+//	while(aux!=NULL){
+//		imprimirAviso3(log_memoria, "%s %d %s", aux->nombreTabla, aux->key, aux->value);
+//		aux = aux->sig;
+//	}
+	procesoJournal(socket_lfs);
 
-	imprimirMensaje(log_memoria, "[RESOLVIENDO JOURNAL] DATOS MODIFICADOS: ");
-	while(aux!=NULL){
-		imprimirAviso3(log_memoria, "%s %d %s", aux->nombreTabla, aux->key, aux->value);
-		aux = aux->sig;
-	}
-
-	//Ya puedo liberar la memoria y habilitar a que lleguen más pedidos
-
-	//Tengo que enviar al filesystem
-
-	//Espero respuesta de qué pudo hacer y qué no
-
-	//Respondo al que pidió el journal que ya está ok e informo posibles errores
-
-	liberarDatosJournal(datos_modificados);
-
-/*
-	//Le envio el DROP al filesystem
-	req_com_t enviar;
-	enviar.tam = strlen("DROP ") + strlen(nombre_tabla) + 1;
-	enviar.str = malloc(enviar.tam);
-	strcpy(enviar.str,"DROP ");
-	strcat(enviar.str,nombre_tabla);
-	if(enviar_request(socket_lfs,enviar) == -1){
-		imprimirError(log_memoria, "[RESOLVIENDO DROP] No se puedo enviar el drop al filesystem");
-	}
-	borrar_request_com(enviar);
-	//Espero su respuesta
-	msg_com_t msg = recibir_mensaje(socket_lfs);
-	if(msg.tipo == RESPUESTA){
-		resp_com_t recibido = procesar_respuesta(msg);
-		borrar_mensaje(msg);
-		if(recibido.tipo == RESP_OK){
-			imprimirAviso(log_memoria, "[RESOLVIENDO DROP] El filesystem realizó el DROP con éxito");
-		}
-		else{
-			imprimirError(log_memoria, "[RESOLVIENDO DROP] El filesystem no pudo realizar el DROP con éxito.");
-			borrar_respuesta(recibido);
-			return -1;
-		}
-		if(recibido.msg.tam >0)
-			imprimirAviso1(log_memoria,"[RESOLVIENDO DROP] El filesystem contestó al DROP con %s",recibido.msg.str);
-		borrar_respuesta(recibido);
-	}
-	else{
-		borrar_mensaje(msg);
-	}
-	*/
-	liberar_todo_segmento();
 	return 1;
 }
 

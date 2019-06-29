@@ -70,11 +70,11 @@ int main();
  * FUNCIONES PARA LA CONFIGURACION Y FINALIZACION
  ---------------------------------------------------*/
 
-void cargarConfiguracion();
+void cargarConfiguracion(char *path_config);
 void recargarConfiguracion();
 char* lectura_consola();
 void terminar_memoria(t_log* g_log);
-void inicioLogYConfig();
+void inicioLogYConfig(char *path_config);
 void cerrarTodosLosHilosPendientes();
 
 /*---------------------------------------------------

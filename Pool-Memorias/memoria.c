@@ -357,7 +357,7 @@ void cerrarTodosLosHilosPendientes() {
 }
 
 
-void inicioLogYConfig() {
+void inicioLogYConfig(char* path_config) {
 	tamanioPredefinidoParaNombreTabla = 50;
 	log_memoria = archivoLogCrear(LOG_PATH, "Proceso Memoria");
 	log_info(log_memoria,
@@ -374,7 +374,7 @@ void inicioLogYConfig() {
 		log_info(log_memoria, "[LOGYCONFIG] Logger de seguimiento de tablas creado en %s",LOG_TABLAS_PATH);
 	}
 
-	cargarConfiguracion();
+	cargarConfiguracion(path_config);
 	log_info(log_memoria,
 			"[LOGYCONFIG] *** CONFIGURACIÓN DE MEMORIA CARGADA. *** ");
 }
@@ -880,7 +880,7 @@ void escucharConexionKernel() {
 /*-----------------------------------------------------------------------------
  * FUNCIONALIDADES PARA LA CARGA DE LA CONFIGURACION Y EL LOG
  *-----------------------------------------------------------------------------*/
-void cargarConfiguracion() {
+void cargarConfiguracion(char *path_config) {
 	printf("\n\n**********CARGANDO CONFIGURACION**********\n\n");
 	log_info(log_memoria, "[CONFIGURANDO MODULO] RESERVAR MEMORIA.");
 	arc_config = malloc(sizeof(t_memoria_config));
@@ -893,7 +893,7 @@ void cargarConfiguracion() {
 
 	log_info(log_memoria, "[CONFIGURANDO MODULO] BUSCANDO CONFIGURACION.");
 
-	configFile = config_create(PATH_MEMORIA_CONFIG);
+	configFile = config_create(path_config);
 
 	if (configFile != NULL) {
 
@@ -1056,13 +1056,13 @@ void cargarConfiguracion() {
  * Obvio que depende de como se esté usando, pero mejor ahorremonos ese problema
  */
 
-void recargarConfiguracion(){
+void recargarConfiguracion(char *path_config){
 
 	log_info(log_memoria, "[ACTUALIZANDO RETARDOS] Voy a actualizar retardos");
 
 	mutexBloquear(&mutex_retardos_memoria);
 
-	t_config* auxConfigFile = config_create(PATH_MEMORIA_CONFIG);
+	t_config* auxConfigFile = config_create(path_config);
 
 	if (auxConfigFile != NULL) {
 
@@ -1133,7 +1133,7 @@ void recargarConfiguracion(){
  * FUNCIONES PARA LA ADMINISTRACION DE MEMORIA
  *-----------------------------------------------------*/
 
-void JOURNAL() {
+void JOURNAL(int socket_lfs) {
 //	log_info(log_memoria, "[JOURNAL] EN JOURNAL");
 	imprimirAviso(log_memoria, "\n\nREALIZANDO JOURNAL\n\n");
 //	char* datosAPasar=NULL;
@@ -1142,8 +1142,8 @@ void JOURNAL() {
 	log_info(log_memoria, "[JOURNAL] PROCEDO A ENVIAR LA INFORMACION A LISANDRA");
 
 	log_info(log_memoria, "[JOURNAL] ENVIO EL MENSAJE A LISANDRA");
-	pasarValoresALisandra(journalAPasar);
-	log_info(log_memoria, "[JOURNAL] TAMAÑO ENVIADO");
+
+	pasarValoresALisandra(journalAPasar,socket_lfs);
 
 	log_info(log_memoria, "[JOURNAL] Lisandra responde que recibio el mensaje");
 
@@ -1166,20 +1166,70 @@ void JOURNAL() {
 	}
 }
 
-int pasarValoresALisandra(datosJournal* datos){
+int pasarValoresALisandra(datosJournal* datos,int socket_lfs)
+{
+	bool debo_cerrar_socket = false;
+	if(socket_lfs == -1){
+		socket_lfs = conectar_a_lfs();
+	}
+	if(socket_lfs == -1){
+		imprimirError(log_memoria,"[ENVIANDO DATOS A LFS] No fue posible conectarse al LFS");
+		return -1;
+	}
+	else
+		debo_cerrar_socket = true;
+	imprimirMensaje(log_memoria,"[ENVIANDO DATOS A LFS] Voy a enviarles los datos modificados");
+	datosJournal *enviar = datos;
+	req_com_t insert;
+	char aux[100];
+	int cont = 0;
+	//Le envio el DROP al filesystem
+	while(enviar != NULL){
+		snprintf(aux,100,"INSERT %s %d %s %ld",enviar->nombreTabla,enviar->key,enviar->value,enviar->timestamp);
+		insert.tam = strlen(aux)+1;
+		insert.str = malloc(insert.tam);
+		strcpy(insert.str,aux);
+		retardo_fs(arc_config->retardo_fs);
+		imprimirMensaje1(log_memoria,"[ENVIANDO DATOS A LFS] Enviando <%s>",insert.str);
+		if(enviar_request(socket_lfs,insert) == -1){
+			imprimirError(log_memoria, "[ENVIANDO DATOS A LFS] No se puedo enviar el insert al filesystem");
+		}
+		borrar_request_com(insert);
 
-
-	retardo_fs(arc_config->retardo_fs);
-	return 1;
+		//Espero su respuesta
+		msg_com_t msg = recibir_mensaje(socket_lfs);
+		if(msg.tipo == RESPUESTA){
+			resp_com_t recibido = procesar_respuesta(msg);
+			borrar_mensaje(msg);
+			if(recibido.tipo == RESP_OK){
+				imprimirMensaje(log_memoria, "[ENVIANDO DATOS A LFS] El filesystem realizó el INSERT con éxito");
+				cont++;
+			}
+			else{
+				imprimirError(log_memoria, "[ENVIANDO DATOS A LFS] El filesystem no pudo realizar el INSERT");
+				borrar_respuesta(recibido);
+			}
+			if(recibido.msg.tam>0)
+				imprimirMensaje1(log_memoria,"[ENVIANDO DATOS A LFS] El filesystem contestó con %s",recibido.msg.str);
+			borrar_respuesta(recibido);
+		}
+		else{
+			borrar_mensaje(msg);
+		}
+		enviar = enviar->sig;
+	}
+	if(debo_cerrar_socket)
+		close(socket_lfs);
+	return cont;
 }
 
-void procesoJournal(){
+void procesoJournal(int socket_lfs){
 	mutexBloquear(&JOURNALHecho);
 	hiloCancelar(journalHilo);
 	log_info(log_memoria, "[procesoJournal] Memoria esta full, procedo a hacer Journal");
 	printf("EN PROCESO JOURNAL\n\n");
 //	retardo_journal(arc_config->retardo_journal);
-	JOURNAL();
+	JOURNAL(socket_lfs);
 	log_info(log_memoria, "[procesoJournal] JOURNAL REALIZADO, PROCEDO A REINICIAR EL HILO JOURNAL");
 	pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
 	hiloDetach(journalHilo);

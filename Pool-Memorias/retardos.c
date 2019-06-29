@@ -10,27 +10,17 @@
 //#include "../Biblioteca/src/Biblioteca.c"
 
 void retardo_memoria(){
-	int milisegundos= arc_config->retardo_mem;
 	pthread_mutex_lock(&mutex_retardo_memoria);
-	usleep(milisegundos*1000);
+	int milisegundos= arc_config->retardo_mem;
 	pthread_mutex_unlock(&mutex_retardo_memoria);
+	usleep(milisegundos*1000);
 }
 
 void retardo_fs(){
-	int milisegundos= arc_config->retardo_fs;
 	pthread_mutex_lock(&mutex_retardo_fs);
-	usleep(milisegundos*1000);
+	int milisegundos= arc_config->retardo_fs;
 	pthread_mutex_unlock(&mutex_retardo_fs);
-}
-
-void retardo_gossiping(){
-	while(1){
-		int milisegundos= arc_config->retardo_gossiping;
-		pthread_mutex_lock(&mutex_retardo_gossiping);
-		usleep(milisegundos*1000);
-		//LUEGO DE ESTO ACTIVARA LA FUNCION GOSSIPING //	GOSSIPING();
-		pthread_mutex_unlock(&mutex_retardo_gossiping);
-	}
+	usleep(milisegundos*1000);
 }
 
 void retardo_journal(){
@@ -46,7 +36,7 @@ void retardo_journal(){
 		pthread_mutex_lock(&JOURNALHecho);
 		mutexBloquear(&verificarSiBitmapLleno);
 		activo_retardo_journal = true;
-		JOURNAL();
+		JOURNAL(-1);
 		mutexDesbloquear(&verificarSiBitmapLleno);
 	//	retardo_journal(milisegundos);
 	}

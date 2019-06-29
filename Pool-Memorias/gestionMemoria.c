@@ -1153,7 +1153,7 @@ void LRU(
 				log_info(log_memoria, "[LRU sin candidato] NO hay nada que se puede quitar, por lo tanto se fuerza un JOURNAL");
 
 
-				procesoJournal();
+				procesoJournal(-1);
 			//	log_info(log_memoria, "[LRU sin candidato] JOURNAL HECHO, lo asigno a la primera posicion");
 			//	paginaCreada->nroPosicion=0;
 			//	asignarNuevaPaginaALaPosicion(0, paginaCreada, valor, flag_modificado, nombreTabla);
@@ -1472,7 +1472,7 @@ bool bloque_LRU_en_posicion_i_tiene_flag_activado(int posicion){
 
 void liberarDatosJournal(datosJournal* datos){
 	datosJournal* aux;
-	log_info(log_memoria, "\n[JOURNAL] LIBERANDO DATOSJOURNAL");
+	log_info(log_memoria, "[JOURNAL] LIBERANDO DATOSJOURNAL");
 
 	while(datos!=NULL){
 		free(datos->value);
@@ -1481,33 +1481,33 @@ void liberarDatosJournal(datosJournal* datos){
 		free(datos);
 		datos = aux;
 	}
-	log_info(log_memoria, "\n[JOURNAL] DATOSJOURNAL LIBERADO");
+	log_info(log_memoria, "[JOURNAL] DATOSJOURNAL LIBERADO");
 
 }
 
 void limpiezaGlobalDeMemoriaYSegmentos(){
-	log_info(log_memoria, "\n[limpiezaGlobalDeMemoriaYSegmentos] COMIENZO A LIBERAR SEGMENTOS\n");
+	log_info(log_memoria, "[limpiezaGlobalDeMemoriaYSegmentos] COMIENZO A LIBERAR SEGMENTOS");
 	limpiar_y_destruir_todo_segmento();
-	log_info(log_memoria, "\n[limpiezaGlobalDeMemoriaYSegmentos] COMIENZO A LIBERAR MEMORIAS\n");
+	log_info(log_memoria, "[limpiezaGlobalDeMemoriaYSegmentos] COMIENZO A LIBERAR MEMORIAS");
 	void* liberarMemoriaPrincipal = malloc(sizeof(arc_config->tam_mem));
 	void* liberarLRU = malloc(sizeof(cantPaginasTotales*sizeof(nodoLRU)));
 	memcpy(bloque_LRU, liberarLRU, sizeof(cantPaginasTotales*sizeof(nodoLRU)));
 	memcpy(bloque_memoria, liberarMemoriaPrincipal, sizeof(arc_config->tam_mem));
 	free(liberarMemoriaPrincipal);
 	free(liberarLRU);
-	log_info(log_memoria, "\n[limpiezaGlobalDeMemoriaYSegmentos] MEMORIAS LIBERADAS\n");
+	log_info(log_memoria, "[limpiezaGlobalDeMemoriaYSegmentos] MEMORIAS LIBERADAS");
 }
 
 void limpiar_y_destruir_todo_segmento(){
-	log_info(log_memoria, "\n[limpiar_y_destruir_todo_segmento] Entrando, comienza la limpieza total");
+	log_info(log_memoria, "[limpiar_y_destruir_todo_segmento] Entrando, comienza la limpieza total");
 	segmento* siguienteSegmento;
 	while(tablaSegmentos!=NULL){
 		siguienteSegmento = tablaSegmentos->siguienteSegmento;
-		log_info(log_memoria, "\n[limpiar_y_destruir_todo_segmento] Limpiando segmento: %s", tablaSegmentos->path_tabla);
+		log_info(log_memoria, "[limpiar_y_destruir_todo_segmento] Limpiando segmento: %s", tablaSegmentos->path_tabla);
 		limpiar_todos_los_elementos_de_1_segmento(tablaSegmentos);
 		tablaSegmentos = siguienteSegmento;
 	}
-	log_info(log_memoria, "\n[limpiar_y_destruir_todo_segmento] TODOS LOS SEGMENTOS FUERON LIBERADOS\n");
+	log_info(log_memoria, "[limpiar_y_destruir_todo_segmento] TODOS LOS SEGMENTOS FUERON LIBERADOS\n");
 }
 
 datosJournal* obtener_todos_journal(){
@@ -1516,12 +1516,12 @@ datosJournal* obtener_todos_journal(){
 	char* nombreTabla;
 	char* valor = malloc(max_valor_key);
 	pagina* pag = malloc(sizeof(pagina));
-	log_info(log_memoria, "\n[OBTENER TODO JOURNAL] ENTRANDO");
+	log_info(log_memoria, "[OBTENER TODO JOURNAL] ENTRANDO");
 	for(posicion=0;posicion<cantPaginasTotales;posicion++){
 
 		nombreTabla =malloc(tamanioPredefinidoParaNombreTabla);
 		if(bloque_LRU_en_posicion_fue_modificado(posicion, &nombreTabla)){
-			log_info(log_memoria, "\n[OBTENER TODO JOURNAL] Obtengo datos de la posicion %d",
+			log_info(log_memoria, "[OBTENER TODO JOURNAL] Obtengo datos de la posicion %d",
 					posicion);
 			datosJournal* datos = malloc(sizeof(datosJournal));
 
@@ -1538,8 +1538,8 @@ datosJournal* obtener_todos_journal(){
 					max_valor_key);
 			datos->sig= datosDevolver;
 			datosDevolver = datos;
-			log_info(log_memoria, "\n[OBTENER TODO JOURNAL] Datos de la posicion %d\n"
-					"TABLA: %s\nKEY: %d\nValor: %s\nTimestamp: %f",
+			log_info(log_memoria, "[OBTENER TODO JOURNAL] Datos de la posicion %d."
+					"TABLA: %s. KEY: %d. Valor: %s. Timestamp: %f",
 					posicion, datos->nombreTabla, datos->key, datos->value, datos->timestamp);
 		}
 		free(nombreTabla);
@@ -1562,23 +1562,22 @@ datosJournal* obtener_todos_journal(){
 
 bool bloque_LRU_en_posicion_fue_modificado(int pos, char** nombreADevolver){
 	//REVISO PRIMERO BITMAP
-	log_info(log_memoria, "\n[bloque_LRU_en_posicion_fue_modificado]\nENTRANDO");
+	log_info(log_memoria, "[bloque_LRU_en_posicion_fue_modificado]\nENTRANDO");
 	if(!bitmapBitOcupado(bitmap, pos)){
-		log_info(log_memoria, "\n[bloque_LRU_en_posicion_fue_modificado]\n La posicion %d no fue ocupada, devuelvo FALSE", pos);
+//		log_info(log_memoria, "\n[bloque_LRU_en_posicion_fue_modificado]\n La posicion %d no fue ocupada, devuelvo FALSE", pos);
 		return false;
 	}
 	nodoLRU* nodoSolicitado = malloc(sizeof(nodoLRU));
-	log_info(log_memoria, "\n[bloque_LRU_en_posicion_fue_modificado]\nObteniendo datos de la posicion %d", pos);
+	log_info(log_memoria, "[bloque_LRU_en_posicion_fue_modificado]Obteniendo datos de la posicion %d", pos);
 	memcpy(nodoSolicitado, bloque_LRU+pos*(sizeof(nodoLRU)+tamanioPredefinidoParaNombreTabla), sizeof(nodoLRU));
 	memcpy(*nombreADevolver, bloque_LRU+pos*(sizeof(nodoLRU)+tamanioPredefinidoParaNombreTabla)+
-			sizeof(nodoLRU)-1, tamanioPredefinidoParaNombreTabla);
+			sizeof(nodoLRU), tamanioPredefinidoParaNombreTabla);
 	if(nodoSolicitado->estado){
-		log_info(log_memoria, "\n[bloque_LRU_en_posicion_fue_modificado]\n BLOQUE %d modifcado, devuelvo TRUE", pos);
-
+		log_info(log_memoria, "[bloque_LRU_en_posicion_fue_modificado]BLOQUE %d modifcado, devuelvo TRUE", pos);
 		free(nodoSolicitado);
 		return true;
 	}
-	log_info(log_memoria, "\n[bloque_LRU_en_posicion_fue_modificado]\n La posicion %d no fue modifcada, devuelvo FALSE", pos);
+//	log_info(log_memoria, "[bloque_LRU_en_posicion_fue_modificado]La posicion %d no fue modifcada, devuelvo FALSE", pos);
 	free(nodoSolicitado);
 	return false;
 }

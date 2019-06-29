@@ -188,14 +188,15 @@ void correr_gossiping(id_com_t id_proceso)
 		conocidas.seeds = NULL;
 		conocidas.cant = 0;
 	}
-
+	imprimirMensaje(logger_gossiping,"[CORRIENDO GOSSIPING] Empiezo a conectarme con las memorias que conozco");
 	for(int i=1; i<list_size(copia_seeds); i++){ //La primera memoria siempre soy yo misma
 		seed_com_t *memoria = list_get(copia_seeds,i);
 
 		//Me conecto a la memoria
+		imprimirMensaje2(logger_gossiping,"[CORRIENDO GOSSIPING] Voy a conectarme a <%s>-<%s>",memoria->ip,memoria->puerto);
 		int conexion = conectar_a_servidor(memoria->ip,memoria->puerto,id_proceso);
 		if(conexion==-1){
-			log_info(logger_gossiping,"La memoria <%d>-<%s>-<%s> está caida",memoria->numMemoria,memoria->ip,memoria->puerto);
+			log_info(logger_gossiping,"[CORRIENDO GOSSIPING] La memoria <%d>-<%s>-<%s> está caida",memoria->numMemoria,memoria->ip,memoria->puerto);
 			//Tengo que borrarla de la lista
 			//borrar_seed(memoria);
 			registrar_memoria_caida(i);
@@ -205,7 +206,7 @@ void correr_gossiping(id_com_t id_proceso)
 		//Recibo el hs de la memoria para ver si me acepta
 		msg = recibir_mensaje(conexion);
 		if(msg.tipo != HANDSHAKECOMANDO){
-			log_info(logger_gossiping,"La memoria no responde como se espera");
+			log_info(logger_gossiping,"[CORRIENDO GOSSIPING] La memoria no responde como se espera");
 			close(conexion);
 			continue;
 		}
@@ -213,12 +214,12 @@ void correr_gossiping(id_com_t id_proceso)
 		hs = procesar_handshake(msg);
 		borrar_mensaje(msg);
 		if(hs.id == RECHAZADO){
-			log_info(logger_gossiping,"La memoria rechazo la conexion");
+			log_info(logger_gossiping,"[CORRIENDO GOSSIPING] La memoria rechazo la conexion");
 			close(conexion);
 			continue;
 		}
 		borrar_handshake(hs);
-		log_info(logger_gossiping,"La memoria acepto la conexion");
+		log_info(logger_gossiping,"[CORRIENDO GOSSIPING] La memoria acepto la conexion");
 
 		//Le envío las memorias que conozco
 		enviar_gossiping(conexion,conocidas);
@@ -226,7 +227,7 @@ void correr_gossiping(id_com_t id_proceso)
 		//Espero su respuesta
 		msg = recibir_mensaje(conexion);
 		if(msg.tipo != GOSSIPING){
-			log_info(logger_gossiping,"La memoria no responde como se espera");
+			log_info(logger_gossiping,"[CORRIENDO GOSSIPING] La memoria no responde como se espera");
 			close(conexion);
 			continue;
 		}
@@ -235,7 +236,7 @@ void correr_gossiping(id_com_t id_proceso)
 		borrar_mensaje(msg);
 
 		incorporar_seeds_gossiping(nuevas);
-		log_info(logger_gossiping,"Se agregaron memorias recibidas");
+		log_info(logger_gossiping,"[CORRIENDO GOSSIPING] Se agregaron memorias recibidas");
 		borrar_gossiping(nuevas);
 
 		close(conexion);

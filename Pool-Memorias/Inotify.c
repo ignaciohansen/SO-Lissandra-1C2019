@@ -53,7 +53,7 @@ void inotifyAutomatico(char* pathDelArchivoAEscuchar){
         i += EVENT_SIZE + event->len;
     }
     printf("\nSe han realizado cambios en %s\n", pathDelArchivoAEscuchar);
-    recargarConfiguracion();
+    recargarConfiguracion(PATH_MEMORIA_CONFIG);
     }
     (void) inotify_rm_watch(fd, wd);
     (void) close(fd);
