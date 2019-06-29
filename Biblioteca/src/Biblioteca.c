@@ -1400,7 +1400,7 @@ void borrar_mensaje(msg_com_t msg)
 
 int iniciar_servidor(char*ip,char*puerto)
 {
-	int socket_servidor;
+	int socket_servidor=-1;
     struct addrinfo hints, *servinfo, *p;
 
     memset(&hints, 0, sizeof(hints));
@@ -1480,7 +1480,7 @@ cliente_com_t esperar_cliente(int servidor)
 {
 	cliente_com_t cliente;
 	struct sockaddr_in dir_cliente;
-	int tam_direccion = sizeof(struct sockaddr_in);
+	unsigned int tam_direccion = sizeof(struct sockaddr_in);
 	int socket_cliente = accept(servidor, (void*) &dir_cliente, &tam_direccion);
 	msg_com_t msg;
 	handshake_com_t hs;

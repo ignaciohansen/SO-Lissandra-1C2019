@@ -30,6 +30,8 @@ t_log* log_memoria;
 FILE* tablas_fp;
 t_bitarray* bitmap;
 
+pthread_mutex_t mutex_retardos_memoria;
+
 pthread_mutex_t memoria_mutex_paginas_disponibles;
 pthread_mutex_t mutex_segmento_en_modificacion;
 pthread_mutex_t mutex_tabla_pagina_en_modificacion;

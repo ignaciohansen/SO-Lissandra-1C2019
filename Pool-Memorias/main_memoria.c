@@ -70,17 +70,18 @@ int main(void)
 	iniciar_hilo_gossiping(&mi_id,&gossiping_h);
 #endif
 
-	pthread_create(&servidor_h,NULL,(void *)hilo_servidor,&socket_servidor);
-	pthread_detach(servidor_h);
+	/*pthread_create(&servidor_h,NULL,(void *)hilo_servidor,&socket_servidor);
+	pthread_detach(servidor_h);*/
+
+	pthread_create(&consola_h,NULL,(void *)hilo_consola,&socket_lfs);
 
 	char* path_de_memoria = malloc(strlen(PATH_MEMORIA_CONFIG)+1);
 	strcpy(path_de_memoria, PATH_MEMORIA_CONFIG);
-	pthread_create(&inotify_c,NULL, inotifyAutomatico,path_de_memoria);
-
-
-	pthread_create(&consola_h,NULL,(void *)hilo_consola,&socket_lfs);
-//pthread_detach(journalHilo);
+	pthread_create(&inotify_c,NULL, (void *)inotifyAutomatico,path_de_memoria);
 	pthread_detach(inotify_c);
+
+
+//pthread_detach(journalHilo);
 	pthread_join(consola_h,NULL);
 
 	//ESTO ESTA MAL, PERO QUIERO VER SI FUNCA LO MIO

@@ -8,12 +8,18 @@
 
 time_gos_t ahora(void);
 
-pthread_mutex_t gossip_mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t gossip_table_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t gossip_mutex = PTHREAD_MUTEX_INITIALIZER; //Para que no se ejecute 2 veces a la vez
+pthread_mutex_t gossip_table_mutex = PTHREAD_MUTEX_INITIALIZER; //Para proteger las consultas del vector de seeds
+pthread_mutex_t gossip_retardo_mutex = PTHREAD_MUTEX_INITIALIZER; //Para poder actualizar el retardo sin romper nada
+
 t_list *g_lista_seeds;
 t_log *logger_gossiping = NULL;
 bool gossiping_inicializado = false;
 time_gos_t g_retardo_gos;
+
+
+time_gos_t proxima_ejecucion_gossiping(time_gos_t ultimo);
+
 
 void inicializar_estructuras_gossiping(t_log *logger, time_gos_t retardo)
 {
@@ -27,7 +33,23 @@ void inicializar_estructuras_gossiping(t_log *logger, time_gos_t retardo)
 
 void actualizar_retardo_gossiping(time_gos_t retardo)
 {
+	imprimirMensaje(logger_gossiping, "[ACTUALIZANDO RETARDO GOSSIPING] Voy a actualizar retardo");
+	pthread_mutex_lock(&gossip_retardo_mutex);
 	g_retardo_gos = retardo;
+	pthread_mutex_unlock(&gossip_retardo_mutex);
+	imprimirMensaje1(logger_gossiping, "[ACTUALIZANDO RETARDO GOSSIPING] Retardo actualizado a %d milisegundos", retardo);
+}
+
+time_gos_t proxima_ejecucion_gossiping(time_gos_t ultimo)
+{
+	time_gos_t proximo;
+	time_gos_t actual = ahora();
+	pthread_mutex_lock(&gossip_retardo_mutex);
+	proximo = ultimo + g_retardo_gos;
+	if(proximo < actual)
+		proximo = actual;
+	pthread_mutex_unlock(&gossip_retardo_mutex);
+	return proximo;
 }
 
 void liberar_memoria_gossiping(void)
@@ -240,14 +262,20 @@ void *hilo_gossiping(id_com_t * id_proceso)
 {
 	imprimirMensaje(logger_gossiping,"[HILO GOSSIPING] Entrando a hilo");
 	log_info(logger_gossiping,"[HILO GOSSIPING] Soy proceso %d",*id_proceso);
-	time_gos_t t0 = ahora(), t1 = 0;
+	//time_gos_t t0 = ahora(), t1 = 0;
+	time_gos_t proximo, ultimo = 0;
+	proximo = proxima_ejecucion_gossiping(ultimo);
 	while(1){
 		imprimirMensaje(logger_gossiping,"[HILO GOSSIPING] Voy a correr gossiping");
 		correr_gossiping(*id_proceso);
-		t1 = ahora();
-		imprimirMensaje1(logger_gossiping,"[HILO GOSSIPING] Terminé de ejecutar gossiping. El siguiente es en %d segundos",(g_retardo_gos-(t1-t0))/1000);
-		usleep((g_retardo_gos-(t1-t0))*1000);
-		t0 = ahora();
+		ultimo = ahora();
+		imprimirMensaje(logger_gossiping,"[HILO GOSSIPING] Terminé de ejecutar gossiping.");
+		proximo = proxima_ejecucion_gossiping(ultimo);
+		do{
+			imprimirMensaje1(logger_gossiping,"[HILO GOSSIPING] La próxima ejecución será en %d milisegundos",proximo-ahora());
+			usleep((proximo-ahora())*1000);
+			proximo = proxima_ejecucion_gossiping(ultimo);
+		}while(proximo>ahora());
 	}
 	return NULL;
 }

@@ -410,7 +410,7 @@ void iniciarSemaforosYMutex() {
 	mutexIniciar(&mutex_bloquear_select_por_limpieza);
 
 	mutexIniciar(&verificarSiBitmapLleno);
-
+	mutexIniciar(&mutex_retardos_memoria);
 //	iniciarSemaforosRetados();
 
 	log_info(log_memoria, "[SEMAFOROS] Semaforos y mutex inicializados");
@@ -1040,13 +1040,92 @@ void cargarConfiguracion() {
 			log_error(log_memoria, "[ERROR] NO HAY TAMANIO MAXIMO PARA LA KEY. SETEANDO POR DEFAULT: 10");
 		} // MEMORY NUMBER
 
+
 	} else {
 
 		log_error(log_memoria,
 				"[WARNING] NO HAY ARCHIVO DE CONFIGURACION DE MODULO MEMORIA"); // ERROR: SIN ARCHIVO CONFIGURACION
 
 	}
+}
 
+
+/*
+ * Lo hago en otra función para sólo modificar retardos
+ * Al ser variables globales, se puede romper la memoria si modifican, por ej, el tam maximo del value
+ * Obvio que depende de como se esté usando, pero mejor ahorremonos ese problema
+ */
+
+void recargarConfiguracion(){
+
+	log_info(log_memoria, "[ACTUALIZANDO RETARDOS] Voy a actualizar retardos");
+
+	mutexBloquear(&mutex_retardos_memoria);
+
+	t_config* auxConfigFile = config_create(PATH_MEMORIA_CONFIG);
+
+	if (auxConfigFile != NULL) {
+
+		log_info(log_memoria, "[ACTUALIZANDO RETARDOS] LEYENDO CONFIGURACION...");
+
+		if (config_has_property(auxConfigFile, "RETARDO_MEM")) {
+
+			arc_config->retardo_mem = config_get_int_value(auxConfigFile,
+					"RETARDO_MEM");
+			log_info(log_memoria, "[ACTUALIZANDO RETARDOS] RETARTDO MEMORIA: %d",
+					arc_config->retardo_mem);
+
+		} else {
+			log_error(log_memoria, "[ACTUALIZANDO RETARDOS] NO HAY RETARDO CONFIGURADO");
+		} // RETARDO DE MEMORIA
+
+		if (config_has_property(auxConfigFile, "RETARDO_FS")) {
+
+			arc_config->retardo_fs = config_get_int_value(auxConfigFile, "RETARDO_FS");
+			log_info(log_memoria, "[ACTUALIZANDO RETARDOS] RETARDO DEL FS: %d",
+					arc_config->retardo_fs);
+
+		} else {
+			log_error(log_memoria, "[ACTUALIZANDO RETARDOS] NO HAY RETARDO DE FS CONFIGURADO");
+		} // RETARDO FS
+
+		if (config_has_property(auxConfigFile, "RETARDO_JOURNAL")) {
+
+			arc_config->retardo_journal = config_get_int_value(auxConfigFile,
+					"RETARDO_JOURNAL");
+			log_info(log_memoria,
+					"[ACTUALIZANDO RETARDOS] RETARDO DEL JOURNALING: %d",
+					arc_config->retardo_journal);
+
+		} else {
+			log_error(log_memoria,
+					"[ACTUALIZANDO RETARDOS] NO HAY RETARDO DE JOURNALING CONFIGURADO");
+		} // RETARDO JOURNALING
+
+		if (config_has_property(auxConfigFile, "RETARDO_GOSSIPING")) {
+
+			arc_config->retardo_gossiping = config_get_int_value(auxConfigFile,
+					"RETARDO_GOSSIPING");
+			log_info(log_memoria, "[ACTUALIZANDO RETARDOS] RETARDO DE GOSSIPING: %d",
+					arc_config->retardo_gossiping);
+
+		} else {
+			log_error(log_memoria,
+					"[ACTUALIZANDO RETARDOS] NO HAY RETARDO DE GOSSIPING CONFIGURADO");
+		} // RETARDO GOSSIPING
+
+	} else {
+		log_error(log_memoria,
+				"[ACTUALIZANDO RETARDOS] NO HAY ARCHIVO DE CONFIGURACION DE MODULO MEMORIA"); // ERROR: SIN ARCHIVO CONFIGURACION
+	}
+
+	config_destroy(auxConfigFile);
+
+	actualizar_retardo_gossiping(arc_config->retardo_gossiping);
+
+	log_info(log_memoria, "[ACTUALIZANDO RETARDOS] RETARDOS ACTUALIZADOS CORRECTAMENTE");
+
+	mutexDesbloquear(&mutex_retardos_memoria);
 }
 
 

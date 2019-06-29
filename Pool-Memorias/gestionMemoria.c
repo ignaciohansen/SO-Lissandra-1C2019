@@ -507,6 +507,8 @@ void liberar_config(void)
 	}
 	free(arc_config);
 
+	config_destroy(configFile);
+
 }
 
 
