@@ -972,7 +972,8 @@ void esperarTiempoDump() {
 
 	while (true) {
 
-		sleep(2);
+		//usleep(configFile->tiempo_dump*1000);
+		sleep(5);
 		log_info(logger, "Es tiempo de dump, hay cosas en la memtable?");
 		mutexBloquear(&listaTablasInsertadas_mx);
 		int tam = list_size(listaTablasInsertadas);
@@ -1047,35 +1048,70 @@ void crearArchivoTemporal(char* path, char* tabla) {
 	if (posicion == 1) {
 		//ocuparBloqueLibreBitmap(posicion);
 		FILE* temporal;
-		temporal = fopen(path, "w");
+		temporal = fopen(path, "wb");
 		log_info(logger, "creamos el archivo, ahora  lo llenamos");
-		//t_list* listaRegistrosTabla;
 		//listaRegistrosTabla = list_create();
 		t_list* listaRegistrosTabla = dictionary_get(memtable, tabla);
 		int cantidad_registros = list_size(listaRegistrosTabla);
 		log_info(logger, "cantidad de registros insertados en esa tabla: %d",
 				cantidad_registros);
+		char punto_y_coma = ';';
+		char barra_n = '/n';
+		int tam_total_registros;
+		t_registroMemtable* registro;
+		int offset = 0;
 
-		char *registroAInsertar = malloc(sizeof(char) * 100); //configFile->tamanio_value + sizeof(u_int16_t) + sizeof(double)
-		registroAInsertar = string_new();
+		for(int i = 0; i< cantidad_registros; i++){
+			registro = list_get(listaRegistrosTabla, i);
+
+			tam_total_registros += registro->tam_registro;
+		}
+
+		tam_total_registros += sizeof(char)*3*cantidad_registros;
+
+		void *registrosAInsertar = malloc(tam_total_registros);
+		registrosAInsertar = string_new();
 
 		for (int i = 0; i < cantidad_registros; i++) {
 
-			t_registroMemtable* registro = list_get(listaRegistrosTabla, i);
-			tamanioRegistros[indiceTablaParaTamanio] += registro->tam_registro;
-			string_append(&registroAInsertar, "timestamp");
-			string_append(&registroAInsertar, ";");
-			string_append(&registroAInsertar, "key");
-			string_append(&registroAInsertar, ";");
-			string_append(&registroAInsertar, registro->value);
-			string_append(&registroAInsertar, "\n");
+			registro = list_get(listaRegistrosTabla, i);
+			memcpy(registrosAInsertar, &registro->timestamp, sizeof(double));
+			offset += sizeof(double);
+			memcpy(registrosAInsertar, &punto_y_coma, sizeof(char));
+			offset += sizeof(char);
+			memcpy(registrosAInsertar, &registro->key, sizeof(u_int16_t));
+			offset += sizeof(u_int16_t);
+			memcpy(registrosAInsertar, &punto_y_coma, sizeof(char));
+			offset += sizeof(char);
+			memcpy(registrosAInsertar, &registro->value, strlen(registro->value));
+			offset += strlen(registro->value);
+			memcpy(registrosAInsertar, &barra_n, sizeof(char));
+			offset += sizeof(char);
 
 		}
-		log_info(logger, "Tamanio total de los registros de la %s es: %d",tabla,tamanioRegistros[indiceTablaParaTamanio]);
-		log_info(logger, "Datos a insertar en el tmp: \n%s",registroAInsertar);
-		fputs(registroAInsertar, temporal);
+		log_info(logger, "Tamanio total de los registros de la %s es: %d",tabla,tam_total_registros);
+
+		//escribirBloque(path, registrosAInsertar, tam_total_registros);
+
+		fwrite(registrosAInsertar, 1, tam_total_registros, temporal);
 		fclose(temporal);
-		free(registroAInsertar);
+		free(registrosAInsertar);
+		free(registro);
+
+		//fwrite((void*)registroAInsertar, 1, strlen(registroAInsertar), temporal);
+		/*
+		log_info(logger, "Datos a insertar en el tmp: \n%s",registrosAInsertar);
+		void* hola = malloc(sizeof(int));
+		int pruebaHola = 3;
+		memcpy(hola, &pruebaHola, sizeof(int));
+		fwrite(&hola, 1, sizeof(int), temporal);*/
+		/*int int1 = 3;
+		int int2 = 4;
+		void *buffer;
+		buffer = malloc (sizeof(int)); //+ sizeof(int));
+		memcpy (buffer, &int1, sizeof(int));
+		//memcpy (buffer + sizeof(int), &int2, sizeof(int));
+		log_info(logger, "en el buffer: %d", *(int*)buffer);*/
 	} else {
 		log_error(logger,
 				"No se pudo realizar el dump pq no hay lugar en el bitmap");
@@ -1083,6 +1119,28 @@ void crearArchivoTemporal(char* path, char* tabla) {
 }
 
 //DUMP
+
+//Lectura y escritura de bloques
+
+/*void escribirBloque(char* path, void* lista_registros, int tam_registros){
+
+	FILE* archivo;
+	archivo = fopen(path, "wb");
+
+	fwrite(lista_registros, 1, tam_registros, archivo);
+
+	fclose(archivo);
+
+}*/
+
+/*void* leerBloque(char* path){
+	FILE* bloque;
+	bloque = fopen(path, "rb");
+
+	fread
+}*/
+
+//Lectura y escritara de bloques
 
 int determinarParticion(int key, int particiones) {
 
