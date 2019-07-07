@@ -486,4 +486,8 @@ cliente_com_t esperar_cliente(int servidor);
 */
 int conectar_a_servidor(char *ip,char *puerto, id_com_t id);
 
+int dar_bienvenida_cliente(int socket, id_com_t yo, char *msg);
+int rechazar_cliente(int socket, char *msg);
+int responder_request(int socket,char *msg, resp_tipo_com_t tipo_resp);
+
 #endif

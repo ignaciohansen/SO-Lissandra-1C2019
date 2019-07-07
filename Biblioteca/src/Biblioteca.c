@@ -1567,4 +1567,58 @@ void borrar_gossiping(gos_com_t gos)
 }
 
 
+int dar_bienvenida_cliente(int socket, id_com_t id, char *msg)
+{
+	handshake_com_t hs;
+	int retval = 1;
+	hs.id = id;
+	hs.msg.tam = strlen(msg)+1;
+	hs.msg.str = malloc(hs.msg.tam);
+	strcpy(hs.msg.str,msg);
+	if(enviar_handshake(socket,hs) == -1){
+		retval = -1;
+	}
+	borrar_handshake(hs);
+	return retval;
+}
 
+int rechazar_cliente(int socket, char *msg)
+{
+	handshake_com_t hs;
+	int retval = 1;
+	hs.id = RECHAZADO;
+	if(msg != NULL){
+		hs.msg.tam = strlen(msg)+1;
+		hs.msg.str = malloc(hs.msg.tam);
+		strcpy(hs.msg.str,msg);
+	}
+	else{
+		hs.msg.tam = 0;
+		hs.msg.str = NULL;
+	}
+	if(enviar_handshake(socket,hs) == -1)
+		retval = -1;
+	borrar_handshake(hs);
+	return retval;
+}
+
+int responder_request(int socket,char *msg, resp_tipo_com_t tipo_resp)
+{
+	resp_com_t resp;
+	resp.tipo = tipo_resp;
+	if(msg != NULL){
+		resp.msg.tam = strlen(msg)+1;
+		resp.msg.str = malloc(resp.msg.tam);
+		strcpy(resp.msg.str,msg);
+	}
+	else{
+		resp.msg.tam = 0;
+		resp.msg.str = NULL;
+	}
+	if(enviar_respuesta(socket,resp)==-1){
+		borrar_respuesta(resp);
+		return -1;
+	}
+	borrar_respuesta(resp);
+	return 1;
+}
