@@ -986,7 +986,6 @@ void esperarTiempoDump() {
 			log_info(logger, "La memtable esta vacia");
 		}
 
-
 	}
 
 }
@@ -1063,13 +1062,13 @@ void crearArchivoTemporal(char* path, char* tabla) {
 		t_registroMemtable* registro;
 		int offset = 0;
 
-		for(int i = 0; i< cantidad_registros; i++){
+		for (int i = 0; i < cantidad_registros; i++) {
 			registro = list_get(listaRegistrosTabla, i);
 
 			tam_total_registros += registro->tam_registro;
 		}
 
-		tam_total_registros += sizeof(char)*3*cantidad_registros;
+		tam_total_registros += sizeof(char) * 3 * cantidad_registros;
 
 		void *registrosAInsertar = malloc(tam_total_registros);
 		//registrosAInsertar = string_new();
@@ -1091,7 +1090,8 @@ void crearArchivoTemporal(char* path, char* tabla) {
 			offset += sizeof(char);
 
 		}
-		log_info(logger, "Tamanio total de los registros de la %s es: %d",tabla,tam_total_registros);
+		log_info(logger, "Tamanio total de los registros de la %s es: %d",
+				tabla, tam_total_registros);
 
 		//escribirBloque(path, registrosAInsertar, tam_total_registros);
 
@@ -1102,18 +1102,18 @@ void crearArchivoTemporal(char* path, char* tabla) {
 
 		//fwrite((void*)registroAInsertar, 1, strlen(registroAInsertar), temporal);
 		/*
-		log_info(logger, "Datos a insertar en el tmp: \n%s",registrosAInsertar);
-		void* hola = malloc(sizeof(int));
-		int pruebaHola = 3;
-		memcpy(hola, &pruebaHola, sizeof(int));
-		fwrite(&hola, 1, sizeof(int), temporal);*/
+		 log_info(logger, "Datos a insertar en el tmp: \n%s",registrosAInsertar);
+		 void* hola = malloc(sizeof(int));
+		 int pruebaHola = 3;
+		 memcpy(hola, &pruebaHola, sizeof(int));
+		 fwrite(&hola, 1, sizeof(int), temporal);*/
 		/*int int1 = 3;
-		int int2 = 4;
-		void *buffer;
-		buffer = malloc (sizeof(int)); //+ sizeof(int));
-		memcpy (buffer, &int1, sizeof(int));
-		//memcpy (buffer + sizeof(int), &int2, sizeof(int));
-		log_info(logger, "en el buffer: %d", *(int*)buffer);*/
+		 int int2 = 4;
+		 void *buffer;
+		 buffer = malloc (sizeof(int)); //+ sizeof(int));
+		 memcpy (buffer, &int1, sizeof(int));
+		 //memcpy (buffer + sizeof(int), &int2, sizeof(int));
+		 log_info(logger, "en el buffer: %d", *(int*)buffer);*/
 	} else {
 		log_error(logger,
 				"No se pudo realizar el dump pq no hay lugar en el bitmap");
@@ -1126,14 +1126,14 @@ void crearArchivoTemporal(char* path, char* tabla) {
 
 /*void escribirBloque(char* path, void* lista_registros, int tam_registros){
 
-	FILE* archivo;
-	archivo = fopen(path, "wb");
+ FILE* archivo;
+ archivo = fopen(path, "wb");
 
-	fwrite(lista_registros, 1, tam_registros, archivo);
+ fwrite(lista_registros, 1, tam_registros, archivo);
 
-	fclose(archivo);
+ fclose(archivo);
 
-}*/
+ }*/
 
 void* leerBloque(char* path){
 	FILE* bloque;
@@ -1199,7 +1199,6 @@ void rutaParticion(int particion) {
 	char * stringParticion = malloc(sizeof(char) * 3);
 
 	sprintf(stringParticion, "%d", particion);
-	log_info(logger, "resultado de sprintf %s", stringParticion);
 
 	archivoParticion = malloc(
 			string_length(tablaAverificar) + string_length(stringParticion)
@@ -1353,36 +1352,53 @@ char* buscarBloque(char* key) {
 
 void eliminarTablaCompleta(char* tabla) {
 
-	obtenerMetadataTabla(tabla);
+	if (obtenerMetadataTabla(tabla) == 0) {
 
-	for (int i = 0; i < metadata->particiones; i++) {
+		for (int i = 0; i < metadata->particiones; i++) {
 
-		rutaParticion(i);
+			rutaParticion(i);
 
-		log_info(logger, "Vamos a eliminar el archivo binario  de la tabla: %s",
-				archivoParticion);
+			log_info(logger,
+					"Vamos a eliminar el archivo binario  de la tabla: %s",
+					archivoParticion);
 
-		int retParticion = remove(archivoParticion);
+			int retParticion = remove(archivoParticion);
 
-		if (retParticion == 0) { // Eliminamos el archivo
-			log_info(logger, "El archivo fue eliminado satisfactoriamente\n");
-		} else {
-			log_info(logger, "No se pudo eliminar el archivo\n");
+			if (retParticion == 0) { // Eliminamos el archivo
+				log_info(logger,
+						"El archivo fue eliminado satisfactoriamente\n");
+			} else {
+				log_info(logger, "No se pudo eliminar el archivo\n");
 
+			}
 		}
+
 	}
 
 	for (int j = 0; j <= cantidad_de_dumps; j++) {
 
 		char* archivoTemporal = armarPathTablaParaDump(tabla, j);
+		char* archivoTemporalC = armarPathTablaParaDump(tabla, j);
+		string_append(&archivoTemporalC, "c");
 
 		log_info(logger,
 				"Vamos a eliminar el archivo temporal  de la tabla: %s",
 				archivoTemporal);
 
+		log_info(logger,
+				"Vamos a eliminar el archivo temporal a compactar de la tabla: %s",
+				archivoTemporalC);
+
 		int retTemporal = remove(archivoTemporal);
+		int retTemporalC = remove(archivoTemporalC);
 
 		if (retTemporal == 0) { // Eliminamos el archivo
+			log_info(logger, "El archivo fue eliminado satisfactoriamente\n");
+		} else {
+			log_info(logger, "No se pudo eliminar el archivo\n");
+		}
+
+		if (retTemporalC == 0) { // Eliminamos el archivo
 			log_info(logger, "El archivo fue eliminado satisfactoriamente\n");
 		} else {
 			log_info(logger, "No se pudo eliminar el archivo\n");
@@ -1569,6 +1585,15 @@ void comandoCreate(char* tabla, char* consistencia, char* particiones,
 				rutaParticion(i);
 				FILE* particion;
 				particion = fopen(archivoParticion, "w");
+				char* lineaParticion = malloc(string_length("SIZE=")+ sizeof(int)+ string_length("BLOCK=[]")+ sizeof(int)+4);
+				lineaParticion = string_new();
+				string_append(&lineaParticion,"SIZE=0");
+				//string_append(&lineaParticion,"1");
+				string_append(&lineaParticion,"\n");
+				string_append(&lineaParticion,"BLOCK=[");
+				string_append(&lineaParticion,"1");
+				string_append(&lineaParticion,"]");
+				fputs(lineaParticion,particion);
 				log_info(logger, "Particion creada: %s", archivoParticion);
 				fclose(particion);
 			}
@@ -1643,7 +1668,6 @@ void comandoInsert(char* tabla, char* key, char* value, char* timestamp) {
 				mutexDesbloquear(&listaTablasInsertadas_mx);
 
 			}
-
 
 			/*free(valueDesenmascarado);
 			 free(registroPorAgregarE);

@@ -27,6 +27,7 @@
 #define LOG_PATH "/home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Log/LOG_LFS.txt"
 #define TABLE_PATH "/Tables/"
 
+
 #define atoa(x) #x
 
 t_log* logger;
