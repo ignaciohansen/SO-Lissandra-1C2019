@@ -8,34 +8,7 @@
 #define COMPILAR_MAIN_MEMORIA
 #ifdef COMPILAR_MAIN_MEMORIA
 
-#include "parser.h"
-#include "memoria.h"
-#include "gestionMemoria.h"
-#include "Inotify.h"
-
-
-typedef struct{
-	int socket_cliente;
-	bool requiere_lfs;
-}hilo_cliente_args_t;
-
-int conectar_a_lfs(void);
-int levantar_servidor_memoria(void);
-void* hilo_consola(int * socket_p);
-char* resolver_pedido(request_t req, int socket_lfs);
-char *resolver_select(int socket_lfs,request_t req);
-int resolver_insert(request_t req, int modif);
-char *resolver_describe(int socket_lfs,request_t req);
-char *resolver_create(int socket_lfs,request_t req);
-int resolver_drop(int socket_lfs,request_t req);
-int resolver_journal(int socket_lfs,request_t req);
-void* hilo_servidor(int * socket_p);
-void * hilo_cliente(hilo_cliente_args_t *args);
-int dar_bienvenida_cliente(int socket);
-int rechazar_cliente(int socket);
-int responder_request(int socket,char *msg, resp_tipo_com_t tipo_resp);
-int inicializar_gossiping_memoria(void);
-int responder_gossiping(gos_com_t recibido,id_com_t id_proceso,int socket);
+#include "main_memoria.h"
 
 //#define AUTOLANZAR_SERVER
 //#define AUTOLANZAR_CLIENTE
@@ -46,6 +19,7 @@ int main(int argc, char **argv)
 {
 	// LOGGING
 	printf("INICIANDO EL MODULO MEMORIA \n COMINEZA EL TP PIBE\n\n");
+
 #ifdef TESTEAR_GOSSIPING
 	if(argc>1)
 		inicioLogYConfig(argv[1]);
@@ -61,12 +35,18 @@ int main(int argc, char **argv)
 	system(cmd_server);
 #endif
 
-	max_valor_key = arc_config->max_value_key;
+	int socket_lfs = conectar_a_lfs(true,&max_valor_key);
+
+	if(socket_lfs == -1 || max_valor_key <= 0){
+		imprimirError(log_memoria,"[MAIN] Error al conectar al LFS, terminando!\n");
+		return 1;
+	}
+	arc_config->max_value_key = max_valor_key;
+	imprimirMensaje1(log_memoria,"[MAIN] Iniciando con tamaño máiximo de valor %d",arc_config->max_value_key);
+
 	armarMemoriaPrincipal();
 
 	iniciarSemaforosYMutex();
-
-	int socket_lfs = conectar_a_lfs();
 
 	int socket_servidor = levantar_servidor_memoria();
 
@@ -127,19 +107,19 @@ int levantar_servidor_memoria(void)
 	return socket;
 }
 
-int conectar_a_lfs(void)
+int conectar_a_lfs(bool inicializando, int *tam_valor)
 {
 	id_com_t memoria = MEMORIA;
 	char puerto_fs[20];
 	snprintf(puerto_fs,19,"%d",arc_config->puerto_fs);
-	imprimirAviso2(log_memoria,"\n[CONECTANDO A LFS] Me voy a intentar conectar a ip: <%s> puerto: <%s>", arc_config->ip_fs, puerto_fs);
+	imprimirMensaje2(log_memoria,"[CONECTANDO A LFS] Me voy a intentar conectar a ip: <%s> puerto: <%s>", arc_config->ip_fs, puerto_fs);
 	int socket = conectar_a_servidor(arc_config->ip_fs,puerto_fs,memoria);
 	if(socket == -1){
 		imprimirError(log_memoria,"[CONECTANDO A LFS] No fue posible conectarse con lissandra. TERMINANDO\n");
 		return -1;
 	}
 
-	imprimirAviso(log_memoria,"[CONECTANDO A LFS] Me conecté con éxito al lfs. Espero su hs");
+	imprimirMensaje(log_memoria,"[CONECTANDO A LFS] Me conecté con éxito al lfs. Espero su hs");
 	//Si me conecté, espero su msg de bienvenida
 
 	msg_com_t msg = recibir_mensaje(socket);
@@ -154,15 +134,28 @@ int conectar_a_lfs(void)
 	borrar_mensaje(msg);
 
 	if(hs.id == RECHAZADO){
-		if(hs.msg.tam ==0 )
+		if(hs.msg.tam == 0 )
 			imprimirError(log_memoria,"[CONECTANDO A LFS] Lfs rechazo la conexión. TERMINANDO\n");
 		else
 			imprimirError1(log_memoria,"[CONECTANDO A LFS] Lfs rechazo la conexión [%s]. TERMINANDO\n",hs.msg.str);
 		borrar_handshake(hs);
+		close(socket);
 		return -1;
 	}
+	if(inicializando){
+		if(hs.msg.tam == 0){
+			imprimirError(log_memoria,"[CONECTANDO A LFS] Lfs no mandó el tamaño de los valores. TERMINANDO\n");
+			borrar_handshake(hs);
+			close(socket);
+			return -1;
+		}
+		else{
+			imprimirMensaje1(log_memoria,"[CONECTANDO A LFS] Recibido el máximo tamaño para los valores. Es %s",hs.msg.str);
+			*tam_valor = atoi(hs.msg.str);
+		}
+	}
 	borrar_handshake(hs);
-	imprimirAviso(log_memoria,"[CONECTANDO A LFS] Me conecté con éxito al lfs");
+	imprimirMensaje(log_memoria,"[CONECTANDO A LFS] Me conecté con éxito al lfs");
 
 	return socket;
 }
@@ -222,19 +215,19 @@ void* hilo_servidor(int * socket_p){
 			case MEMORIA:
 				args.socket_cliente = cliente.socket;
 				args.requiere_lfs = false;
-				dar_bienvenida_cliente(cliente.socket);
+				dar_bienvenida_cliente(cliente.socket, MEMORIA, "Bienvenido!");
 				pthread_create(&thread,NULL,(void *)hilo_cliente, &args );
 				pthread_detach(thread);
 				break;
 			case KERNEL:
 				args.socket_cliente = cliente.socket;
 				args.requiere_lfs = true;
-				dar_bienvenida_cliente(cliente.socket);
+				dar_bienvenida_cliente(cliente.socket, MEMORIA, "Bienvenido!");
 				pthread_create(&thread,NULL,(void *)hilo_cliente, &args );
 				pthread_detach(thread);
 				break;
 			default:
-				rechazar_cliente(cliente.socket);
+				rechazar_cliente(cliente.socket,NULL);
 				close(cliente.socket);
 				break;
 		}
@@ -248,7 +241,7 @@ void * hilo_cliente(hilo_cliente_args_t *args)
 	int socket_cliente = args->socket_cliente;
 	int socket_lfs = -1;
 	if(args->requiere_lfs){
-		socket_lfs = conectar_a_lfs();
+		socket_lfs = conectar_a_lfs(false,NULL);
 		if(socket_lfs == -1){
 			imprimirError(log_memoria,"[CLIENTE] No pude conectarme al lfs");
 		}
@@ -301,6 +294,8 @@ void * hilo_cliente(hilo_cliente_args_t *args)
 				if(socket_lfs != -1)
 					close(socket_lfs);
 				fin = true;
+				if(socket_cliente != -1)
+					close(socket_cliente);
 				break;
 			default:
 				imprimirAviso(log_memoria,"[CLIENTE] El tipo de mensaje no está permitido para este cliente");
@@ -323,50 +318,6 @@ int responder_gossiping(gos_com_t recibido,id_com_t id_proceso,int socket)
 	}
 	borrar_gossiping(conocidas);
 #endif
-	return 1;
-}
-
-int responder_request(int socket,char *msg, resp_tipo_com_t tipo_resp)
-{
-	resp_com_t resp;
-	resp.tipo = tipo_resp;
-	if(msg != NULL){
-		resp.msg.tam = strlen(msg)+1;
-		resp.msg.str = malloc(resp.msg.tam);
-		strcpy(resp.msg.str,msg);
-	}
-	else{
-		resp.msg.tam = 0;
-		resp.msg.str = NULL;
-	}
-	if(enviar_respuesta(socket,resp)==-1){
-		borrar_respuesta(resp);
-		return -1;
-	}
-	borrar_respuesta(resp);
-	return 1;
-}
-
-int dar_bienvenida_cliente(int socket)
-{
-	handshake_com_t hs;
-	hs.id = MEMORIA;
-	hs.msg.tam = 40;
-	hs.msg.str = malloc(hs.msg.tam);
-	strcpy(hs.msg.str,"Bienvenido");
-	enviar_handshake(socket,hs);
-	borrar_handshake(hs);
-	return 1;
-}
-
-int rechazar_cliente(int socket)
-{
-	handshake_com_t hs;
-	hs.id = RECHAZADO;
-	hs.msg.tam = 0;
-	hs.msg.str = NULL;
-	enviar_handshake(socket,hs);
-	borrar_handshake(hs);
 	return 1;
 }
 
@@ -427,9 +378,6 @@ char* resolver_pedido(request_t req, int socket_lfs)
 			}
 			break;
 		case JOURNALCOMANDO:
-			mutexBloquear(&JOURNALHecho);
-			pthread_cancel(journalHilo);
-
 			imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver JOURNAL");
 			if(resolver_journal(socket_lfs,req) != -1){
 				imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] JOURNAL hecho correctamente");
@@ -438,10 +386,8 @@ char* resolver_pedido(request_t req, int socket_lfs)
 			else{
 				imprimirError(log_memoria,"[RESOLVIENDO PEDIDO] El JOURNAL no pudo realizarse");
 			}
-			pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
-			pthread_detach(journalHilo);
-			mutexDesbloquear(&JOURNALHecho);
-
+		/*	pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
+			pthread_detach(journalHilo);*/
 
 			break;
 		default:
@@ -465,6 +411,7 @@ int resolver_drop(int socket_lfs,request_t req)
 	}
 	char *nombre_tabla = malloc(strlen(req.args[0])+1);
 	strcpy(nombre_tabla,req.args[0]);
+	retardo_memoria();
 	if(funcionDrop(nombre_tabla)==-1){
 		imprimirAviso1(log_memoria, "[RESOLVIENDO DROP] La tabla ya fue eliminada o no existe en memoria: <%s>", nombre_tabla);
 	}
@@ -476,6 +423,8 @@ int resolver_drop(int socket_lfs,request_t req)
 	strcpy(enviar.str,"DROP ");
 	strcat(enviar.str,nombre_tabla);
 	free(nombre_tabla);
+	retardo_fs();
+	imprimirMensaje(log_memoria, "[RESOLVIENDO DROP] Voy a enviar el drop al filesystem");
 	if(enviar_request(socket_lfs,enviar) == -1){
 		imprimirError(log_memoria, "[RESOLVIENDO DROP] No se puedo enviar el drop al filesystem");
 	}
@@ -517,7 +466,7 @@ char *resolver_create(int socket_lfs,request_t req)
 	a_enviar.tam = strlen(req.request_str)+1;
 	a_enviar.str = malloc(a_enviar.tam);
 	strcpy(a_enviar.str,req.request_str);
-
+	retardo_fs();
 	imprimirMensaje1(log_memoria, "[RESOLVIENDO CREATE] Voy a enviar request a lfs: %s",a_enviar.str);
 	if(enviar_request(socket_lfs,a_enviar) == -1){
 		imprimirError(log_memoria,"[RESOLVIENDO CREATE] Error al enviar el request");
@@ -593,6 +542,7 @@ int resolver_insert(request_t req, int modif)
 	char *nombre_tabla = req.args[0];
 	uint16_t key = atoi(req.args[1]);
 	char *valor = req.args[2];
+	retardo_memoria();
 	imprimirMensaje3(log_memoria,"[RESOLVIENDO INSERT] Voy a agregar %s en la key %d de la tabla %s",valor,key,nombre_tabla);
 	if(funcionInsert(nombre_tabla, key, valor, modif, timestamp_val)== -1){
 		imprimirError(log_memoria, "[RESOLVIENDO INSERT]ERROR: Mayor al pasar max value");
@@ -656,6 +606,7 @@ char *resolver_select(int socket_lfs,request_t req)
 	char *valor;
 	char *nombre_tabla = req.args[0];
 	uint16_t key = atoi(req.args[1]);
+	retardo_memoria();
 	valor = select_memoria(nombre_tabla,key);
 	if(valor == NULL){
 		imprimirAviso(log_memoria,"[RESOLVIENDO SELECT] En memoria no existe la tabla o no existe la key en la misma");
@@ -666,6 +617,7 @@ char *resolver_select(int socket_lfs,request_t req)
 			enviar.tam = strlen(req.request_str)+1;
 			enviar.str = malloc(enviar.tam);
 			strcpy(enviar.str,req.request_str);
+			retardo_fs();
 			imprimirMensaje(log_memoria,"[RESOLVIENDO SELECT] Voy a mandar select al lfs\n");
 			if(enviar_request(socket_lfs,enviar) == -1){
 				imprimirError(log_memoria,"[RESOLVIENDO SELECT] ERROR al conectarse con lfs para enviar select\n");
@@ -678,30 +630,41 @@ char *resolver_select(int socket_lfs,request_t req)
 			msg_com_t msg;
 			resp_com_t resp;
 			request_t req_lfs;
+			char *aux;
 
 			msg = recibir_mensaje(socket_lfs);
 			imprimirMensaje(log_memoria,"[RESOLVIENDO SELECT] Recibi respuesta del lfs");
 			if(msg.tipo == RESPUESTA){
 				resp = procesar_respuesta(msg);
-				//ASUMO QUE ME VA A LLEGAR ALGO DEL TIPO: INSERT <TABLA> <KEY> <VALOR> <TIMESTAMP>
-				imprimirMensaje(log_memoria,"\nAVISO, el lfs contesto\n");
+				//EL MENSAJE DE RESPUESTA PARA UN SELECT DEBE SER VALOR|TIMESTAMP
+				imprimirMensaje(log_memoria,"[RESOLVIENDO SELECT] El lfs contesto");
 				if(resp.tipo == RESP_OK){
 					imprimirMensaje(log_memoria,"[RESOLVIENDO SELECT] El lfs pudo resolver el select con exito");
-					imprimirMensaje1(log_memoria,"[RESOLVIENDO SELECT] REPUESTA: %s",resp.msg.str);
-					req_lfs = parser(resp.msg.str);
+					imprimirMensaje1(log_memoria,"[RESOLVIENDO SELECT] REPUESTA (VALOR|TIMESTAMP): %s",resp.msg.str);
+
+					aux = armar_insert(resp.msg.str,nombre_tabla,key);
 					borrar_respuesta(resp);
-					if(req_lfs.command != INSERT){
-						imprimirAviso(log_memoria,"[RESOLVIENDO SELECT] No reconozco lo que recibi del lfs");
+					imprimirMensaje1(log_memoria,"[RESOLVIENDO SELECT] REPUESTA TRANSFORMADA A: %s",aux);
+					//req_lfs = parser(resp.msg.str);
+					if(aux != NULL){
+						req_lfs = parser(aux);
+						free(aux);
+						if(req_lfs.command != INSERT){
+							imprimirAviso(log_memoria,"[RESOLVIENDO SELECT] No reconozco lo que recibi del lfs");
+						}
+						else{
+							resolver_insert(req_lfs,false);
+							imprimirMensaje(log_memoria,"[RESOLVIENDO SELECT] Agregué el valor a memoria");
+							if(req_lfs.cant_args >= 3){
+								valor = malloc(strlen(req_lfs.args[2])+1);
+								strcpy(valor,req_lfs.args[2]);
+							}
+						}
+						borrar_request(req_lfs);
 					}
 					else{
-						resolver_insert(req_lfs,false);
-						imprimirMensaje(log_memoria,"[RESOLVIENDO SELECT] Agregué el valor a memoria");
-						if(req_lfs.cant_args >= 3){
-							valor = malloc(strlen(req_lfs.args[2])+1);
-							strcpy(valor,req_lfs.args[2]);
-						}
+						imprimirAviso(log_memoria, "[RESOLVIENDO SELECT] No obtengo la respuesta que espero");
 					}
-					borrar_request(req_lfs);
 				}
 				else{
 					imprimirAviso(log_memoria,"[RESOLVIENDO SELECT] El lfs no pudo resolver el select");
@@ -719,6 +682,27 @@ char *resolver_select(int socket_lfs,request_t req)
 	return valor;
 }
 
+char *armar_insert(char *respuesta_select, char *tab, int key)
+{
+	char *retval, **aux;
+	int cant = 0;
+	//VALOR|TIMESTAMP
+	aux = string_split(respuesta_select,"|");
+	while(aux[cant]){
+		cant++;
+	}
+	if(cant!=2){
+		return NULL;
+	}
+	retval = malloc(MAX_LONG_INSERT);
+	snprintf(retval,MAX_LONG_INSERT-1,"INSERT %s %d %s %s", tab,key, aux[0], aux[1]);
+	for(int j=0; j<cant ; j++){
+		free(aux[j]);
+	}
+	free(aux);
+	return retval;
+}
+
 char *resolver_describe(int socket_lfs, request_t req)
 {
 	char *ret_val;
@@ -728,7 +712,7 @@ char *resolver_describe(int socket_lfs, request_t req)
 	a_enviar.tam = strlen(req.request_str)+1;
 	a_enviar.str = malloc(a_enviar.tam);
 	strcpy(a_enviar.str,req.request_str);
-
+	retardo_fs();
 	imprimirMensaje1(log_memoria, "[RESOLVIENDO DESCRIBE] Voy a enviar request a lfs: %s",a_enviar.str);
 	if(enviar_request(socket_lfs,a_enviar) == -1){
 		imprimirError(log_memoria,"[RESOLVIENDO DESCRIBE] Error al enviar el request");

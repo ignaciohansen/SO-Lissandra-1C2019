@@ -2,6 +2,7 @@
 #include "gestionMemoria.h"
 //#include "../Biblioteca/src/Biblioteca.c"
 #include "../Biblioteca/src/Biblioteca.h"
+#include "main_memoria.h"
 //void terminar_memoria(t_log* g_log);
 
 //#define MAIN_1
@@ -965,7 +966,7 @@ void cargarConfiguracion(char *path_config) {
 
 			arc_config->retardo_mem = config_get_int_value(configFile,
 					"RETARDO_MEM");
-			log_info(log_memoria, "[CONFIGURANDO MODULO] RETARTDO MEMORIA: %d",
+			log_info(log_memoria, "[CONFIGURANDO MODULO] RETARDO MEMORIA: %d",
 					arc_config->retardo_mem);
 
 		} else {
@@ -1022,7 +1023,7 @@ void cargarConfiguracion(char *path_config) {
 			arc_config->memory_number = config_get_int_value(configFile,
 					"MEMORY_NUMBER");
 			log_info(log_memoria, "[CONFIGURANDO MODULO] NUMERO DE MEMORIA: %d",
-					arc_config->retardo_mem);
+					arc_config->memory_number);
 
 		} else {
 			log_error(log_memoria, "[ERROR] NO HAY NUMERO DE MEMORIA CONFIGURADO");
@@ -1135,17 +1136,16 @@ void recargarConfiguracion(char *path_config){
 
 void JOURNAL(int socket_lfs) {
 //	log_info(log_memoria, "[JOURNAL] EN JOURNAL");
-	imprimirAviso(log_memoria, "\n\nREALIZANDO JOURNAL\n\n");
+	imprimirAviso(log_memoria, "[JOURNAL] ENTRANDO");
 //	char* datosAPasar=NULL;
 	datosJournal* journalAPasar;
+	retardo_memoria();
 	journalAPasar = obtener_todos_journal();
 	log_info(log_memoria, "[JOURNAL] PROCEDO A ENVIAR LA INFORMACION A LISANDRA");
 
 	log_info(log_memoria, "[JOURNAL] ENVIO EL MENSAJE A LISANDRA");
 
 	pasarValoresALisandra(journalAPasar,socket_lfs);
-
-	log_info(log_memoria, "[JOURNAL] Lisandra responde que recibio el mensaje");
 
 	log_info(log_memoria, "[JOURNAL] JOURNAL HECHO, LISANDRA LA HA RECIBIDO BIEN, LIMPIO TODO");
 
@@ -1154,11 +1154,11 @@ void JOURNAL(int socket_lfs) {
 	limpiezaGlobalDeMemoriaYSegmentos();
 	mutexDesbloquear(&mutex_bloquear_select_por_limpieza);
 	if(activo_retardo_journal){
-		fprintf(tablas_fp,"\nEjecutado comando 1 JOURNAL AUTOMATICO");
-		activo_retardo_journal=false;
+		fprintf(tablas_fp,"\nEjecutado JOURNAL AUTOMATICO");
 		loggearEstadoActual(tablas_fp);
+		activo_retardo_journal=false;
 		pthread_mutex_unlock(&JOURNALHecho);
-		printf("\nHILO JOURNAL HECHO, VUELVO A REALIZARLO\n");
+
 //		pthread_cancel(journalHilo);
 //		pthread_cancel(journalHilo);
 	//	pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
@@ -1170,26 +1170,26 @@ int pasarValoresALisandra(datosJournal* datos,int socket_lfs)
 {
 	bool debo_cerrar_socket = false;
 	if(socket_lfs == -1){
-		socket_lfs = conectar_a_lfs();
+		imprimirMensaje(log_memoria,"[ENVIANDO DATOS A LFS] Voy a crear conexión con LFS");
+		socket_lfs = conectar_a_lfs(false,NULL);
+		if(socket_lfs == -1){
+			imprimirError(log_memoria,"[ENVIANDO DATOS A LFS] No fue posible conectarse al LFS");
+			return -1;
+		}
+		else
+			debo_cerrar_socket = true;
 	}
-	if(socket_lfs == -1){
-		imprimirError(log_memoria,"[ENVIANDO DATOS A LFS] No fue posible conectarse al LFS");
-		return -1;
-	}
-	else
-		debo_cerrar_socket = true;
 	imprimirMensaje(log_memoria,"[ENVIANDO DATOS A LFS] Voy a enviarles los datos modificados");
 	datosJournal *enviar = datos;
 	req_com_t insert;
 	char aux[100];
 	int cont = 0;
-	//Le envio el DROP al filesystem
 	while(enviar != NULL){
 		snprintf(aux,100,"INSERT %s %d %s %ld",enviar->nombreTabla,enviar->key,enviar->value,enviar->timestamp);
 		insert.tam = strlen(aux)+1;
 		insert.str = malloc(insert.tam);
 		strcpy(insert.str,aux);
-		retardo_fs(arc_config->retardo_fs);
+		retardo_fs();
 		imprimirMensaje1(log_memoria,"[ENVIANDO DATOS A LFS] Enviando <%s>",insert.str);
 		if(enviar_request(socket_lfs,insert) == -1){
 			imprimirError(log_memoria, "[ENVIANDO DATOS A LFS] No se puedo enviar el insert al filesystem");
@@ -1226,8 +1226,8 @@ int pasarValoresALisandra(datosJournal* datos,int socket_lfs)
 void procesoJournal(int socket_lfs){
 	mutexBloquear(&JOURNALHecho);
 	hiloCancelar(journalHilo);
-	log_info(log_memoria, "[procesoJournal] Memoria esta full, procedo a hacer Journal");
-	printf("EN PROCESO JOURNAL\n\n");
+//	log_info(log_memoria, "[procesoJournal] Memoria esta full, procedo a hacer Journal");
+//	printf("EN PROCESO JOURNAL\n\n");
 //	retardo_journal(arc_config->retardo_journal);
 	JOURNAL(socket_lfs);
 	log_info(log_memoria, "[procesoJournal] JOURNAL REALIZADO, PROCEDO A REINICIAR EL HILO JOURNAL");

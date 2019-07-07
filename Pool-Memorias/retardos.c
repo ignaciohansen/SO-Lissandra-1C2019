@@ -9,24 +9,24 @@
 #include "gestionMemoria.h"
 //#include "../Biblioteca/src/Biblioteca.c"
 
-void retardo_memoria(){
+void retardo_memoria(void){
 	pthread_mutex_lock(&mutex_retardo_memoria);
 	int milisegundos= arc_config->retardo_mem;
 	pthread_mutex_unlock(&mutex_retardo_memoria);
 	usleep(milisegundos*1000);
 }
 
-void retardo_fs(){
+void retardo_fs(void){
 	pthread_mutex_lock(&mutex_retardo_fs);
 	int milisegundos= arc_config->retardo_fs;
 	pthread_mutex_unlock(&mutex_retardo_fs);
 	usleep(milisegundos*1000);
 }
 
-void retardo_journal(){
+void retardo_journal(void){
 	while(1){
 		int milisegundos= arc_config->retardo_journal;
-		imprimirAviso1(log_memoria, "\n\nPROXIMO JOURNAL EN %d milisegundos\n\n>",milisegundos);
+		imprimirMensaje1(log_memoria, "PROXIMO JOURNAL EN %d milisegundos>",milisegundos);
 		activo_retardo_journal=false;
 		usleep(milisegundos*1000);
 		//LUEGO DE ESTO EMPIEZA UN JOURNAL;

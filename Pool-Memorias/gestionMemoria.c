@@ -1562,7 +1562,7 @@ datosJournal* obtener_todos_journal(){
 
 bool bloque_LRU_en_posicion_fue_modificado(int pos, char** nombreADevolver){
 	//REVISO PRIMERO BITMAP
-	log_info(log_memoria, "[bloque_LRU_en_posicion_fue_modificado]\nENTRANDO");
+//	log_info(log_memoria, "[bloque_LRU_en_posicion_fue_modificado]\nENTRANDO");
 	if(!bitmapBitOcupado(bitmap, pos)){
 //		log_info(log_memoria, "\n[bloque_LRU_en_posicion_fue_modificado]\n La posicion %d no fue ocupada, devuelvo FALSE", pos);
 		return false;
