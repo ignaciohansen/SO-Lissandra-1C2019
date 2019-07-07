@@ -1002,6 +1002,7 @@ void realizarDump() {
 		char* path = armarPathTablaParaDump(tabla, cantidad_de_dumps);
 		crearArchivoTemporal(path, tabla);
 		tamanioRegistros[i] = 0;
+		leerBloque(path);
 	}
 	log_info(logger, "Se limpia diccionario y la listaTablasInsertadas");
 	dictionary_clean(memtable);
@@ -1056,6 +1057,7 @@ void crearArchivoTemporal(char* path, char* tabla) {
 		log_info(logger, "cantidad de registros insertados en esa tabla: %d",
 				cantidad_registros);
 		char punto_y_coma = ';';
+		char* hola = "hola";
 		char barra_n = '/n';
 		int tam_total_registros;
 		t_registroMemtable* registro;
@@ -1070,22 +1072,22 @@ void crearArchivoTemporal(char* path, char* tabla) {
 		tam_total_registros += sizeof(char)*3*cantidad_registros;
 
 		void *registrosAInsertar = malloc(tam_total_registros);
-		registrosAInsertar = string_new();
+		//registrosAInsertar = string_new();
 
 		for (int i = 0; i < cantidad_registros; i++) {
 
 			registro = list_get(listaRegistrosTabla, i);
-			memcpy(registrosAInsertar, &registro->timestamp, sizeof(double));
+			memcpy(registrosAInsertar + offset, &registro->timestamp, sizeof(double));
 			offset += sizeof(double);
-			memcpy(registrosAInsertar, &punto_y_coma, sizeof(char));
+			memcpy(registrosAInsertar + offset, &punto_y_coma, sizeof(char));
 			offset += sizeof(char);
-			memcpy(registrosAInsertar, &registro->key, sizeof(u_int16_t));
+			memcpy(registrosAInsertar + offset, &registro->key, sizeof(u_int16_t));
 			offset += sizeof(u_int16_t);
-			memcpy(registrosAInsertar, &punto_y_coma, sizeof(char));
+			memcpy(registrosAInsertar + offset, &punto_y_coma, sizeof(char));
 			offset += sizeof(char);
-			memcpy(registrosAInsertar, &registro->value, strlen(registro->value));
+			memcpy(registrosAInsertar + offset, registro->value, strlen(registro->value));
 			offset += strlen(registro->value);
-			memcpy(registrosAInsertar, &barra_n, sizeof(char));
+			memcpy(registrosAInsertar + offset, &barra_n, sizeof(char));
 			offset += sizeof(char);
 
 		}
@@ -1093,7 +1095,7 @@ void crearArchivoTemporal(char* path, char* tabla) {
 
 		//escribirBloque(path, registrosAInsertar, tam_total_registros);
 
-		fwrite(registrosAInsertar, 1, tam_total_registros, temporal);
+		fwrite(registrosAInsertar, tam_total_registros, 1, temporal);
 		fclose(temporal);
 		free(registrosAInsertar);
 		free(registro);
@@ -1133,12 +1135,51 @@ void crearArchivoTemporal(char* path, char* tabla) {
 
 }*/
 
-/*void* leerBloque(char* path){
+void* leerBloque(char* path){
 	FILE* bloque;
+	int tam_bloque;
 	bloque = fopen(path, "rb");
 
-	fread
-}*/
+	fseek(bloque, 0, SEEK_END);
+	tam_bloque = ftell(bloque);
+
+	log_info(logger, "tam del bloque: %d", tam_bloque);
+
+	rewind(bloque);
+
+	void* registros_bloque = malloc(tam_bloque);
+
+	int readReturn = fread(registros_bloque, tam_bloque, 1, bloque);
+
+	log_info(logger, "resultado del read: %d", readReturn);
+
+	int offset = 0;
+	while(offset < tam_bloque){
+		double timestamp;
+		char *aux = malloc(configFile->tamanio_value);
+		memcpy(&timestamp, registros_bloque + offset, sizeof(double));
+		offset += sizeof(double);
+		offset += 1; // ";"
+		uint16_t key;
+		memcpy(&key, registros_bloque + offset, sizeof(uint16_t));
+		offset += sizeof(uint16_t);
+		offset += 1; // ";"
+		memcpy(aux, registros_bloque + offset, configFile->tamanio_value);
+		char *value = string_split(aux,"\n")[0];
+		offset += strlen(value);
+
+		log_info(logger, "timestamp leido: %lf", timestamp);
+		log_info(logger, "key leida: %d", key);
+		log_info(logger, "value leido: %s", value);
+	}
+
+	//registros_bloque[tam_bloque-1] = 0;
+
+	log_info(logger, "bloque leido: %s", registros_bloque);
+
+	fclose(bloque);
+	//printf("bloque leido: %s", (char*)registros_bloque);
+}
 
 //Lectura y escritara de bloques
 

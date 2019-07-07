@@ -197,6 +197,7 @@ void esperarTiempoDump();
 char* armarPathTablaParaDump(char* tabla,int dumps);
 void crearArchivoTemporal(char* path,char* tabla);
 void realizarDump();
+void* leerBloque(char* path);
 
 /*--------------------------------------------------------------------------------------------
  * 									Elementos de archivos temporales
