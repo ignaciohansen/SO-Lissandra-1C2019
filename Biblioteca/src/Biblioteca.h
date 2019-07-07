@@ -389,10 +389,13 @@ typedef enum
 //Tipo de respuestas a pedidos
 typedef enum{
 	RESP_OK, //Cualquier pedido
-	RESP_TABLA_NO_EXISTE, //SELECT-DROP
-	RESP_KEY_NO_EXISTE, //SELECT
-	RESP_MEM_FULL, //SELECT-INSERT
-	RESP_ERROR_GENERAL
+	RESP_ERROR_TABLA_NO_EXISTE, //SELECT-DROP
+	RESP_ERROR_KEY_NO_EXISTE, //SELECT
+	RESP_ERROR_MEM_FULL, //SELECT-INSERT
+	RESP_ERROR_GENERAL,
+	RESP_ERROR_COMUNICACION,
+	RESP_ERROR_CANT_PARAMETROS,
+	RESP_ERROR_MAYOR_MAX_VALUE
 } resp_tipo_com_t;
 
 //String de tamaño 'tam'
@@ -489,5 +492,6 @@ int conectar_a_servidor(char *ip,char *puerto, id_com_t id);
 int dar_bienvenida_cliente(int socket, id_com_t yo, char *msg);
 int rechazar_cliente(int socket, char *msg);
 int responder_request(int socket,char *msg, resp_tipo_com_t tipo_resp);
+resp_com_t armar_respuesta(resp_tipo_com_t tipo,char *msg);
 
 #endif

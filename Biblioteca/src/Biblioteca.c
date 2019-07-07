@@ -1622,3 +1622,19 @@ int responder_request(int socket,char *msg, resp_tipo_com_t tipo_resp)
 	borrar_respuesta(resp);
 	return 1;
 }
+
+resp_com_t armar_respuesta(resp_tipo_com_t tipo,char *msg)
+{
+	resp_com_t respuesta;
+	respuesta.tipo = tipo;
+	if(msg == NULL){
+		respuesta.msg.tam = 0;
+		respuesta.msg.str = NULL;
+	}
+	else{
+		respuesta.msg.tam = strlen(msg)+1;
+		respuesta.msg.str = malloc(respuesta.msg.tam);
+		strcpy(respuesta.msg.str,msg);
+	}
+	return respuesta;
+}
