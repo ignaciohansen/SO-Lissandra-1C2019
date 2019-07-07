@@ -1134,7 +1134,7 @@ void recargarConfiguracion(char *path_config){
  * FUNCIONES PARA LA ADMINISTRACION DE MEMORIA
  *-----------------------------------------------------*/
 
-void JOURNAL(int socket_lfs) {
+int JOURNAL(int socket_lfs) {
 //	log_info(log_memoria, "[JOURNAL] EN JOURNAL");
 	imprimirAviso(log_memoria, "[JOURNAL] ENTRANDO");
 //	char* datosAPasar=NULL;
@@ -1145,9 +1145,9 @@ void JOURNAL(int socket_lfs) {
 
 	log_info(log_memoria, "[JOURNAL] ENVIO EL MENSAJE A LISANDRA");
 
-	pasarValoresALisandra(journalAPasar,socket_lfs);
+	int cant_pasados = pasarValoresALisandra(journalAPasar,socket_lfs);
 
-	log_info(log_memoria, "[JOURNAL] JOURNAL HECHO, LISANDRA LA HA RECIBIDO BIEN, LIMPIO TODO");
+	log_info(log_memoria, "[JOURNAL] JOURNAL HECHO, LISANDRA HA RECIBIDO BIEN %d REGISTROS, LIMPIO TODO",cant_pasados);
 
 	liberarDatosJournal(journalAPasar);
 	mutexBloquear(&mutex_bloquear_select_por_limpieza);
@@ -1164,6 +1164,7 @@ void JOURNAL(int socket_lfs) {
 	//	pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
 //		pthread_detach(journalHilo);
 	}
+	return cant_pasados;
 }
 
 int pasarValoresALisandra(datosJournal* datos,int socket_lfs)
@@ -1223,15 +1224,17 @@ int pasarValoresALisandra(datosJournal* datos,int socket_lfs)
 	return cont;
 }
 
-void procesoJournal(int socket_lfs){
+int procesoJournal(int socket_lfs){
+	int cant_pasados = 0;
 	mutexBloquear(&JOURNALHecho);
 	hiloCancelar(journalHilo);
 //	log_info(log_memoria, "[procesoJournal] Memoria esta full, procedo a hacer Journal");
 //	printf("EN PROCESO JOURNAL\n\n");
 //	retardo_journal(arc_config->retardo_journal);
-	JOURNAL(socket_lfs);
+	cant_pasados = JOURNAL(socket_lfs);
 	log_info(log_memoria, "[procesoJournal] JOURNAL REALIZADO, PROCEDO A REINICIAR EL HILO JOURNAL");
 	pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
 	hiloDetach(journalHilo);
 	mutexDesbloquear(&JOURNALHecho);
+	return cant_pasados;
 }

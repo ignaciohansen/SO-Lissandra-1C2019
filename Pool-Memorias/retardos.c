@@ -36,7 +36,8 @@ void retardo_journal(void){
 		pthread_mutex_lock(&JOURNALHecho);
 		mutexBloquear(&verificarSiBitmapLleno);
 		activo_retardo_journal = true;
-		JOURNAL(-1);
+		int cant_pasados = JOURNAL(-1);
+		imprimirMensaje1(log_memoria, "[JOURNAL AUTOMATICO] %d registros recibidos ok por LFS", cant_pasados);
 		mutexDesbloquear(&verificarSiBitmapLleno);
 	//	retardo_journal(milisegundos);
 	}

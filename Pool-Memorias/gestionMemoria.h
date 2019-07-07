@@ -163,8 +163,8 @@ void insertHardcodeado(int cant, int inicio, void* info, char* valorNuevo, char*
  */
 
 bool verificarSiEstaFUll();
-void JOURNAL(int socket_lfs);
-void procesoJournal(int socket_lfs);
+int JOURNAL(int socket_lfs);
+int procesoJournal(int socket_lfs);
 datosJournal* obtener_todos_journal(void);
 bool bloque_LRU_en_posicion_fue_modificado(int pos, char** nombreADevolver);
 void liberarDatosJournal(datosJournal* datos);
