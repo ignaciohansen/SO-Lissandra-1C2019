@@ -463,8 +463,6 @@ resp_com_t resolver_drop(int socket_lfs,request_t req)
 
 resp_com_t resolver_create(int socket_lfs,request_t req)
 {
-	resp_com_t respuesta;
-	char *ret_val;
 	if(req.cant_args < 1){
 		imprimirError(log_memoria,"[RESOLVIENDO CREATE] Cantidad incorrecta de parámetros");
 		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS,NULL);
@@ -552,11 +550,11 @@ resp_com_t resolver_journal(int socket_lfs,request_t req)
 resp_com_t resolver_insert(request_t req, int modif)
 {
 	imprimirMensaje(log_memoria,"[RESOLVIENDO INSERT] Voy a resolver INSERT");
-	double timestamp_val;
+	timestamp_mem_t timestamp_val;
 	if(req.cant_args == 3)
-		 timestamp_val = -1;
+		 timestamp_val = 0;
 	else if(req.cant_args == 4)
-		timestamp_val = atof(req.args[3]);
+		timestamp_val = atoi(req.args[3]);
 	else{
 		imprimirError(log_memoria,"[RESOLVIENDO INSERT] Cantidad incorrecta de parámetros");
 		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS,NULL);

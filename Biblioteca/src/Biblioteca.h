@@ -135,13 +135,15 @@ enum comandos{
 	
 };
 
+typedef uint64_t timestamp_t;
+
 //FUNCIONES PARA ABORTAR UN PROCESO
 void abortarProcesoPorUnError(t_log log, char* mensaje);
 void abortarProcesoPorUnErrorImportante(t_log* log, char* mensaje);
 
 //--------------------------------------- Funcion timestamp -------------------------------------
 
-double timestamp(void);
+//timestamp_t timestamp(void);
 
 //--------------------------------------- Funciones para Socket -------------------------------------
 

@@ -18,6 +18,7 @@
 #include <commons/collections/queue.h>
 #include "commons/bitarray.h"
 #include <pthread.h>
+#include <stdint.h>
 
 //#include "parser.h"
 //#include "retardos.h"
@@ -69,6 +70,9 @@ bool activo_retardo_journal;
 int cantPaginasDisponibles, cantPaginasTotales;
 int tamanioPredefinidoParaNombreTabla;
 
+
+typedef uint64_t timestamp_mem_t;
+
 /*
  * ESTRUCTURAS
  */
@@ -94,13 +98,13 @@ int a;
 
 typedef struct pagina{
 	short nroPosicion;
-	double timestamp;
+	timestamp_mem_t timestamp;
 	u_int16_t key;
 }pagina;
 
 typedef struct pagina_a_devolver{
 	short nroPosicion;
-	double timestamp;
+	timestamp_mem_t timestamp;
 	u_int16_t key;
 	char* value;
 }pagina_a_devolver;
@@ -127,7 +131,7 @@ typedef struct nodoSegmento{
 typedef struct nodoLRU {
 //	char* nombreTabla;
 	int nroPagina;
-	double timestamp;
+	timestamp_mem_t timestamp;
 	bool estado;
 }nodoLRU;
 
@@ -143,7 +147,7 @@ typedef struct datosRequest{
 typedef struct datosJournal{
 	char* nombreTabla;
 	char* value;
-	double timestamp;
+	timestamp_mem_t timestamp;
 	u_int16_t key;
 	struct datosJournal* sig;
 } datosJournal;
