@@ -1172,7 +1172,7 @@ t_list* leerBloque(char* path){
 		offset += sizeof(char); // ";"
 
 		//Guardo en el aux el máximo tamaño del value
-		if(configFile->tamanio_value + 1 >= tam_bloque - offset)
+		if(configFile->tamanio_value + 1 <= tam_bloque - offset)
 			memcpy(aux, registros_bloque + offset, configFile->tamanio_value+1);
 		else
 			memcpy(aux, registros_bloque + offset, tam_bloque - offset);
