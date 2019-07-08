@@ -1154,8 +1154,6 @@ int JOURNAL(int socket_lfs) {
 	limpiezaGlobalDeMemoriaYSegmentos();
 	mutexDesbloquear(&mutex_bloquear_select_por_limpieza);
 	if(activo_retardo_journal){
-		fprintf(tablas_fp,"\nEjecutado JOURNAL AUTOMATICO");
-		loggearEstadoActual(tablas_fp);
 		activo_retardo_journal=false;
 		pthread_mutex_unlock(&JOURNALHecho);
 
@@ -1186,7 +1184,7 @@ int pasarValoresALisandra(datosJournal* datos,int socket_lfs)
 	char aux[100];
 	int cont = 0;
 	while(enviar != NULL){
-		snprintf(aux,100,"INSERT %s %d %s %ld",enviar->nombreTabla,enviar->key,enviar->value,enviar->timestamp);
+		snprintf(aux,100,"INSERT %s %d %s %ld",enviar->nombreTabla,enviar->key,enviar->value,(uint64_t) enviar->timestamp);
 		insert.tam = strlen(aux)+1;
 		insert.str = malloc(insert.tam);
 		strcpy(insert.str,aux);

@@ -37,6 +37,8 @@ void retardo_journal(void){
 		mutexBloquear(&verificarSiBitmapLleno);
 		activo_retardo_journal = true;
 		int cant_pasados = JOURNAL(-1);
+		fprintf(tablas_fp,"\nEjecutado JOURNAL AUTOMÁTICO");
+		loggearEstadoActual(tablas_fp);
 		imprimirMensaje1(log_memoria, "[JOURNAL AUTOMATICO] %d registros recibidos ok por LFS", cant_pasados);
 		mutexDesbloquear(&verificarSiBitmapLleno);
 	//	retardo_journal(milisegundos);

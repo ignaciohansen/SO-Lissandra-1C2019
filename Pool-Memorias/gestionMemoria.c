@@ -1120,7 +1120,7 @@ void tabla_pagina_crear(
 	log_info(log_memoria,
 			"[Crear Tabla y pagina] Desactivo el mutex mutex_tabla_pagina_en_modificacion");
 	memcpy(*devolver, pag_ref, sizeof(pagina_referenciada));
-	imprimirAviso3(log_memoria, "\nNUMERO DE PAGINA PARA LA TABLA Y KEY ASIGNADA:\nTABLA [%s]\nKEY: [%d]\nPAGINA: [%d",
+	imprimirAviso3(log_memoria, "NUMERO DE PAGINA PARA LA TABLA Y KEY ASIGNADA: TABLA [%s]. KEY: [%d]. PAGINA: [%d]",
 					nombreTabla, key, pag_ref->nropagina);
 
 	free(pag_ref);
@@ -1143,17 +1143,19 @@ void LRU(
 	int candidatoAQuitar = -1;
 	log_info(log_memoria, "[LRU] Busco la key entre los segmentos y tabla de paginas");
 	char* nombreTablaQueDeboBuscar = malloc(tamanioPredefinidoParaNombreTabla);
-	printf("\nLINEA 1074 LRU: Se activo el LRU\n");
+//	printf("\nLINEA 1074 LRU: Se activo el LRU\n");
 	candidatoAQuitar = buscarEnBloqueLRUElProximoAQuitar(&nombreTablaQueDeboBuscar);
 //	printf("\n\nLINEA 1925: NOMBRE QUE TENGO QUE BUSCAR: %s  -  %d\n", nombreTablaQueDeboBuscar, candidatoAQuitar);
 
 	if(candidatoAQuitar<0){
 				free(nombreTablaQueDeboBuscar);
-				imprimirAviso(log_memoria, "\n\nJOURNAL FORZOSO ACTIVADO\n\n");
+				imprimirAviso(log_memoria, "JOURNAL FORZOSO ACTIVADO\n\n");
 				log_info(log_memoria, "[LRU sin candidato] NO hay nada que se puede quitar, por lo tanto se fuerza un JOURNAL");
 
 
 				procesoJournal(-1);
+				fprintf(tablas_fp,"\nEjecutado JOURNAL POR MEMORIA FULL");
+				loggearEstadoActual(tablas_fp);
 			//	log_info(log_memoria, "[LRU sin candidato] JOURNAL HECHO, lo asigno a la primera posicion");
 			//	paginaCreada->nroPosicion=0;
 			//	asignarNuevaPaginaALaPosicion(0, paginaCreada, valor, flag_modificado, nombreTabla);
@@ -1391,9 +1393,9 @@ void modificar_bloque_LRU(char* nombreTabla, double timestamp, int nroPosicion, 
 						tamanioPredefinidoParaNombreTabla);
 		if(verificarSiEstaFUll()){
 			imprimirAviso(log_memoria,
-					"\n--------------------------------------------------------------------"
+					"******"
 					"MEMORIA FULL, SE DEBE REALIZAR 1 JOURNAL SI SE INGRESA ALGO NUEVO"
-					"--------------------------------------------------------------------\n"
+					"******\n"
 					);
 		}
 		/*
@@ -1407,9 +1409,9 @@ void modificar_bloque_LRU(char* nombreTabla, double timestamp, int nroPosicion, 
 
 		free(auxnombre);
 		*/
-		printf("[MODIFICAR BLOQUE LRU]\nDATOS INGRESADOS:\nNOMBRE TABLA <%s>\nNUMERO PAGINA: <%d>\nTIMESTAMP: <%f>\nESTADO PAGINA: <%d>",
+		printf("[MODIFICAR BLOQUE LRU] DATOS INGRESADOS: NOMBRE TABLA <%s>. NUMERO PAGINA: <%d>. TIMESTAMP: <%f>. ESTADO PAGINA: <%d>.",
 				nombreDeTabla, nroPosicion, timestamp, estado);
-		log_info(log_memoria, "[MODIFICAR BLOQUE LRU]\nDATOS INGRESADOS:\nNOMBRE TABLA <%s>\nNUMERO PAGINA: <%d>\nTIMESTAMP: <%f>\nESTADO PAGINA: <%d>",
+		log_info(log_memoria, "[MODIFICAR BLOQUE LRU] DATOS INGRESADOS: NOMBRE TABLA <%s>. NUMERO PAGINA: <%d>. TIMESTAMP: <%f> ESTADO PAGINA: <%d>",
 				nombreDeTabla, nroPosicion, timestamp, estado);
 	//	free(nuevoNodo->nombreTabla);
 	} else {
@@ -1425,9 +1427,9 @@ void modificar_bloque_LRU(char* nombreTabla, double timestamp, int nroPosicion, 
 		*/
 
 		memcpy(bloque_LRU+nroPosicion*desplazamiento, nuevoNodo, sizeof(nodoLRU));
-		printf("[MODIFICAR MODIFICADO LRU]\nDATOS INGRESADOS:\nNOMBRE TABLA <%s>\nNUMERO PAGINA: <%d>\nTIMESTAMP: <%f>\nESTADO PAGINA: <%d>",
+		printf("[MODIFICAR MODIFICADO LRU] DATOS INGRESADOS: NOMBRE TABLA <%s>. NUMERO PAGINA: <%d>. TIMESTAMP: <%f>. ESTADO PAGINA: <%d>",
 				nombreDeTabla, nroPosicion, timestamp, estado);
-		log_info(log_memoria, "[MODIFICAR BLOQUE LRU]\nDATOS ACTUALIZADOS DE LA POSICION: <%d>",
+		log_info(log_memoria, "[MODIFICAR BLOQUE LRU] DATOS ACTUALIZADOS DE LA POSICION: <%d>",
 				nroPosicion);
 
 	}
@@ -1568,12 +1570,12 @@ bool bloque_LRU_en_posicion_fue_modificado(int pos, char** nombreADevolver){
 		return false;
 	}
 	nodoLRU* nodoSolicitado = malloc(sizeof(nodoLRU));
-	log_info(log_memoria, "[bloque_LRU_en_posicion_fue_modificado]Obteniendo datos de la posicion %d", pos);
+	log_info(log_memoria, "[bloque_LRU_en_posicion_fue_modificado] Obteniendo datos de la posicion %d", pos);
 	memcpy(nodoSolicitado, bloque_LRU+pos*(sizeof(nodoLRU)+tamanioPredefinidoParaNombreTabla), sizeof(nodoLRU));
 	memcpy(*nombreADevolver, bloque_LRU+pos*(sizeof(nodoLRU)+tamanioPredefinidoParaNombreTabla)+
 			sizeof(nodoLRU), tamanioPredefinidoParaNombreTabla);
 	if(nodoSolicitado->estado){
-		log_info(log_memoria, "[bloque_LRU_en_posicion_fue_modificado]BLOQUE %d modifcado, devuelvo TRUE", pos);
+		log_info(log_memoria, "[bloque_LRU_en_posicion_fue_modificado] BLOQUE %d modifcado, devuelvo TRUE", pos);
 		free(nodoSolicitado);
 		return true;
 	}
@@ -1598,7 +1600,7 @@ bool bitmapLleno(){
 void insertCrearPaginaConNuevoSegmento(char* nombreTabla, u_int16_t keyBuscada,
 		pagina_referenciada* ref, char* valorAPoner, bool estadoAPoner,
 		segmento* segmentoBuscado, double timestamp_val){
-	log_info(log_memoria, "[INSERT] Tampoco se encontro que existe un segmento asociado a la tabla '%s'/nProcedo a crear el segmento, tabla de pagina y alojar la pagina en memoria",
+	log_info(log_memoria, "[INSERT] Tampoco se encontro que existe un segmento asociado a la tabla '%s'. Procedo a crear el segmento, tabla de pagina y alojar la pagina en memoria",
 							nombreTabla);
 		//NO SE ENCONTRO NINGUN SEGMENTO CON EL NOMBRE DE LA TABLA BUSCADA POR LO TANTO DEBO CREARLA
 
@@ -1618,7 +1620,7 @@ void insertCrearPaginaConNuevoSegmento(char* nombreTabla, u_int16_t keyBuscada,
 	}
 	segmentoBuscado = segmento_crear(nombreTabla, ref);
 	segmentoBuscado->paginasAsocida = ref;
-	log_info(log_memoria, "[INSERT] SEGMENTO Creado para la tabla '%s' /nComo es el primer segmento TABLA SEGMENTOS apuntara este elemento", segmentoBuscado->path_tabla);
+	log_info(log_memoria, "[INSERT] SEGMENTO Creado para la tabla '%s' . Como es el primer segmento TABLA SEGMENTOS apuntara este elemento", segmentoBuscado->path_tabla);
 	segmentoBuscado->siguienteSegmento = tablaSegmentos;
 	tablaSegmentos = segmentoBuscado;
 	log_info(log_memoria, "[INSERT] Se ha creado un segmento para la tabla '%s'", nombreTabla);

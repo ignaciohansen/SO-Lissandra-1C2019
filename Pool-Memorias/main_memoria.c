@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	arc_config->max_value_key = max_valor_key;
-	imprimirMensaje1(log_memoria,"[MAIN] Iniciando con tamaño máiximo de valor %d",arc_config->max_value_key);
+	imprimirMensaje1(log_memoria,"[MAIN] Iniciando con tamaño máximo de valor %d",arc_config->max_value_key);
 
 	armarMemoriaPrincipal();
 
@@ -95,7 +95,7 @@ int levantar_servidor_memoria(void)
 {
 	char puerto[20];
 	snprintf(puerto,19,"%d",arc_config->puerto);
-	imprimirAviso2(log_memoria,"[LEVANTANDO SERVIDOR] Me voy a intentar conectar en ip: <%s> puerto: <%s>", arc_config->ip, puerto);
+	imprimirMensaje2(log_memoria,"[LEVANTANDO SERVIDOR] Me voy a intentar conectar en ip: <%s> puerto: <%s>", arc_config->ip, puerto);
 
 	int socket = iniciar_servidor(arc_config->ip,puerto);
 
@@ -103,7 +103,7 @@ int levantar_servidor_memoria(void)
 		imprimirError(log_memoria,"[LEVANTANDO SERVIDOR] Error al levantar el servidor. Por favor, reintente");
 	}
 	else
-		imprimirAviso(log_memoria,"[LEVANTANDO SERVIDOR] Servidor conectado");
+		imprimirMensaje(log_memoria,"[LEVANTANDO SERVIDOR] Servidor conectado");
 	return socket;
 }
 
@@ -166,7 +166,7 @@ void* hilo_consola(int * socket_p){
 	char *linea_leida;
 	resp_com_t respuesta;
 	int fin = 0;
-	imprimirAviso(log_memoria,"[CONSOLA] Entrando a hilo consola");
+	imprimirMensaje(log_memoria,"[CONSOLA] Entrando a hilo consola");
 	using_history();
 	imprimirPorPantallaTodosLosComandosDisponibles();
 	pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
