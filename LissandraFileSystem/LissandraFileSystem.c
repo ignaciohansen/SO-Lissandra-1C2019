@@ -1057,15 +1057,16 @@ void crearArchivoTemporal(char* path, char* tabla) {
 				cantidad_registros);
 		char punto_y_coma = ';';
 		char* hola = "hola";
-		char barra_n = '/n';
-		int tam_total_registros;
+		char barra_n = '\n';
+		int tam_total_registros=0;
 		t_registroMemtable* registro;
 		int offset = 0;
 
 		for (int i = 0; i < cantidad_registros; i++) {
 			registro = list_get(listaRegistrosTabla, i);
 
-			tam_total_registros += registro->tam_registro;
+			tam_total_registros += registro->tam_registro -1; // El -1 porque no estoy escribiendo el \0 al archivo, si no al leer le sobran bytes
+			log_info(logger, "%d Registro %s. Tam  %d", i, registro->value, registro->tam_registro);
 		}
 
 		tam_total_registros += sizeof(char) * 3 * cantidad_registros;
@@ -1098,7 +1099,7 @@ void crearArchivoTemporal(char* path, char* tabla) {
 		fwrite(registrosAInsertar, tam_total_registros, 1, temporal);
 		fclose(temporal);
 		free(registrosAInsertar);
-		free(registro);
+//		free(registro);
 
 		//fwrite((void*)registroAInsertar, 1, strlen(registroAInsertar), temporal);
 		/*
@@ -1135,10 +1136,12 @@ void crearArchivoTemporal(char* path, char* tabla) {
 
  }*/
 
-void* leerBloque(char* path){
+t_list* leerBloque(char* path){
+	t_list *registros_leidos = list_create();
 	FILE* bloque;
 	int tam_bloque;
 	bloque = fopen(path, "rb");
+	t_registroMemtable* registro;
 
 	fseek(bloque, 0, SEEK_END);
 	tam_bloque = ftell(bloque);
@@ -1154,31 +1157,59 @@ void* leerBloque(char* path){
 	log_info(logger, "resultado del read: %d", readReturn);
 
 	int offset = 0;
+	char *aux = malloc(configFile->tamanio_value+1);
 	while(offset < tam_bloque){
-		double timestamp;
-		char *aux = malloc(configFile->tamanio_value);
-		memcpy(&timestamp, registros_bloque + offset, sizeof(double));
+		registro = malloc(sizeof(t_registroMemtable));
+
+		//Guardo timestamp
+		memcpy(&registro->timestamp, registros_bloque + offset, sizeof(double));
 		offset += sizeof(double);
-		offset += 1; // ";"
-		uint16_t key;
-		memcpy(&key, registros_bloque + offset, sizeof(uint16_t));
+		offset += sizeof(char); // ";"
+
+		//Guardo key
+		memcpy(&registro->key, registros_bloque + offset, sizeof(uint16_t));
 		offset += sizeof(uint16_t);
-		offset += 1; // ";"
-		memcpy(aux, registros_bloque + offset, configFile->tamanio_value);
-		char *value = string_split(aux,"\n")[0];
-		offset += strlen(value);
+		offset += sizeof(char); // ";"
 
-		log_info(logger, "timestamp leido: %lf", timestamp);
-		log_info(logger, "key leida: %d", key);
-		log_info(logger, "value leido: %s", value);
+		//Guardo en el aux el máximo tamaño del value
+		if(configFile->tamanio_value + 1 >= tam_bloque - offset)
+			memcpy(aux, registros_bloque + offset, configFile->tamanio_value+1);
+		else
+			memcpy(aux, registros_bloque + offset, tam_bloque - offset);
+
+		//Busco el \n que indica el fin del valor
+		char **aux_split = string_split(aux,"\n");
+		registro->value = malloc(strlen(aux_split[0])+1);
+		strcpy(registro->value, aux_split[0]);
+
+		//Libero toda la memoria que genera el string_split
+		int i = 0;
+		while(aux_split[i] != NULL){
+			free(aux_split[i]);
+			i++;
+		}
+		free(aux_split);
+
+		//Avanzo el offset solo el tamaño realmente leído del valor
+		offset += strlen(registro->value) + sizeof(char);//value + \n
+
+		//Calculo tamaño
+		registro->tam_registro = strlen(registro->value)+1 + sizeof(double) + sizeof(uint16_t);
+
+		log_info(logger, "timestamp leido: %lf", registro->timestamp);
+		log_info(logger, "key leida: %d", registro->key);
+		log_info(logger, "value leido: %s", registro->value);
+		log_info(logger, "tamaño registro: %d", registro->tam_registro);
+
+		//Agrego el registro a la lista que voy a retornar
+		list_add(registros_leidos, registro);
+		log_info(logger, "Agregado a la lista");
+		log_info(logger, "Hasta ahora lei %d bytes de %d",offset,tam_bloque);
 	}
-
-	//registros_bloque[tam_bloque-1] = 0;
-
-	log_info(logger, "bloque leido: %s", registros_bloque);
-
+	free(aux);
 	fclose(bloque);
-	//printf("bloque leido: %s", (char*)registros_bloque);
+
+	return registros_leidos;
 }
 
 //Lectura y escritara de bloques
