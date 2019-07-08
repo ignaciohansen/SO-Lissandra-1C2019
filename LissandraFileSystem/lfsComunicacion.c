@@ -7,6 +7,8 @@
 
 #include "lfsComunicacion.h"
 
+
+
 t_log *logger_com_lfs=NULL;
 char *g_str_tam_valor = NULL;
 int inicializado = 0;
@@ -62,16 +64,19 @@ void * hilo_cliente(int * socket_p)
 	msg_com_t msg;
 	bool fin = false;
 	req_com_t request;
+	int aux_enviado_ok;
 	while(fin == false){
 		msg = recibir_mensaje(socket_cliente);
 		imprimirMensaje(logger_com_lfs,"[CLIENTE] Recibí un mensaje");
 
 		switch(msg.tipo){
 			case REQUEST:
-				int aux_enviado_ok;
+
 				imprimirMensaje(logger_com_lfs,"[CLIENTE] El mensaje recibido es un request");
 				request = procesar_request(msg);
 				borrar_mensaje(msg);
+				request_t requestParser = parser(request.str);
+				//resolver_pedido(requestParser);
 
 				/* Acá tienen en request.str el request recibido
 				 * Deben resolverlo de alguna forma con las funciones que tienen
@@ -80,6 +85,7 @@ void * hilo_cliente(int * socket_p)
 
 				//Luego liberan la memoria de la estructura request
 				borrar_request_com(request); //Con esto alcanza
+				borrar_request(requestParser);
 
 				/* Ahora tienen que enviar la respuesta al cliente que la pidió
 				 *
@@ -115,4 +121,102 @@ void * hilo_cliente(int * socket_p)
 	imprimirMensaje(logger_com_lfs,"[CLIENTE] Finalizando el hilo");
 	return NULL;
 }
+/*
+resp_com_t resolver_pedido(request_t req){
+	{
+		resp_com_t respuesta;
+	//	char *ret_val=NULL;
+	//	char *ret_ok_generico = malloc(3);
+	//	strcpy(ret_ok_generico,"OK");
+		switch(req.command){
+			case INSERT:
+				imprimirMensaje(logger,"[RESOLVIENDO PEDIDO] Voy a resolver INSERT");
+				respuesta = resolver_insert(req,true);
+				if( respuesta.tipo == RESP_OK){
+					imprimirMensaje(logger,"[RESOLVIENDO PEDIDO] INSERT hecho correctamente");
+				}
+				else{
+					imprimirError(logger,"[RESOLVIENDO PEDIDO] El INSERT no pudo realizarse");
+				}
+				break;
+			case SELECT:
+				imprimirMensaje(logger,"[RESOLVIENDO PEDIDO] Voy a resolver SELECT");
+				//respuesta = resolver_select(socket_lfs,req);
+				if(respuesta.tipo == RESP_OK && respuesta.msg.tam > 0){
+					imprimirMensaje1(logger,"[RESOLVIENDO PEDIDO] SELECT hecho correctamente. Valor %s obtenido",respuesta.msg.str);
+				}
+				else{
+					imprimirMensaje(logger,"[RESOLVIENDO PEDIDO] El SELECT no pudo realizarse");
+				}
+				break;
+			case DESCRIBE:
+				imprimirAviso(logger,"[RESOLVIENDO PEDIDO] Voy a resolver DESCRIBE");
+				//respuesta = resolver_describe(socket_lfs,req);
+				if(respuesta.tipo == RESP_OK && respuesta.msg.tam > 0){
+					imprimirMensaje1(logger,"[RESOLVIENDO PEDIDO] DESCRIBE hecho correctamente. Valor %s obtenido",respuesta.msg.str);
+				}
+				else{
+					imprimirError(logger,"[RESOLVIENDO PEDIDO] El DESCRIBE no pudo realizarse");
+				}
+				break;
+			case DROP:
+				imprimirMensaje(logger,"[RESOLVIENDO PEDIDO] Voy a resolver DROP");
+				//respuesta = resolver_drop(socket_lfs,req);
+				if(respuesta.tipo == RESP_OK){
+					imprimirMensaje(logger,"[RESOLVIENDO PEDIDO] DROP hecho correctamente");
+				}
+				else{
+					imprimirError(logger,"[RESOLVIENDO PEDIDO] El DROP no pudo realizarse");
+				}
+				break;
+			case CREATE:
+				imprimirMensaje(logger,"[RESOLVIENDO PEDIDO] Voy a resolver CREATE\n\n");
+				//respuesta = resolver_create(socket_lfs,req);
+				if(respuesta.tipo == RESP_OK){
+					imprimirMensaje(logger,"[RESOLVIENDO PEDIDO] CREATE hecho correctamente");
+				}
+				else{
+					imprimirError(logger,"[RESOLVIENDO PEDIDO] El CREATE no pudo realizarse");
+				}
+				break;
+
+			default:
+				respuesta = armar_respuesta(RESP_ERROR_PEDIDO_DESCONOCIDO,NULL);
+				break;
+		}
+
+		//fprintf(tablas_fp,"\nEjecutado comando %s",req.request_str);
+		//loggearEstadoActual(tablas_fp);
+		return respuesta;
+	}
+}
+
+resp_com_t resolver_insert(request_t req, int modif)
+{
+	imprimirMensaje(logger,"[RESOLVIENDO INSERT] Voy a resolver INSERT");
+	double timestamp_val;
+	if(req.cant_args == 3)
+		 timestamp_val = -1;
+	else if(req.cant_args == 4)
+		timestamp_val = atof(req.args[3]);
+	else{
+		imprimirError(logger,"[RESOLVIENDO INSERT] Cantidad incorrecta de parámetros");
+		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS,NULL);
+	}
+	char *nombre_tabla = req.args[0];
+	uint16_t key = atoi(req.args[1]);
+	char *valor = req.args[2];
+	imprimirMensaje3(logger,"[RESOLVIENDO INSERT] Voy a agregar %s en la key %d de la tabla %s",valor,key,nombre_tabla);
+	if(timestamp_val == -1){
+		comandoInsertSinTimestamp(nombre_tabla,key,valor);
+	}else{
+		comandoInsert(nombre_tabla,key,valor,timestamp);
+	}
+	if(funcionInsert(nombre_tabla, key, valor, modif, timestamp_val)== -1){
+		imprimirError(logger, "[RESOLVIENDO INSERT]ERROR: Mayor al pasar max value");
+		return armar_respuesta(RESP_ERROR_MAYOR_MAX_VALUE,NULL);
+	}
+	return armar_respuesta(RESP_OK,NULL);
+}
+*/
 
