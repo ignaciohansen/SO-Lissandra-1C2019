@@ -259,7 +259,7 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 		 * SE CREO PERFECTAMENTE, CONOSCO EL SEGMENTO Y LA PAGINA A REFERENCIAR, PROCEDO A MODIFICAR Y ACCEDER
 		 * A LA MEMORIA PARA LA MODIFICACION DE LOS CAMPOS
 		 */
-		log_info(log_memoria, "[INSERT A MODIFICAR]\nExiste el segmento '%s' y la pagina que referencia la key (%d) que es NRO '%d'\nProcedo a poner el nuevo valor que es '%s'",
+		log_info(log_memoria, "[INSERT A MODIFICAR] Existe el segmento '%s' y la pagina que referencia la key (%d) que es NRO '%d' Procedo a poner el nuevo valor que es '%s'",
 				segmentoBuscado->path_tabla, keyBuscada, posicionAIr, valorAPoner);
 		free(ref);
 
@@ -846,7 +846,7 @@ void actualizarTiempoUltimoAcceso(int pos, bool estadoAPoner, bool vieneDeInsert
 	log_info(log_memoria, "[ACTUALIZAR TIMESTAMP ACCESO] Entrando, modifico en tabla LRU el timestamp de '%d'"
 			, pos);
 
-	modificar_bloque_LRU("", timestamp(), pos, estadoAPoner, vieneDeInsert);
+	modificar_bloque_LRU(NULL, timestamp(), pos, estadoAPoner, vieneDeInsert);
 
 	return;
 }
@@ -1360,7 +1360,7 @@ void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo, 
 			"[MOdificar valor pagina] key: '%d', VALOR NUEVO: %s",
 			aux->key, valorNuevo);
 
-	modificar_bloque_LRU("%", aux->timestamp, posAIr, true, false);
+//	modificar_bloque_LRU("%", aux->timestamp, posAIr, true, false);
 
 	log_info(log_memoria,
 			"[MOdificar valor tabla pagina] Actualizar FLAG de tabla pagina asociada a la key: %d",
@@ -1400,8 +1400,10 @@ void modificar_bloque_LRU(char* nombreTabla, timestamp_mem_t timestamp, int nroP
 		nuevoNodo->nroPagina=nroPosicion;
 		nuevoNodo->timestamp=timestamp;
 		memcpy(bloque_LRU+nroPosicion*desplazamiento, nuevoNodo, sizeof(nodoLRU));
-		memcpy(bloque_LRU+nroPosicion*desplazamiento+sizeof(nodoLRU), nombreTabla,
+		if(nombreTabla != NULL){
+			memcpy(bloque_LRU+nroPosicion*desplazamiento+sizeof(nodoLRU), nombreTabla,
 					strlen(nombreTabla)+1);
+		}
 		memcpy(nombreDeTabla, bloque_LRU+nroPosicion*desplazamiento+sizeof(nodoLRU),tamanioPredefinidoParaNombreTabla);
 		if(verificarSiEstaFUll()){
 			imprimirAviso(log_memoria,
@@ -1423,7 +1425,6 @@ void modificar_bloque_LRU(char* nombreTabla, timestamp_mem_t timestamp, int nroP
 		*/
 		/*printf("[MODIFICAR BLOQUE LRU] DATOS INGRESADOS: NOMBRE TABLA <%s>. NUMERO PAGINA: <%d>. TIMESTAMP: <%ld>. ESTADO PAGINA: <%d>.",
 				nombreDeTabla, nroPosicion, timestamp, estado);*/
-		log_info(log_memoria, "[DEBUGGING] TABLA %s", nombreTabla);
 		log_info(log_memoria, "[MODIFICAR BLOQUE LRU] DATOS INGRESADOS: NOMBRE TABLA <%s>. NUMERO PAGINA: <%d>. TIMESTAMP: <%ld> ESTADO PAGINA: <%d>",
 				nombreDeTabla, nroPosicion, timestamp, estado);
 	//	free(nuevoNodo->nombreTabla);

@@ -100,9 +100,9 @@ void * atenderCliente(int * socket_p)
 {
     char pathLog[50];
 	int n_cliente = ++g_n_cliente;
-    snprintf(pathLog,50,"logServidor%d.txt",n_cliente);
+    snprintf(pathLog,50,"logs/logServidor%d.txt",n_cliente);
     FILE *fp = fopen(pathLog, "w");
-    fprintf(fp,"Logger servidor");
+    fprintf(fp,"\n***Logger servidor***\n");
     //int cod_op;
     int fin = 0;
     int conexion = * socket_p;
@@ -166,7 +166,7 @@ void * atenderCliente(int * socket_p)
     	printf("\n\n-------------------------------------------------------------");
     }
     printf("\n\n**El cliente <%d> se desconecto. Finalizando...**\n",n_cliente);
-    fprintf(fp,"\n\n**El cliente <%d> se desconecto. Finalizando...**\n",n_cliente);
+    fprintf(fp,"\n\n**El cliente <%d> se desconecto. Finalizando...**\n\n",n_cliente);
     cerrar_conexion(conexion);
     fclose(fp);
 }
