@@ -23,7 +23,7 @@ void retardo_fs(void){
 	usleep(milisegundos*1000);
 }
 
-void retardo_journal(void){
+void * retardo_journal(void){
 	while(1){
 		int milisegundos= arc_config->retardo_journal;
 		imprimirMensaje1(log_memoria, "PROXIMO JOURNAL EN %d milisegundos>",milisegundos);

@@ -325,10 +325,10 @@ void imprimirPorPantallaTodosLosComandosDisponibles(){
 			"JOURNAL\n"
 			"DESCRIBE [nombre tabla - OPCIONAL]\n"
 			"DROP <nombre tabla>\n"
-			"RETARDO_MEMORIA <milisegundos>\n"
+			/*"RETARDO_MEMORIA <milisegundos>\n"
 			"RETARDO_FS <milisegundos>\n"
 			"RETARDO_GOSSIPING <milisegundos>\n"
-			"RETARDO_JOURNAL <milisegundos>\n"
+			"RETARDO_JOURNAL <milisegundos>\n"*/
 			"SALIR\n");
 }
 
@@ -360,7 +360,13 @@ void cerrarTodosLosHilosPendientes() {
 
 void inicioLogYConfig(char* path_config) {
 	tamanioPredefinidoParaNombreTabla = 50;
-	log_memoria = archivoLogCrear(LOG_PATH, "Proceso Memoria");
+//	log_memoria = archivoLogCrear(LOG_PATH, "Proceso Memoria");
+	archivoLogValidar(LOG_PATH);
+#ifdef LOGGEAR_EN_CONSOLA
+	log_memoria = log_create(LOG_PATH, "Proceso Memoria", true, LOG_LEVEL_DEBUG);
+#else
+	log_memoria = log_create(LOG_PATH, "Proceso Memoria", false, LOG_LEVEL_DEBUG);
+#endif
 	log_info(log_memoria,
 			" \n ========== Iniciación de Pool de Memoria ========== \n \n ");
 
@@ -882,7 +888,7 @@ void escucharConexionKernel() {
  * FUNCIONALIDADES PARA LA CARGA DE LA CONFIGURACION Y EL LOG
  *-----------------------------------------------------------------------------*/
 void cargarConfiguracion(char *path_config) {
-	printf("\n\n**********CARGANDO CONFIGURACION**********\n\n");
+//	printf("\n\n**********CARGANDO CONFIGURACION**********\n\n");
 	log_info(log_memoria, "[CONFIGURANDO MODULO] RESERVAR MEMORIA.");
 	arc_config = malloc(sizeof(t_memoria_config));
 

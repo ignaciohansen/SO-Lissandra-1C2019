@@ -18,7 +18,7 @@
 int main(int argc, char **argv)
 {
 	// LOGGING
-	printf("INICIANDO EL MODULO MEMORIA \n COMINEZA EL TP PIBE\n\n");
+	printf("\n***INICIANDO EL PROCESO MEMORIA***");
 
 #ifdef TESTEAR_GOSSIPING
 	if(argc>1)
@@ -29,6 +29,9 @@ int main(int argc, char **argv)
 	inicioLogYConfig(PATH_MEMORIA_CONFIG);
 #endif
 
+	printf("\n*Log creado en %s", LOG_PATH);
+	printf("\n*Archivo de configuración cargado*");
+
 #ifdef AUTOLANZAR_SERVER
 	char cmd_server[100];
 	snprintf(cmd_server,99,"gnome-terminal -- ./servidor %s %d",arc_config->ip_fs,arc_config->puerto_fs);
@@ -38,22 +41,27 @@ int main(int argc, char **argv)
 	int socket_lfs = conectar_a_lfs(true,&max_valor_key);
 
 	if(socket_lfs == -1 || max_valor_key <= 0){
+		printf("\n\n***NO SE PUDO ESTABLECER CONEXIÓN CON LFS. ABORTANDO...***\n");
 		imprimirError(log_memoria,"[MAIN] Error al conectar al LFS, terminando!\n");
 		return 1;
 	}
+	printf("\n*Conectado a LFS");
 	arc_config->max_value_key = max_valor_key;
 	imprimirMensaje1(log_memoria,"[MAIN] Iniciando con tamaño máximo de valor %d",arc_config->max_value_key);
 
 	armarMemoriaPrincipal();
+	printf("\n*Memoria principal inicializada");
 
 	iniciarSemaforosYMutex();
 
 	int socket_servidor = levantar_servidor_memoria();
 
 	if(socket_servidor == -1){
+		printf("\n\n***NO SE PUDO LEVANTAR EL SERVIDOR DE MEMORIA. ABORTANDO...***\n");
 		imprimirError(log_memoria, "[MAIN] No se pudo levantar el servidor de escucha. Finalizando...\n");
 		return 1;
 	}
+	printf("\n*El servidor de memoria está inicializado y listo para recibir clientes");
 
 #ifdef AUTOLANZAR_CLIENTE
 	char cmd_cliente[100];
@@ -67,22 +75,27 @@ int main(int argc, char **argv)
 	id_com_t mi_id = MEMORIA;
 	inicializar_gossiping_memoria();
 	iniciar_hilo_gossiping(&mi_id,&gossiping_h);
+	printf("\n*Gossiping corriendo");
 #endif
 
 	pthread_create(&servidor_h,NULL,(void *)hilo_servidor,&socket_servidor);
 	pthread_detach(servidor_h);
-
-	pthread_create(&consola_h,NULL,(void *)hilo_consola,&socket_lfs);
+	printf("\n*Servidor corriendo");
 
 	char* path_de_memoria = malloc(strlen(PATH_MEMORIA_CONFIG)+1);
 	strcpy(path_de_memoria, PATH_MEMORIA_CONFIG);
-
 	pthread_create(&inotify_c,NULL, (void *)inotifyAutomatico,path_de_memoria);
 	pthread_detach(inotify_c);
+	printf("\n*Hilo de actualización de retardos corriendo");
 
+	printf("\n\n***PROCESO MEMORIA CARGADO COMPLETAMENTE***\n\n");
+
+	pthread_create(&consola_h,NULL,(void *)hilo_consola,&socket_lfs);
 
 //pthread_detach(journalHilo);
 	pthread_join(consola_h,NULL);
+
+	printf("\n\n***FINALIZANDO PROCESO MEMORIA***\n\n");
 
 	//ESTO ESTA MAL, PERO QUIERO VER SI FUNCA LO MIO
 //	pthread_cancel(servidor_h, SIGKILL);
@@ -174,10 +187,10 @@ void* hilo_consola(int * socket_p){
 	imprimirMensaje(log_memoria,"[CONSOLA] Entrando a hilo consola");
 	using_history();
 	imprimirPorPantallaTodosLosComandosDisponibles();
-	pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
+	pthread_create(&journalHilo, NULL, (void*)retardo_journal, NULL);
 	pthread_detach(journalHilo);
 	while(!fin){
-		linea_leida=readline("\n>");
+		linea_leida=readline("\n\n>");
 		if(linea_leida)
 			add_history(linea_leida);
 		req = parser(linea_leida);
@@ -185,6 +198,7 @@ void* hilo_consola(int * socket_p){
 		switch(req.command){
 			case SALIR:
 				fin = 1;
+				respuesta = armar_respuesta(RESP_OK,"SALIENDO");
 				break;
 			case SELECT:
 			case INSERT:
@@ -197,13 +211,24 @@ void* hilo_consola(int * socket_p){
 					imprimirMensaje1(log_memoria,"\n[CONSOLA] Resuelto OK. Respuesta obtenida: %s",respuesta.msg.str);
 				else
 					imprimirAviso1(log_memoria,"\n[CONSOLA] Error al resolver pedido. Respuesta %s",respuesta.msg.str);
-				borrar_respuesta(respuesta);
+//				borrar_respuesta(respuesta);
 				break;
 			default:
-				printf("\nNO IMPLEMENTADO\n");
+				respuesta = armar_respuesta(RESP_ERROR_PEDIDO_DESCONOCIDO, "Pedido desconocido");
 				break;
 		}
 		borrar_request(req);
+		if(respuesta.tipo == RESP_OK){
+			if(respuesta.msg.str != NULL)
+				printf("-> %s",respuesta.msg.str);
+		}
+		else{
+			printf("***El pedido no se pudo resolver. Error <%d>.",respuesta.tipo);
+			if(respuesta.msg.str != NULL){
+				printf(" Mensaje de error: \"%s\".", respuesta.msg.str);
+			}
+		}
+		borrar_respuesta(respuesta);
 	}
 	clear_history();
 	printf("\nSaliendo de hilo consola\n");
@@ -393,7 +418,7 @@ resp_com_t resolver_pedido(request_t req, int socket_lfs)
 		case JOURNALCOMANDO:
 			imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver JOURNAL");
 			respuesta = resolver_journal(socket_lfs,req);
-			if( respuesta.tipo == RESP_OK ){
+			if(respuesta.tipo == RESP_OK ){
 				imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] JOURNAL hecho correctamente");
 			}
 			else{
@@ -405,7 +430,6 @@ resp_com_t resolver_pedido(request_t req, int socket_lfs)
 			respuesta = armar_respuesta(RESP_ERROR_PEDIDO_DESCONOCIDO,NULL);
 			break;
 	}
-
 	fprintf(tablas_fp,"\nEjecutado comando %s",req.request_str);
 	loggearEstadoActual(tablas_fp);
 	return respuesta;
@@ -712,9 +736,6 @@ resp_com_t resolver_select(int socket_lfs,request_t req)
 		free(valor);
 	}
 
-	if(retval.msg.str != NULL){
-		printf("\nValor obtenido: %s",retval.msg.str);
-	}
 	return retval;
 }
 

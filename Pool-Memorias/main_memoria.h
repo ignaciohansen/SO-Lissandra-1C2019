@@ -8,6 +8,8 @@
 #ifndef MAIN_MEMORIA_H_
 #define MAIN_MEMORIA_H_
 
+//#define LOGGEAR_EN_CONSOLA
+
 #include "parser.h"
 #include "memoria.h"
 #include "gestionMemoria.h"

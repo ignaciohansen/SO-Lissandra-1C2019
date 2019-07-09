@@ -39,9 +39,8 @@ void armarMemoriaPrincipal() {
 	log_info(log_memoria,
 			"[ARMAR MEMORIA] Armo el bloque de memoria, guardo su tamaño");
 
-	printf("HACIENDO MEMORIA");
+//	printf("HACIENDO MEMORIA");
 
-//	bloque_memoria = malloc(arc_config->tam_mem);
 	bloque_memoria = malloc(arc_config->tam_mem);
 
 	log_info(log_memoria, "[ARMAR MEMORIA] Se ha creado la memoria contigua");
@@ -103,7 +102,7 @@ void armarMemoriaPrincipal() {
 	imprimirVerde(log_memoria,
 			"[ARMAR MEMORIA] Memoria inicializada de forma correcta");
 
-	printf("MEMORIA TERMINADA");
+//	printf("MEMORIA TERMINADA");
 
 	//PONGO ESTOS SEMAFOROS LISTOS PARA EMPEZAR A OPERAR
 	memoriaArmada = 1;
@@ -211,14 +210,12 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 					&ref, nombreTabla, true, segmentoBuscado, timestamp_val);
 
 			if(estadoAPoner) {
-				printf("[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|TRUE",
-					ref->nropagina, keyBuscada);
+//				printf("[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|TRUE",ref->nropagina, keyBuscada);
 				log_info(log_memoria,
 		"[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|TRUE",
 					ref->nropagina, keyBuscada);
 						} else {
-				printf("[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|TRUE",
-					ref->nropagina, keyBuscada);
+//				printf("[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|TRUE",ref->nropagina, keyBuscada);
 				log_info(log_memoria,
 		"[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|FALSE",
 					ref->nropagina, keyBuscada);
@@ -306,8 +303,8 @@ int funcionSelect(char* nombreTablaAIr, u_int16_t keyBuscada,
 
 	log_info(log_memoria, "[FUNCION SELECT] Se encontro los datos");
 
-	printf("[FUNCION SELECT] Se encontro los datos\n");
-	printf("[FUNCION SELECT] <%s> <%d> \n", (*dato)->value, (*dato)->key);
+//	printf("[FUNCION SELECT] Se encontro los datos\n");
+//	printf("[FUNCION SELECT] <%s> <%d> \n", (*dato)->value, (*dato)->key);
 /*	memcpy(*dato, datos_a_devolver, sizeof(pagina_a_devolver));
 	printf("POR AQUI 2 \n");
 	memcpy(*valorADevolver, informacion+sizeof(pagina)-1, max_valor_key);
@@ -342,8 +339,7 @@ int funcionDrop(char* nombre) {
 		return -1;
 	}
 	if(strcmp(nombre, tablaSegmentos->path_tabla)==0){
-		printf("[FUNCION DROP] Se encontro <%s> y es el primero de todos\n",
-				tablaSegmentos->path_tabla);
+//		printf("[FUNCION DROP] Se encontro <%s> y es el primero de todos\n",tablaSegmentos->path_tabla);
 		log_info(log_memoria, "[FUNCION DROP] Se encontro <%s> y es el primero de todos",
 				tablaSegmentos->path_tabla);
 		tablaSegmentos = tablaSegmentos->siguienteSegmento;
@@ -382,7 +378,7 @@ int funcionDescribe(char* nombreTablaAIr){
 		}
 
 		while(segmentoBuscado!=NULL){
-			printf("Obteniend datos de [%s]", segmentoBuscado->path_tabla);
+//			printf("Obteniend datos de [%s]", segmentoBuscado->path_tabla);
 
 			ref = segmentoBuscado->paginasAsocida;
 			while(ref!=NULL){
@@ -393,8 +389,8 @@ int funcionDescribe(char* nombreTablaAIr){
 				free(keyObtenida);
 		//		sleep(1);
 			}
-			printf("Obteniend datos de ");
-			printf("[%s]", segmentoBuscado->path_tabla);
+//			printf("Obteniend datos de ");
+//			printf("[%s]", segmentoBuscado->path_tabla);
 			segmentoBuscado = segmentoBuscado->siguienteSegmento;
 		}
 

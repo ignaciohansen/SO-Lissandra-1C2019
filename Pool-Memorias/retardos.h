@@ -23,6 +23,6 @@ pthread_mutex_t mutex_retardo_journal;
 //void iniciarSemaforosRetados(void);
 void retardo_memoria(void);
 void retardo_fs(void);
-void retardo_journal(void);
+void *retardo_journal(void);
 
 #endif /* RETARDOS_H_ */
