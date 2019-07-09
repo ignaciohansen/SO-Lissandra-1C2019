@@ -22,10 +22,6 @@ int main() {
 	log_info(log_kernel,
 			"Devuelta en Main, Funcion cargarConfiguracion() finalizo.");
 
-	//multiProcesamiento = arc_config->multiprocesamiento;
-
-	//sem_init(&multiprogramacion,0,arc_config->multiprocesamiento);
-
 	log_info(log_kernel,
 			"El valor que le vamos a poner al semaforo de multiprocesamiento es: %d",
 			arc_config->multiprocesamiento);
@@ -49,9 +45,6 @@ int main() {
 
 	//pthread_join(hiloConexion,NULL);
 	pthread_join(hiloConsola, NULL);
-
-	//mostrarQueries(log_kernel, list_queries);
-	//list_destroy(list_queries); // FREE de la lista de queries;
 
 	log_info(log_kernel, "Salimoooos");
 
@@ -218,14 +211,9 @@ void consola() {
 
 		planificar(linea);
 
-		//char* lineaCopia = calloc(1, sizeof(linea) + 1);
-		//strncpy(lineaCopia, linea, sizeof(linea) + 1);
-		// AÑADE LA LINEA A LA LISTA PRINCIPAL
-		//list_add(list_queries, (void*) lineaCopia);
+		//comandoSeparado = string_split(linea, separator);
 
-		comandoSeparado = string_split(linea, separator);
-
-		validarLinea(comandoSeparado, log_kernel);
+		//validarLinea(comandoSeparado, log_kernel);
 
 		free(linea);
 
@@ -260,8 +248,8 @@ void validarLinea(char** lineaIngresada, t_log* logger) {
 	}
 
 	log_info(log_kernel, "El tamanio del vector de comandos es: %d", tamanio);
-
-	validarComando(lineaIngresada, tamanio, log_kernel);
+/*
+	validarComando(lineaIngresada, tamanio, log_kernel);*/
 
 }
 
@@ -297,7 +285,7 @@ int conexionKernel() { // Retorn socket por el cual se envían los mensajes.
 		return socket_CMemoria;
 	}
 } // int conexionKernel()
-
+/*
 void validarComando(char** comando, int tamanio, t_log* logger) {
 
 	int resultadoComando = buscarComando(comando[0], logger);
@@ -555,7 +543,7 @@ void validarComando(char** comando, int tamanio, t_log* logger) {
 
 	}
 }
-
+/*
 int buscarComando(char* comando, t_log* logger) {
 
 	log_info(logger, "Recibimos el comando: %s", comando);
@@ -570,7 +558,7 @@ int buscarComando(char* comando, t_log* logger) {
 
 	return i;
 
-}
+}*/
 
 int enviarMensaje(int comando, int tamanio, char* mensaje, t_log* logger) {
 
@@ -724,11 +712,13 @@ void inicializarListasPlanificador() {
 	colaEjecucion = list_create();
 }
 
-t_pcb* crearPcb(char* comando) {
+t_pcb* crearPcb(char* linea) {
 
 	log_info(log_kernel, "Creando PCB ==> PID: %d", countPID);
 
 	t_pcb* pcbProceso = malloc(sizeof(t_pcb));
+
+	pcbProceso->linea = linea;
 
 	comandoSeparado = string_split(linea, separator);
 
@@ -740,31 +730,39 @@ t_pcb* crearPcb(char* comando) {
 		tamanio = i + 1;
 	}
 
-	int comando_aux = buscarComando(comandoSeparado[0], log_kernel);
-
 	//En caso que sea el comando run voy a leer el archivo
-	if (comando_aux == run) {
+
+	int auxComandoInt = atoi(comandoSeparado[0]);
+	switch (auxComandoInt){
+
+	case run: {
 
 		log_info(log_kernel,
 				"Vino Run de comando, vamos a buscar cuantas lineas tiene el archivo");
 		int aux_rafaga = rafagaComandoRun(comandoSeparado[1]);
 
 		pcbProceso->pid = countPID;
-		pcbProceso->comando = comando_aux;
+		pcbProceso->comando = auxComandoInt;
 		pcbProceso->rafaga = aux_rafaga;
 		pcbProceso->argumentos = tamanio - 1;
-		pcbProceso->estado = 0; //Estadp en la cola new porque recien se crea
+		pcbProceso->estado = 0; //Estado en la cola new porque recien se crea
 
 	}
-	//en caso que sea otro comando la rafaga es 1
-	else {
+		break;
+	default: {
+
 		log_info(log_kernel, "En la condicion de que no es un comando RUN");
 		pcbProceso->pid = countPID;
-		pcbProceso->comando = comando_aux;
+		pcbProceso->comando = auxComandoInt;
 		pcbProceso->rafaga = 1;
 		pcbProceso->argumentos = tamanio - 1;
-		pcbProceso->estado = 0; //Estadp en la cola new porque recien se crea
+		pcbProceso->estado = 0; //Estado en la cola new porque recien se crea
+
 	}
+		break;
+
+	}
+
 	return pcbProceso;
 }
 
@@ -889,7 +887,7 @@ void planificar(char* linea) {
 
 	semaforoWait(&multiprocesamiento);
 
-	agregarAEjecutar(linea);
+	agregarAEjecutar(pcbProceso);
 
 	//termino
 
@@ -928,20 +926,40 @@ void agregarAListo(t_pcb* pcbParaAgregar) {
 
 }
 
-void agregarAEjecutar(char* linea) {
-
-	t_pcb* pcbListoParaEjecutar;
+void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 
 	req_com_t req;
-	req.tam = strlen(linea);
-	req.str = malloc(req.tam);
-	strcpy(req.str, linea);
 
+	if (pcbParaAgregar->comando == run) {
+
+		char* lineaRun = malloc(1024);
+		char* bufferRun = malloc(1024);
+		char** pruebaPath;
+
+		pruebaPath = string_split(pcbParaAgregar->linea, separator);
+
+		fd = fopen(pruebaPath[1], "r");
+
+		for (int i = 1; arc_config->quantum >= i; i++) {
+
+			lineaRun = fgets(bufferRun, 1024, fd);
+			req.tam = strlen(lineaRun);
+			strcpy(req.str, lineaRun);
+
+		}
+
+	} else {
+		req.tam = strlen(pcbParaAgregar->linea);
+		req.str = malloc(req.tam);
+		strcpy(req.str, linea);
+
+	}
 	log_info(log_kernel,
 			"Bloqueamos Mutex para poder sacar el elemento en la cola de listos y colocarlo en ejecucion");
 
 	mutexBloquear(&mutexColaListos);
-	pcbListoParaEjecutar = list_remove(colaListos, 0);
+	//pcbListoParaEjecutar = list_remove(colaListos, 0);
+	list_remove(colaListos, 0);
 	mutexDesbloquear(&mutexColaListos);
 
 	semaforoValor(&multiprocesamiento, &valorMultiprocesamiento);
@@ -950,12 +968,12 @@ void agregarAEjecutar(char* linea) {
 			"El valor del semaforo contador multiprocesamiento, despues de agregar a ejecutar un proceso es: %d",
 			valorMultiprocesamiento);
 
-	pcbListoParaEjecutar->estado = ejecucion;
+	pcbParaAgregar->estado = ejecucion;
 
 	mutexBloquear(&mutexColaEjecucion);
 	socket_CMemoria = conexionKernel();
-	list_add(colaEjecucion, pcbListoParaEjecutar);
-	enviar_request(socket_CMemoria,req);
+	list_add(colaEjecucion, pcbParaAgregar);
+	enviar_request(socket_CMemoria, req);
 	mutexDesbloquear(&mutexColaEjecucion);
 
 	log_info(log_kernel,
