@@ -169,18 +169,31 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 			nombreTabla, keyBuscada);
 	mutexBloquear(&JOURNALHecho);
 	mutexDesbloquear(&JOURNALHecho);
-	log_info(log_memoria, "[INSERT] Verifico si debo realizar LRU");
-	mutexBloquear(&verificarSiBitmapLleno);
-	if(bitmapLleno()){
-		log_info(log_memoria, "[INSERT] Debo realizar un LRU");
-		LRU();
-	}
-	mutexDesbloquear(&verificarSiBitmapLleno);
+
 	int posicionAIr =
 			buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(nombreTabla, keyBuscada,
 															&segmentoBuscado);
 
 	if(posicionAIr==-1){
+		log_info(log_memoria, "[INSERT] Verifico si debo realizar LRU");
+		mutexBloquear(&verificarSiBitmapLleno);
+		if(bitmapLleno()){
+			log_info(log_memoria, "[INSERT] Debo realizar un LRU");
+			LRU();
+			posicionAIr = buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(nombreTabla, keyBuscada,
+																		&segmentoBuscado);
+		}
+		mutexDesbloquear(&verificarSiBitmapLleno);
+	}
+
+	if(posicionAIr==-1){
+		/*log_info(log_memoria, "[INSERT] Verifico si debo realizar LRU");
+		mutexBloquear(&verificarSiBitmapLleno);
+		if(bitmapLleno()){
+			log_info(log_memoria, "[INSERT] Debo realizar un LRU");
+			LRU();
+		}
+		mutexDesbloquear(&verificarSiBitmapLleno);*/
 		log_info(log_memoria, "[INSERT] NO se encontro la posicion a donde debo ir");
 		log_info(log_memoria, "[INSERT] Verifico 1* si esta FULL memoria");
 
@@ -240,8 +253,8 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 	//		free(ref);
 		}
 	} else {
-		printf("[INSERT A MODIFICAR]\nExiste el segmento '%s' y la pagina que referencia la key (%d) que es NRO '%d'\nProcedo a poner el nuevo valor que es '%s'\n\n",
-				segmentoBuscado->path_tabla, keyBuscada, posicionAIr, valorAPoner);
+	/*	printf("[INSERT A MODIFICAR] Existe el segmento '%s' y la pagina que referencia la key (%d) que es NRO '%d'. Procedo a poner el nuevo valor que es '%s'",
+				segmentoBuscado->path_tabla, keyBuscada, posicionAIr, valorAPoner);*/
 		/*
 		 * SE CREO PERFECTAMENTE, CONOSCO EL SEGMENTO Y LA PAGINA A REFERENCIAR, PROCEDO A MODIFICAR Y ACCEDER
 		 * A LA MEMORIA PARA LA MODIFICACION DE LOS CAMPOS
@@ -1100,7 +1113,7 @@ void tabla_pagina_crear(
 	} else {
 */
 		log_info(log_memoria,
-			"[Crear Tabla y pagina] La pagina '%d' esta LIBRES y la usare para guardar la pagina",
+			"[Crear Tabla y pagina] La pagina '%d' esta LIBRE y la usare para guardar la pagina",
 				posicionAsignada);
 		//AUN HAY ESPACIO, GAURDO ESTA NUEVA PAGINA EN ALGUNA POSICION LIBRE
 	//	pag_ref->nropagina=posicionAsignada;
@@ -1389,8 +1402,7 @@ void modificar_bloque_LRU(char* nombreTabla, timestamp_mem_t timestamp, int nroP
 		memcpy(bloque_LRU+nroPosicion*desplazamiento, nuevoNodo, sizeof(nodoLRU));
 		memcpy(bloque_LRU+nroPosicion*desplazamiento+sizeof(nodoLRU), nombreTabla,
 					strlen(nombreTabla)+1);
-		memcpy(nombreDeTabla, bloque_LRU+nroPosicion*desplazamiento+sizeof(nodoLRU),
-						tamanioPredefinidoParaNombreTabla);
+		memcpy(nombreDeTabla, bloque_LRU+nroPosicion*desplazamiento+sizeof(nodoLRU),tamanioPredefinidoParaNombreTabla);
 		if(verificarSiEstaFUll()){
 			imprimirAviso(log_memoria,
 					"******"
@@ -1409,8 +1421,9 @@ void modificar_bloque_LRU(char* nombreTabla, timestamp_mem_t timestamp, int nroP
 
 		free(auxnombre);
 		*/
-		printf("[MODIFICAR BLOQUE LRU] DATOS INGRESADOS: NOMBRE TABLA <%s>. NUMERO PAGINA: <%d>. TIMESTAMP: <%ld>. ESTADO PAGINA: <%d>.",
-				nombreDeTabla, nroPosicion, timestamp, estado);
+		/*printf("[MODIFICAR BLOQUE LRU] DATOS INGRESADOS: NOMBRE TABLA <%s>. NUMERO PAGINA: <%d>. TIMESTAMP: <%ld>. ESTADO PAGINA: <%d>.",
+				nombreDeTabla, nroPosicion, timestamp, estado);*/
+		log_info(log_memoria, "[DEBUGGING] TABLA %s", nombreTabla);
 		log_info(log_memoria, "[MODIFICAR BLOQUE LRU] DATOS INGRESADOS: NOMBRE TABLA <%s>. NUMERO PAGINA: <%d>. TIMESTAMP: <%ld> ESTADO PAGINA: <%d>",
 				nombreDeTabla, nroPosicion, timestamp, estado);
 	//	free(nuevoNodo->nombreTabla);
@@ -1427,7 +1440,7 @@ void modificar_bloque_LRU(char* nombreTabla, timestamp_mem_t timestamp, int nroP
 		*/
 
 		memcpy(bloque_LRU+nroPosicion*desplazamiento, nuevoNodo, sizeof(nodoLRU));
-		printf("[MODIFICAR MODIFICADO LRU] DATOS INGRESADOS: NOMBRE TABLA <%s>. NUMERO PAGINA: <%d>. TIMESTAMP: <%ld>. ESTADO PAGINA: <%d>",
+		log_info(log_memoria,"[MODIFICAR LRU] DATOS INGRESADOS: NOMBRE TABLA <%s>. NUMERO PAGINA: <%d>. TIMESTAMP: <%ld>. ESTADO PAGINA: <%d>",
 				nombreDeTabla, nroPosicion, timestamp, estado);
 		log_info(log_memoria, "[MODIFICAR BLOQUE LRU] DATOS ACTUALIZADOS DE LA POSICION: <%d>",
 				nroPosicion);
@@ -1492,11 +1505,29 @@ void limpiezaGlobalDeMemoriaYSegmentos(){
 	limpiar_y_destruir_todo_segmento();
 	log_info(log_memoria, "[limpiezaGlobalDeMemoriaYSegmentos] COMIENZO A LIBERAR MEMORIAS");
 	void* liberarMemoriaPrincipal = malloc(sizeof(arc_config->tam_mem));
-	void* liberarLRU = malloc(sizeof(cantPaginasTotales*sizeof(nodoLRU)));
-	memcpy(bloque_LRU, liberarLRU, sizeof(cantPaginasTotales*sizeof(nodoLRU)));
-	memcpy(bloque_memoria, liberarMemoriaPrincipal, sizeof(arc_config->tam_mem));
+//	void* liberarLRU = malloc(cantPaginasTotales*sizeof(nodoLRU));
+//	void* liberarLRU = malloc(cantPaginasTotales*(sizeof(nodoLRU)+tamanioPredefinidoParaNombreTabla));
+	/*nodoLRU *auxLRU = malloc(sizeof(nodoLRU));
+	auxLRU->estado = false;
+	auxLRU->nroPagina = -1;
+	auxLRU->timestamp = 0;
+	for(int i = 0; i<cantPaginasTotales; i++){
+		memcpy(bloque_LRU + sizeof(nodoLRU)*i, auxLRU, sizeof(nodoLRU));
+	}*/
+//	memcpy(bloque_LRU, liberarLRU, sizeof(cantPaginasTotales*sizeof(nodoLRU)));
+//	memcpy(bloque_LRU, liberarLRU, cantPaginasTotales*(sizeof(nodoLRU)+tamanioPredefinidoParaNombreTabla));
+//	memcpy(bloque_memoria, liberarMemoriaPrincipal, sizeof(arc_config->tam_mem));
 	free(liberarMemoriaPrincipal);
-	free(liberarLRU);
+//	free(liberarLRU);
+
+
+	/*libero bloque LRU*/
+	free(bloque_LRU);
+	bloque_LRU = malloc(cantPaginasTotales*(sizeof(nodoLRU)+tamanioPredefinidoParaNombreTabla));
+	//free(auxLRU);
+	cantPaginasDisponibles = cantPaginasTotales;
+	bitmapDestruir(bitmap);
+	bitmap = bitmapCrear(cantPaginasTotales);
 	log_info(log_memoria, "[limpiezaGlobalDeMemoriaYSegmentos] MEMORIAS LIBERADAS");
 }
 

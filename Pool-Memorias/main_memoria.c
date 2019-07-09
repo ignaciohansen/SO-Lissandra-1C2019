@@ -50,6 +50,11 @@ int main(int argc, char **argv)
 
 	int socket_servidor = levantar_servidor_memoria();
 
+	if(socket_servidor == -1){
+		imprimirError(log_memoria, "[MAIN] No se pudo levantar el servidor de escucha. Finalizando...\n");
+		return 1;
+	}
+
 #ifdef AUTOLANZAR_CLIENTE
 	char cmd_cliente[100];
 	snprintf(cmd_cliente,99,"gnome-terminal -- ./cliente %s %d",arc_config->ip,arc_config->puerto);
