@@ -1,7 +1,7 @@
 #ifndef LFILESSYSTEM_H_
 #define LFILESSYSTEM_H_
 
-#include "../Biblioteca/src/Biblioteca.c"
+#include "../Biblioteca/src/Biblioteca.h"
 #include <commons/collections/list.h>
 #include <commons/collections/dictionary.h>
 #include <commons/bitarray.h>
@@ -68,8 +68,7 @@ char* tabla_Path;
 void consola();
 void menu();
 
-char *separador2 = "\n";
-char *separator = " ";
+
 
 /*--------------------------------------------------------------------------------------------
  * 									Elementos de escucha
@@ -123,34 +122,15 @@ t_list* listaRegistrosTabla;
  *--------------------------------------------------------------------------------------------
  */
 
-char* tablaAverificar; // directorio de la tabla
-char* path_tabla_metadata;
-char* archivoParticion;
-char* registroPorAgregar;
-int primerVoidEsRegistro = 1;
 
-const char* comandosPermitidos[] =
-{
-	"select",
-	"insert",
-	"create",
-	"describe",
-	"drop",
-	"journal",
-	"add",
-	"run",
-	"metrics",
-	"salir"
-
-};
 
 int comandoSelect(char* tabla, char* key);
-void comandoInsertSinTimestamp(char* tabla,char* key,char* value);
-void comandoInsert(char* tabla,char* key,char* value,char* timestamp);
-void comandoDrop(char* tabla);
-void comandoCreate(char* tabla,char* consistencia,char* particiones,char* tiempoCompactacion);
-void comandoDescribeEspecifico(char* tabla);
-void comandoDescribe();
+int comandoInsertSinTimestamp(char* tabla,char* key,char* value);
+int comandoInsert(char* tabla,char* key,char* value,char* timestamp);
+int comandoDrop(char* tabla);
+int comandoCreate(char* tabla,char* consistencia,char* particiones,char* tiempoCompactacion);
+char* comandoDescribeEspecifico(char* tabla);
+char* comandoDescribe();
 
 
 /*--------------------------------------------------------------------------------------------
@@ -189,11 +169,6 @@ u_int16_t key;
 }t_registroMemtable;
 
 
-int timestamp_inicio;
-int cantidad_de_dumps = 0;
-int dumps_a_dividir =1;
-int tamanioTotalTabla = 0;
-
 void esperarTiempoDump();
 char* armarPathTablaParaDump(char* tabla,int dumps);
 void crearArchivoTemporal(char* path,char* tabla);
@@ -218,9 +193,9 @@ int obtenerMetadata();
 
 int verificarTabla(char* tabla);
 
-void retornarValores(char* tabla);
+char* retornarValores(char* tabla);
 
-void retornarValoresDirectorio();
+char* retornarValoresDirectorio();
 
 void escanearParticion(int particion);
 
