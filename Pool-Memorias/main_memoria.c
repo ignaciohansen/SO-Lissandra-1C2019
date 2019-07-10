@@ -603,9 +603,20 @@ resp_com_t resolver_insert(request_t req, int modif)
 	char *valor = req.args[2];
 	retardo_memoria();
 	imprimirMensaje3(log_memoria,"[RESOLVIENDO INSERT] Voy a agregar %s en la key %d de la tabla %s",valor,key,nombre_tabla);
-	if(funcionInsert(nombre_tabla, key, valor, modif, timestamp_val)== -1){
-		imprimirError(log_memoria, "[RESOLVIENDO INSERT]ERROR: Mayor al pasar max value");
-		return armar_respuesta(RESP_ERROR_MAYOR_MAX_VALUE,NULL);
+	int tipoRespuestaDeInsert = funcionInsert(
+									nombre_tabla, key, valor, modif, timestamp_val);
+	//1 o 0 ->	SIGNIFICA QUE SALIO BIEN
+	// -1 	->	ERROR, LONGITUD DE LA KEY ES MAYOR QUE EL MAXVALUEKEY
+	// -2	->	MEMORIA FULL, DEBO INFORMAR A KERNEL DE ESTE ERROR
+	if(tipoRespuestaDeInsert < 0){
+		//ERROR
+		if(tipoRespuestaDeInsert == -1){
+			imprimirError(log_memoria, "[RESOLVIENDO INSERT]ERROR: Mayor al pasar max value");
+			return armar_respuesta(RESP_ERROR_MAYOR_MAX_VALUE,NULL);
+		}
+		imprimirError(log_memoria, "[RESOLVIENDO INSERT]ERROR: Memoria esta full y debo informar a KERNEL");
+		return armar_respuesta(RESP_ERROR_MEMORIA_FULL,NULL);
+
 	}
 	return armar_respuesta(RESP_OK,NULL);
 }

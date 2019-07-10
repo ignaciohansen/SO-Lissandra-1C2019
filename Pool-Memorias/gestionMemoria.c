@@ -143,14 +143,14 @@ int loggearEstadoActual(FILE* fp)
 	return 1;
 }
 
-int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bool estadoAPoner, timestamp_mem_t timestamp_val){
+int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner,
+		bool estadoAPoner, timestamp_mem_t timestamp_val){
 	log_info(log_memoria, "[INSERT] EN funcion INSERT");
 	if(strlen(valorAPoner)>=max_valor_key){
 		log_error(log_memoria, "[INSERT] El valor VALUE '%s' es mayor que el max value KEY\nMOTIVO: %d Mayor que %d",
 				valorAPoner, strlen(valorAPoner), max_valor_key);
 		return -1;
 	}
-
 
 	//ESTO ES PARA BLOQUEAR CUALQUIER INSERT NUEVO CUANDO SE ESTA REALIZANDO LRU O JOURNAL
 	//ADEMAS, SI YA SE ESTA REALIZANDO 1 INSERT ENTONCES
@@ -178,7 +178,18 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 		mutexBloquear(&verificarSiBitmapLleno);
 		if(bitmapLleno()){
 			log_info(log_memoria, "[INSERT] Debo realizar un LRU");
-			LRU();
+			/*
+			 * 	estadoAPoner -> TRUE 	-> 	VIENE DE INSERT
+			 * 	estadoAPoner -> FALSE 	->  VIENE DE SELECT
+			 */
+			bool vieneDeSelect = !estadoAPoner;
+			if(LRU(vieneDeSelect)!=1){
+				//SIGNIFICA QUE SE DEBE NOTIFICAR A KERNEL QUE MEMORIA ESTA FULL
+				mutexDesbloquear(&verificarSiBitmapLleno);
+				//NOTIFICAR A KERNEL SOBRE ERROR
+				log_info(log_memoria, "[INSERT] MEMORIA FULL Y DEBO NOTIFICAR A KERNEL PARA PEDIR JOURNAL");
+				return -2;
+			}
 			posicionAIr = buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(nombreTabla, keyBuscada,
 																		&segmentoBuscado);
 		}
@@ -1138,11 +1149,12 @@ void tabla_pagina_crear(
 	return;
 }
 
-void LRU(
+int LRU(
 		/*
 	 	pagina* paginaCreada, int* nroAsignado, char* valor, bool flag_modificado,
 		char* nombreTabla
 		*/
+		bool vieneDeSelect
 		){
 	mutexBloquear(&ACCIONLRU);
 //	imprimirAviso(log_memoria, "[LRU] Comenzando el LRU, empiezo a buscar la pagina a reemplazar");
@@ -1158,13 +1170,22 @@ void LRU(
 
 	if(candidatoAQuitar<0){
 				free(nombreTablaQueDeboBuscar);
-				imprimirAviso(log_memoria, "JOURNAL FORZOSO ACTIVADO\n\n");
-				log_info(log_memoria, "[LRU sin candidato] NO hay nada que se puede quitar, por lo tanto se fuerza un JOURNAL");
+				if(vieneDeSelect) {
+					imprimirAviso(log_memoria, "JOURNAL FORZOSO ACTIVADO\n\n");
+					log_info(log_memoria, "[LRU sin candidato] NO hay nada que se puede quitar, por lo tanto se fuerza un JOURNAL");
 
+					procesoJournal(-1);
+					fprintf(tablas_fp,"\nEjecutado JOURNAL POR MEMORIA FULL");
+					loggearEstadoActual(tablas_fp);
+				}
+				else {
+					log_info(log_memoria, "[LRU sin candidato] NO hay nada que se puede quitar,"
+							". Debo informar a KERNEL");
 
-				procesoJournal(-1);
-				fprintf(tablas_fp,"\nEjecutado JOURNAL POR MEMORIA FULL");
-				loggearEstadoActual(tablas_fp);
+					mutexDesbloquear(&ACCIONLRU);
+					return -1;
+				}
+
 			//	log_info(log_memoria, "[LRU sin candidato] JOURNAL HECHO, lo asigno a la primera posicion");
 			//	paginaCreada->nroPosicion=0;
 			//	asignarNuevaPaginaALaPosicion(0, paginaCreada, valor, flag_modificado, nombreTabla);
@@ -1188,7 +1209,7 @@ void LRU(
 				log_info(log_memoria, "[LRU con candidato] LRU TERMINADO");
 			}
 	mutexDesbloquear(&ACCIONLRU);
-	return;
+	return 1;
 }
 
 void limpiar_todos_los_elementos_de_1_segmento(segmento* segmentoABorrar){

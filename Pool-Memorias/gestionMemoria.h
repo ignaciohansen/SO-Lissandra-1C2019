@@ -16,7 +16,9 @@
 
 void armarMemoriaPrincipal(void);
 int loggearEstadoActual(FILE *fp);
-int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bool estadoAPoner, timestamp_mem_t timestamp_val);
+int funcionInsert(char* nombreTabla, u_int16_t keyBuscada,
+		char* valorAPoner, bool estadoAPoner, timestamp_mem_t timestamp_val
+		, bool vieneDeSelect);
 int funcionSelect(char* nombreTablaAIr, u_int16_t keyBuscada,pagina_a_devolver** dato, char** valorADevolver);
 int funcionDrop(char* nombre);
 int funcionDescribe(char* nombreTablaAIr);
@@ -132,10 +134,10 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteVa
  */
 
 
-	void LRU(
+	int LRU(
 	/*		pagina* paginaCreada, int* nroAsignado,
 			char* value, bool flag_modificado,	char* nombreTabla
-			*/
+			*/ bool vieneDeSelect
 			);
 
 	pagina* actualizarPosicionAPagina(pagina* unaPagina, int nuevaPos);
