@@ -1205,9 +1205,11 @@ buffer_com_t serializar_respuesta(resp_com_t resp)
 	memcpy(buf.stream+desp,&resp.msg.tam,sizeof(int));
 	desp += sizeof(int);
 
-	//Después el request
-	memcpy(buf.stream+desp,resp.msg.str,resp.msg.tam);
-	desp += tam_payload;
+	if(resp.msg.tam > 0 && resp.msg.str != NULL){
+		//Después el request
+		memcpy(buf.stream+desp,resp.msg.str,resp.msg.tam);
+		desp += tam_payload;
+	}
 	return buf;
 }
 
@@ -1382,6 +1384,8 @@ resp_com_t procesar_respuesta(msg_com_t msg)
 		resp.msg.str = malloc(resp.msg.tam);
 		memcpy(resp.msg.str, msg.payload.stream+desp, resp.msg.tam);
 	}
+	else
+		resp.msg.str = NULL;
 	return resp;
 
 }

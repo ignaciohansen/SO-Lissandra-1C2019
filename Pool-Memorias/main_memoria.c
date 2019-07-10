@@ -207,10 +207,18 @@ void* hilo_consola(int * socket_p){
 			case DROP:
 			case JOURNALCOMANDO:
 				respuesta = resolver_pedido(req,socket_lfs);
-				if(respuesta.tipo == RESP_OK)
-					imprimirMensaje1(log_memoria,"\n[CONSOLA] Resuelto OK. Respuesta obtenida: %s",respuesta.msg.str);
-				else
-					imprimirAviso1(log_memoria,"\n[CONSOLA] Error al resolver pedido. Respuesta %s",respuesta.msg.str);
+				if(respuesta.tipo == RESP_OK){
+					if(respuesta.msg.tam > 0 && respuesta.msg.str != NULL)
+						imprimirMensaje1(log_memoria,"\n[CONSOLA] Resuelto OK. Respuesta obtenida: %s",respuesta.msg.str);
+					else
+						imprimirMensaje(log_memoria,"\n[CONSOLA] Resuelto OK. No se especifica respuesta");
+				}
+				else{
+					if(respuesta.msg.tam > 0 && respuesta.msg.str != NULL)
+						imprimirAviso1(log_memoria,"\n[CONSOLA] Error al resolver pedido. Respuesta %s",respuesta.msg.str);
+					else
+						imprimirAviso(log_memoria,"\n[CONSOLA] Error al resolver pedido. No hay mensaje de error");
+				}
 //				borrar_respuesta(respuesta);
 				break;
 			default:
@@ -219,8 +227,10 @@ void* hilo_consola(int * socket_p){
 		}
 		borrar_request(req);
 		if(respuesta.tipo == RESP_OK){
-			if(respuesta.msg.str != NULL)
-				printf("-> %s",respuesta.msg.str);
+			if(respuesta.msg.tam > 0 && respuesta.msg.str != NULL)
+				printf("-> [RESUELTO]: %s",respuesta.msg.str);
+			else
+				printf("-> [RESUELTO]");
 		}
 		else{
 			printf("***El pedido no se pudo resolver. Error <%d>.",respuesta.tipo);
@@ -479,7 +489,7 @@ resp_com_t resolver_drop(int socket_lfs,request_t req)
 //			borrar_respuesta(recibido);
 //			return -1;
 		}
-		if(respuesta.msg.tam >0)
+		if(respuesta.msg.tam >0 && respuesta.msg.str != NULL)
 			imprimirMensaje1(log_memoria,"[RESOLVIENDO DROP] El filesystem contestó al DROP con %s",respuesta.msg.str);
 //		borrar_respuesta(recibido);
 	}
