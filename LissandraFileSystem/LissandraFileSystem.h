@@ -204,6 +204,16 @@ void esperarTiempoDump();
 char* armarPathTablaParaDump(char* tabla,int dumps);
 void crearArchivoTemporal(char* path,char* tabla);
 void realizarDump();
+
+/*--------------------------------------------------------------------------------------------
+ * 									Operaciones para bloques
+ *--------------------------------------------------------------------------------------------
+ */
+
+int tamTotalListaRegistros(t_list* listaRegistros);
+void* armarBufferConRegistros(t_list* listaRegistros, int tam_total_registros);
+int escribirVariosBloques(t_list* bloques, int tam_total_registros, void* buffer);
+int escribirBloque(int bloque, int size, int* offset, void* buffer);
 t_list* leerBloque(char* path);
 
 /*--------------------------------------------------------------------------------------------

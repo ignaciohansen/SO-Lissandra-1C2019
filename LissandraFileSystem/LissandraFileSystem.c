@@ -1044,29 +1044,40 @@ void crearArchivoTemporal(char* path, char* tabla) {
 
 	// path objetivo: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA/cantidad_de_dumps.tmp
 
+	t_list* listaRegistrosTabla = dictionary_get(memtable, tabla);
+	int cantidad_registros = list_size(listaRegistrosTabla);
+	if()
+
+
+
+
+
+
+
 	int posicion = 1; //obtenerPrimerBloqueLibreBitmap();
 	if (posicion == 1) {
 		//ocuparBloqueLibreBitmap(posicion);
 		FILE* temporal;
 		temporal = fopen(path, "wb");
 		log_info(logger, "creamos el archivo, ahora  lo llenamos");
+		int tam_total_registros = 0;
 		//listaRegistrosTabla = list_create();
-		t_list* listaRegistrosTabla = dictionary_get(memtable, tabla);
-		int cantidad_registros = list_size(listaRegistrosTabla);
+
+		/*
 		log_info(logger, "cantidad de registros insertados en esa tabla: %d",
 				cantidad_registros);
 		char punto_y_coma = ';';
-		char* hola = "hola";
 		char barra_n = '\n';
-		int tam_total_registros=0;
+
 		t_registroMemtable* registro;
 		int offset = 0;
 
 		for (int i = 0; i < cantidad_registros; i++) {
 			registro = list_get(listaRegistrosTabla, i);
 
-			tam_total_registros += registro->tam_registro -1; // El -1 porque no estoy escribiendo el \0 al archivo, si no al leer le sobran bytes
-			log_info(logger, "%d Registro %s. Tam  %d", i, registro->value, registro->tam_registro);
+			tam_total_registros += registro->tam_registro - 1; // El -1 porque no estoy escribiendo el \0 al archivo, si no al leer le sobran bytes
+			log_info(logger, "%d Registro %s. Tam  %d", i, registro->value,
+					registro->tam_registro);
 		}
 
 		tam_total_registros += sizeof(char) * 3 * cantidad_registros;
@@ -1077,20 +1088,23 @@ void crearArchivoTemporal(char* path, char* tabla) {
 		for (int i = 0; i < cantidad_registros; i++) {
 
 			registro = list_get(listaRegistrosTabla, i);
-			memcpy(registrosAInsertar + offset, &registro->timestamp, sizeof(double));
+			memcpy(registrosAInsertar + offset, &registro->timestamp,
+					sizeof(double));
 			offset += sizeof(double);
 			memcpy(registrosAInsertar + offset, &punto_y_coma, sizeof(char));
 			offset += sizeof(char);
-			memcpy(registrosAInsertar + offset, &registro->key, sizeof(u_int16_t));
+			memcpy(registrosAInsertar + offset, &registro->key,
+					sizeof(u_int16_t));
 			offset += sizeof(u_int16_t);
 			memcpy(registrosAInsertar + offset, &punto_y_coma, sizeof(char));
 			offset += sizeof(char);
-			memcpy(registrosAInsertar + offset, registro->value, strlen(registro->value));
+			memcpy(registrosAInsertar + offset, registro->value,
+					strlen(registro->value));
 			offset += strlen(registro->value);
 			memcpy(registrosAInsertar + offset, &barra_n, sizeof(char));
 			offset += sizeof(char);
 
-		}
+		}*/
 		log_info(logger, "Tamanio total de los registros de la %s es: %d",
 				tabla, tam_total_registros);
 
@@ -1099,6 +1113,7 @@ void crearArchivoTemporal(char* path, char* tabla) {
 		fwrite(registrosAInsertar, tam_total_registros, 1, temporal);
 		fclose(temporal);
 		free(registrosAInsertar);
+
 //		free(registro);
 
 		//fwrite((void*)registroAInsertar, 1, strlen(registroAInsertar), temporal);
@@ -1123,20 +1138,114 @@ void crearArchivoTemporal(char* path, char* tabla) {
 
 //DUMP
 
-//Lectura y escritura de bloques
+//OPERACIONES CON BLOQUES
 
-/*void escribirBloque(char* path, void* lista_registros, int tam_registros){
+int tamTotalListaRegistros(t_list* listaRegistros) {
+	int cantidad_registros = list_size(listaRegistros);
+	log_info(logger, "cantidad de registros de la lista: %d", cantidad_registros);
 
- FILE* archivo;
- archivo = fopen(path, "wb");
+	int tam_total_registros = 0;
+	t_registroMemtable* registro;
 
- fwrite(lista_registros, 1, tam_registros, archivo);
+	for (int i = 0; i < cantidad_registros; i++) {
+		registro = list_get(listaRegistros, i);
 
- fclose(archivo);
+		tam_total_registros += registro->tam_registro - 1; // El -1 porque no estoy escribiendo el \0 al archivo, si no al leer le sobran bytes
+	}
 
- }*/
+	tam_total_registros += sizeof(char) * 3 * cantidad_registros;
 
-t_list* leerBloque(char* path){
+	log_info(logger, "tamanio total de registros: %d", tam_total_registros);
+
+	return tam_total_registros;
+}
+
+void* armarBufferConRegistros(t_list* listaRegistros, int tam_total_registros) {
+
+	int offset = 0;
+	char punto_y_coma = ';';
+	char barra_n = '\n';
+
+	int cantidad_registros = list_size(listaRegistros);
+	t_registroMemtable* registro;
+
+	void* bufferConRegistros = malloc(tam_total_registros);
+
+	for (int i = 0; i < cantidad_registros; i++) {
+
+		registro = list_get(listaRegistros, i);
+		memcpy(bufferConRegistros + offset, &registro->timestamp,
+				sizeof(double));
+		offset += sizeof(double);
+		memcpy(bufferConRegistros + offset, &punto_y_coma, sizeof(char));
+		offset += sizeof(char);
+		memcpy(bufferConRegistros + offset, &registro->key,
+				sizeof(u_int16_t));
+		offset += sizeof(u_int16_t);
+		memcpy(bufferConRegistros + offset, &punto_y_coma, sizeof(char));
+		offset += sizeof(char);
+		memcpy(bufferConRegistros + offset, registro->value,
+				strlen(registro->value));
+		offset += strlen(registro->value);
+		memcpy(bufferConRegistros + offset, &barra_n, sizeof(char));
+		offset += sizeof(char);
+	}
+
+	return bufferConRegistros;
+}
+
+int escribirVariosBloques(t_list* bloques, int tam_total_registros, void* buffer) {
+
+	int resultado = 1;
+	int offset = 0;
+
+	for(int i=0; i<list_size(bloques); i++) {
+
+		int nroBloque = list_get(bloques, i);
+		if(tam_total_registros < metadataLFS->block_size) {
+			resultado = escribirBloque(nroBloque, tam_total_registros, &offset, buffer);
+			tam_total_registros -= tam_total_registros;
+		}
+		else {
+			resultado = escribirBloque(nroBloque, metadataLFS->block_size, &offset, buffer);
+			tam_total_registros -= metadataLFS->block_size
+		}
+
+		if(!resultado) {
+			//liberar bloques en el bitmap
+			break; //sale del for con esto?
+		}
+	}
+
+	log_info("Se terminaron de escribir los bloques");
+
+	return resultado;
+}
+
+int escribirBloque(int bloque, int size, int* offset, void* buffer) {
+    void* data;
+    char* bloqueChar;
+    spritnf(bloqueChar, "%d", bloque);
+    char* path = buscarBloque(bloqueChar);
+    data = malloc(size);
+    FILE* bloqueFile = fopen(path,"wb");
+
+    if(bloqueFile != NULL){
+
+		fwrite(buffer+offset, size, 1, bloqueFile);
+		offset += size;
+		free(path);
+		fclose(bloqueFile);
+		return true;
+    }
+
+    log_info("bloques %d escrito con exito", bloque);
+
+    free(path);
+    return false;
+}
+
+t_list* leerBloque(char* path) {
 	t_list *registros_leidos = list_create();
 	FILE* bloque;
 	int tam_bloque;
@@ -1152,67 +1261,73 @@ t_list* leerBloque(char* path){
 
 	void* registros_bloque = malloc(tam_bloque);
 
-	int readReturn = fread(registros_bloque, tam_bloque, 1, bloque);
+	if (fread(registros_bloque, tam_bloque, 1, bloque)) {
 
-	log_info(logger, "resultado del read: %d", readReturn);
+		int offset = 0;
+		char *aux = malloc(configFile->tamanio_value + 1);
+		while (offset < tam_bloque) {
+			registro = malloc(sizeof(t_registroMemtable));
 
-	int offset = 0;
-	char *aux = malloc(configFile->tamanio_value+1);
-	while(offset < tam_bloque){
-		registro = malloc(sizeof(t_registroMemtable));
+			//Guardo timestamp
+			memcpy(&registro->timestamp, registros_bloque + offset,
+					sizeof(double));
+			offset += sizeof(double);
+			offset += sizeof(char); // ";"
 
-		//Guardo timestamp
-		memcpy(&registro->timestamp, registros_bloque + offset, sizeof(double));
-		offset += sizeof(double);
-		offset += sizeof(char); // ";"
+			//Guardo key
+			memcpy(&registro->key, registros_bloque + offset, sizeof(uint16_t));
+			offset += sizeof(uint16_t);
+			offset += sizeof(char); // ";"
 
-		//Guardo key
-		memcpy(&registro->key, registros_bloque + offset, sizeof(uint16_t));
-		offset += sizeof(uint16_t);
-		offset += sizeof(char); // ";"
+			//Guardo en el aux el máximo tamaño del value
+			if (configFile->tamanio_value + 1 <= tam_bloque - offset)
+				memcpy(aux, registros_bloque + offset,
+						configFile->tamanio_value + 1);
+			else
+				memcpy(aux, registros_bloque + offset, tam_bloque - offset);
 
-		//Guardo en el aux el máximo tamaño del value
-		if(configFile->tamanio_value + 1 <= tam_bloque - offset)
-			memcpy(aux, registros_bloque + offset, configFile->tamanio_value+1);
-		else
-			memcpy(aux, registros_bloque + offset, tam_bloque - offset);
+			//Busco el \n que indica el fin del valor
+			char **aux_split = string_split(aux, "\n");
+			registro->value = malloc(strlen(aux_split[0]) + 1);
+			strcpy(registro->value, aux_split[0]);
 
-		//Busco el \n que indica el fin del valor
-		char **aux_split = string_split(aux,"\n");
-		registro->value = malloc(strlen(aux_split[0])+1);
-		strcpy(registro->value, aux_split[0]);
+			//Libero toda la memoria que genera el string_split
+			int i = 0;
+			while (aux_split[i] != NULL) {
+				free(aux_split[i]);
+				i++;
+			}
+			free(aux_split);
 
-		//Libero toda la memoria que genera el string_split
-		int i = 0;
-		while(aux_split[i] != NULL){
-			free(aux_split[i]);
-			i++;
+			//Avanzo el offset solo el tamaño realmente leído del valor
+			offset += strlen(registro->value) + sizeof(char); //value + \n
+
+			//Calculo tamaño
+			registro->tam_registro = strlen(registro->value) + 1
+					+ sizeof(double) + sizeof(uint16_t);
+
+			log_info(logger, "timestamp leido: %lf", registro->timestamp);
+			log_info(logger, "key leida: %d", registro->key);
+			log_info(logger, "value leido: %s", registro->value);
+			log_info(logger, "tamaño registro: %d", registro->tam_registro);
+
+			//Agrego el registro a la lista que voy a retornar
+			list_add(registros_leidos, registro);
+			log_info(logger, "Agregado a la lista");
+			log_info(logger, "Hasta ahora lei %d bytes de %d", offset,
+					tam_bloque);
 		}
-		free(aux_split);
-
-		//Avanzo el offset solo el tamaño realmente leído del valor
-		offset += strlen(registro->value) + sizeof(char);//value + \n
-
-		//Calculo tamaño
-		registro->tam_registro = strlen(registro->value)+1 + sizeof(double) + sizeof(uint16_t);
-
-		log_info(logger, "timestamp leido: %lf", registro->timestamp);
-		log_info(logger, "key leida: %d", registro->key);
-		log_info(logger, "value leido: %s", registro->value);
-		log_info(logger, "tamaño registro: %d", registro->tam_registro);
-
-		//Agrego el registro a la lista que voy a retornar
-		list_add(registros_leidos, registro);
-		log_info(logger, "Agregado a la lista");
-		log_info(logger, "Hasta ahora lei %d bytes de %d",offset,tam_bloque);
+		free(aux);
+		fclose(bloque);
 	}
-	free(aux);
-	fclose(bloque);
+	else {
+		log_error(logger, "no se pudo leer el archivo con el path: %s", path);
+	}
 
 	return registros_leidos;
 }
 
-//Lectura y escritara de bloques
+//OPERACIONES CON BLOQUES
 
 int determinarParticion(int key, int particiones) {
 
@@ -1348,7 +1463,7 @@ char* buscarBloque(char* key) {
 	string_append(&bloqueObjetivo, ".bin");
 	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo);
 
-	FILE *file;
+	/*FILE *file;
 	file = fopen(bloqueObjetivo, "r");
 
 	if (file == NULL) {
@@ -1375,9 +1490,9 @@ char* buscarBloque(char* key) {
 
 		fclose(file);
 
-	}
+	}*/
 
-	return "asdasdasdas";
+	return bloqueObjetivo;
 
 }
 
@@ -1616,15 +1731,17 @@ void comandoCreate(char* tabla, char* consistencia, char* particiones,
 				rutaParticion(i);
 				FILE* particion;
 				particion = fopen(archivoParticion, "w");
-				char* lineaParticion = malloc(string_length("SIZE=")+ sizeof(int)+ string_length("BLOCK=[]")+ sizeof(int)+4);
+				char* lineaParticion = malloc(
+						string_length("SIZE=") + sizeof(int)
+								+ string_length("BLOCK=[]") + sizeof(int) + 4);
 				lineaParticion = string_new();
-				string_append(&lineaParticion,"SIZE=0");
+				string_append(&lineaParticion, "SIZE=0");
 				//string_append(&lineaParticion,"1");
-				string_append(&lineaParticion,"\n");
-				string_append(&lineaParticion,"BLOCK=[");
-				string_append(&lineaParticion,"1");
-				string_append(&lineaParticion,"]");
-				fputs(lineaParticion,particion);
+				string_append(&lineaParticion, "\n");
+				string_append(&lineaParticion, "BLOCK=[");
+				string_append(&lineaParticion, "1");
+				string_append(&lineaParticion, "]");
+				fputs(lineaParticion, particion);
 				log_info(logger, "Particion creada: %s", archivoParticion);
 				fclose(particion);
 			}
