@@ -20,8 +20,6 @@
 #include <pthread.h>
 #include <stdint.h>
 
-
-
 //#include "parser.h"
 //#include "retardos.h"
 //#include "memoria.h"
