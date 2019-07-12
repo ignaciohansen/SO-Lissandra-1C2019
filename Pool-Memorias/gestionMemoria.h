@@ -14,23 +14,23 @@
 
 /* FUNCIONES EXTERNAS */
 
-void armarMemoriaPrincipal();
+void armarMemoriaPrincipal(void);
 int loggearEstadoActual(FILE *fp);
-int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bool estadoAPoner, double timestamp_val);
+int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bool estadoAPoner, timestamp_mem_t timestamp_val);
 int funcionSelect(char* nombreTablaAIr, u_int16_t keyBuscada,pagina_a_devolver** dato, char** valorADevolver);
 int funcionDrop(char* nombre);
 int funcionDescribe(char* nombreTablaAIr);
-void liberar_todo_por_cierre_de_modulo();
+void liberar_todo_por_cierre_de_modulo(void);
 void liberar_config(void);
 
 void insertCrearPaginaConNuevoSegmento(char* nombreTabla, u_int16_t keyBuscada,
 		pagina_referenciada* ref, char* valorAPoner, bool estadoAPoner,
-		segmento* segmentoBuscado, double timestamp_val);
+		segmento* segmentoBuscado, timestamp_mem_t timestamp_val);
 
 /* FUNCIONES INTERNAS A LA BIBLIOTECA */
 
-void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo, double timestamp_val);
-double  timestamp(void);
+void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo, timestamp_mem_t timestamp_val);
+timestamp_mem_t timestamp(void);
 void liberar_todo_segmento(void);
 
 //ESTE DE AQUI ABAJO DEVUELVE LA POSICION EN DONDE SE ENCUENTA LA KEY BUSCADA
@@ -67,11 +67,11 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteVa
 	void tabla_pagina_crear(
 			u_int16_t key, char* valor, bool flag_modificado,
 			pagina_referenciada** devolver, char* nombreTabla,
-			bool existeSegmento, segmento* segmetnoApuntado, double timestamp_val);
+			bool existeSegmento, segmento* segmetnoApuntado, timestamp_mem_t timestamp_val);
 //	pagina * pagina_crear(long timestamp, int16_t key, char * valor);
 	pagina* pagina_crear(long timestampNuevo, u_int16_t key, char * valor, char* nombreTabla);
 	//EL DE ABAJO CREA LA UNIDAD, EL DE ARRIBA DESPUES MANDA A BUSCAR EL SEGMENTO
-	pagina* crear_pagina(int16_t key, char * valor, int posicionAsignada, double timestamp_val);
+	pagina* crear_pagina(int16_t key, char * valor, int posicionAsignada, timestamp_mem_t timestamp_val);
 
 
 	/*
@@ -117,7 +117,7 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteVa
 	int limpiar_paginas(pagina_referenciada* pag);
 	int limpiar_valores_pagina(pagina* valores);
 
-	void limpiar_y_destruir_todo_segmento();
+	void limpiar_y_destruir_todo_segmento(void);
 	void limpiar_todos_los_elementos_de_1_segmento(segmento* segmentoABorrar);
 	void liberarTodosLasTablasDePaginas(pagina_referenciada* ref);
 	void liberarPosicionLRU(int posicionAIr);
@@ -142,11 +142,11 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteVa
 
 	char* obtenerNombreTablaDePath(char* path);
 
-	int pasarValoresALisandra(datosJournal* datos);
+	int pasarValoresALisandra(datosJournal* datos, int socket_lfs);
 
 	int buscarPaginaDisponible(u_int16_t key, bool existiaTabla, char* nombreTabla, segmento* segmetnoApuntado);
 
-	void modificar_bloque_LRU(char* nombreTabla, double timestamp, int nroPosicion, bool estado,
+	void modificar_bloque_LRU(char* nombreTabla, timestamp_mem_t timestamp, int nroPosicion, bool estado,
 			bool vieneDeInsert);
 
 	int buscarEnBloqueLRUElProximoAQuitar(char** nombreTablaADevolver);
@@ -162,9 +162,9 @@ void insertHardcodeado(int cant, int inicio, void* info, char* valorNuevo, char*
  *							JOURNAL
  */
 
-bool verificarSiEstaFUll();
-void JOURNAL(void);
-void procesoJournal(void);
+bool verificarSiEstaFUll(void);
+int JOURNAL(int socket_lfs);
+int procesoJournal(int socket_lfs);
 datosJournal* obtener_todos_journal(void);
 bool bloque_LRU_en_posicion_fue_modificado(int pos, char** nombreADevolver);
 void liberarDatosJournal(datosJournal* datos);

@@ -2,6 +2,7 @@
 #include "gestionMemoria.h"
 //#include "../Biblioteca/src/Biblioteca.c"
 #include "../Biblioteca/src/Biblioteca.h"
+#include "main_memoria.h"
 //void terminar_memoria(t_log* g_log);
 
 //#define MAIN_1
@@ -324,10 +325,10 @@ void imprimirPorPantallaTodosLosComandosDisponibles(){
 			"JOURNAL\n"
 			"DESCRIBE [nombre tabla - OPCIONAL]\n"
 			"DROP <nombre tabla>\n"
-			"RETARDO_MEMORIA <milisegundos>\n"
+			/*"RETARDO_MEMORIA <milisegundos>\n"
 			"RETARDO_FS <milisegundos>\n"
 			"RETARDO_GOSSIPING <milisegundos>\n"
-			"RETARDO_JOURNAL <milisegundos>\n"
+			"RETARDO_JOURNAL <milisegundos>\n"*/
 			"SALIR\n");
 }
 
@@ -357,9 +358,15 @@ void cerrarTodosLosHilosPendientes() {
 }
 
 
-void inicioLogYConfig() {
+void inicioLogYConfig(char* path_config) {
 	tamanioPredefinidoParaNombreTabla = 50;
-	log_memoria = archivoLogCrear(LOG_PATH, "Proceso Memoria");
+//	log_memoria = archivoLogCrear(LOG_PATH, "Proceso Memoria");
+	archivoLogValidar(LOG_PATH);
+#ifdef LOGGEAR_EN_CONSOLA
+	log_memoria = log_create(LOG_PATH, "Proceso Memoria", true, LOG_LEVEL_DEBUG);
+#else
+	log_memoria = log_create(LOG_PATH, "Proceso Memoria", false, LOG_LEVEL_DEBUG);
+#endif
 	log_info(log_memoria,
 			" \n ========== Iniciación de Pool de Memoria ========== \n \n ");
 
@@ -374,7 +381,7 @@ void inicioLogYConfig() {
 		log_info(log_memoria, "[LOGYCONFIG] Logger de seguimiento de tablas creado en %s",LOG_TABLAS_PATH);
 	}
 
-	cargarConfiguracion();
+	cargarConfiguracion(path_config);
 	log_info(log_memoria,
 			"[LOGYCONFIG] *** CONFIGURACIÓN DE MEMORIA CARGADA. *** ");
 }
@@ -410,7 +417,7 @@ void iniciarSemaforosYMutex() {
 	mutexIniciar(&mutex_bloquear_select_por_limpieza);
 
 	mutexIniciar(&verificarSiBitmapLleno);
-
+	mutexIniciar(&mutex_retardos_memoria);
 //	iniciarSemaforosRetados();
 
 	log_info(log_memoria, "[SEMAFOROS] Semaforos y mutex inicializados");
@@ -880,8 +887,8 @@ void escucharConexionKernel() {
 /*-----------------------------------------------------------------------------
  * FUNCIONALIDADES PARA LA CARGA DE LA CONFIGURACION Y EL LOG
  *-----------------------------------------------------------------------------*/
-void cargarConfiguracion() {
-
+void cargarConfiguracion(char *path_config) {
+//	printf("\n\n**********CARGANDO CONFIGURACION**********\n\n");
 	log_info(log_memoria, "[CONFIGURANDO MODULO] RESERVAR MEMORIA.");
 	arc_config = malloc(sizeof(t_memoria_config));
 
@@ -893,7 +900,7 @@ void cargarConfiguracion() {
 
 	log_info(log_memoria, "[CONFIGURANDO MODULO] BUSCANDO CONFIGURACION.");
 
-	configFile = config_create(PATH_MEMORIA_CONFIG);
+	configFile = config_create(path_config);
 
 	if (configFile != NULL) {
 
@@ -965,7 +972,7 @@ void cargarConfiguracion() {
 
 			arc_config->retardo_mem = config_get_int_value(configFile,
 					"RETARDO_MEM");
-			log_info(log_memoria, "[CONFIGURANDO MODULO] RETARTDO MEMORIA: %d",
+			log_info(log_memoria, "[CONFIGURANDO MODULO] RETARDO MEMORIA: %d",
 					arc_config->retardo_mem);
 
 		} else {
@@ -1022,7 +1029,7 @@ void cargarConfiguracion() {
 			arc_config->memory_number = config_get_int_value(configFile,
 					"MEMORY_NUMBER");
 			log_info(log_memoria, "[CONFIGURANDO MODULO] NUMERO DE MEMORIA: %d",
-					arc_config->retardo_mem);
+					arc_config->memory_number);
 
 		} else {
 			log_error(log_memoria, "[ERROR] NO HAY NUMERO DE MEMORIA CONFIGURADO");
@@ -1040,13 +1047,92 @@ void cargarConfiguracion() {
 			log_error(log_memoria, "[ERROR] NO HAY TAMANIO MAXIMO PARA LA KEY. SETEANDO POR DEFAULT: 10");
 		} // MEMORY NUMBER
 
+
 	} else {
 
 		log_error(log_memoria,
 				"[WARNING] NO HAY ARCHIVO DE CONFIGURACION DE MODULO MEMORIA"); // ERROR: SIN ARCHIVO CONFIGURACION
 
 	}
+}
 
+
+/*
+ * Lo hago en otra función para sólo modificar retardos
+ * Al ser variables globales, se puede romper la memoria si modifican, por ej, el tam maximo del value
+ * Obvio que depende de como se esté usando, pero mejor ahorremonos ese problema
+ */
+
+void recargarConfiguracion(char *path_config){
+
+	log_info(log_memoria, "[ACTUALIZANDO RETARDOS] Voy a actualizar retardos");
+
+	mutexBloquear(&mutex_retardos_memoria);
+
+	t_config* auxConfigFile = config_create(path_config);
+
+	if (auxConfigFile != NULL) {
+
+		log_info(log_memoria, "[ACTUALIZANDO RETARDOS] LEYENDO CONFIGURACION...");
+
+		if (config_has_property(auxConfigFile, "RETARDO_MEM")) {
+
+			arc_config->retardo_mem = config_get_int_value(auxConfigFile,
+					"RETARDO_MEM");
+			log_info(log_memoria, "[ACTUALIZANDO RETARDOS] RETARTDO MEMORIA: %d",
+					arc_config->retardo_mem);
+
+		} else {
+			log_error(log_memoria, "[ACTUALIZANDO RETARDOS] NO HAY RETARDO CONFIGURADO");
+		} // RETARDO DE MEMORIA
+
+		if (config_has_property(auxConfigFile, "RETARDO_FS")) {
+
+			arc_config->retardo_fs = config_get_int_value(auxConfigFile, "RETARDO_FS");
+			log_info(log_memoria, "[ACTUALIZANDO RETARDOS] RETARDO DEL FS: %d",
+					arc_config->retardo_fs);
+
+		} else {
+			log_error(log_memoria, "[ACTUALIZANDO RETARDOS] NO HAY RETARDO DE FS CONFIGURADO");
+		} // RETARDO FS
+
+		if (config_has_property(auxConfigFile, "RETARDO_JOURNAL")) {
+
+			arc_config->retardo_journal = config_get_int_value(auxConfigFile,
+					"RETARDO_JOURNAL");
+			log_info(log_memoria,
+					"[ACTUALIZANDO RETARDOS] RETARDO DEL JOURNALING: %d",
+					arc_config->retardo_journal);
+
+		} else {
+			log_error(log_memoria,
+					"[ACTUALIZANDO RETARDOS] NO HAY RETARDO DE JOURNALING CONFIGURADO");
+		} // RETARDO JOURNALING
+
+		if (config_has_property(auxConfigFile, "RETARDO_GOSSIPING")) {
+
+			arc_config->retardo_gossiping = config_get_int_value(auxConfigFile,
+					"RETARDO_GOSSIPING");
+			log_info(log_memoria, "[ACTUALIZANDO RETARDOS] RETARDO DE GOSSIPING: %d",
+					arc_config->retardo_gossiping);
+
+		} else {
+			log_error(log_memoria,
+					"[ACTUALIZANDO RETARDOS] NO HAY RETARDO DE GOSSIPING CONFIGURADO");
+		} // RETARDO GOSSIPING
+
+	} else {
+		log_error(log_memoria,
+				"[ACTUALIZANDO RETARDOS] NO HAY ARCHIVO DE CONFIGURACION DE MODULO MEMORIA"); // ERROR: SIN ARCHIVO CONFIGURACION
+	}
+
+	config_destroy(auxConfigFile);
+
+	actualizar_retardo_gossiping(arc_config->retardo_gossiping);
+
+	log_info(log_memoria, "[ACTUALIZANDO RETARDOS] RETARDOS ACTUALIZADOS CORRECTAMENTE");
+
+	mutexDesbloquear(&mutex_retardos_memoria);
 }
 
 
@@ -1054,55 +1140,105 @@ void cargarConfiguracion() {
  * FUNCIONES PARA LA ADMINISTRACION DE MEMORIA
  *-----------------------------------------------------*/
 
-void JOURNAL() {
+int JOURNAL(int socket_lfs) {
 //	log_info(log_memoria, "[JOURNAL] EN JOURNAL");
-	imprimirAviso(log_memoria, "\n\nREALIZANDO JOURNAL\n\n");
+	imprimirAviso(log_memoria, "[JOURNAL] ENTRANDO");
 //	char* datosAPasar=NULL;
 	datosJournal* journalAPasar;
+	retardo_memoria();
 	journalAPasar = obtener_todos_journal();
 	log_info(log_memoria, "[JOURNAL] PROCEDO A ENVIAR LA INFORMACION A LISANDRA");
 
 	log_info(log_memoria, "[JOURNAL] ENVIO EL MENSAJE A LISANDRA");
-	pasarValoresALisandra(journalAPasar);
-	log_info(log_memoria, "[JOURNAL] TAMAÑO ENVIADO");
 
-	log_info(log_memoria, "[JOURNAL] Lisandra responde que recibio el mensaje");
+	int cant_pasados = pasarValoresALisandra(journalAPasar,socket_lfs);
 
-	log_info(log_memoria, "[JOURNAL] JOURNAL HECHO, LISANDRA LA HA RECIBIDO BIEN, LIMPIO TODO");
+	log_info(log_memoria, "[JOURNAL] JOURNAL HECHO, LISANDRA HA RECIBIDO BIEN %d REGISTROS, LIMPIO TODO",cant_pasados);
 
 	liberarDatosJournal(journalAPasar);
 	mutexBloquear(&mutex_bloquear_select_por_limpieza);
 	limpiezaGlobalDeMemoriaYSegmentos();
 	mutexDesbloquear(&mutex_bloquear_select_por_limpieza);
 	if(activo_retardo_journal){
-		fprintf(tablas_fp,"\nEjecutado comando 1 JOURNAL AUTOMATICO");
 		activo_retardo_journal=false;
-		loggearEstadoActual(tablas_fp);
 		pthread_mutex_unlock(&JOURNALHecho);
-		printf("\nHILO JOURNAL HECHO, VUELVO A REALIZARLO\n");
+
 //		pthread_cancel(journalHilo);
 //		pthread_cancel(journalHilo);
 	//	pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
 //		pthread_detach(journalHilo);
 	}
+	return cant_pasados;
 }
 
-int pasarValoresALisandra(datosJournal* datos){
+int pasarValoresALisandra(datosJournal* datos,int socket_lfs)
+{
+	bool debo_cerrar_socket = false;
+	if(socket_lfs == -1){
+		imprimirMensaje(log_memoria,"[ENVIANDO DATOS A LFS] Voy a crear conexión con LFS");
+		socket_lfs = conectar_a_lfs(false,NULL);
+		if(socket_lfs == -1){
+			imprimirError(log_memoria,"[ENVIANDO DATOS A LFS] No fue posible conectarse al LFS");
+			return -1;
+		}
+		else
+			debo_cerrar_socket = true;
+	}
+	imprimirMensaje(log_memoria,"[ENVIANDO DATOS A LFS] Voy a enviarles los datos modificados");
+	datosJournal *enviar = datos;
+	req_com_t insert;
+	char aux[100];
+	int cont = 0;
+	while(enviar != NULL){
+		snprintf(aux,100,"INSERT %s %d %s %ld",enviar->nombreTabla,enviar->key,enviar->value, enviar->timestamp);
+		insert.tam = strlen(aux)+1;
+		insert.str = malloc(insert.tam);
+		strcpy(insert.str,aux);
+		retardo_fs();
+		imprimirMensaje1(log_memoria,"[ENVIANDO DATOS A LFS] Enviando <%s>",insert.str);
+		if(enviar_request(socket_lfs,insert) == -1){
+			imprimirError(log_memoria, "[ENVIANDO DATOS A LFS] No se puedo enviar el insert al filesystem");
+		}
+		borrar_request_com(insert);
 
-
-	retardo_fs(arc_config->retardo_fs);
-	return 1;
+		//Espero su respuesta
+		msg_com_t msg = recibir_mensaje(socket_lfs);
+		if(msg.tipo == RESPUESTA){
+			resp_com_t recibido = procesar_respuesta(msg);
+			borrar_mensaje(msg);
+			if(recibido.tipo == RESP_OK){
+				imprimirMensaje(log_memoria, "[ENVIANDO DATOS A LFS] El filesystem realizó el INSERT con éxito");
+				cont++;
+			}
+			else{
+				imprimirError(log_memoria, "[ENVIANDO DATOS A LFS] El filesystem no pudo realizar el INSERT");
+				borrar_respuesta(recibido);
+			}
+			if(recibido.msg.tam>0)
+				imprimirMensaje1(log_memoria,"[ENVIANDO DATOS A LFS] El filesystem contestó con %s",recibido.msg.str);
+			borrar_respuesta(recibido);
+		}
+		else{
+			borrar_mensaje(msg);
+		}
+		enviar = enviar->sig;
+	}
+	if(debo_cerrar_socket)
+		close(socket_lfs);
+	return cont;
 }
 
-void procesoJournal(){
+int procesoJournal(int socket_lfs){
+	int cant_pasados = 0;
 	mutexBloquear(&JOURNALHecho);
 	hiloCancelar(journalHilo);
-	log_info(log_memoria, "[procesoJournal] Memoria esta full, procedo a hacer Journal");
-	printf("EN PROCESO JOURNAL\n\n");
+//	log_info(log_memoria, "[procesoJournal] Memoria esta full, procedo a hacer Journal");
+//	printf("EN PROCESO JOURNAL\n\n");
 //	retardo_journal(arc_config->retardo_journal);
-	JOURNAL();
+	cant_pasados = JOURNAL(socket_lfs);
 	log_info(log_memoria, "[procesoJournal] JOURNAL REALIZADO, PROCEDO A REINICIAR EL HILO JOURNAL");
 	pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
 	hiloDetach(journalHilo);
 	mutexDesbloquear(&JOURNALHecho);
+	return cant_pasados;
 }

@@ -33,7 +33,7 @@
 #define MAXSIZE_COMANDO 200
 #define ERROR -1
 
-t_config* configFile;
+t_config *configFile;
 t_header* buffer;
 
 int socketEscuchaKernel,conexionEntrante,recibiendoMensaje;
@@ -70,10 +70,11 @@ int main();
  * FUNCIONES PARA LA CONFIGURACION Y FINALIZACION
  ---------------------------------------------------*/
 
-void cargarConfiguracion();
+void cargarConfiguracion(char *path_config);
+void recargarConfiguracion();
 char* lectura_consola();
 void terminar_memoria(t_log* g_log);
-void inicioLogYConfig();
+void inicioLogYConfig(char *path_config);
 void cerrarTodosLosHilosPendientes();
 
 /*---------------------------------------------------

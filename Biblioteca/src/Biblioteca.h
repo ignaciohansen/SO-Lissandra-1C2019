@@ -135,13 +135,15 @@ enum comandos{
 	
 };
 
+typedef uint64_t timestamp_t;
+
 //FUNCIONES PARA ABORTAR UN PROCESO
 void abortarProcesoPorUnError(t_log log, char* mensaje);
 void abortarProcesoPorUnErrorImportante(t_log* log, char* mensaje);
 
 //--------------------------------------- Funcion timestamp -------------------------------------
 
-double timestamp(void);
+//timestamp_t timestamp(void);
 
 //--------------------------------------- Funciones para Socket -------------------------------------
 
@@ -389,10 +391,14 @@ typedef enum
 //Tipo de respuestas a pedidos
 typedef enum{
 	RESP_OK, //Cualquier pedido
-	RESP_TABLA_NO_EXISTE, //SELECT-DROP
-	RESP_KEY_NO_EXISTE, //SELECT
-	RESP_MEM_FULL, //SELECT-INSERT
-	RESP_ERROR_GENERAL
+	RESP_ERROR_TABLA_NO_EXISTE, //SELECT-DROP
+	RESP_ERROR_KEY_NO_EXISTE, //SELECT
+	RESP_ERROR_MEM_FULL, //SELECT-INSERT
+	RESP_ERROR_GENERAL,
+	RESP_ERROR_COMUNICACION,
+	RESP_ERROR_CANT_PARAMETROS,
+	RESP_ERROR_MAYOR_MAX_VALUE,
+	RESP_ERROR_PEDIDO_DESCONOCIDO
 } resp_tipo_com_t;
 
 //String de tamaño 'tam'
@@ -485,5 +491,10 @@ cliente_com_t esperar_cliente(int servidor);
 * @DESC: Establece la conexión con el servidor y le envia la identificación
 */
 int conectar_a_servidor(char *ip,char *puerto, id_com_t id);
+
+int dar_bienvenida_cliente(int socket, id_com_t yo, char *msg);
+int rechazar_cliente(int socket, char *msg);
+int responder_request(int socket,char *msg, resp_tipo_com_t tipo_resp);
+resp_com_t armar_respuesta(resp_tipo_com_t tipo,char *msg);
 
 #endif

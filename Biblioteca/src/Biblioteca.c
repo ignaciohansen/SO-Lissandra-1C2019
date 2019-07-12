@@ -896,148 +896,188 @@ int bitmapCalculo(int cantidadBloques) {
 //--------------------------------------- Funciones de Impresion -------------------------------------
 
 void imprimirMensaje(ArchivoLog archivoLog, String mensaje) {
-	puts(mensaje);
+	if(archivoLog->is_active_console){
+		puts(mensaje);
+	}
 	log_info(archivoLog, mensaje);
 }
 
 void imprimirMensaje1(ArchivoLog archivoLog, String mensaje, void* algo1) {
-	printf(mensaje, algo1 );
-	puts("");
+	if(archivoLog->is_active_console){
+		printf(mensaje, algo1 );
+		puts("");
+	}
 	log_info(archivoLog, mensaje, algo1);
 }
 
 void imprimirMensaje2(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2) {
-	printf(mensaje, algo1, algo2);
-	puts("");
+	if(archivoLog->is_active_console){
+		printf(mensaje, algo1, algo2);
+		puts("");
+	}
 	log_info(archivoLog, mensaje, algo1, algo2);
 }
 
 void imprimirMensaje3(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3) {
-	printf(mensaje, algo1, algo2, algo3);
-	puts("");
+	if(archivoLog->is_active_console){
+		printf(mensaje, algo1, algo2, algo3);
+		puts("");
+	}
 	log_info(archivoLog, mensaje, algo1, algo2, algo3);
 }
 
 void imprimirMensaje4(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3, void* algo4) {
-	printf(mensaje, algo1, algo2, algo3, algo4);
-	puts("");
+	if(archivoLog->is_active_console){
+		printf(mensaje, algo1, algo2, algo3, algo4);
+		puts("");
+	}
 	log_info(archivoLog, mensaje, algo1, algo2, algo3, algo4);
 }
 
 void imprimirAviso(ArchivoLog archivoLog, String mensaje) {
-	printf(AMARILLO);
-	puts(mensaje);
-	printf(BLANCO);
+	if(archivoLog->is_active_console){
+		printf(AMARILLO);
+		puts(mensaje);
+		printf(BLANCO);
+	}
 	log_warning(archivoLog, mensaje);
 }
 
 void imprimirAviso1(ArchivoLog archivoLog, String mensaje, void* algo1) {
-	printf(AMARILLO);
-	printf(mensaje, algo1 );
-	printf(BLANCO);
-	puts("");
+	if(archivoLog->is_active_console){
+		printf(AMARILLO);
+		printf(mensaje, algo1 );
+		printf(BLANCO);
+		puts("");
+	}
 	log_warning(archivoLog, mensaje, algo1);
 }
 
 void imprimirAviso2(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2) {
-	printf(AMARILLO);
-	printf(mensaje, algo1, algo2);
-	printf(BLANCO);
-	puts("");
+	if(archivoLog->is_active_console){
+		printf(AMARILLO);
+		printf(mensaje, algo1, algo2);
+		printf(BLANCO);
+		puts("");
+	}
 	log_warning(archivoLog, mensaje, algo1, algo2);
 }
 
 void imprimirAviso3(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3) {
-	printf(AMARILLO);
-	printf(mensaje, algo1, algo2, algo3);
-	printf(BLANCO);
-	puts("");
+	if(archivoLog->is_active_console){
+		printf(AMARILLO);
+		printf(mensaje, algo1, algo2, algo3);
+		printf(BLANCO);
+		puts("");
+	}
 	log_warning(archivoLog, mensaje, algo1, algo2, algo3);
 }
 
 void imprimirAviso4(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3, void* algo4) {
-	printf(AMARILLO);
-	printf(mensaje, algo1, algo2, algo3, algo4);
-	printf(BLANCO);
-	puts("");
+	if(archivoLog->is_active_console){
+		printf(AMARILLO);
+		printf(mensaje, algo1, algo2, algo3, algo4);
+		printf(BLANCO);
+		puts("");
+	}
 	log_warning(archivoLog, mensaje, algo1, algo2, algo3, algo4);
 }
 
 void imprimirError(ArchivoLog archivoLog, String mensaje) {
-	printf(ROJO);
-	puts(mensaje);
-	printf(BLANCO);
+	if(archivoLog->is_active_console){
+		printf(ROJO);
+		puts(mensaje);
+		printf(BLANCO);
+	}
 	log_error(archivoLog, mensaje);
 }
 void imprimirError1(ArchivoLog archivoLog, String mensaje, void* algo1) {
-	printf(ROJO);
-	printf(mensaje, algo1);
-	printf(BLANCO);
-	puts("");
+	if(archivoLog->is_active_console){
+		printf(ROJO);
+		printf(mensaje, algo1);
+		printf(BLANCO);
+		puts("");
+	}
 	log_error(archivoLog, mensaje, algo1);
 }
 
 void imprimirError2(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2) {
-	printf(ROJO);
-	printf(mensaje, algo1, algo2);
-	printf(BLANCO);
-	puts("");
+	if(archivoLog->is_active_console){
+		printf(ROJO);
+		printf(mensaje, algo1, algo2);
+		printf(BLANCO);
+		puts("");
+	}
 	log_error(archivoLog, mensaje, algo1, algo2);
 }
 
 void imprimirError3(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3) {
-	printf(ROJO);
-	printf(mensaje, algo1, algo2, algo3);
-	printf(BLANCO);
-	puts("");
+	if(archivoLog->is_active_console){
+		printf(ROJO);
+		printf(mensaje, algo1, algo2, algo3);
+		printf(BLANCO);
+		puts("");
+	}
 	log_error(archivoLog, mensaje, algo1, algo2, algo3);
 }
 
 void imprimirError4(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3, void* algo4) {
-	printf(ROJO);
-	printf(mensaje, algo1, algo2, algo3, algo4);
-	printf(BLANCO);
-	puts("");
+	if(archivoLog->is_active_console){
+		printf(ROJO);
+		printf(mensaje, algo1, algo2, algo3, algo4);
+		printf(BLANCO);
+		puts("");
+	}
 	log_error(archivoLog, mensaje, algo1, algo2, algo3, algo4);
 }
 
 void imprimirVerde(ArchivoLog archivoLog, String mensaje) {
-	printf(VERDE);
-	puts(mensaje);
-	printf(BLANCO);
+	if(archivoLog->is_active_console){
+		printf(VERDE);
+		puts(mensaje);
+		printf(BLANCO);
+	}
 	log_info(archivoLog, mensaje);
 }
 
 
 void imprimirVerde1(ArchivoLog archivoLog, String mensaje, void* algo1) {
-	printf(VERDE);
-	printf(mensaje, algo1);
-	printf(BLANCO);
-	puts("");
+	if(archivoLog->is_active_console){
+		printf(VERDE);
+		printf(mensaje, algo1);
+		printf(BLANCO);
+		puts("");
+	}
 	log_info(archivoLog, mensaje, algo1);
 }
 
 void imprimirVerde2(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2) {
-	printf(VERDE);
-	printf(mensaje, algo1, algo2);
-	printf(BLANCO);
-	puts("");
+	if(archivoLog->is_active_console){
+		printf(VERDE);
+		printf(mensaje, algo1, algo2);
+		printf(BLANCO);
+		puts("");
+	}
 	log_info(archivoLog, mensaje, algo1, algo2);
 }
 
 void imprimirVerde3(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3) {
-	printf(VERDE);
-	printf(mensaje, algo1, algo2, algo3);
-	printf(BLANCO);
-	puts("");
+	if(archivoLog->is_active_console){
+		printf(VERDE);
+		printf(mensaje, algo1, algo2, algo3);
+		printf(BLANCO);
+		puts("");
+	}
 	log_info(archivoLog, mensaje, algo1, algo2, algo3);
 }
 
 void imprimirVerde4(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3, void* algo4) {
-	printf(VERDE);
-	printf(mensaje, algo1, algo2, algo3, algo4);
-	printf(BLANCO);
-	puts("");
+	if(archivoLog->is_active_console){
+		printf(VERDE);
+		printf(mensaje, algo1, algo2, algo3, algo4);
+		printf(BLANCO);
+		puts("");
+	}
 	log_info(archivoLog, mensaje, algo1, algo2, algo3, algo4);
 }
 
@@ -1165,9 +1205,11 @@ buffer_com_t serializar_respuesta(resp_com_t resp)
 	memcpy(buf.stream+desp,&resp.msg.tam,sizeof(int));
 	desp += sizeof(int);
 
-	//Después el request
-	memcpy(buf.stream+desp,resp.msg.str,resp.msg.tam);
-	desp += tam_payload;
+	if(resp.msg.tam > 0 && resp.msg.str != NULL){
+		//Después el request
+		memcpy(buf.stream+desp,resp.msg.str,resp.msg.tam);
+		desp += tam_payload;
+	}
 	return buf;
 }
 
@@ -1342,6 +1384,8 @@ resp_com_t procesar_respuesta(msg_com_t msg)
 		resp.msg.str = malloc(resp.msg.tam);
 		memcpy(resp.msg.str, msg.payload.stream+desp, resp.msg.tam);
 	}
+	else
+		resp.msg.str = NULL;
 	return resp;
 
 }
@@ -1400,7 +1444,7 @@ void borrar_mensaje(msg_com_t msg)
 
 int iniciar_servidor(char*ip,char*puerto)
 {
-	int socket_servidor;
+	int socket_servidor=-1;
     struct addrinfo hints, *servinfo, *p;
 
     memset(&hints, 0, sizeof(hints));
@@ -1433,7 +1477,7 @@ int iniciar_servidor(char*ip,char*puerto)
     freeaddrinfo(servinfo);
 
     //log_trace(logger, "Listo para escuchar a mi cliente");
-    printf("\n**Servidor listo para escuchar al cliente**\n");
+//    printf("\n**Servidor listo para escuchar al cliente**\n");
     //log_info(logger,"Servidor listo para escuchar al cliente");
 
     return socket_servidor;
@@ -1480,7 +1524,7 @@ cliente_com_t esperar_cliente(int servidor)
 {
 	cliente_com_t cliente;
 	struct sockaddr_in dir_cliente;
-	int tam_direccion = sizeof(struct sockaddr_in);
+	unsigned int tam_direccion = sizeof(struct sockaddr_in);
 	int socket_cliente = accept(servidor, (void*) &dir_cliente, &tam_direccion);
 	msg_com_t msg;
 	handshake_com_t hs;
@@ -1567,4 +1611,74 @@ void borrar_gossiping(gos_com_t gos)
 }
 
 
+int dar_bienvenida_cliente(int socket, id_com_t id, char *msg)
+{
+	handshake_com_t hs;
+	int retval = 1;
+	hs.id = id;
+	hs.msg.tam = strlen(msg)+1;
+	hs.msg.str = malloc(hs.msg.tam);
+	strcpy(hs.msg.str,msg);
+	if(enviar_handshake(socket,hs) == -1){
+		retval = -1;
+	}
+	borrar_handshake(hs);
+	return retval;
+}
 
+int rechazar_cliente(int socket, char *msg)
+{
+	handshake_com_t hs;
+	int retval = 1;
+	hs.id = RECHAZADO;
+	if(msg != NULL){
+		hs.msg.tam = strlen(msg)+1;
+		hs.msg.str = malloc(hs.msg.tam);
+		strcpy(hs.msg.str,msg);
+	}
+	else{
+		hs.msg.tam = 0;
+		hs.msg.str = NULL;
+	}
+	if(enviar_handshake(socket,hs) == -1)
+		retval = -1;
+	borrar_handshake(hs);
+	return retval;
+}
+
+int responder_request(int socket,char *msg, resp_tipo_com_t tipo_resp)
+{
+	resp_com_t resp;
+	resp.tipo = tipo_resp;
+	if(msg != NULL){
+		resp.msg.tam = strlen(msg)+1;
+		resp.msg.str = malloc(resp.msg.tam);
+		strcpy(resp.msg.str,msg);
+	}
+	else{
+		resp.msg.tam = 0;
+		resp.msg.str = NULL;
+	}
+	if(enviar_respuesta(socket,resp)==-1){
+		borrar_respuesta(resp);
+		return -1;
+	}
+	borrar_respuesta(resp);
+	return 1;
+}
+
+resp_com_t armar_respuesta(resp_tipo_com_t tipo,char *msg)
+{
+	resp_com_t respuesta;
+	respuesta.tipo = tipo;
+	if(msg == NULL){
+		respuesta.msg.tam = 0;
+		respuesta.msg.str = NULL;
+	}
+	else{
+		respuesta.msg.tam = strlen(msg)+1;
+		respuesta.msg.str = malloc(respuesta.msg.tam);
+		strcpy(respuesta.msg.str,msg);
+	}
+	return respuesta;
+}

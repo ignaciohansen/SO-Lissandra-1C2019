@@ -9,30 +9,24 @@
 #include "gestionMemoria.h"
 //#include "../Biblioteca/src/Biblioteca.c"
 
-void retardo_memoria(int milisegundos){
+void retardo_memoria(void){
 	pthread_mutex_lock(&mutex_retardo_memoria);
-	usleep(milisegundos*1000);
+	int milisegundos= arc_config->retardo_mem;
 	pthread_mutex_unlock(&mutex_retardo_memoria);
-}
-
-void retardo_fs(int milisegundos){
-	pthread_mutex_lock(&mutex_retardo_fs);
 	usleep(milisegundos*1000);
+}
+
+void retardo_fs(void){
+	pthread_mutex_lock(&mutex_retardo_fs);
+	int milisegundos= arc_config->retardo_fs;
 	pthread_mutex_unlock(&mutex_retardo_fs);
+	usleep(milisegundos*1000);
 }
 
-void retardo_gossiping(int milisegundos){
+void * retardo_journal(void){
 	while(1){
-		pthread_mutex_lock(&mutex_retardo_gossiping);
-		usleep(milisegundos*1000);
-		//LUEGO DE ESTO ACTIVARA LA FUNCION GOSSIPING //	GOSSIPING();
-		pthread_mutex_unlock(&mutex_retardo_gossiping);
-	}
-}
-
-void retardo_journal(int milisegundos){
-	while(1){
-		imprimirAviso1(log_memoria, "\n\nPROXIMO JOURNAL EN %d milisegundos\n\n>",milisegundos);
+		int milisegundos= arc_config->retardo_journal;
+		imprimirMensaje1(log_memoria, "PROXIMO JOURNAL EN %d milisegundos>",milisegundos);
 		activo_retardo_journal=false;
 		usleep(milisegundos*1000);
 		//LUEGO DE ESTO EMPIEZA UN JOURNAL;
@@ -42,7 +36,10 @@ void retardo_journal(int milisegundos){
 		pthread_mutex_lock(&JOURNALHecho);
 		mutexBloquear(&verificarSiBitmapLleno);
 		activo_retardo_journal = true;
-		JOURNAL();
+		int cant_pasados = JOURNAL(-1);
+		fprintf(tablas_fp,"\nEjecutado JOURNAL AUTOMÁTICO");
+		loggearEstadoActual(tablas_fp);
+		imprimirMensaje1(log_memoria, "[JOURNAL AUTOMATICO] %d registros recibidos ok por LFS", cant_pasados);
 		mutexDesbloquear(&verificarSiBitmapLleno);
 	//	retardo_journal(milisegundos);
 	}

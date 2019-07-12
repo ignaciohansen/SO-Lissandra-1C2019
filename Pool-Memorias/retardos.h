@@ -11,7 +11,7 @@
 #include <sys/sem.h>
 #include <time.h>
 #include <pthread.h>
-//#include "../Biblioteca/src/Biblioteca.h"
+#include "../Biblioteca/src/Biblioteca.h"
 
 //#include "estructuras.h"
 
@@ -20,10 +20,9 @@ pthread_mutex_t mutex_retardo_fs;
 pthread_mutex_t mutex_retardo_gossiping;
 pthread_mutex_t mutex_retardo_journal;
 
-void iniciarSemaforosRetados();
-void retardo_memoria(int milisegundos);
-void retardo_fs(int milisegundos);
-void retardo_gossiping(int milisegundos);
-void retardo_journal(int milisegundos);
+//void iniciarSemaforosRetados(void);
+void retardo_memoria(void);
+void retardo_fs(void);
+void *retardo_journal(void);
 
 #endif /* RETARDOS_H_ */

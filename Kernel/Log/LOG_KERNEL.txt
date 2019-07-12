@@ -1,53 +1,53 @@
-[INFO] 14:45:10:686 Proceso Kernel/(4953:4953): Ya creado el Log, continuamos cargando la estructura de configuracion, llamando a la funcion.
-[INFO] 14:45:10:686 Proceso Kernel/(4953:4953): Por reservar memoria para variable de configuracion.
-[INFO] 14:45:10:686 Proceso Kernel/(4953:4953): Por crear el archivo de config para levantar archivo con datos.
-[INFO] 14:45:10:686 Proceso Kernel/(4953:4953): Kernel: Leyendo Archivo de Configuracion...
-[INFO] 14:45:10:686 Proceso Kernel/(4953:4953): Almacenando el puerto
-[INFO] 14:45:10:686 Proceso Kernel/(4953:4953): El puerto de la memoria es: 8000
-[INFO] 14:45:10:686 Proceso Kernel/(4953:4953): Almacenando la IP de la Memoria
-[INFO] 14:45:10:686 Proceso Kernel/(4953:4953): La Ip de la memoria es: "127.0.0.1"
-[INFO] 14:45:10:686 Proceso Kernel/(4953:4953): Almancenando el Quantum del planificador
-[INFO] 14:45:10:686 Proceso Kernel/(4953:4953): El Quantum del planificador es: 4
-[INFO] 14:45:10:686 Proceso Kernel/(4953:4953): Almacenando el valor del Multiprocesamiento para el Planificador
-[INFO] 14:45:10:686 Proceso Kernel/(4953:4953): El grado de multiprocesamiento del planificador es: 3
-[INFO] 14:45:10:686 Proceso Kernel/(4953:4953): Almacenando el valor del Metadata Refresh para el Kernel
-[INFO] 14:45:10:686 Proceso Kernel/(4953:4953): El valor del Metadata Refresh es: 10000
-[INFO] 14:45:10:686 Proceso Kernel/(4953:4953): Almacenando el valor del Sleep Ejecucion para el Kernel
-[INFO] 14:45:10:686 Proceso Kernel/(4953:4953): El valor del Sleep Ejecucion es: 5000
-[INFO] 14:45:10:686 Proceso Kernel/(4953:4953): Cargamos todo lo que se encontro en el archivo de configuracion. Liberamos la variable config que fue utlizada para navegar el archivo de configuracion
-[INFO] 14:45:10:686 Proceso Kernel/(4953:4953): Devuelta en Main, Funcion cargarConfiguracion() finalizo.
-[INFO] 14:45:10:686 Proceso Kernel/(4953:4953): Creamos thread para Consola
-[INFO] 14:45:10:686 Proceso Kernel/(4953:4954): En el hilo de consola
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): En la posicion 0 del array esta el valor select
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): En la posicion 1 del array esta el valor tablaA
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): En la posicion 2 del array esta el valor 3
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): El tamanio del vector de comandos es: 3
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): Recibimos el comando: select
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): Se devuelve el valor 0
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): Se selecciono select
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): Cantidad de parametros correctos ingresados para el comando select
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): Aumentamos al variable PID para este comando, queda en: 1
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): Por crear el PCB
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): Creando PCB ==> PID: 1
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): PCB encolado ==> PID: 1
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): El tamanio de la cadena a guardar es: 0
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): En mensaje ya tengo: 3
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): En funcion armarMensajeBody
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): Armando mensaje..: 3|3
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): Finalizo el armado con el mensaje Final: 3|3
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): Por llamar a enviarMensaje
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): En funcion enviarMensaje.
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): Por guardar en la estructura del Header, el comando: 0
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): Por guardar en la estructura del Header, la cantidad de argumentos: 3
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): Conectamos por socket con la memoria.
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): En funcion nuevoSocket en el Proyecto Biblioteca, por llamar a funcion Socket()
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): Por retornar el socket creado: 4
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): El Socket creado es: 4 .
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): por llamar a la funcion connectarSocket() para conectarnos con Memoria
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): PRUEBA: 8000 
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): [SOCKETS] No se pudo realizar la conexión entre el socket y el servidor.
-[ERROR] 14:45:14:595 Proceso Kernel/(4953:4954): Hubo un problema al querer Conectarnos con Memoria. Salimos del proceso
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): El tamanio del mensaje que se va a mandar es de: 3
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): tamanio del header a enviar: 12
-[INFO] 14:45:14:595 Proceso Kernel/(4953:4954): En funcion socketEnviar -1, , 12,
-[ERROR] 14:45:14:596 Proceso Kernel/(4953:4954): Error al enviar mensaje a memoria. Salimos
+[INFO] 11:46:45:462 Proceso Kernel/(26854:26854): Ya creado el Log, continuamos cargando la estructura de configuracion, llamando a la funcion.
+[INFO] 11:46:45:462 Proceso Kernel/(26854:26854): Por reservar memoria para variable de configuracion.
+[INFO] 11:46:45:462 Proceso Kernel/(26854:26854): Por crear el archivo de config para levantar archivo con datos.
+[INFO] 11:46:45:462 Proceso Kernel/(26854:26854): Kernel: Leyendo Archivo de Configuracion...
+[INFO] 11:46:45:462 Proceso Kernel/(26854:26854): Almacenando el puerto
+[INFO] 11:46:45:462 Proceso Kernel/(26854:26854): El puerto de la memoria es: 8001
+[INFO] 11:46:45:462 Proceso Kernel/(26854:26854): Almacenando la IP de la Memoria
+[INFO] 11:46:45:462 Proceso Kernel/(26854:26854): La Ip de la memoria es: "192.168.1.2"
+[INFO] 11:46:45:462 Proceso Kernel/(26854:26854): Almancenando el Quantum del planificador
+[INFO] 11:46:45:462 Proceso Kernel/(26854:26854): El Quantum del planificador es: 4
+[INFO] 11:46:45:462 Proceso Kernel/(26854:26854): Almacenando el valor del Multiprocesamiento para el Planificador
+[INFO] 11:46:45:462 Proceso Kernel/(26854:26854): El grado de multiprocesamiento del planificador es: 3
+[INFO] 11:46:45:462 Proceso Kernel/(26854:26854): Almacenando el valor del Metadata Refresh para el Kernel
+[INFO] 11:46:45:462 Proceso Kernel/(26854:26854): El valor del Metadata Refresh es: 10000
+[INFO] 11:46:45:462 Proceso Kernel/(26854:26854): Almacenando el valor del Sleep Ejecucion para el Kernel
+[INFO] 11:46:45:462 Proceso Kernel/(26854:26854): El valor del Sleep Ejecucion es: 5000
+[INFO] 11:46:45:462 Proceso Kernel/(26854:26854): Cargamos todo lo que se encontro en el archivo de configuracion. Liberamos la variable config que fue utlizada para navegar el archivo de configuracion
+[INFO] 11:46:45:462 Proceso Kernel/(26854:26854): Devuelta en Main, Funcion cargarConfiguracion() finalizo.
+[INFO] 11:46:45:462 Proceso Kernel/(26854:26854): El valor que le vamos a poner al semaforo de multiprocesamiento es: 3
+[INFO] 11:46:45:463 Proceso Kernel/(26854:26854): Creamos thread para Consola
+[INFO] 11:46:45:463 Proceso Kernel/(26854:26855): En el hilo de consola
+[INFO] 11:46:56:923 Proceso Kernel/(26854:26855): En funcion planificar, por agregar la linea a la cola de nuevos
+[INFO] 11:46:56:923 Proceso Kernel/(26854:26855): Por bloquear Mutex de Cola Nuevos
+[INFO] 11:46:56:923 Proceso Kernel/(26854:26855): Se desbloqueo la cola de nuevos y se agrego la linea a la cola de nuevos
+[INFO] 11:46:56:923 Proceso Kernel/(26854:26855): Por Crear estructuras administrativas
+[INFO] 11:46:56:923 Proceso Kernel/(26854:26855): Por llamar a mutexBloquear y aumentar countPID: 0
+[INFO] 11:46:56:923 Proceso Kernel/(26854:26855): Ya desbloqueamos el mutex y countPID quedo en: 1
+[INFO] 11:46:56:923 Proceso Kernel/(26854:26855): Por crear el PCB
+[INFO] 11:46:56:923 Proceso Kernel/(26854:26855): Creando PCB ==> PID: 1
+[INFO] 11:46:56:924 Proceso Kernel/(26854:26855): En la posicion 0 del array esta el valor run
+[INFO] 11:46:56:924 Proceso Kernel/(26854:26855): En la posicion 1 del array esta el valor animales.lql
+[INFO] 11:46:56:924 Proceso Kernel/(26854:26855): En la condicion de que no es un comando RUN
+[INFO] 11:46:56:924 Proceso Kernel/(26854:26855): PCB creado ==> PID: 1
+[INFO] 11:46:56:924 Proceso Kernel/(26854:26855): Retornamos la estructura administrativa, se encuentra en 0xb6b117b0
+[INFO] 11:46:56:924 Proceso Kernel/(26854:26855): Por agregar el PCB a Listo
+[INFO] 11:46:56:924 Proceso Kernel/(26854:26855): Verificamos si la cola de nuevos tiene un elemento
+[INFO] 11:46:56:924 Proceso Kernel/(26854:26855): Sacamos el elemento de la cola de nuevos
+[INFO] 11:46:56:924 Proceso Kernel/(26854:26855): Bloqueamos Mutex para poder insertar el elemento en la cola de listos
+[INFO] 11:46:56:924 Proceso Kernel/(26854:26855): Desbloqueamos el mutex y agregamos el PCB a la cola de listos.
+[INFO] 11:46:56:924 Proceso Kernel/(26854:26855): Salimos de la funcion AgregarAListo
+[INFO] 11:46:56:924 Proceso Kernel/(26854:26855): El valor del semaforo contador multiprocesamiento, antes de agregar a ejecutar un proceso es: 3
+[INFO] 11:46:56:924 Proceso Kernel/(26854:26855): Bloqueamos Mutex para poder sacar el elemento en la cola de listos y colocarlo en ejecucion
+[INFO] 11:46:56:924 Proceso Kernel/(26854:26855): El valor del semaforo contador multiprocesamiento, despues de agregar a ejecutar un proceso es: 2
+[INFO] 11:46:56:924 Proceso Kernel/(26854:26855): En funcion nuevoSocket en el Proyecto Biblioteca, por llamar a funcion Socket()
+[INFO] 11:46:56:924 Proceso Kernel/(26854:26855): Por retornar el socket creado: 4
+[INFO] 11:46:56:924 Proceso Kernel/(26854:26855): El Socket creado es: 4 .
+[INFO] 11:46:56:924 Proceso Kernel/(26854:26855): por llamar a la funcion connectarSocket() para conectarnos con Memoria
+[INFO] 11:46:56:925 Proceso Kernel/(26854:26855): PRUEBA: 8001 
+[INFO] 11:46:56:925 Proceso Kernel/(26854:26855): [SOCKETS] No se pudo realizar la conexión entre el socket y el servidor.
+[ERROR] 11:46:56:925 Proceso Kernel/(26854:26855): Hubo un problema al querer Conectarnos con Memoria. Salimos del proceso
+[INFO] 11:46:56:925 Proceso Kernel/(26854:26855): Desbloqueamos el Mutex de Ejecucion y el PCB fue encolado a la cola de Ejecucion.
+[INFO] 11:46:56:925 Proceso Kernel/(26854:26855): El valor del semaforo contador multiprocesamiento, antes de colocar un proceso en exit es: 2
+[INFO] 11:46:56:925 Proceso Kernel/(26854:26855): El valor del semaforo contador multiprocesamiento, despues de agregar un proceso a la cola exit es: 3

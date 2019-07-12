@@ -29,6 +29,7 @@
 #include <commons/collections/list.h>
 // BICLIOTECA
 #include "../Biblioteca/src/Biblioteca.c"
+#include "../Biblioteca/src/Biblioteca.h"
 // READLINE
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -103,7 +104,7 @@ typedef struct{
 	int rafaga;
 	int comando;
 	int argumentos;
-	t_list* stack;
+	char* linea;
 }t_pcb;
 
 t_pcb* crearPcb(char* comando);
@@ -118,7 +119,7 @@ void planificar(char* linea);
 void agregarAListo(t_pcb* procesoNuevo);
 void agregarANuevo(char* linea);
 t_pcb* crearEstructurasAdministrativas(char* linea);
-void agregarAEjecutar(char* linea);
+void agregarAEjecutar(t_pcb* procesoAgregar);
 void agregarAExit();
 int rafagaComandoRun(char* path);
 
@@ -126,6 +127,7 @@ pthread_mutex_t mutexColaNuevos;
 pthread_mutex_t mutexColaListos;
 pthread_mutex_t mutexColaExit;
 pthread_mutex_t mutexColaEjecucion;
+sem_t s_Multiprocesamiento;
 
 t_list* colaNuevos;
 t_list* colaListos;
@@ -138,6 +140,31 @@ enum estados{
 	ejecucion,
 	listo,
 	exiT
+};
+
+/*TODO Tablas */
+typedef struct{
+
+	char* nombreTabla;
+	int criterio;
+}t_tablas;
+
+/*TODO Estructuras para memoria*/
+
+typedef struct{
+
+	int criterio;
+	int cantidad;
+	seed_com_t listMemoriaas;
+}t_criterios;
+
+/*TODO Enum de Criterios*/
+
+enum criterios{
+
+	SC,
+	SHC,
+	EC
 };
 
 //
