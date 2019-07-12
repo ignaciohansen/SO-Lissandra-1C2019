@@ -1040,100 +1040,77 @@ char* armarPathTablaParaDump(char* tabla, int dumps) {
 
 }
 
-void crearArchivoTemporal(char* path, char* tabla) {
+int crearArchivoTemporal(char* path, char* tabla) {
 
 	// path objetivo: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA/cantidad_de_dumps.tmp
 
 	t_list* listaRegistrosTabla = dictionary_get(memtable, tabla);
-	int cantidad_registros = list_size(listaRegistrosTabla);
-	if()
+	t_list* bloquesUsados = list_create();
+	int tam_total_registros = tamTotalListaRegistros(listaRegistrosTabla);
+	int cantidad_bloques = cuantosBloquesNecesito(tam_total_registros);
+	int bloqueAux;
 
-
-
-
-
-
-
-	int posicion = 1; //obtenerPrimerBloqueLibreBitmap();
-	if (posicion == 1) {
-		//ocuparBloqueLibreBitmap(posicion);
-		FILE* temporal;
-		temporal = fopen(path, "wb");
-		log_info(logger, "creamos el archivo, ahora  lo llenamos");
-		int tam_total_registros = 0;
-		//listaRegistrosTabla = list_create();
-
-		/*
-		log_info(logger, "cantidad de registros insertados en esa tabla: %d",
-				cantidad_registros);
-		char punto_y_coma = ';';
-		char barra_n = '\n';
-
-		t_registroMemtable* registro;
-		int offset = 0;
-
-		for (int i = 0; i < cantidad_registros; i++) {
-			registro = list_get(listaRegistrosTabla, i);
-
-			tam_total_registros += registro->tam_registro - 1; // El -1 porque no estoy escribiendo el \0 al archivo, si no al leer le sobran bytes
-			log_info(logger, "%d Registro %s. Tam  %d", i, registro->value,
-					registro->tam_registro);
+	if(cantBloquesLibresBitmap() >= cantidad_bloques) {
+		for(int i=0; i<cantidad_bloques; i++) {
+			bloqueAux = obtenerPrimerBloqueLibreBitmap();
+			if(bloqueAux != -1) {
+				ocuparBloqueLibreBitmap(bloqueAux);
+				list_add(bloquesUsados, bloqueAux);
+			}
+			else {
+				//liberar los bloques de la lista
+				return -1;
+			}
 		}
-
-		tam_total_registros += sizeof(char) * 3 * cantidad_registros;
-
-		void *registrosAInsertar = malloc(tam_total_registros);
-		//registrosAInsertar = string_new();
-
-		for (int i = 0; i < cantidad_registros; i++) {
-
-			registro = list_get(listaRegistrosTabla, i);
-			memcpy(registrosAInsertar + offset, &registro->timestamp,
-					sizeof(double));
-			offset += sizeof(double);
-			memcpy(registrosAInsertar + offset, &punto_y_coma, sizeof(char));
-			offset += sizeof(char);
-			memcpy(registrosAInsertar + offset, &registro->key,
-					sizeof(u_int16_t));
-			offset += sizeof(u_int16_t);
-			memcpy(registrosAInsertar + offset, &punto_y_coma, sizeof(char));
-			offset += sizeof(char);
-			memcpy(registrosAInsertar + offset, registro->value,
-					strlen(registro->value));
-			offset += strlen(registro->value);
-			memcpy(registrosAInsertar + offset, &barra_n, sizeof(char));
-			offset += sizeof(char);
-
-		}*/
-		log_info(logger, "Tamanio total de los registros de la %s es: %d",
-				tabla, tam_total_registros);
-
-		//escribirBloque(path, registrosAInsertar, tam_total_registros);
-
-		fwrite(registrosAInsertar, tam_total_registros, 1, temporal);
-		fclose(temporal);
-		free(registrosAInsertar);
-
-//		free(registro);
-
-		//fwrite((void*)registroAInsertar, 1, strlen(registroAInsertar), temporal);
-		/*
-		 log_info(logger, "Datos a insertar en el tmp: \n%s",registrosAInsertar);
-		 void* hola = malloc(sizeof(int));
-		 int pruebaHola = 3;
-		 memcpy(hola, &pruebaHola, sizeof(int));
-		 fwrite(&hola, 1, sizeof(int), temporal);*/
-		/*int int1 = 3;
-		 int int2 = 4;
-		 void *buffer;
-		 buffer = malloc (sizeof(int)); //+ sizeof(int));
-		 memcpy (buffer, &int1, sizeof(int));
-		 //memcpy (buffer + sizeof(int), &int2, sizeof(int));
-		 log_info(logger, "en el buffer: %d", *(int*)buffer);*/
-	} else {
-		log_error(logger,
-				"No se pudo realizar el dump pq no hay lugar en el bitmap");
 	}
+	else {
+		log_error(logger, "[DUMP] no hay bloques disponibles para hacer el dump");
+	}
+
+	void* bufferRegistros = malloc(tam_total_registros);
+	bufferRegistros = armarBufferConRegistros(listaRegistrosTabla, tam_total_registros);
+
+	int resultadoEscritura = escribirVariosBloques(bloquesUsados, tam_total_registros, bufferRegistros);
+
+	if(resultadoEscritura != -1){
+		FILE* temporal;
+		temporal = fopen(path, "w");
+		log_info(logger, "[DUMP] creamos el archivo, ahora  lo llenamos");
+
+		if(temporal != NULL) {
+			char* contenido = malloc(
+					string_length("SIZE=") + sizeof(char)*2
+							+ string_length("BLOCK=[]") + sizeof(char)*2*list_size(bloquesUsados) - 1); //arreglar para bloques con mas de un numero (string, no char)
+			contenido = string_new();
+			string_append(&contenido, "SIZE=");
+			char* size; //= malloc(sizeof(int)) ? lo hace el sprintf?
+			sprintf(size, "%d", tam_total_registros);
+			string_append(&contenido,size);
+			string_append(&contenido, "\n");
+			string_append(&contenido, "BLOCK=[");
+			char* bloque;
+			for(int i=0; i<list_size(bloquesUsados); i++){
+				sprintf(bloque, "%d", list_get(bloquesUsados, i));
+				string_append(&contenido, bloque);
+				string_append(&contenido, ',');
+			}
+			contenido = stringTomarDesdeInicio(contenido, strlen(contenido) - 1);
+			string_append(&contenido, "]");
+			fputs(contenido, temporal);
+			log_info(logger, "[DUMP] Temporal completado con: %s", contenido);
+			fclose(temporal);
+		}
+		else {
+			//liberar bloques de la lista de bloquesUsados
+			log_error(logger, "[DUMP] error al abrir el archivo temporal con path: %s", path);
+		}
+	}
+	else {
+		log_error(logger, "[DUMP] hubo un error al escribir los datos en los bloques");
+	}
+
+
+	return 0;
 }
 
 //DUMP
@@ -1158,6 +1135,14 @@ int tamTotalListaRegistros(t_list* listaRegistros) {
 	log_info(logger, "tamanio total de registros: %d", tam_total_registros);
 
 	return tam_total_registros;
+}
+
+int cuantosBloquesNecesito(int tam_total) {
+	if(tam_total % metadataLFS->block_size == 0) { //preguntar lo del 8
+		return tam_total / metadataLFS->block_size;
+	}
+
+	return tam_total / metadataLFS->block_size + 1;
 }
 
 void* armarBufferConRegistros(t_list* listaRegistros, int tam_total_registros) {
@@ -1201,48 +1186,48 @@ int escribirVariosBloques(t_list* bloques, int tam_total_registros, void* buffer
 
 	for(int i=0; i<list_size(bloques); i++) {
 
-		int nroBloque = list_get(bloques, i);
-		if(tam_total_registros < metadataLFS->block_size) {
-			resultado = escribirBloque(nroBloque, tam_total_registros, &offset, buffer);
+		int nroBloque = *((int*)list_get(bloques, i));
+		if(tam_total_registros <= metadataLFS->block_size) {
+			resultado = escribirBloque(nroBloque, tam_total_registros, offset, buffer);
+			offset += tam_total_registros;
 			tam_total_registros -= tam_total_registros;
 		}
 		else {
-			resultado = escribirBloque(nroBloque, metadataLFS->block_size, &offset, buffer);
-			tam_total_registros -= metadataLFS->block_size
+			resultado = escribirBloque(nroBloque, metadataLFS->block_size, offset, buffer);
+			tam_total_registros -= metadataLFS->block_size;
+			offset += metadataLFS->block_size;
 		}
 
-		if(!resultado) {
+		if(resultado == -1) {
 			//liberar bloques en el bitmap
 			break; //sale del for con esto?
 		}
 	}
 
-	log_info("Se terminaron de escribir los bloques");
+	log_info(logger, "[BLOQUE] Se terminaron de escribir los bloques");
 
 	return resultado;
 }
 
-int escribirBloque(int bloque, int size, int* offset, void* buffer) {
-    void* data;
+int escribirBloque(int bloque, int size, int offset, void* buffer) {
+
     char* bloqueChar;
-    spritnf(bloqueChar, "%d", bloque);
+    sprintf(bloqueChar, "%d", bloque);
     char* path = buscarBloque(bloqueChar);
-    data = malloc(size);
     FILE* bloqueFile = fopen(path,"wb");
 
     if(bloqueFile != NULL){
 
 		fwrite(buffer+offset, size, 1, bloqueFile);
-		offset += size;
 		free(path);
 		fclose(bloqueFile);
-		return true;
+		return 0;
     }
 
-    log_info("bloques %d escrito con exito", bloque);
+    log_info(logger, "[BLOQUE] bloque %d escrito con exito", bloque);
 
     free(path);
-    return false;
+    return -1;
 }
 
 t_list* leerBloque(char* path) {
@@ -1255,7 +1240,7 @@ t_list* leerBloque(char* path) {
 	fseek(bloque, 0, SEEK_END);
 	tam_bloque = ftell(bloque);
 
-	log_info(logger, "tam del bloque: %d", tam_bloque);
+	log_info(logger, "[BLOQUE] tam del bloque: %d", tam_bloque);
 
 	rewind(bloque);
 
@@ -1321,7 +1306,7 @@ t_list* leerBloque(char* path) {
 		fclose(bloque);
 	}
 	else {
-		log_error(logger, "no se pudo leer el archivo con el path: %s", path);
+		log_error(logger, "[BLOQUE] no se pudo leer el archivo con el path: %s", path);
 	}
 
 	return registros_leidos;
