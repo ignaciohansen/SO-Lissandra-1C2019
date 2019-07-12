@@ -1000,7 +1000,7 @@ void realizarDump() {
 		log_info(logger, "la tabla insertada en la memtable es %s", tabla);
 		char* path = armarPathTablaParaDump(tabla, cantidad_de_dumps);
 		crearArchivoTemporal(path, tabla);
-		tamanioRegistros[i] = 0;
+		//tamanioRegistros[i] = 0;
 		leerBloque(path);
 	}
 	log_info(logger, "Se limpia diccionario y la listaTablasInsertadas");
@@ -1055,7 +1055,7 @@ int crearArchivoTemporal(char* path, char* tabla) {
 			bloqueAux = obtenerPrimerBloqueLibreBitmap();
 			if(bloqueAux != -1) {
 				ocuparBloqueLibreBitmap(bloqueAux);
-				list_add(bloquesUsados, bloqueAux);
+				list_add(bloquesUsados, (void*)bloqueAux);
 			}
 			else {
 				//liberar los bloques de la lista
@@ -1069,7 +1069,6 @@ int crearArchivoTemporal(char* path, char* tabla) {
 
 	void* bufferRegistros = malloc(tam_total_registros);
 	bufferRegistros = armarBufferConRegistros(listaRegistrosTabla, tam_total_registros);
-
 	int resultadoEscritura = escribirVariosBloques(bloquesUsados, tam_total_registros, bufferRegistros);
 
 	if(resultadoEscritura != -1){
