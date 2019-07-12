@@ -73,6 +73,7 @@ void LisandraSetUP() {
 			imprimirMensajeProceso(
 					"Levantando el servidor del proceso Lisandra");
 			abrirServidorLissandra();
+			crearBloques();
 		}
 	}
 
@@ -1001,7 +1002,7 @@ void realizarDump() {
 		char* path = armarPathTablaParaDump(tabla, cantidad_de_dumps);
 		crearArchivoTemporal(path, tabla);
 		//tamanioRegistros[i] = 0;
-		leerBloque(path);
+
 	}
 	log_info(logger, "Se limpia diccionario y la listaTablasInsertadas");
 	dictionary_clean(memtable);
@@ -1055,7 +1056,8 @@ int crearArchivoTemporal(char* path, char* tabla) {
 			bloqueAux = obtenerPrimerBloqueLibreBitmap();
 			if(bloqueAux != -1) {
 				ocuparBloqueLibreBitmap(bloqueAux);
-				list_add(bloquesUsados, (void*)bloqueAux);
+				//list_add(bloquesUsados, (void*)bloqueAux);
+				list_add(bloquesUsados, &bloqueAux);
 			}
 			else {
 				//liberar los bloques de la lista
@@ -1075,6 +1077,7 @@ int crearArchivoTemporal(char* path, char* tabla) {
 		FILE* temporal;
 		temporal = fopen(path, "w");
 		log_info(logger, "[DUMP] creamos el archivo, ahora  lo llenamos");
+		log_info(logger, "[DUMP] path del archivo %s",path);
 
 		if(temporal != NULL) {
 			char* contenido = malloc(
@@ -1082,16 +1085,17 @@ int crearArchivoTemporal(char* path, char* tabla) {
 							+ string_length("BLOCK=[]") + sizeof(char)*2*list_size(bloquesUsados) - 1); //arreglar para bloques con mas de un numero (string, no char)
 			contenido = string_new();
 			string_append(&contenido, "SIZE=");
-			char* size; //= malloc(sizeof(int)) ? lo hace el sprintf?
+			char* size = malloc(10); //= malloc(sizeof(int)) ? lo hace el sprintf?
 			sprintf(size, "%d", tam_total_registros);
 			string_append(&contenido,size);
 			string_append(&contenido, "\n");
 			string_append(&contenido, "BLOCK=[");
-			char* bloque;
+			char* bloque = malloc(10);
 			for(int i=0; i<list_size(bloquesUsados); i++){
-				sprintf(bloque, "%d", list_get(bloquesUsados, i));
+				int* nroBloque = list_get(bloquesUsados, i);
+				sprintf(bloque, "%d", *nroBloque);
 				string_append(&contenido, bloque);
-				string_append(&contenido, ',');
+				string_append(&contenido, ",");
 			}
 			contenido = stringTomarDesdeInicio(contenido, strlen(contenido) - 1);
 			string_append(&contenido, "]");
@@ -1185,22 +1189,29 @@ int escribirVariosBloques(t_list* bloques, int tam_total_registros, void* buffer
 
 	for(int i=0; i<list_size(bloques); i++) {
 
-		int nroBloque = *((int*)list_get(bloques, i));
+		log_info(logger,"entro al for");
+		int* auxnroBloque = list_get(bloques, i);
+		int nroBloque = *auxnroBloque;
+		log_info(logger,"numero de bloque %d",nroBloque);
 		if(tam_total_registros <= metadataLFS->block_size) {
+			log_info(logger,"tam registros menor a block size");
 			resultado = escribirBloque(nroBloque, tam_total_registros, offset, buffer);
 			offset += tam_total_registros;
 			tam_total_registros -= tam_total_registros;
 		}
 		else {
+			log_info(logger,"tam registros mayor a block size");
 			resultado = escribirBloque(nroBloque, metadataLFS->block_size, offset, buffer);
 			tam_total_registros -= metadataLFS->block_size;
 			offset += metadataLFS->block_size;
 		}
 
 		if(resultado == -1) {
+			log_info(logger,"resultado -1");
 			//liberar bloques en el bitmap
-			break; //sale del for con esto?
+			break;
 		}
+		log_info(logger,"salgo del for");
 	}
 
 	log_info(logger, "[BLOQUE] Se terminaron de escribir los bloques");
@@ -1210,23 +1221,50 @@ int escribirVariosBloques(t_list* bloques, int tam_total_registros, void* buffer
 
 int escribirBloque(int bloque, int size, int offset, void* buffer) {
 
-    char* bloqueChar;
-    sprintf(bloqueChar, "%d", bloque);
-    char* path = buscarBloque(bloqueChar);
+
+    char* path = crearPathBloque(bloque);
+    log_info(logger,"path de bloque a escribir %s",path);
     FILE* bloqueFile = fopen(path,"wb");
 
     if(bloqueFile != NULL){
 
+    	log_info(logger,"entre al if");
 		fwrite(buffer+offset, size, 1, bloqueFile);
-		free(path);
 		fclose(bloqueFile);
+		leerBloque(path);
+		free(path);
 		return 0;
     }
 
     log_info(logger, "[BLOQUE] bloque %d escrito con exito", bloque);
-
     free(path);
     return -1;
+}
+
+void crearBloques(){
+
+	int tamanio = strlen(configFile->punto_montaje)+strlen(PATH_BLOQUES)+30;
+	char* pathBloque = malloc(tamanio);
+	log_info(logger,"Voy a crear los bloques");
+	for (int i = 0; i < metadataLFS->blocks; i++) {
+					snprintf(pathBloque,tamanio,"%s%sblock%d.bin",configFile->punto_montaje,PATH_BLOQUES,i);
+					FILE* bloque;
+					bloque = fopen(pathBloque, "a");
+					fclose(bloque);
+
+
+}
+	log_info(logger,"los bloques fueron creados");
+	free(pathBloque);
+}
+
+char* crearPathBloque(int bloque){
+
+		int tamanio = strlen(configFile->punto_montaje)+strlen(PATH_BLOQUES)+30;
+		char* pathBloque = malloc(tamanio);
+	   snprintf(pathBloque,tamanio,"%s%sblock%d.bin",configFile->punto_montaje,PATH_BLOQUES,bloque);
+
+return pathBloque;
 }
 
 t_list* leerBloque(char* path) {
@@ -1421,7 +1459,9 @@ void escanearParticion(int particion) {
 
 }
 
+/*
 char* buscarBloque(char* key) {
+
 
 	char* bloqueObjetivo = malloc(
 			string_length(configFile->punto_montaje)
@@ -1474,12 +1514,13 @@ char* buscarBloque(char* key) {
 
 		fclose(file);
 
-	}*/
+	}
 
 	return bloqueObjetivo;
 
-}
 
+}
+*/
 void eliminarTablaCompleta(char* tabla) {
 
 	if (obtenerMetadataTabla(tabla) == 0) {
@@ -1635,7 +1676,7 @@ int comandoSelect(char* tabla, char* key) {
 
 		escanearParticion(particiones);
 
-		char* keyEncontrado = buscarBloque(key); // GUardar memoria
+		//char* keyEncontrado = buscarBloque(key); // GUardar memoria
 
 		// ver key con timestamp mas grande
 

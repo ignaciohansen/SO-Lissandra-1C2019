@@ -1,7 +1,7 @@
 #ifndef LFILESSYSTEM_H_
 #define LFILESSYSTEM_H_
 
-#include "../Biblioteca/src/Biblioteca.c"
+#include "../Biblioteca/src/Biblioteca.h"
 #include <commons/collections/list.h>
 #include <commons/collections/dictionary.h>
 #include <commons/bitarray.h>
@@ -62,6 +62,7 @@ int socketEscuchaMemoria, conexionEntrante, recibiendoMensaje,tamanio;
 void LisandraSetUP();
 bool cargarConfiguracion();
 void iniciaabrirServidorLissandra();
+
 
 /*--------------------------------------------------------------------------------------------
  * 									Elementos de consola
@@ -180,6 +181,7 @@ int obtenerPrimerBloqueLibreBitmap();
 int obtenerPrimerBloqueOcupadoBitmap();
 int cantidadBloquesOcupadosBitmap();
 
+
 /*--------------------------------------------------------------------------------------------
  * 									Elementos de dump
  *--------------------------------------------------------------------------------------------
@@ -216,7 +218,8 @@ void* armarBufferConRegistros(t_list* listaRegistros, int tam_total_registros);
 int escribirVariosBloques(t_list* bloques, int tam_total_registros, void* buffer);
 int escribirBloque(int bloque, int size, int offset, void* buffer);
 t_list* leerBloque(char* path);
-
+void crearBloques();
+char* crearPathBloque(int bloque);
 /*--------------------------------------------------------------------------------------------
  * 									Elementos de archivos temporales
  *--------------------------------------------------------------------------------------------
