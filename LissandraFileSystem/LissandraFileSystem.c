@@ -280,17 +280,18 @@ void cargarBitmap() {
 	string_append(&bitmapPath, PATH_LFILESYSTEM_BITMAP);
 
 	if (!existeArchivo(bitmapPath)) {
-		log_info(log, "Archivo de bitmap no existe");
-	} else {
-		log_info(logger, "existe archivo, se procede a cargar el bitmap");
+		log_info(log, "Archivo de bitmap no existe, se procede a crear el bitmap");
 		bitarray = crearBitarray();
+	} else {
+		log_info(logger, "existe archivo, se procede a abrir el bitmap");
+		abrirBitmap();
 	}
 
-	log_info(logger, "cantidad de bloques libres en el bitmap creado: %d",
+	log_info(logger, "cantidad de bloques libres en el bitmap: %d",
 			cantBloquesLibresBitmap());
 
 	//pruebas de las funciones bitmap
-	/*log_info(logger, "cantidad de bloques ocupados: %d", cantidadBloquesOcupadosBitmap());
+	log_info(logger, "cantidad de bloques ocupados: %d", cantidadBloquesOcupadosBitmap());
 
 	 ocuparBloqueLibreBitmap(0);
 	 log_info(logger, "ocupando bloque: %d", 0);
@@ -303,7 +304,36 @@ void cargarBitmap() {
 	 log_info(logger, "okey... vamos a liberarlo");
 	 log_info(logger, "se libero bien? tiene que ser 0: %d", estadoBloqueBitmap(0));
 
-	 log_info(logger, "cantidad de bloques ocupados: %d = 0?", cantidadBloquesOcupadosBitmap());*/
+	 log_info(logger, "cantidad de bloques ocupados: %d = 0?", cantidadBloquesOcupadosBitmap());
+}
+
+int abrirBitmap(){
+
+	char* fs_path = string_new();
+
+	string_append(&fs_path,bitmapPath);
+
+	int bitmap = open(fs_path, O_RDWR);
+	struct stat mystat;
+
+	if (fstat(bitmap, &mystat) < 0) {
+		log_error(logger, "Error en el fstat\n");
+		close(bitmap);
+	}
+
+	char *bmap;
+	bmap = mmap(NULL, mystat.st_size, PROT_WRITE | PROT_READ, MAP_SHARED, bitmap, 0);
+
+	if (bmap == MAP_FAILED) {
+		log_error(logger, "algo fallo en el mmap");
+	}
+
+	bitarray = bitarray_create_with_mode(bmap, metadataLFS->blocks / 8, MSB_FIRST);
+
+	log_info(logger, "bitmap abierto correctamente");
+
+	free(fs_path);
+	return 0;
 }
 
 t_bitarray* crearBitarray() {
@@ -313,7 +343,8 @@ t_bitarray* crearBitarray() {
 	if (metadataLFS->blocks % 8 != 0)
 		bytesAEscribir++;
 
-	if (fopen(bitmapPath, "rb") == NULL) {
+	if (fopen(bitmapPath, "rb") != NULL) {
+
 		return NULL;
 	}
 
@@ -1085,7 +1116,7 @@ int crearArchivoTemporal(char* path, char* tabla) {
 							+ string_length("BLOCK=[]") + sizeof(char)*2*list_size(bloquesUsados) - 1); //arreglar para bloques con mas de un numero (string, no char)
 			contenido = string_new();
 			string_append(&contenido, "SIZE=");
-			char* size = malloc(10); //= malloc(sizeof(int)) ? lo hace el sprintf?
+			char* size = malloc(10);
 			sprintf(size, "%d", tam_total_registros);
 			string_append(&contenido,size);
 			string_append(&contenido, "\n");
@@ -1141,7 +1172,7 @@ int tamTotalListaRegistros(t_list* listaRegistros) {
 }
 
 int cuantosBloquesNecesito(int tam_total) {
-	if(tam_total % metadataLFS->block_size == 0) { //preguntar lo del 8
+	if(tam_total % metadataLFS->block_size == 0) {
 		return tam_total / metadataLFS->block_size;
 	}
 
