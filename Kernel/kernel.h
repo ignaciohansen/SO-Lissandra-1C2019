@@ -37,10 +37,14 @@
 #include <pthread.h>
 #include <semaphore.h>
 
+//GOSSIPING
+#include "../Biblioteca/src/Gossiping.h"
+#include "../Biblioteca/src/Gossiping.c"
+
 #define PATH_KERNEL_CONFIG "../Config/KERNEL.txt"
 #define LOG_PATH "../Log/LOG_KERNEL.txt"
 
-
+id_com_t soy = KERNEL;
 int socket_CMemoria,tamanio,countPID,multiProcesamiento;
 t_log* log_kernel;
 t_list* list_queries;
@@ -144,19 +148,22 @@ enum estados{
 
 /*TODO Tablas */
 typedef struct{
-
 	char* nombreTabla;
 	int criterio;
 }t_tablas;
 
-/*TODO Estructuras para memoria*/
+/*TODO Estructuras para memoria*///GOSSIPING
 
 typedef struct{
-
 	int criterio;
-	int cantidad;
-	seed_com_t listMemoriaas;
+	gos_com_t listMemoriaas;
 }t_criterios;
+
+t_criterios criterioSC;
+t_criterios criterioSHC;
+t_criterios criterioEC;
+
+gos_com_t gossipingKernel;
 
 /*TODO Enum de Criterios*/
 
@@ -166,6 +173,11 @@ enum criterios{
 	SHC,
 	EC
 };
+
+
+
+void actualizarMemoriasDisponibles();
+void gossiping_Kernel();
 
 //
 void  cargarConfiguracion();
