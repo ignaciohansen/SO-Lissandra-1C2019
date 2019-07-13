@@ -1077,6 +1077,21 @@ char* retornarValoresDirectorio() {
 	closedir(dir);
 }
 
+void INThandler(int sig) {
+
+     char  c;
+
+     signal(sig, SIG_IGN);
+     printf("OUCH, did you hit Ctrl-C?\n");
+            //"Do you really want to quit? [y/n] ");
+     /*c = getchar();
+     if (c == 'y' || c == 'Y')
+          exit(0);
+     else
+          signal(SIGINT, INThandler);
+     getchar(); // Get new line character*/
+}
+
 //DUMP
 
 void esperarTiempoDump() {
@@ -1090,10 +1105,12 @@ void esperarTiempoDump() {
 		int tam = list_size(listaTablasInsertadas);
 		mutexDesbloquear(&listaTablasInsertadas_mx);
 		if (tam > 0) {
-
+			signal(SIGINT, INThandler);
 			log_info(logger, "Se encontraron cosas, se hace el dump");
+			sleep(20);
 			realizarDump();
 			cantidad_de_dumps++;
+			pause();
 		} else {
 			log_info(logger, "La memtable esta vacia");
 		}

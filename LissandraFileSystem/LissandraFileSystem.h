@@ -9,6 +9,7 @@
 //Agregadas para directorio
 #include <stdlib.h>
 #include <stdio.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -212,6 +213,11 @@ char* crearPathBloque(int bloque);
  *--------------------------------------------------------------------------------------------
  */
 
+/*--------------------------------------------------------------------------------------------
+ * 									Elementos de Compactacion
+ *--------------------------------------------------------------------------------------------
+ */
+
 
 
 
@@ -219,6 +225,8 @@ char* crearPathBloque(int bloque);
  * 									Otros
  *--------------------------------------------------------------------------------------------
  */
+
+void INThandler(int sig);
 
 int obtenerMetadataTabla(char* tabla);
 
