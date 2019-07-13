@@ -48,6 +48,14 @@ typedef struct{
 	int tiempo_dump;
 }t_lfilesystem_config;
 
+typedef enum{
+	EST_LEER,
+	EST_TIMESTAMP,
+	EST_KEY,
+	EST_VALUE,
+	EST_SEP,
+	EST_FIN
+}estadoLecturaBloque_t;
 
 t_lfilesystem_config* configFile;
 t_list* list_queries;
@@ -205,8 +213,10 @@ void* armarBufferConRegistros(t_list* listaRegistros, int tam_total_registros);
 int escribirVariosBloques(t_list* bloques, int tam_total_registros, void* buffer);
 int escribirBloque(int bloque, int size, int offset, void* buffer);
 t_list* leerBloque(char* path);
+t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total);
 void crearBloques();
 char* crearPathBloque(int bloque);
+int abrirArchivoBloque(FILE **fp, int nroBloque, char *modo);
 
 /*--------------------------------------------------------------------------------------------
  * 									Elementos de archivos temporales
@@ -252,8 +262,9 @@ char* desenmascararValue(char* value);
 
 void cerrarTodo();
 
+void *imprimirRegistro(t_registroMemtable *reg);
 
-
+int pruebaLecturaBloquesConsecutivos(void);
 
 
 #endif /* LFILESSYSTEM_H_ */
