@@ -2493,3 +2493,29 @@ void cerrarTodo() {
 	fclose(archivoBitmap);
 }
 
+t_list *obtenerArchivosDirectorio(char *path, char *terminacion)
+{
+	t_list *retval = list_create();
+
+	struct dirent *de;  // Pointer for directory entry
+    // opendir() returns a pointer of DIR type.
+    DIR *dr = opendir(path);;
+
+    if (dr == NULL)  // opendir returns NULL if couldn't open directory
+    {
+        return NULL;
+    }
+    char *path_completo;
+    int size;
+    while ((de = readdir(dr)) != NULL){
+    	if(string_ends_with(de->d_name,terminacion)){
+    		size = strlen(path)+strlen(de->d_name)+1;
+    		path_completo = malloc(size);
+            snprintf(path_completo,size,"%s%s", path,de->d_name);
+            list_add(retval,path_completo);
+    	}
+    }
+    closedir(dr);
+    return retval;
+}
+

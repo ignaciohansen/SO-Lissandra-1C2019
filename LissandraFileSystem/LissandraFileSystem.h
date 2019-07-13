@@ -271,5 +271,6 @@ void *imprimirRegistro(t_registroMemtable *reg);
 
 int pruebaLecturaBloquesConsecutivos(void);
 
+t_list *obtenerArchivosDirectorio(char *path, char *terminacion);
 
 #endif /* LFILESSYSTEM_H_ */
