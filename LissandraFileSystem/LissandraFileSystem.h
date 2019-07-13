@@ -113,6 +113,19 @@ typedef struct{
 
 }t_particion;
 
+
+typedef struct{
+	int size;
+	t_list* bloques;
+
+}t_bloquesUsados;
+
+typedef struct{
+	int size;
+	t_list* bloques;
+
+}t_regArchivoSelect;
+
 t_particion* particionTabla;
 
 typedef struct{

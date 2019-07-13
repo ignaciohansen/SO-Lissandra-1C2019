@@ -17,7 +17,7 @@ const char* comandosPermitidos[] = { "select", "insert", "create", "describe",
 };
 
 int cantidad_de_dumps = 0;
-int dumps_a_dividir =1;
+int dumps_a_dividir = 1;
 
 char* tablaAverificar; // directorio de la tabla
 char* path_tabla_metadata;
@@ -159,8 +159,7 @@ bool cargarConfiguracion() {
 		imprimirMensajeProceso(
 				"NO se ha encontrado el archivo de configuracion\n");
 		log_info(logger, "NO se ha encontrado el archivo de configuracion");
-	}
-	else {
+	} else {
 		int ok = 1;
 		imprimirMensajeProceso(
 				"Se ha encontrado el archivo de configuracion\n");
@@ -311,7 +310,8 @@ void cargarBitmap() {
 	string_append(&bitmapPath, PATH_LFILESYSTEM_BITMAP);
 
 	if (!existeArchivo(bitmapPath)) {
-		log_info(log, "Archivo de bitmap no existe, se procede a crear el bitmap");
+		log_info(log,
+				"Archivo de bitmap no existe, se procede a crear el bitmap");
 		bitarray = crearBitarray();
 	} else {
 		log_info(logger, "existe archivo, se procede a abrir el bitmap");
@@ -322,27 +322,33 @@ void cargarBitmap() {
 			cantBloquesLibresBitmap());
 
 	//pruebas de las funciones bitmap
-	log_info(logger, "cantidad de bloques ocupados: %d", cantidadBloquesOcupadosBitmap());
+	log_info(logger, "cantidad de bloques ocupados: %d",
+			cantidadBloquesOcupadosBitmap());
 
-	 ocuparBloqueLibreBitmap(0);
-	 log_info(logger, "ocupando bloque: %d", 0);
-	 log_info(logger, "se ocupo bien? tiene que ser 1: %d", estadoBloqueBitmap(0));
+	ocuparBloqueLibreBitmap(0);
+	log_info(logger, "ocupando bloque: %d", 0);
+	log_info(logger, "se ocupo bien? tiene que ser 1: %d",
+			estadoBloqueBitmap(0));
 
-	 log_info(logger, "cantidad de bloques ocupados: %d = 1?", cantidadBloquesOcupadosBitmap());
-	 log_info(logger, "primer bloque libre: %d", obtenerPrimerBloqueLibreBitmap());
+	log_info(logger, "cantidad de bloques ocupados: %d = 1?",
+			cantidadBloquesOcupadosBitmap());
+	log_info(logger, "primer bloque libre: %d",
+			obtenerPrimerBloqueLibreBitmap());
 
-	 liberarBloqueBitmap(0);
-	 log_info(logger, "okey... vamos a liberarlo");
-	 log_info(logger, "se libero bien? tiene que ser 0: %d", estadoBloqueBitmap(0));
+	liberarBloqueBitmap(0);
+	log_info(logger, "okey... vamos a liberarlo");
+	log_info(logger, "se libero bien? tiene que ser 0: %d",
+			estadoBloqueBitmap(0));
 
-	 log_info(logger, "cantidad de bloques ocupados: %d = 0?", cantidadBloquesOcupadosBitmap());
+	log_info(logger, "cantidad de bloques ocupados: %d = 0?",
+			cantidadBloquesOcupadosBitmap());
 }
 
-int abrirBitmap(){
+int abrirBitmap() {
 
 	char* fs_path = string_new();
 
-	string_append(&fs_path,bitmapPath);
+	string_append(&fs_path, bitmapPath);
 
 	int bitmap = open(fs_path, O_RDWR);
 	struct stat mystat;
@@ -353,13 +359,15 @@ int abrirBitmap(){
 	}
 
 	char *bmap;
-	bmap = mmap(NULL, mystat.st_size, PROT_WRITE | PROT_READ, MAP_SHARED, bitmap, 0);
+	bmap = mmap(NULL, mystat.st_size, PROT_WRITE | PROT_READ, MAP_SHARED,
+			bitmap, 0);
 
 	if (bmap == MAP_FAILED) {
 		log_error(logger, "algo fallo en el mmap");
 	}
 
-	bitarray = bitarray_create_with_mode(bmap, metadataLFS->blocks / 8, MSB_FIRST);
+	bitarray = bitarray_create_with_mode(bmap, metadataLFS->blocks / 8,
+			MSB_FIRST);
 
 	log_info(logger, "bitmap abierto correctamente");
 
@@ -1084,7 +1092,7 @@ void esperarTiempoDump() {
 	while (true) {
 
 		//usleep(configFile->tiempo_dump*1000);
-		sleep(5);
+		sleep(5000);
 		log_info(logger, "Es tiempo de dump, hay cosas en la memtable?");
 		mutexBloquear(&listaTablasInsertadas_mx);
 		int tam = list_size(listaTablasInsertadas);
@@ -1161,67 +1169,70 @@ int crearArchivoTemporal(char* path, char* tabla) {
 	int cantidad_bloques = cuantosBloquesNecesito(tam_total_registros);
 	int bloqueAux;
 
-	if(cantBloquesLibresBitmap() >= cantidad_bloques) {
-		for(int i=0; i<cantidad_bloques; i++) {
+	if (cantBloquesLibresBitmap() >= cantidad_bloques) {
+		for (int i = 0; i < cantidad_bloques; i++) {
 			bloqueAux = obtenerPrimerBloqueLibreBitmap();
-			if(bloqueAux != -1) {
+			if (bloqueAux != -1) {
 				ocuparBloqueLibreBitmap(bloqueAux);
 				//list_add(bloquesUsados, (void*)bloqueAux);
 				list_add(bloquesUsados, &bloqueAux);
-			}
-			else {
+			} else {
 				//liberar los bloques de la lista
 				return -1;
 			}
 		}
-	}
-	else {
-		log_error(logger, "[DUMP] no hay bloques disponibles para hacer el dump");
+	} else {
+		log_error(logger,
+				"[DUMP] no hay bloques disponibles para hacer el dump");
 	}
 
 	void* bufferRegistros = malloc(tam_total_registros);
-	bufferRegistros = armarBufferConRegistros(listaRegistrosTabla, tam_total_registros);
-	int resultadoEscritura = escribirVariosBloques(bloquesUsados, tam_total_registros, bufferRegistros);
+	bufferRegistros = armarBufferConRegistros(listaRegistrosTabla,
+			tam_total_registros);
+	int resultadoEscritura = escribirVariosBloques(bloquesUsados,
+			tam_total_registros, bufferRegistros);
 
-	if(resultadoEscritura != -1){
+	if (resultadoEscritura != -1) {
 		FILE* temporal;
 		temporal = fopen(path, "w");
 		log_info(logger, "[DUMP] creamos el archivo, ahora  lo llenamos");
-		log_info(logger, "[DUMP] path del archivo %s",path);
+		log_info(logger, "[DUMP] path del archivo %s", path);
 
-		if(temporal != NULL) {
+		if (temporal != NULL) {
 			char* contenido = malloc(
-					string_length("SIZE=") + sizeof(char)*2
-							+ string_length("BLOCK=[]") + sizeof(char)*2*list_size(bloquesUsados) - 1); //arreglar para bloques con mas de un numero (string, no char)
+					string_length("SIZE=") + sizeof(char) * 2
+							+ string_length("BLOCK=[]")
+							+ sizeof(char) * 2 * list_size(bloquesUsados) - 1); //arreglar para bloques con mas de un numero (string, no char)
 			contenido = string_new();
 			string_append(&contenido, "SIZE=");
 			char* size = malloc(10);
 			sprintf(size, "%d", tam_total_registros);
-			string_append(&contenido,size);
+			string_append(&contenido, size);
 			string_append(&contenido, "\n");
 			string_append(&contenido, "BLOCK=[");
 			char* bloque = malloc(10);
-			for(int i=0; i<list_size(bloquesUsados); i++){
+			for (int i = 0; i < list_size(bloquesUsados); i++) {
 				int* nroBloque = list_get(bloquesUsados, i);
 				sprintf(bloque, "%d", *nroBloque);
 				string_append(&contenido, bloque);
 				string_append(&contenido, ",");
 			}
-			contenido = stringTomarDesdeInicio(contenido, strlen(contenido) - 1);
+			contenido = stringTomarDesdeInicio(contenido,
+					strlen(contenido) - 1);
 			string_append(&contenido, "]");
 			fputs(contenido, temporal);
 			log_info(logger, "[DUMP] Temporal completado con: %s", contenido);
 			fclose(temporal);
-		}
-		else {
+		} else {
 			//liberar bloques de la lista de bloquesUsados
-			log_error(logger, "[DUMP] error al abrir el archivo temporal con path: %s", path);
+			log_error(logger,
+					"[DUMP] error al abrir el archivo temporal con path: %s",
+					path);
 		}
+	} else {
+		log_error(logger,
+				"[DUMP] hubo un error al escribir los datos en los bloques");
 	}
-	else {
-		log_error(logger, "[DUMP] hubo un error al escribir los datos en los bloques");
-	}
-
 
 	return 0;
 }
@@ -1230,7 +1241,8 @@ int crearArchivoTemporal(char* path, char* tabla) {
 
 int tamTotalListaRegistros(t_list* listaRegistros) {
 	int cantidad_registros = list_size(listaRegistros);
-	log_info(logger, "cantidad de registros de la lista: %d", cantidad_registros);
+	log_info(logger, "cantidad de registros de la lista: %d",
+			cantidad_registros);
 
 	int tam_total_registros = 0;
 	t_registroMemtable* registro;
@@ -1249,7 +1261,7 @@ int tamTotalListaRegistros(t_list* listaRegistros) {
 }
 
 int cuantosBloquesNecesito(int tam_total) {
-	if(tam_total % metadataLFS->block_size == 0) {
+	if (tam_total % metadataLFS->block_size == 0) {
 		return tam_total / metadataLFS->block_size;
 	}
 
@@ -1275,8 +1287,7 @@ void* armarBufferConRegistros(t_list* listaRegistros, int tam_total_registros) {
 		offset += sizeof(double);
 		memcpy(bufferConRegistros + offset, &punto_y_coma, sizeof(char));
 		offset += sizeof(char);
-		memcpy(bufferConRegistros + offset, &registro->key,
-				sizeof(u_int16_t));
+		memcpy(bufferConRegistros + offset, &registro->key, sizeof(u_int16_t));
 		offset += sizeof(u_int16_t);
 		memcpy(bufferConRegistros + offset, &punto_y_coma, sizeof(char));
 		offset += sizeof(char);
@@ -1290,36 +1301,38 @@ void* armarBufferConRegistros(t_list* listaRegistros, int tam_total_registros) {
 	return bufferConRegistros;
 }
 
-int escribirVariosBloques(t_list* bloques, int tam_total_registros, void* buffer) {
+int escribirVariosBloques(t_list* bloques, int tam_total_registros,
+		void* buffer) {
 
 	int resultado = 1;
 	int offset = 0;
 
-	for(int i=0; i<list_size(bloques); i++) {
+	for (int i = 0; i < list_size(bloques); i++) {
 
-		log_info(logger,"entro al for");
+		log_info(logger, "entro al for");
 		int* auxnroBloque = list_get(bloques, i);
 		int nroBloque = *auxnroBloque;
-		log_info(logger,"numero de bloque %d",nroBloque);
-		if(tam_total_registros <= metadataLFS->block_size) {
-			log_info(logger,"tam registros menor a block size");
-			resultado = escribirBloque(nroBloque, tam_total_registros, offset, buffer);
+		log_info(logger, "numero de bloque %d", nroBloque);
+		if (tam_total_registros <= metadataLFS->block_size) {
+			log_info(logger, "tam registros menor a block size");
+			resultado = escribirBloque(nroBloque, tam_total_registros, offset,
+					buffer);
 			offset += tam_total_registros;
 			tam_total_registros -= tam_total_registros;
-		}
-		else {
-			log_info(logger,"tam registros mayor a block size");
-			resultado = escribirBloque(nroBloque, metadataLFS->block_size, offset, buffer);
+		} else {
+			log_info(logger, "tam registros mayor a block size");
+			resultado = escribirBloque(nroBloque, metadataLFS->block_size,
+					offset, buffer);
 			tam_total_registros -= metadataLFS->block_size;
 			offset += metadataLFS->block_size;
 		}
 
-		if(resultado == -1) {
-			log_info(logger,"resultado -1");
+		if (resultado == -1) {
+			log_info(logger, "resultado -1");
 			//liberar bloques en el bitmap
 			break;
 		}
-		log_info(logger,"salgo del for");
+		log_info(logger, "salgo del for");
 	}
 
 	log_info(logger, "[BLOQUE] Se terminaron de escribir los bloques");
@@ -1329,50 +1342,50 @@ int escribirVariosBloques(t_list* bloques, int tam_total_registros, void* buffer
 
 int escribirBloque(int bloque, int size, int offset, void* buffer) {
 
+	char* path = crearPathBloque(bloque);
+	log_info(logger, "path de bloque a escribir %s", path);
+	FILE* bloqueFile = fopen(path, "wb");
 
-    char* path = crearPathBloque(bloque);
-    log_info(logger,"path de bloque a escribir %s",path);
-    FILE* bloqueFile = fopen(path,"wb");
+	if (bloqueFile != NULL) {
 
-    if(bloqueFile != NULL){
-
-    	log_info(logger,"entre al if");
-		fwrite(buffer+offset, size, 1, bloqueFile);
+		log_info(logger, "entre al if");
+		fwrite(buffer + offset, size, 1, bloqueFile);
 		fclose(bloqueFile);
 		leerBloque(path);
 		free(path);
 		return 0;
-    }
+	}
 
-    log_info(logger, "[BLOQUE] bloque %d escrito con exito", bloque);
-    free(path);
-    return -1;
+	log_info(logger, "[BLOQUE] bloque %d escrito con exito", bloque);
+	free(path);
+	return -1;
 }
 
-void crearBloques(){
+void crearBloques() {
 
-	int tamanio = strlen(configFile->punto_montaje)+strlen(PATH_BLOQUES)+30;
+	int tamanio = strlen(configFile->punto_montaje) + strlen(PATH_BLOQUES) + 30;
 	char* pathBloque = malloc(tamanio);
-	log_info(logger,"Voy a crear los bloques");
+	log_info(logger, "Voy a crear los bloques");
 	for (int i = 0; i < metadataLFS->blocks; i++) {
-					snprintf(pathBloque,tamanio,"%s%sblock%d.bin",configFile->punto_montaje,PATH_BLOQUES,i);
-					FILE* bloque;
-					bloque = fopen(pathBloque, "a");
-					fclose(bloque);
+		snprintf(pathBloque, tamanio, "%s%sblock%d.bin",
+				configFile->punto_montaje, PATH_BLOQUES, i);
+		FILE* bloque;
+		bloque = fopen(pathBloque, "a");
+		fclose(bloque);
 
-
-}
-	log_info(logger,"los bloques fueron creados");
+	}
+	log_info(logger, "los bloques fueron creados");
 	free(pathBloque);
 }
 
-char* crearPathBloque(int bloque){
+char* crearPathBloque(int bloque) {
 
-		int tamanio = strlen(configFile->punto_montaje)+strlen(PATH_BLOQUES)+30;
-		char* pathBloque = malloc(tamanio);
-	   snprintf(pathBloque,tamanio,"%s%sblock%d.bin",configFile->punto_montaje,PATH_BLOQUES,bloque);
+	int tamanio = strlen(configFile->punto_montaje) + strlen(PATH_BLOQUES) + 30;
+	char* pathBloque = malloc(tamanio);
+	snprintf(pathBloque, tamanio, "%s%sblock%d.bin", configFile->punto_montaje,
+	PATH_BLOQUES, bloque);
 
-return pathBloque;
+	return pathBloque;
 }
 
 t_list* leerBloque(char* path) {
@@ -1449,33 +1462,32 @@ t_list* leerBloque(char* path) {
 		}
 		free(aux);
 		fclose(bloque);
-	}
-	else {
-		log_error(logger, "[BLOQUE] no se pudo leer el archivo con el path: %s", path);
+	} else {
+		log_error(logger, "[BLOQUE] no se pudo leer el archivo con el path: %s",
+				path);
 	}
 
 	return registros_leidos;
 }
 
-int abrirArchivoBloque(FILE **fp, int nroBloque, char *modo)
-{
+int abrirArchivoBloque(FILE **fp, int nroBloque, char *modo) {
 	char *pathBloque = crearPathBloque(nroBloque);
 	*fp = fopen(pathBloque, modo);
-	if(*fp == NULL){
-		log_warning(logger,"[abrirArchivoBloque] Error al abrir el archivo");
+	if (*fp == NULL) {
+		log_warning(logger, "[abrirArchivoBloque] Error al abrir el archivo");
 		return -1;
 	}
 	int tam_bloque;
 	fseek(*fp, 0, SEEK_END);
 	tam_bloque = ftell(*fp);
 	rewind(*fp);
-	log_info(logger,"[abrirArchivoBloque] Archivo %s abierto correctamente", pathBloque);
+	log_info(logger, "[abrirArchivoBloque] Archivo %s abierto correctamente",
+			pathBloque);
 	free(pathBloque);
 	return tam_bloque;
 }
 
-t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total)
-{
+t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total) {
 	t_list *registros_leidos = list_create();
 	FILE *bloque;
 
@@ -1485,227 +1497,247 @@ t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total)
 	estadoLecturaBloque_t anterior = EST_TIMESTAMP;
 
 	void *aux_campo_leyendo;
-	if(configFile->tamanio_value + 1 > sizeof(double))
-		aux_campo_leyendo = malloc(configFile->tamanio_value+1);
+	if (configFile->tamanio_value + 1 > sizeof(double))
+		aux_campo_leyendo = malloc(configFile->tamanio_value + 1);
 	else
 		aux_campo_leyendo = malloc(sizeof(double));
-	int offset_bloque = 0,
-		tam_bloque = 0,
-		offset_campo = 0,
-		offset_total = 0,
-		bloques_leidos = 0,
-		num_separador = 0;
+	int offset_bloque = 0, tam_bloque = 0, offset_campo = 0, offset_total = 0,
+			bloques_leidos = 0, num_separador = 0;
 	bool leiValueEntero;
 	t_registroMemtable* registro = malloc(sizeof(t_registroMemtable));
 	void* registros_bloque = NULL;
-	while(offset_total < tam_total && estado!=EST_FIN)
-	{
-		log_info(logger,"Hasta ahora leí %d bytes de %d",offset_total, tam_total);
-		switch(estado)
-		{
-			case EST_LEER:
-				if(bloques_leidos == list_size(nroBloques)){
-					estado = EST_FIN;
+	while (offset_total < tam_total && estado != EST_FIN) {
+		log_info(logger, "Hasta ahora leí %d bytes de %d", offset_total,
+				tam_total);
+		switch (estado) {
+		case EST_LEER:
+			if (bloques_leidos == list_size(nroBloques)) {
+				estado = EST_FIN;
+				break;
+			}
+			offset_bloque = 0;
+			int *nBloque = list_get(nroBloques, bloques_leidos);
+			log_info(logger, "Leyendo el bloque nro %d, que es el bloque %d",
+					bloques_leidos, *nBloque);
+			tam_bloque = abrirArchivoBloque(&bloque, *nBloque, "rb");
+			log_info(logger, "El tamaño del bloque es: %d", tam_bloque);
+			if (registros_bloque != NULL)
+				free(registros_bloque);
+			registros_bloque = malloc(tam_bloque);
+			if (fread(registros_bloque, tam_bloque, 1, bloque) == 0) {
+				log_info(logger, "Error al leer el bloque %d", *nBloque);
+				return NULL;
+			}
+			fclose(bloque);
+			log_info(logger, "Bloque leído correctamente");
+			bloques_leidos++;
+			estado = anterior;
+			break;
+
+		case EST_TIMESTAMP:
+			log_info(logger, "Buscando el timestamp");
+			log_info(logger, "Al bloque le quedan %d bytes y yo necesito %d",
+					tam_bloque - offset_bloque, sizeof(double) - offset_campo);
+
+			//Si con los bytes que le quedan al bloque me alcanza para completar el campo, los copio y avanzo al siguiente estado
+			if (offset_bloque + sizeof(double) - offset_campo <= tam_bloque) {
+				memcpy(aux_campo_leyendo + offset_campo,
+						registros_bloque + offset_bloque,
+						sizeof(double) - offset_campo);
+				memcpy(&(registro->timestamp), aux_campo_leyendo,
+						sizeof(double));
+				log_info(logger, "Timestamp leido: %lf", registro->timestamp);
+
+				//Avanzo los offset los bytes que acabo de leer
+				offset_bloque += sizeof(double) - offset_campo;
+				offset_total += sizeof(double) - offset_campo;
+
+				//Avanzo al siguiente estado que es buscar un separador
+				anterior = estado;
+				estado = EST_SEP;
+			}
+			//Si no me alcanza, copio todo lo que puedo y voy a leer un nuevo bloque
+			else {
+				memcpy(aux_campo_leyendo + offset_campo,
+						registros_bloque + offset_bloque,
+						tam_bloque - offset_bloque);
+
+				//Avanzo los offset los bytes que acabo de leer
+				offset_campo += tam_bloque - offset_bloque;
+				offset_total += tam_bloque - offset_bloque;
+				offset_bloque += tam_bloque - offset_bloque;
+				log_info(logger, "Me faltan %d bytes para leer el timestamp",
+						sizeof(double) - offset_campo);
+
+				//Voy a leer un nuevo bloque
+				anterior = estado;
+				estado = EST_LEER;
+			}
+			break;
+
+		case EST_KEY:
+			log_info(logger, "Buscando key");
+			log_info(logger, "Al bloque le quedan %d bytes y yo necesito %d",
+					tam_bloque - offset_bloque,
+					sizeof(uint16_t) - offset_campo);
+
+			//Si con los bytes que le quedan al bloque me alcanza para completar el campo, los copio y avanzo al siguiente estado
+			if (offset_bloque + sizeof(uint16_t) - offset_campo <= tam_bloque) {
+				memcpy(aux_campo_leyendo + offset_campo,
+						registros_bloque + offset_bloque,
+						sizeof(uint16_t) - offset_campo);
+				memcpy(&(registro->key), aux_campo_leyendo, sizeof(uint16_t));
+				log_info(logger, "Key leída: %d", registro->key);
+
+				//Avanzo los offset los bytes que acabo de leer
+				offset_bloque += sizeof(uint16_t) - offset_campo;
+				offset_total += sizeof(uint16_t) - offset_campo;
+
+				//Avanzo al siguiente estado que es buscar un separador
+				anterior = estado;
+				estado = EST_SEP;
+			}
+			//Si no me alcanza, copio todo lo que puedo y voy a leer un nuevo bloque
+			else {
+				memcpy(aux_campo_leyendo + offset_campo,
+						registros_bloque + offset_bloque,
+						sizeof(uint16_t) - offset_campo);
+
+				//Avanzo los offset los bytes que acabo de leer
+				offset_campo += tam_bloque - offset_bloque;
+				offset_total += tam_bloque - offset_bloque;
+				offset_bloque += tam_bloque - offset_bloque;
+				log_info(logger, "Me faltan %d bytes para leer la key",
+						sizeof(uint16_t) - offset_campo);
+
+				//Voy a leer un nuevo bloque
+				anterior = estado;
+				estado = EST_LEER;
+			}
+			break;
+
+		case EST_VALUE:
+			log_info(logger, "Buscando value");
+			leiValueEntero = false;
+
+			//Si con los bytes que le quedan al bloque me alcanza para completar el tamaño máximo para un value, los copio y avanzo al siguiente estado
+			if (offset_bloque + configFile->tamanio_value - offset_campo
+					<= tam_bloque) {
+				//log_info(logger, "Voy a copiar a aux %d bytes",configFile->tamanio_value - offset_campo);
+				memcpy(aux_campo_leyendo + offset_campo,
+						registros_bloque + offset_bloque,
+						configFile->tamanio_value - offset_campo);
+				memcpy(aux_value, aux_campo_leyendo, configFile->tamanio_value);
+
+				//Como al escribir no se escribe el caracter nulo, al leer lo agrego
+				aux_value[configFile->tamanio_value] = '\0';
+				leiValueEntero = true;
+			}
+			//Si no me alcanza, leo todo lo que tenga y me fijo si el value está completo (puede tener menos bytes que el máximo)
+			else {
+				memcpy(aux_campo_leyendo + offset_campo,
+						registros_bloque + offset_bloque,
+						tam_bloque - offset_bloque);
+				memcpy(aux_value, aux_campo_leyendo,
+						tam_bloque - offset_bloque);
+
+				//Como al escribir no se escribe el caracter nulo, al leer lo agrego
+				aux_value[offset_campo + tam_bloque - offset_bloque] = '\0';
+
+				//Si encuentro el \n, encontré el valor entero y no tengo que leer otro bloque para tener este campo
+				if (string_contains(aux_value, "\n"))
+					leiValueEntero = true;
+				//Si no lo encuentro, sí tengo que leer otro bloque
+				else {
+					//Avanzo los offsets los bytes que acabo de leer
+					offset_campo += tam_bloque - offset_bloque;
+					offset_total += tam_bloque - offset_bloque;
+					offset_bloque += tam_bloque - offset_bloque;
+
+					//Voy a leer un nuevo bloque
+					anterior = estado;
+					estado = EST_LEER;
+					log_info(logger,
+							"No encontré el '\\n' y me faltan %d bytes para el máximo del value",
+							configFile->tamanio_value - offset_campo);
+				}
+			}
+			//Si de cualquiera de las 2 formas pude completar el value, lo guardo y avanzo
+			if (leiValueEntero) {
+				//Corto el string en el \n y lo guardo en el campo value del registro
+				char **aux_split = string_split(aux_value, "\n");
+				registro->value = malloc(strlen(aux_split[0]) + 1);
+				strcpy(registro->value, aux_split[0]);
+
+				//Borro toda la memoria que aloca la función string_split
+				int i = 0;
+				while (aux_split[i] != NULL) {
+					free(aux_split[i]);
+					i++;
+				}
+				free(aux_split);
+
+				//Avanzo los offsets los bytes que acabo de leer
+				offset_bloque += strlen(registro->value) - offset_campo;
+				offset_total += strlen(registro->value) - offset_campo;
+
+				//Calculo el tamaño
+				registro->tam_registro = sizeof(double) + sizeof(uint16_t)
+						+ strlen(registro->value) + 1;
+
+				//Agrego el nuevo registro a la lista que voy a retornar
+				list_add(registros_leidos, registro);
+				log_info(logger, "Registro <%lf;%d;%s> agregado a la lista",
+						registro->timestamp, registro->key, registro->value);
+
+				//Avanzo al siguiente estado que es buscar un separador
+				anterior = estado;
+				estado = EST_SEP;
+			}
+			break;
+
+		case EST_SEP:
+			//log_info(logger, "Buscando un separador");
+			//Si no tengo bytes para leer, voy a leer otro bloque
+			if (offset_bloque == tam_bloque) {
+				anterior = estado;
+				estado = EST_LEER;
+			}
+			//Si tengo un byte, leo y avanzo
+			else {
+				//No me guardo los separadores porque no los necesito, simplemente avanzo los offsets
+				offset_bloque += sizeof(char);
+				offset_total += sizeof(char);
+
+				//Voy al siguiente estado, para lo que necesito saber que número de separador estoy leyendo
+				anterior = estado;
+				switch (num_separador) {
+				case 0:
+					estado = EST_KEY;
+					offset_campo = 0;
+					num_separador++;
+					break;
+				case 1:
+					estado = EST_VALUE;
+					offset_campo = 0;
+					num_separador++;
+					break;
+				case 2:
+					estado = EST_TIMESTAMP;
+					offset_campo = 0;
+					num_separador = 0;
+
+					//Si voy a leer un timestamp es porque es nuevo registro, por lo que tengo que alocar memoria para guardarlo
+					registro = malloc(sizeof(t_registroMemtable));
 					break;
 				}
-				offset_bloque = 0;
-				int *nBloque = list_get(nroBloques,bloques_leidos);
-				log_info(logger, "Leyendo el bloque nro %d, que es el bloque %d", bloques_leidos, *nBloque);
-				tam_bloque = abrirArchivoBloque(&bloque,*nBloque,"rb");
-				log_info(logger, "El tamaño del bloque es: %d", tam_bloque);
-				if(registros_bloque != NULL)
-					free(registros_bloque);
-				registros_bloque = malloc(tam_bloque);
-				if(fread(registros_bloque, tam_bloque, 1, bloque) == 0){
-					log_info(logger, "Error al leer el bloque %d", *nBloque);
-					return NULL;
-				}
-				fclose(bloque);
-				log_info(logger, "Bloque leído correctamente");
-				bloques_leidos++;
-				estado = anterior;
-				break;
-
-			case EST_TIMESTAMP:
-				log_info(logger, "Buscando el timestamp");
-				log_info(logger, "Al bloque le quedan %d bytes y yo necesito %d",tam_bloque-offset_bloque, sizeof(double)-offset_campo);
-
-				//Si con los bytes que le quedan al bloque me alcanza para completar el campo, los copio y avanzo al siguiente estado
-				if(offset_bloque + sizeof(double) - offset_campo <= tam_bloque){
-					memcpy(aux_campo_leyendo+offset_campo, registros_bloque+offset_bloque, sizeof(double) - offset_campo);
-					memcpy(&(registro->timestamp),aux_campo_leyendo,sizeof(double));
-					log_info(logger, "Timestamp leido: %lf",registro->timestamp);
-
-					//Avanzo los offset los bytes que acabo de leer
-					offset_bloque += sizeof(double) - offset_campo;
-					offset_total += sizeof(double) - offset_campo;
-
-					//Avanzo al siguiente estado que es buscar un separador
-					anterior = estado;
-					estado = EST_SEP;
-				}
-				//Si no me alcanza, copio todo lo que puedo y voy a leer un nuevo bloque
-				else{
-					memcpy(aux_campo_leyendo+offset_campo, registros_bloque+offset_bloque, tam_bloque - offset_bloque);
-
-					//Avanzo los offset los bytes que acabo de leer
-					offset_campo += tam_bloque - offset_bloque;
-					offset_total += tam_bloque - offset_bloque;
-					offset_bloque += tam_bloque - offset_bloque;
-					log_info(logger, "Me faltan %d bytes para leer el timestamp",sizeof(double)-offset_campo);
-
-					//Voy a leer un nuevo bloque
-					anterior = estado;
-					estado = EST_LEER;
-				}
-				break;
-
-			case EST_KEY:
-				log_info(logger, "Buscando key");
-				log_info(logger, "Al bloque le quedan %d bytes y yo necesito %d",tam_bloque-offset_bloque, sizeof(uint16_t)-offset_campo);
-
-				//Si con los bytes que le quedan al bloque me alcanza para completar el campo, los copio y avanzo al siguiente estado
-				if(offset_bloque + sizeof(uint16_t) - offset_campo <= tam_bloque){
-					memcpy(aux_campo_leyendo+offset_campo, registros_bloque+offset_bloque, sizeof(uint16_t) - offset_campo);
-					memcpy(&(registro->key),aux_campo_leyendo,sizeof(uint16_t));
-					log_info(logger, "Key leída: %d",registro->key);
-
-					//Avanzo los offset los bytes que acabo de leer
-					offset_bloque += sizeof(uint16_t) - offset_campo;
-					offset_total += sizeof(uint16_t) - offset_campo;
-
-					//Avanzo al siguiente estado que es buscar un separador
-					anterior = estado;
-					estado = EST_SEP;
-				}
-				//Si no me alcanza, copio todo lo que puedo y voy a leer un nuevo bloque
-				else{
-					memcpy(aux_campo_leyendo+offset_campo, registros_bloque+offset_bloque, sizeof(uint16_t) - offset_campo);
-
-					//Avanzo los offset los bytes que acabo de leer
-					offset_campo += tam_bloque - offset_bloque;
-					offset_total += tam_bloque - offset_bloque;
-					offset_bloque += tam_bloque - offset_bloque;
-					log_info(logger, "Me faltan %d bytes para leer la key",sizeof(uint16_t)-offset_campo);
-
-					//Voy a leer un nuevo bloque
-					anterior = estado;
-					estado = EST_LEER;
-				}
-				break;
-
-			case EST_VALUE:
-				log_info(logger, "Buscando value");
-				leiValueEntero = false;
-
-				//Si con los bytes que le quedan al bloque me alcanza para completar el tamaño máximo para un value, los copio y avanzo al siguiente estado
-				if(offset_bloque + configFile->tamanio_value - offset_campo <= tam_bloque){
-					//log_info(logger, "Voy a copiar a aux %d bytes",configFile->tamanio_value - offset_campo);
-					memcpy(aux_campo_leyendo+offset_campo, registros_bloque+offset_bloque, configFile->tamanio_value - offset_campo);
-					memcpy(aux_value,aux_campo_leyendo,configFile->tamanio_value);
-
-					//Como al escribir no se escribe el caracter nulo, al leer lo agrego
-					aux_value[configFile->tamanio_value]='\0';
-					leiValueEntero = true;
-				}
-				//Si no me alcanza, leo todo lo que tenga y me fijo si el value está completo (puede tener menos bytes que el máximo)
-				else{
-					memcpy(aux_campo_leyendo+offset_campo, registros_bloque+offset_bloque, tam_bloque - offset_bloque);
-					memcpy(aux_value,aux_campo_leyendo,tam_bloque - offset_bloque);
-
-					//Como al escribir no se escribe el caracter nulo, al leer lo agrego
-					aux_value[offset_campo + tam_bloque - offset_bloque] = '\0';
-
-					//Si encuentro el \n, encontré el valor entero y no tengo que leer otro bloque para tener este campo
-					if(string_contains(aux_value,"\n"))
-						leiValueEntero = true;
-					//Si no lo encuentro, sí tengo que leer otro bloque
-					else{
-						//Avanzo los offsets los bytes que acabo de leer
-						offset_campo += tam_bloque - offset_bloque;
-						offset_total += tam_bloque - offset_bloque;
-						offset_bloque += tam_bloque - offset_bloque;
-
-						//Voy a leer un nuevo bloque
-						anterior = estado;
-						estado = EST_LEER;
-						log_info(logger, "No encontré el '\\n' y me faltan %d bytes para el máximo del value",configFile->tamanio_value-offset_campo);
-					}
-				}
-				//Si de cualquiera de las 2 formas pude completar el value, lo guardo y avanzo
-				if(leiValueEntero){
-					//Corto el string en el \n y lo guardo en el campo value del registro
-					char **aux_split = string_split(aux_value,"\n");
-					registro->value = malloc(strlen(aux_split[0]) + 1);
-					strcpy(registro->value, aux_split[0]);
-
-					//Borro toda la memoria que aloca la función string_split
-					int i = 0;
-					while (aux_split[i] != NULL) {
-						free(aux_split[i]);
-						i++;
-					}
-					free(aux_split);
-
-					//Avanzo los offsets los bytes que acabo de leer
-					offset_bloque += strlen(registro->value) - offset_campo;
-					offset_total += strlen(registro->value) - offset_campo;
-
-					//Calculo el tamaño
-					registro->tam_registro = sizeof(double) + sizeof(uint16_t) + strlen(registro->value)+1;
-
-					//Agrego el nuevo registro a la lista que voy a retornar
-					list_add(registros_leidos, registro);
-					log_info(logger, "Registro <%lf;%d;%s> agregado a la lista", registro->timestamp,registro->key,registro->value);
-
-					//Avanzo al siguiente estado que es buscar un separador
-					anterior = estado;
-					estado = EST_SEP;
-				}
-				break;
-
-			case EST_SEP:
-				//log_info(logger, "Buscando un separador");
-				//Si no tengo bytes para leer, voy a leer otro bloque
-				if(offset_bloque == tam_bloque){
-					anterior = estado;
-					estado = EST_LEER;
-				}
-				//Si tengo un byte, leo y avanzo
-				else{
-					//No me guardo los separadores porque no los necesito, simplemente avanzo los offsets
-					offset_bloque+=sizeof(char);
-					offset_total+=sizeof(char);
-
-					//Voy al siguiente estado, para lo que necesito saber que número de separador estoy leyendo
-					anterior = estado;
-					switch(num_separador){
-						case 0:
-							estado = EST_KEY;
-							offset_campo = 0;
-							num_separador++;
-							break;
-						case 1:
-							estado = EST_VALUE;
-							offset_campo = 0;
-							num_separador++;
-							break;
-						case 2:
-							estado = EST_TIMESTAMP;
-							offset_campo = 0;
-							num_separador = 0;
-
-							//Si voy a leer un timestamp es porque es nuevo registro, por lo que tengo que alocar memoria para guardarlo
-							registro = malloc(sizeof(t_registroMemtable));
-							break;
-					}
-					//log_info(logger, "Separador leído");
-				}
-				break;
+				//log_info(logger, "Separador leído");
+			}
+			break;
 
 		}
 	}
-	log_info(logger,"Leí todos los bloques");
+	log_info(logger, "Leí todos los bloques");
 
 	//Libero la memoria auxiliar que usé
 	free(aux_value);
@@ -1714,51 +1746,51 @@ t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total)
 	return registros_leidos;
 }
 
-void *imprimirRegistro(t_registroMemtable *reg)
-{
-	log_info(logger,"Registro: <%lf;%d;%s>",reg->timestamp,reg->key,reg->value);
+void *imprimirRegistro(t_registroMemtable *reg) {
+	log_info(logger, "Registro: <%lf;%d;%s>", reg->timestamp, reg->key,
+			reg->value);
 	return reg;
 }
 
-int pruebaLecturaBloquesConsecutivos(void)
-{
+int pruebaLecturaBloquesConsecutivos(void) {
 	void *buffer = malloc(200);
 	int offset = 0;
 	char value[20];
-	uint16_t key=0;
+	uint16_t key = 0;
 	double timestamp = 0;
 	char barran[2], coma[2];
-	strcpy(barran,"\n");
-	strcpy(coma,",");
+	strcpy(barran, "\n");
+	strcpy(coma, ",");
 
-	for(int i=0; i<10; i++){
+	for (int i = 0; i < 10; i++) {
 		timestamp += 554;
 		key += 2;
-		snprintf(value,9,"val%d",i*13);
-		memcpy(buffer + offset,&timestamp,sizeof(double));
+		snprintf(value, 9, "val%d", i * 13);
+		memcpy(buffer + offset, &timestamp, sizeof(double));
 		offset += sizeof(double);
-		memcpy(buffer + offset,coma,sizeof(char));
+		memcpy(buffer + offset, coma, sizeof(char));
 		offset += sizeof(char);
-		memcpy(buffer + offset,&key,sizeof(uint16_t));
+		memcpy(buffer + offset, &key, sizeof(uint16_t));
 		offset += sizeof(uint16_t);
-		memcpy(buffer + offset,coma,sizeof(char));
+		memcpy(buffer + offset, coma, sizeof(char));
 		offset += sizeof(char);
-		memcpy(buffer + offset,value,strlen(value));
+		memcpy(buffer + offset, value, strlen(value));
 		offset += strlen(value);
-		memcpy(buffer + offset,barran,sizeof(char));
+		memcpy(buffer + offset, barran, sizeof(char));
 		offset += sizeof(char);
 
-		log_info(logger,"Escribi %lf;%d;%s. Hasta ahora son %d bytes", timestamp, key,value, offset);
+		log_info(logger, "Escribi %lf;%d;%s. Hasta ahora son %d bytes",
+				timestamp, key, value, offset);
 	}
 
-	log_info(logger,"En total son %d bytes",offset);
+	log_info(logger, "En total son %d bytes", offset);
 
-	FILE *bloque1=NULL;
-	FILE *bloque2=NULL;
-	FILE *bloque3=NULL;
-	abrirArchivoBloque(&bloque1,2,"wb");
-	abrirArchivoBloque(&bloque2,1,"wb");
-	abrirArchivoBloque(&bloque3,3,"wb");
+	FILE *bloque1 = NULL;
+	FILE *bloque2 = NULL;
+	FILE *bloque3 = NULL;
+	abrirArchivoBloque(&bloque1, 2, "wb");
+	abrirArchivoBloque(&bloque2, 1, "wb");
+	abrirArchivoBloque(&bloque3, 3, "wb");
 
 	int desp, bytes1, bytes2, bytes3;
 //	aux=offset/2;
@@ -1769,16 +1801,16 @@ int pruebaLecturaBloquesConsecutivos(void)
 
 	desp = 0;
 
-	fwrite(buffer+desp,bytes1,1,bloque1);
-	log_info(logger,"Escribí %d bytes en el bloque1",bytes1);
+	fwrite(buffer + desp, bytes1, 1, bloque1);
+	log_info(logger, "Escribí %d bytes en el bloque1", bytes1);
 	desp += bytes1;
 
-	fwrite(buffer+desp,bytes2,1,bloque2);
-	log_info(logger,"Escribí %d bytes en el bloque2",bytes2);
+	fwrite(buffer + desp, bytes2, 1, bloque2);
+	log_info(logger, "Escribí %d bytes en el bloque2", bytes2);
 	desp += bytes2;
 
-	fwrite(buffer+desp,bytes3,1,bloque3);
-	log_info(logger,"Escribí %d bytes en el bloque3",bytes3);
+	fwrite(buffer + desp, bytes3, 1, bloque3);
+	log_info(logger, "Escribí %d bytes en el bloque3", bytes3);
 	desp += bytes3;
 
 	fclose(bloque1);
@@ -1787,20 +1819,18 @@ int pruebaLecturaBloquesConsecutivos(void)
 	free(buffer);
 	t_list *listaBloques = list_create();
 	int numBloque1 = 2, numBloque2 = 1, numBloque3 = 3;
-	list_add(listaBloques,&numBloque1);
-	list_add(listaBloques,&numBloque2);
-	list_add(listaBloques,&numBloque3);
+	list_add(listaBloques, &numBloque1);
+	list_add(listaBloques, &numBloque2);
+	list_add(listaBloques, &numBloque3);
 
-	t_list *regLeidos = leerBloquesConsecutivos(listaBloques,offset);
-	list_iterate(regLeidos,(void*)imprimirRegistro);
+	t_list *regLeidos = leerBloquesConsecutivos(listaBloques, offset);
+	list_iterate(regLeidos, (void*) imprimirRegistro);
 
-	log_info(logger,"Salgo de función de prueba");
+	log_info(logger, "Salgo de función de prueba");
 	return 1;
 }
 
-
 //OPERACIONES CON BLOQUES
-
 
 //DUMP
 int determinarParticion(int key, int particiones) {
@@ -1815,27 +1845,18 @@ int determinarParticion(int key, int particiones) {
 
 }
 
-void rutaParticion(int particion) {
+char* rutaParticion(int particion) {
 	char * stringParticion = malloc(sizeof(char) * 3);
 
 	sprintf(stringParticion, "%d", particion);
 
-	archivoParticion = malloc(
-			string_length(tablaAverificar) + string_length(stringParticion)
-					+ string_length(PATH_BIN));
+	int tamanio = string_length(tablaAverificar) + string_length(stringParticion)+string_length(PATH_BIN)+2;
+	archivoParticion = malloc(tamanio);
 
-	log_info(logger,
-			"Se reservo memoria para concatenar ruta de la tabla con la particion");
-	archivoParticion = string_new();
-	string_append(&archivoParticion, tablaAverificar);
+	snprintf(archivoParticion, tamanio, "%s%s%d%s",tablaAverificar,"/",particion,PATH_BIN);
+	log_info(logger, "La ruta de la particion es: %s", archivoParticion);
 
-	string_append(&archivoParticion, "/");
-
-	string_append(&archivoParticion, stringParticion);
-
-	string_append(&archivoParticion, PATH_BIN); // ".bin"
-
-	log_info(logger, "%s", archivoParticion);
+	return archivoParticion;
 }
 
 void escanearParticion(int particion) {
@@ -1907,79 +1928,77 @@ void escanearParticion(int particion) {
 
 	free(particionFile);
 
-	log_info(logger, "[escanearParticion] (-) ");
-
 }
 
 /*
-char* buscarBloque(char* key) {
+ char* buscarBloque(char* key) {
 
 
-	char* bloqueObjetivo = malloc(
-			string_length(configFile->punto_montaje)
-					+ string_length(PATH_BLOQUES) + 11);
+ char* bloqueObjetivo = malloc(
+ string_length(configFile->punto_montaje)
+ + string_length(PATH_BLOQUES) + 11);
 
-	log_info(logger, "Se reservo memoria para concatenar ruta de blqoues");
+ log_info(logger, "Se reservo memoria para concatenar ruta de blqoues");
 
-	bloqueObjetivo = string_new();
+ bloqueObjetivo = string_new();
 
-	string_append(&bloqueObjetivo, configFile->punto_montaje);
+ string_append(&bloqueObjetivo, configFile->punto_montaje);
 
-	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo); // 1er linea de direccion
+ log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo); // 1er linea de direccion
 
-	string_append(&bloqueObjetivo, PATH_BLOQUES);
+ string_append(&bloqueObjetivo, PATH_BLOQUES);
 
-	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo); // 2da linea de direccion
+ log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo); // 2da linea de direccion
 
-	char* bloque = malloc(sizeof(particionTabla->bloques)); // 3er linea de direccion
-	bloque = particionTabla->bloques[0];
+ char* bloque = malloc(sizeof(particionTabla->bloques)); // 3er linea de direccion
+ bloque = particionTabla->bloques[0];
 
-	string_append(&bloqueObjetivo, "block");
-	string_append(&bloqueObjetivo, bloque);
-	string_append(&bloqueObjetivo, ".bin");
-	log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo);
+ string_append(&bloqueObjetivo, "block");
+ string_append(&bloqueObjetivo, bloque);
+ string_append(&bloqueObjetivo, ".bin");
+ log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo);
 
-	/*FILE *file;
-	file = fopen(bloqueObjetivo, "r");
+ /*FILE *file;
+ file = fopen(bloqueObjetivo, "r");
 
-	if (file == NULL) {
-		//log_error(logger, "No existe la particion");
-		perror("Error");
-	} else {
+ if (file == NULL) {
+ //log_error(logger, "No existe la particion");
+ perror("Error");
+ } else {
 
-		log_info(logger, "Abrimos Bloque");
-		//char lectura;
-		//do {
-		//	do {
-		//		lectura = fgetc(file);
-		//		printf("%c", lectura);
-		//	} while (lectura != '\n');
-		//	printf("fin de linea \n");
-		//	lectura = fgetc(file);
-		//} while (!feof(file));
+ log_info(logger, "Abrimos Bloque");
+ //char lectura;
+ //do {
+ //	do {
+ //		lectura = fgetc(file);
+ //		printf("%c", lectura);
+ //	} while (lectura != '\n');
+ //	printf("fin de linea \n");
+ //	lectura = fgetc(file);
+ //} while (!feof(file));
 
-		char linea[1024];
+ char linea[1024];
 
-		while (fgets(linea, 1024, (FILE*) file)) {
-			printf("LINEA: %s", linea);
-		}
+ while (fgets(linea, 1024, (FILE*) file)) {
+ printf("LINEA: %s", linea);
+ }
 
-		fclose(file);
+ fclose(file);
 
-	}
+ }
 
-	return bloqueObjetivo;
+ return bloqueObjetivo;
 
 
-}
-*/
+ }
+ */
 void eliminarTablaCompleta(char* tabla) {
 
 	if (obtenerMetadataTabla(tabla) == 0) {
 
 		for (int i = 0; i < metadata->particiones; i++) {
 
-			rutaParticion(i);
+			char* archivoParticion = rutaParticion(i);
 
 			log_info(logger,
 					"Vamos a eliminar el archivo binario  de la tabla: %s",
@@ -2116,29 +2135,158 @@ t_registroMemtable* armarEstructura(char* value, char* key, char* timestamp) {
 
 }
 
+t_registroMemtable* obtenerRegistroMayor(char* tabla,int key,t_list* listaSegunLugar){
+	log_info(logger, "la key que mande del select %d", key);
+	t_registroMemtable* registro = NULL;
+	t_registroMemtable* aux;
+	for (int i = 0; i < list_size(listaSegunLugar); i++) {
+		if (registro == NULL) {
+
+			registro = list_get(listaSegunLugar, i);
+			log_info(logger, "key del registro encontrado %d", registro->key);
+			if (registro->key != key) {
+				log_info(logger,
+						"Como es distinta, el registro vuelve a ser NULL");
+				registro = NULL;
+			} else {
+				log_info(logger,
+						"[Primer registro obtenido]timestamp del registro obtenido %lf",
+						registro->timestamp);
+				log_info(logger,
+						"[Primer registro obtenido]value del registro obtenido %s",
+						registro->value);
+				log_info(logger,
+						"[Primer registro obtenido]key del registro obtenido %d",
+						registro->key);
+			}
+
+		} else {
+			t_registroMemtable* aux = list_get(listaSegunLugar, i);
+			if (aux->key == key) {
+
+				log_info(logger,
+						"[Ya hay mas de un registro obtenido] timestamp del registro obtenido %lf",
+						aux->timestamp);
+				log_info(logger,
+						"[Ya hay mas registro obtenido] value del registro obtenido %s",
+						aux->value);
+				log_info(logger,
+						"[Ya hay mas registro obtenido] key del registro obtenido %d",
+						aux->key);
+
+				if (aux->timestamp > registro->timestamp) {
+					registro = aux;
+					log_info(logger, "[fin] me quede con el de timestamp %lf",
+							registro->timestamp);
+					log_info(logger, "[fin] me quede con el de  value %s",
+							registro->value);
+				}
+			}
+		}
+	}
+
+	return registro;
+}
+
+t_registroMemtable* registroMayorMemtable(char* tabla, u_int16_t key) {
+
+
+	t_list* tableRegisters = dictionary_get(memtable, tabla);
+if(list_size(tableRegisters)>0){
+	t_registroMemtable* registro = obtenerRegistroMayor(tabla,key,tableRegisters);
+
+	return registro;
+}
+
+}
+/*
+t_registroMemtable* registroMayorBloque(char* tabla, u_int16_t key, int particiones) {
+
+	char* pathParticion = rutaParticion(particiones);
+
+	t_bloquesUsados* ListaBloques = leerTemporaloParticion(pathParticion);
+
+	//FUNCION MARTIN
+
+	return registro;
+
+}
+*/
+
+t_bloquesUsados* leerTemporaloParticion(char* path){
+t_config* tempFile;
+tempFile = config_create(path);
+t_bloquesUsados* retVal;
+
+if (tempFile == NULL) {log_info(logger, "No se ha encontrado el archivo de configuracion");
+			return NULL;}
+
+else {
+		retVal = malloc(sizeof(t_bloquesUsados));
+		log_info(logger,"Se ha encontrado el archivo de configuracion\n");
+
+		int size = config_get_int_value(tempFile,"SIZE");
+
+		log_info(logger,"Size encontrado del temp es: %d",size);
+
+
+		char** bloques = config_get_array_value(tempFile,"BLOCKS");
+
+		char* aux = bloques[0];
+		int i = 0;
+		t_list* NroBloques = list_create();
+		int* auxNroBloque;
+
+		while(aux != NULL){
+
+			auxNroBloque = malloc(sizeof(int));
+			*auxNroBloque = atoi(aux);
+			list_add(NroBloques,auxNroBloque);
+			free(aux);
+			i++;
+			aux = bloques[i];
+		}
+		retVal->bloques = NroBloques;
+		retVal->size = size;
+
+		free(bloques);
+
+		return retVal;
+
+}
+
+}
+
+
+
 int comandoSelect(char* tabla, char* key) {
 
-	if (verificarTabla(tabla) == -1) {
-		return -1;
-	} else { // archivo de tabla encontrado
+	if (verificarTabla(tabla) == -1) {return -1;}
+	else { // archivo de tabla encontrado
 		int returnObtenerMetadata = obtenerMetadataTabla(tabla);
-		if (returnObtenerMetadata == -1) {
-			return -2;
-		}; // 0: OK. -1: ERROR. // frenar en caso de error
+
+		if (returnObtenerMetadata == -1) {return -2;}; // 0: OK. -1: ERROR. // frenar en caso de error
 
 		int valorKey = atoi(key);
+		//u_int16_t valorKeyU = (uint16_t*)key;
+
+		u_int16_t valorKeyU = strtol(key, NULL, 16);
+
 		int particiones = determinarParticion(valorKey, metadata->particiones);
 
-		escanearParticion(particiones);
+		t_registroMemtable* registroMemtable = registroMayorMemtable(tabla,valorKeyU);
 
-		//char* keyEncontrado = buscarBloque(key); // GUardar memoria
+		//t_registroMemtable* registroMemtable = registroMayorParticion
 
-		// ver key con timestamp mas grande
+		//t_registroMemtable* registroMemtable = registroMayorTemporal
+
+		//t_registroMemtable* registroMemtable = registroMayorTemporalC
+
 
 		return valorKey;
 
 	}
-} // int comandoSelect(char* tabla, char* key)
+}
 
 int comandoDrop(char* tabla) {
 
@@ -2214,7 +2362,7 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 
 			log_info(logger, "aux=%d", aux);
 			for (int i = 0; i < aux; i++) {
-				rutaParticion(i);
+				char* archivoParticion = rutaParticion(i);
 				FILE* particion;
 				particion = fopen(archivoParticion, "w");
 				char* lineaParticion = malloc(
