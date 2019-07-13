@@ -311,11 +311,12 @@ void cargarBitmap() {
 	string_append(&bitmapPath, PATH_LFILESYSTEM_BITMAP);
 
 	if (!existeArchivo(bitmapPath)) {
-		log_info(log, "Archivo de bitmap no existe, se procede a crear el bitmap");
+		log_info(logger, "Archivo de bitmap no existe, se procede a crear el bitmap");
 		bitarray = crearBitarray();
 	} else {
 		log_info(logger, "existe archivo, se procede a abrir el bitmap");
-		abrirBitmap();
+		//abrirBitmap();
+		bitarray = crearBitarray();
 	}
 
 	log_info(logger, "cantidad de bloques libres en el bitmap: %d",
@@ -361,6 +362,8 @@ int abrirBitmap(){
 
 	bitarray = bitarray_create_with_mode(bmap, metadataLFS->blocks / 8, MSB_FIRST);
 
+	close(bitmap);
+
 	log_info(logger, "bitmap abierto correctamente");
 
 	free(fs_path);
@@ -374,10 +377,10 @@ t_bitarray* crearBitarray() {
 	if (metadataLFS->blocks % 8 != 0)
 		bytesAEscribir++;
 
-	if (fopen(bitmapPath, "rb") != NULL) {
+	/*if (fopen(bitmapPath, "rb") != NULL) {
 
 		return NULL;
-	}
+	}*/
 
 	char* bitarrayAux = malloc(bytesAEscribir);
 	bzero(bitarrayAux, bytesAEscribir);
@@ -395,13 +398,25 @@ t_bitarray* crearBitarray() {
 	imprimirMensajeProceso(
 			"[BITMAP CREADO] ya se puede operar con los bloques");
 
-	return bitarray_create_with_mode(bitarrayAux, bytesAEscribir, MSB_FIRST);
+	t_bitarray* bitarrayReturn = bitarray_create_with_mode(bitarrayAux, bytesAEscribir, MSB_FIRST);
+
+	//fclose(archivoBitmap);
+
+	return bitarrayReturn;
 
 }
 
 void persistirCambioBitmap() {
 
+	/*FILE* archivoBitmap = fopen(bitmapPath, "wb");
+
+	if(archivoBitmap == NULL) {
+		log_error(logger, "error al abrir el archivo Bitmap");
+	}*/
+
 	fwrite(bitarray->bitarray, bytesAEscribir, 1, archivoBitmap);
+
+	//fclose(archivoBitmap);
 
 	log_info(logger, "cambios en bitmap persistidos");
 }
@@ -455,7 +470,7 @@ int obtenerPrimerBloqueLibreBitmap() {
 
 int obtenerPrimerBloqueOcupadoBitmap() {
 
-	int posicion;
+	int posicion = -1;
 
 	for (int i = 0; i < bitarray_get_max_bit(bitarray); i++) {
 		if (bitarray_test_bit(bitarray, i) == 1) {
@@ -511,7 +526,7 @@ void consola() {
 		//fgets(bufferComando, MAXSIZE_COMANDO, stdin); -> Implementacion anterior
 		comandoSeparado = string_split(linea, separator);
 
-		validarLinea(comandoSeparado, logger);
+		validarLinea(comandoSeparado);
 
 		free(linea);
 
@@ -533,7 +548,7 @@ void menu() {
 
 }
 
-void validarLinea(char** lineaIngresada, t_log* logger) {
+void validarLinea(char** lineaIngresada) {
 
 	for (int i = 0; lineaIngresada[i] != NULL; i++) {
 
@@ -565,22 +580,22 @@ void validarLinea(char** lineaIngresada, t_log* logger) {
 		break;
 	}
 	case 2:
-		validarComando(lineaIngresada, tamanio, logger);
+		validarComando(lineaIngresada, tamanio);
 
 		break;
 
 	case 3:
-		validarComando(lineaIngresada, tamanio, logger);
+		validarComando(lineaIngresada, tamanio);
 
 		break;
 
 	case 4:
-		validarComando(lineaIngresada, tamanio, logger);
+		validarComando(lineaIngresada, tamanio);
 
 		break;
 
 	case 5:
-		validarComando(lineaIngresada, tamanio, logger);
+		validarComando(lineaIngresada, tamanio);
 
 		break;
 
@@ -595,11 +610,9 @@ void validarLinea(char** lineaIngresada, t_log* logger) {
 	}
 }
 
-void validarComando(char** comando, int tamanio, t_log* logger) {
+void validarComando(char** comando, int tamanio) {
 
-	int resultadoComando = buscarComando(comando[0], logger);
-
-	int tamanioCadena = 0;
+	int resultadoComando = buscarComando(comando[0]);
 
 	switch (resultadoComando) {
 
@@ -721,7 +734,7 @@ void validarComando(char** comando, int tamanio, t_log* logger) {
 	}
 }
 
-int buscarComando(char* comando, t_log* logger) {
+int buscarComando(char* comando) {
 
 	log_info(logger, "Recibimos el comando: %s", comando);
 
@@ -766,7 +779,7 @@ void listenSomeLQL() {
 
 		comandoSeparado = string_split(msg, separator);
 
-		validarLinea(comandoSeparado, logger);
+		validarLinea(comandoSeparado);
 
 		string_append(&msg, "Mensaje recibido: \"");
 		string_append(&msg, buffer);
@@ -1079,7 +1092,7 @@ char* retornarValoresDirectorio() {
 
 void INThandler(int sig) {
 
-     char  c;
+     //char  c;
 
      signal(sig, SIG_IGN);
      printf("OUCH, did you hit Ctrl-C?\n");
@@ -1105,12 +1118,11 @@ void esperarTiempoDump() {
 		int tam = list_size(listaTablasInsertadas);
 		mutexDesbloquear(&listaTablasInsertadas_mx);
 		if (tam > 0) {
-			signal(SIGINT, INThandler);
+			//signal(SIGINT, INThandler);
 			log_info(logger, "Se encontraron cosas, se hace el dump");
-			sleep(20);
 			realizarDump();
 			cantidad_de_dumps++;
-			pause();
+			//pause();
 		} else {
 			log_info(logger, "La memtable esta vacia");
 		}
@@ -1156,7 +1168,11 @@ char* armarPathTablaParaDump(char* tabla, int dumps) {
 
 	string_append(&path_archivo_temporal, "/");
 
-	sprintf(nombreArchivoTemporal, "%d", dumps);
+	int cantidadDumps = cantidadDumpsTabla(path_archivo_temporal);
+
+	log_info(logger, "[QQQQQ] la cantidad de dumps es: %d", cantidadDumps);
+
+	sprintf(nombreArchivoTemporal, "%d", cantidadDumps);
 
 	string_append(&path_archivo_temporal, nombreArchivoTemporal);
 
@@ -1168,6 +1184,37 @@ char* armarPathTablaParaDump(char* tabla, int dumps) {
 
 }
 
+int cantidadDumpsTabla(char* pathTabla) {
+
+	int size = strlen(pathTabla) + sizeof(int) + strlen(".tmp") + 1;
+	char* auxPath = malloc(size);
+	int cantidad = 0;
+	bool final = false;
+
+
+	FILE* tabla;
+
+	while(!final) {
+
+		snprintf(auxPath,strlen,"%s%d.tmp",pathTabla, cantidad);
+
+		log_info(logger, "[YYYYYY] ruta del tmp a verificar: %s", auxPath);
+
+		tabla = fopen(auxPath, "r");
+		if(tabla != NULL) {
+			cantidad++;
+			fclose(tabla);
+		}
+		else {
+			final = true;
+		}
+	}
+
+	free(auxPath);
+
+	return cantidad;
+}
+
 int crearArchivoTemporal(char* path, char* tabla) {
 
 	// path objetivo: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA/cantidad_de_dumps.tmp
@@ -1176,15 +1223,15 @@ int crearArchivoTemporal(char* path, char* tabla) {
 	t_list* bloquesUsados = list_create();
 	int tam_total_registros = tamTotalListaRegistros(listaRegistrosTabla);
 	int cantidad_bloques = cuantosBloquesNecesito(tam_total_registros);
-	int bloqueAux;
 
 	if(cantBloquesLibresBitmap() >= cantidad_bloques) {
 		for(int i=0; i<cantidad_bloques; i++) {
-			bloqueAux = obtenerPrimerBloqueLibreBitmap();
-			if(bloqueAux != -1) {
-				ocuparBloqueLibreBitmap(bloqueAux);
-				//list_add(bloquesUsados, (void*)bloqueAux);
-				list_add(bloquesUsados, &bloqueAux);
+			int* bloqueAux = malloc(sizeof(int)); //liberar al final
+			int aux = obtenerPrimerBloqueLibreBitmap();
+			memcpy(bloqueAux, &aux, sizeof(int));
+			if(*bloqueAux != -1) {
+				ocuparBloqueLibreBitmap(*bloqueAux);
+				list_add(bloquesUsados, bloqueAux);
 			}
 			else {
 				//liberar los bloques de la lista
@@ -1239,6 +1286,8 @@ int crearArchivoTemporal(char* path, char* tabla) {
 		log_error(logger, "[DUMP] hubo un error al escribir los datos en los bloques");
 	}
 
+	//list_clean_and_destroy_elements(bloquesUsados, free);
+	list_destroy_and_destroy_elements(bloquesUsados, free);
 
 	return 0;
 }
@@ -1314,9 +1363,9 @@ int escribirVariosBloques(t_list* bloques, int tam_total_registros, void* buffer
 
 	for(int i=0; i<list_size(bloques); i++) {
 
-		log_info(logger,"entro al for");
 		int* auxnroBloque = list_get(bloques, i);
 		int nroBloque = *auxnroBloque;
+		log_info(logger, "bloque seleccionado para guardar el tmp %d", nroBloque);
 		log_info(logger,"numero de bloque %d",nroBloque);
 		if(tam_total_registros <= metadataLFS->block_size) {
 			log_info(logger,"tam registros menor a block size");
@@ -1336,10 +1385,11 @@ int escribirVariosBloques(t_list* bloques, int tam_total_registros, void* buffer
 			//liberar bloques en el bitmap
 			break;
 		}
-		log_info(logger,"salgo del for");
 	}
 
 	log_info(logger, "[BLOQUE] Se terminaron de escribir los bloques");
+
+	leerBloquesConsecutivos(bloques, tam_total_registros);
 
 	return resultado;
 }
@@ -1356,7 +1406,6 @@ int escribirBloque(int bloque, int size, int offset, void* buffer) {
     	log_info(logger,"entre al if");
 		fwrite(buffer+offset, size, 1, bloqueFile);
 		fclose(bloqueFile);
-		leerBloque(path);
 		free(path);
 		return 0;
     }

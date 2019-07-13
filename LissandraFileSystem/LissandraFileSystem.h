@@ -199,6 +199,7 @@ int indiceTablaParaTamanio;
 
 void esperarTiempoDump();
 char* armarPathTablaParaDump(char* tabla,int dumps);
+int cantidadDumpsTabla(char* pathTabla);
 int crearArchivoTemporal(char* path,char* tabla);
 void realizarDump();
 
@@ -257,6 +258,12 @@ void eliminarTablaCompleta(char* tabla);
 bool validarKey(char* key);
 
 bool validarValue(char* value);
+
+void validarLinea(char** lineaIngresada);
+
+void validarComando(char** comando, int tamanio);
+
+int buscarComando(char* comando);
 
 char* desenmascararValue(char* value);
 
