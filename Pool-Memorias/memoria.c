@@ -5,6 +5,9 @@
 #include "main_memoria.h"
 //void terminar_memoria(t_log* g_log);
 
+
+#define LOGGEAR_EN_CONSOLA
+
 //#define MAIN_1
 #ifdef MAIN_1
 int main() {

@@ -15,6 +15,26 @@
 #define EJECUTAR_GOSSIPING
 #define TESTEAR_GOSSIPING
 
+
+void actualizarMemoriasDisponibles(void)
+{
+	t_list *caidas = hayMemoriasCaidas();
+	seed_com_t *aux;
+
+	if(list_size(caidas) == 0)
+		log_info(log_memoria,"No hay memorias caidas");
+	else{
+		for(int i=0;i<list_size(caidas);i++){
+			aux = list_get(caidas,i);
+			log_info(log_memoria,"Memoria caida (%d): %d-%s-%s",i,aux->numMemoria,aux->ip,aux->puerto);
+		}
+	}
+
+	if(huboCambios()){
+		log_info(log_memoria,"Hubo cambios en las memorias conocidas");
+	}
+}
+
 int main(int argc, char **argv)
 {
 	// LOGGING
@@ -45,6 +65,11 @@ int main(int argc, char **argv)
 		imprimirError(log_memoria,"[MAIN] Error al conectar al LFS, terminando!\n");
 		return 1;
 	}
+
+	//Ya no necesito el socket de LFS
+	close(socket_lfs);
+	socket_lfs = -1;
+
 	printf("\n*Conectado a LFS");
 	arc_config->max_value_key = max_valor_key;
 	imprimirMensaje1(log_memoria,"[MAIN] Iniciando con tamaño máximo de valor %d",arc_config->max_value_key);
@@ -74,7 +99,7 @@ int main(int argc, char **argv)
 #ifdef EJECUTAR_GOSSIPING
 	id_com_t mi_id = MEMORIA;
 	inicializar_gossiping_memoria();
-	iniciar_hilo_gossiping(&mi_id,&gossiping_h);
+	iniciar_hilo_gossiping(&mi_id,&gossiping_h,actualizarMemoriasDisponibles);
 	printf("\n*Gossiping corriendo");
 #endif
 
@@ -94,6 +119,7 @@ int main(int argc, char **argv)
 
 //pthread_detach(journalHilo);
 	pthread_join(consola_h,NULL);
+	pthread_kill(servidor_h,SIGKILL);
 
 	printf("\n\n***FINALIZANDO PROCESO MEMORIA***\n\n");
 
@@ -284,7 +310,7 @@ void * hilo_cliente(hilo_cliente_args_t *args)
 	imprimirMensaje(log_memoria,"[CLIENTE] Entrando a hilo de atención a un cliente");
 	int socket_cliente = args->socket_cliente;
 	int socket_lfs = -1;
-	if(args->requiere_lfs){
+	/*if(args->requiere_lfs){
 		socket_lfs = conectar_a_lfs(false,NULL);
 		if(socket_lfs == -1){
 			imprimirError(log_memoria,"[CLIENTE] No pude conectarme al lfs");
@@ -292,7 +318,7 @@ void * hilo_cliente(hilo_cliente_args_t *args)
 		else{
 			imprimirMensaje(log_memoria,"[CLIENTE] Ya tengo un canal para comunicarme con el lfs");
 		}
-	}
+	}*/
 	imprimirMensaje(log_memoria,"[CLIENTE] Empiezo a esperar mensajes");
 	msg_com_t msg;
 	bool fin = false;
@@ -461,6 +487,15 @@ resp_com_t resolver_drop(int socket_lfs,request_t req)
 		imprimirAviso1(log_memoria, "[RESOLVIENDO DROP] La tabla ya fue eliminada o no existe en memoria: <%s>", nombre_tabla);
 	}
 
+	socket_lfs = -1;
+	socket_lfs = conectar_a_lfs(false,NULL);
+	if(socket_lfs == -1){
+		imprimirError(log_memoria,"[CLIENTE] No pude conectarme al lfs");
+	}
+	else{
+		imprimirMensaje(log_memoria,"[CLIENTE] Ya tengo un canal para comunicarme con el lfs");
+	}
+
 	//Le envio el DROP al filesystem
 	req_com_t enviar;
 	enviar.tam = strlen("DROP ") + strlen(nombre_tabla) + 1;
@@ -505,6 +540,15 @@ resp_com_t resolver_create(int socket_lfs,request_t req)
 	if(req.cant_args < 1){
 		imprimirError(log_memoria,"[RESOLVIENDO CREATE] Cantidad incorrecta de parámetros");
 		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS,NULL);
+	}
+
+	socket_lfs = -1;
+	socket_lfs = conectar_a_lfs(false,NULL);
+	if(socket_lfs == -1){
+		imprimirError(log_memoria,"[CLIENTE] No pude conectarme al lfs");
+	}
+	else{
+		imprimirMensaje(log_memoria,"[CLIENTE] Ya tengo un canal para comunicarme con el lfs");
 	}
 
 	//Le envio el CREATE al filesystem
@@ -569,6 +613,14 @@ resp_com_t resolver_journal(int socket_lfs,request_t req)
 //		imprimirAviso3(log_memoria, "%s %d %s", aux->nombreTabla, aux->key, aux->value);
 //		aux = aux->sig;
 //	}
+	socket_lfs = -1;
+	socket_lfs = conectar_a_lfs(false,NULL);
+	if(socket_lfs == -1){
+		imprimirError(log_memoria,"[CLIENTE] No pude conectarme al lfs");
+	}
+	else{
+		imprimirMensaje(log_memoria,"[CLIENTE] Ya tengo un canal para comunicarme con el lfs");
+	}
 	char *msg_resp = malloc(100);
 	resp_com_t resp;
 	int cant_pasados = procesoJournal(socket_lfs);
@@ -671,6 +723,15 @@ resp_com_t resolver_select(int socket_lfs,request_t req)
 	if(valor == NULL){
 		imprimirAviso(log_memoria,"[RESOLVIENDO SELECT] En memoria no existe la tabla o no existe la key en la misma");
 		//printf("\nEn memoria no existe la tabla o no existe la key en la misma\n");
+		socket_lfs = -1;
+		socket_lfs = conectar_a_lfs(false,NULL);
+		if(socket_lfs == -1){
+			imprimirError(log_memoria,"[CLIENTE] No pude conectarme al lfs");
+		}
+		else{
+			imprimirMensaje(log_memoria,"[CLIENTE] Ya tengo un canal para comunicarme con el lfs");
+		}
+
 		if(socket_lfs != -1){
 			//Tengo que pedirlo al filesystem
 			req_com_t enviar;
@@ -775,6 +836,15 @@ resp_com_t resolver_describe(int socket_lfs, request_t req)
 	char *ret_val;
 	imprimirMensaje(log_memoria, "[RESOLVIENDO DESCRIBE] Entro a función");
 	req_com_t a_enviar;
+
+	socket_lfs = -1;
+	socket_lfs = conectar_a_lfs(false,NULL);
+	if(socket_lfs == -1){
+		imprimirError(log_memoria,"[CLIENTE] No pude conectarme al lfs");
+	}
+	else{
+		imprimirMensaje(log_memoria,"[CLIENTE] Ya tengo un canal para comunicarme con el lfs");
+	}
 
 	a_enviar.tam = strlen(req.request_str)+1;
 	a_enviar.str = malloc(a_enviar.tam);
