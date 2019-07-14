@@ -21,8 +21,8 @@
 	#define LOG_PATH "../Log/LOG_LFS.txt"
 	#define PATH_LFILESYSTEM_CONFIG "../Config/LFS_CONFIG.txt"
 #else
-	#define LOG_PATH "../tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Log/LOG_LFS.txt"
-	#define PATH_LFILESYSTEM_CONFIG "../tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Config/LFS_CONFIG.txt"
+	#define LOG_PATH "/home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Log/LOG_LFS.txt"
+	#define PATH_LFILESYSTEM_CONFIG "/home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Config/LFS_CONFIG.txt"
 #endif
 
 //ESTOS CAMBIOS LOS HICE YA QUE TENGO LOS ARCHIVOS EN OTRA RUTA
