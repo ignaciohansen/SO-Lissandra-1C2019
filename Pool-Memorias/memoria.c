@@ -1192,7 +1192,8 @@ int pasarValoresALisandra(datosJournal* datos,int socket_lfs)
 	req_com_t insert;
 	char aux[100];
 	int cont = 0;
-	while(enviar != NULL){
+	bool conexion_caida = false;
+	while(enviar != NULL && !conexion_caida){
 		snprintf(aux,100,"INSERT %s %d %s %ld",enviar->nombreTabla,enviar->key,enviar->value, enviar->timestamp);
 		insert.tam = strlen(aux)+1;
 		insert.str = malloc(insert.tam);
@@ -1201,6 +1202,10 @@ int pasarValoresALisandra(datosJournal* datos,int socket_lfs)
 		imprimirMensaje1(log_memoria,"[ENVIANDO DATOS A LFS] Enviando <%s>",insert.str);
 		if(enviar_request(socket_lfs,insert) == -1){
 			imprimirError(log_memoria, "[ENVIANDO DATOS A LFS] No se puedo enviar el insert al filesystem");
+			borrar_request_com(insert);
+			conexion_caida = true;
+			socket_lfs = -1;
+			break;
 		}
 		borrar_request_com(insert);
 
@@ -1220,6 +1225,12 @@ int pasarValoresALisandra(datosJournal* datos,int socket_lfs)
 			if(recibido.msg.tam>0)
 				imprimirMensaje1(log_memoria,"[ENVIANDO DATOS A LFS] El filesystem contestó con %s",recibido.msg.str);
 			borrar_respuesta(recibido);
+		}
+		else if(msg.tipo == DESCONECTADO){
+			conexion_caida = true;
+			socket_lfs = -1;
+			borrar_mensaje(msg);
+			break;
 		}
 		else{
 			borrar_mensaje(msg);

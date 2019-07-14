@@ -1486,7 +1486,7 @@ int iniciar_servidor(char*ip,char*puerto)
     freeaddrinfo(servinfo);
 
     //log_trace(logger, "Listo para escuchar a mi cliente");
-//    printf("\n**Servidor listo para escuchar al cliente**\n");
+//   printf("\n**Servidor listo para escuchar al cliente**\n");
     //log_info(logger,"Servidor listo para escuchar al cliente");
 
     return socket_servidor;
