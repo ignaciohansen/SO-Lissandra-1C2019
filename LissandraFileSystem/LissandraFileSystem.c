@@ -55,6 +55,13 @@ int main() {
 
 	LisandraSetUP(); // CONFIGURACION Y SETEO SOCKET
 
+	/*				PRUEBA MAYOR TIMESTAMP ENTRE 4 REGISTROS
+
+	t_registroMemtable* reg;
+	reg = pruebaRegMayorTime();
+	return 0;
+	*/
+
 	cargarBitmap();
 	int socketLFS = iniciar_servidor("127.0.0.1", "8010"); // AGREGAR IP A ARCHIV CONFIG
 	if (socketLFS == -1) {
@@ -1937,6 +1944,29 @@ int pruebaLecturaBloquesConsecutivos(void) {
 	return 1;
 }
 
+t_registroMemtable* pruebaRegMayorTime() {
+
+	t_registroMemtable* reg1;
+	t_registroMemtable* reg2;
+	t_registroMemtable* reg3;
+	t_registroMemtable* reg4;
+	t_registroMemtable* regMayor;
+
+	reg1 = armarRegistroNulo();
+	reg2 = armarRegistroNulo();
+	reg3 = armarRegistroNulo();
+	reg4 = armarRegistroNulo();
+
+	reg1->timestamp = 10.0;
+	reg2->timestamp = 21.0;
+	reg3->timestamp = 244.0;
+	reg4->timestamp = 10.0;
+
+	regMayor = tomarMayorRegistro(reg1, reg2, reg3, reg4);
+
+	return regMayor;
+}
+
 //OPERACIONES CON BLOQUES
 
 //DUMP
@@ -2254,6 +2284,8 @@ t_registroMemtable* armarRegistroNulo() {
 	return aux;
 }
 
+
+
 t_bloquesUsados* leerTemporaloParticion(char* path) {
 
 	t_config* tempFile;
@@ -2435,28 +2467,32 @@ t_registroMemtable* registroMayorParticion(char* tabla, u_int16_t key,
 
 }
 
-t_registroMemtable* tomarMayorRegistro(t_registroMemtable* reg1,t_registroMemtable* reg2,t_registroMemtable* reg3,t_registroMemtable* reg4){
-	t_registroMemtable* registroMayor;
-	if(reg1->timestamp > reg2->timestamp){
+t_registroMemtable* tomarMayorRegistro(t_registroMemtable* reg1,
+		t_registroMemtable* reg2, t_registroMemtable* reg3,
+		t_registroMemtable* reg4) {
+	t_registroMemtable* registroMayor = malloc(sizeof(t_registroMemtable));
+
+	if (reg1->timestamp > reg2->timestamp) {
 		registroMayor = reg1;
-	}else{
+	} else {
 		registroMayor = reg2;
 	}
 
-	if(reg3->timestamp > reg4->timestamp){
-		if(reg3->timestamp > registroMayor->timestamp){
+	if (reg3->timestamp > reg4->timestamp) {
+		if (reg3->timestamp > registroMayor->timestamp) {
 			registroMayor = reg3;
-		}else{
-			if(reg4->timestamp > registroMayor->timestamp)
-			registroMayor = reg4;
 		}
+	} else {
+		if (reg4->timestamp > registroMayor->timestamp){
+			registroMayor = reg4;
 	}
-	log_info(logger,"verificandoFuncion");
-	log_info(logger,"timestamp reg1: &lf",reg1->timestamp);
-	log_info(logger,"timestamp reg2: &lf",reg2->timestamp);
-	log_info(logger,"timestamp reg3: &lf",reg3->timestamp);
-	log_info(logger,"timestamp reg4: &lf",reg4->timestamp);
-	log_info(logger,"el mayor timestamp  &lf",registroMayor->timestamp);
+	}
+	log_info(logger, "verificandoFuncion");
+	log_info(logger, "timestamp reg1: %lf", reg1->timestamp);
+	log_info(logger, "timestamp reg2: %lf", reg2->timestamp);
+	log_info(logger, "timestamp reg3: %lf", reg3->timestamp);
+	log_info(logger, "timestamp reg4: %lf", reg4->timestamp);
+	log_info(logger, "el mayor timestamp  %lf", registroMayor->timestamp);
 	return registroMayor;
 }
 

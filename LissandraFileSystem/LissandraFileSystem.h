@@ -274,6 +274,12 @@ void liberarTodosLosRecursosGlobalesQueNoSeCerraron();
 
 void *imprimirRegistro(t_registroMemtable *reg);
 
+t_registroMemtable* tomarMayorRegistro(t_registroMemtable* reg1,t_registroMemtable* reg2, t_registroMemtable* reg3,t_registroMemtable* reg4);
+
+t_registroMemtable* pruebaRegMayorTime();
+
+t_registroMemtable* armarRegistroNulo();
+
 int pruebaLecturaBloquesConsecutivos(void);
 
 t_list *obtenerArchivosDirectorio(char *path, char *terminacion);
