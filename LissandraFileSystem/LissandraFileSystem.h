@@ -226,6 +226,7 @@ int escribirVariosBloques(t_list* bloques, int tam_total_registros, void* buffer
 int escribirBloque(int bloque, int size, int offset, void* buffer);
 t_list* leerBloque(char* path);
 t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total);
+t_registroMemtable *leerBloquesConsecutivosUnaKey(t_list *nroBloques, int tam_total, uint16_t key_buscada, bool es_unica);
 void crearBloques();
 char* crearPathBloque(int bloque);
 int abrirArchivoBloque(FILE **fp, int nroBloque, char *modo);
