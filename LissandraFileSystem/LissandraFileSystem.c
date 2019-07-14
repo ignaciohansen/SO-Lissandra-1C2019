@@ -71,9 +71,14 @@ int main() {
 	//pthread_create(&hiloEjecutor , NULL,(void*) consola, NULL);
 
 	//pthread_join(hiloListening, NULL);
+//	pthread_join(hiloDump, NULL);
+	pthread_detach(hiloDump);
 	pthread_join(hiloConsola, NULL);
+//	pthread_kill(hiloDump, SIGKILL);
+	pthread_kill(hiloDump, SIGKILL);
 	pthread_kill(hiloServidor, SIGKILL);
-	pthread_join(hiloDump, NULL);
+
+//	pthread_join(hiloDump, NULL);
 	if (socketLFS == -1) {
 		close(socketLFS);
 	}
@@ -200,8 +205,8 @@ bool cargarConfiguracion() {
 
 			tabla_Path = malloc(string_length(configFile->punto_montaje) + 8);
 
-			tabla_Path = string_duplicate(configFile->punto_montaje);
-
+//			tabla_Path = string_duplicate(configFile->punto_montaje);
+//		ARRIBA COMENTADO PARA LIMPIAR LEAKS
 			log_info(logger, "La variabla tabla_path queda con: %s",
 					tabla_Path);
 
@@ -275,12 +280,20 @@ bool cargarConfiguracion() {
 		}
 
 		if (ok > 0) {
+			free(archivoCOnfig->properties->elements);	//AGREGADO PARA LIMPIAR LEAKS
+			free(archivoCOnfig->properties);			//AGREGADO PARA LIMPIAR LEAKS
+			free(archivoCOnfig->path); 					//AGREGADO PARA LIMPIAR LEAKS
+			free(archivoCOnfig); 						//AGREGADO PARA LIMPIAR LEAKS
 			imprimirVerde(logger,
 					"Se ha cargado todos los datos del archivo de configuracion");
 			//	log_info(logger, "Se ha cargado todos los datos del archivo de configuracion");
 			return true;
 
 		} else {
+			free(archivoCOnfig->properties->elements);	//AGREGADO PARA LIMPIAR LEAKS
+			free(archivoCOnfig->properties);			//AGREGADO PARA LIMPIAR LEAKS
+			free(archivoCOnfig->path); 					//AGREGADO PARA LIMPIAR LEAKS
+			free(archivoCOnfig); 						//AGREGADO PARA LIMPIAR LEAKS
 			imprimirError(logger,
 					"ERROR: No Se han cargado todos o algunos los datos del archivo de configuracion\n");
 			//		imprimirMensajeProceso("ERROR: No Se han cargado todos los datos del archivo de configuracion\n");
@@ -288,6 +301,10 @@ bool cargarConfiguracion() {
 		}
 
 	}
+	free(archivoCOnfig->properties->elements);	//AGREGADO PARA LIMPIAR LEAKS
+	free(archivoCOnfig->properties);			//AGREGADO PARA LIMPIAR LEAKS
+	free(archivoCOnfig->path); 					//AGREGADO PARA LIMPIAR LEAKS
+	free(archivoCOnfig); 						//AGREGADO PARA LIMPIAR LEAKS
 
 	return false;
 
@@ -304,7 +321,8 @@ int existeArchivo(char* path) {
 void cargarBitmap() {
 
 	bitmapPath = malloc(sizeof(char) * 50);
-	bitmapPath = string_new();
+	strcpy(bitmapPath, "");
+//	bitmapPath = string_new();	--COMENTADO PARA LIMPIAR LEAKS
 
 	string_append(&bitmapPath, configFile->punto_montaje);
 
@@ -455,7 +473,7 @@ int obtenerPrimerBloqueLibreBitmap() {
 
 int obtenerPrimerBloqueOcupadoBitmap() {
 
-	int posicion;
+	int posicion = 0;
 
 	for (int i = 0; i < bitarray_get_max_bit(bitarray); i++) {
 		if (bitarray_test_bit(bitarray, i) == 1) {
@@ -503,7 +521,8 @@ void consola() {
 			sem_post(&semaforoQueries);
 		}
 
-		if (!strncmp(linea, "exit", 4)) {
+		if (!strncmp(linea, "SALIR", 4)) {
+			log_info(logger, "\n\n**************************** SALIENDO ****************************\n\n");
 			free(linea);
 			break;
 		}
@@ -512,9 +531,13 @@ void consola() {
 		comandoSeparado = string_split(linea, separator);
 
 		validarLinea(comandoSeparado, logger);
-
+		int i;
+		log_info(logger, "Liberando comando alocado: %s", linea);
+		for (i = 0; comandoSeparado[i] != NULL; i++) {
+			free(comandoSeparado[i]);
+		}
+		free(comandoSeparado);
 		free(linea);
-
 	}
 }
 
@@ -755,10 +778,11 @@ void listenSomeLQL() {
 
 		recibiendoMensaje = socketRecibir(conexionEntrante, buffer, 50, logger);
 
-		char* msg = string_new();
+	//	char* msg = string_new();    <---------------CREO QUE ESTE ES REDUNDANTE TENIENDO
+						//	STRING DUPLICATE(BUFFER) debajo.
 
 		// char * msg = malloc(sizeof(char)*100);
-		msg = string_duplicate(buffer); // <-- Esto hace funcionar del string por red.
+		char* msg = string_duplicate(buffer); // <-- Esto hace funcionar del string por red.
 
 		sem_wait(&semaforoQueries);
 		list_add(list_queries, msg);
@@ -774,13 +798,29 @@ void listenSomeLQL() {
 
 		imprimirVerde(logger, msg);
 		// liberar msg?
+		//LIBERO EL ARRAY DE COMANDO, es lo que hace el for y luego el posterior free
+		int i;
+		for (i = 0; comandoSeparado[i] != NULL; i++) {
+			free(comandoSeparado[i]);
+		}
+		free(comandoSeparado);
 		free(buffer);
+
+
+		//BY DAMIAN: YO dir{ia que si, es un recurso que esta ocupando en memoria.
+		//			Pero diria que lo dejen para el final si lo tienen que retornar
+		//			a Memoria de alguna forma en el remoto caso de que sea necesario
+		free(msg);
 
 	}
 
 }
 
 int verificarTabla(char* tabla) {
+	/*
+	 * REVISAR LUEGO ESTA FUNCION, esta muy mal hecha
+	 */
+
 
 	tablaAverificar = malloc(string_length(tabla_Path) + string_length(tabla));
 
@@ -908,7 +948,8 @@ int obtenerMetadata() {
 	metadataLFS = malloc(sizeof(t_metadata_LFS)); // Vatiable global.
 
 	char* metadataPath = malloc(sizeof(char) * 50);
-	metadataPath = string_new();
+	strcpy(metadataPath, "");       //AGREGADO PARA LIMPIAR LEAKS
+//	metadataPath = string_new();	--COMENTADO PARA LIMPIAR LEAKS
 
 	string_append(&metadataPath, configFile->punto_montaje);
 
@@ -985,7 +1026,11 @@ int obtenerMetadata() {
 	log_info(logger,
 			"[FREE] variable metadataFile utlizada para navegar el metadata.");
 
+	free(metadataFile->properties->elements);
+	free(metadataFile->properties);
+	free(metadataFile->path);
 	free(metadataFile);
+	free(metadataPath);	//AGREGADOS PARA LIMPIEZA DE LEAKS
 
 	log_info(logger, "result: %d", result);
 
@@ -2338,10 +2383,16 @@ char* comandoDescribe() {
 }
 
 void cerrarTodo() {
-
+	liberarTodosLosRecursosGlobalesQueNoSeCerraron();
 	sem_destroy(&semaforoQueries);
 	dictionary_destroy(memtable);
 	list_destroy(listaTablasInsertadas);
 	fclose(archivoBitmap);
+}
+
+void liberarTodosLosRecursosGlobalesQueNoSeCerraron() {
+	free(metadataLFS);
+	free(bitmapPath);
+	free(tabla_Path);
 }
 
