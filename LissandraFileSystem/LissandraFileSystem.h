@@ -25,6 +25,8 @@
 	#define PATH_LFILESYSTEM_CONFIG "../tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Config/LFS_CONFIG.txt"
 #endif
 
+//ESTOS CAMBIOS LOS HICE YA QUE TENGO LOS ARCHIVOS EN OTRA RUTA
+
 #define PATH_BIN ".bin"
 #define PATH_TMP ".tmp"
 #define PATH_BLOQUES "/Bloques/"
@@ -112,6 +114,19 @@ typedef struct{
 	char** bloques;
 
 }t_particion;
+
+
+typedef struct{
+	int size;
+	t_list* bloques;
+
+}t_bloquesUsados;
+
+typedef struct{
+	int size;
+	t_list* bloques;
+
+}t_regArchivoSelect;
 
 t_particion* particionTabla;
 
@@ -213,6 +228,7 @@ int escribirVariosBloques(t_list* bloques, int tam_total_registros, void* buffer
 int escribirBloque(int bloque, int size, int offset, void* buffer);
 t_list* leerBloque(char* path);
 t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total);
+t_registroMemtable *leerBloquesConsecutivosUnaKey(t_list *nroBloques, int tam_total, uint16_t key_buscada, bool es_unica);
 void crearBloques();
 char* crearPathBloque(int bloque);
 int abrirArchivoBloque(FILE **fp, int nroBloque, char *modo);
@@ -260,5 +276,6 @@ void *imprimirRegistro(t_registroMemtable *reg);
 
 int pruebaLecturaBloquesConsecutivos(void);
 
+t_list *obtenerArchivosDirectorio(char *path, char *terminacion);
 
 #endif /* LFILESSYSTEM_H_ */

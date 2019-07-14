@@ -1,16 +1,46 @@
-#include "comunicacion.h"
+#include "../Biblioteca/src/Biblioteca.h"
+#include <commons/log.h>
+#include <commons/collections/list.h>
+#include <signal.h>
+#include <pthread.h>
+#include <stdlib.h>
+
+void INThandler(int);
+
+int server_fd = -1;
+t_list *hilos_activos = NULL;
+pthread_mutex_t mutex_finalizar = PTHREAD_MUTEX_INITIALIZER;
+
+void  INThandler(int sig)
+{
+     signal(sig, SIG_IGN);
+     printf("\n********Catching signals********\n");
+     pthread_mutex_lock(&mutex_finalizar);
+     if(server_fd != -1){
+    	 close(server_fd);
+     }
+     for(int i=0;i<list_size(hilos_activos);i++){
+    	 int *aux = list_get(hilos_activos,i);
+    	 printf("\nSocket %d: %d",i,*aux);
+    	 if(*aux != -1)
+    		 close(*aux);
+     }
+     printf("\nSaliendo...\n");
+     exit(0);
+}
 
 void * atenderCliente(int * socket_p);
 int responder(int socket);
 
 int g_n_cliente = 0;
+
 #define TEST_SERVIDOR
 #ifdef TEST_SERVIDOR
 //Recibe IP y PUERTO para conectarse como argumentos. Espera un cliente. Cuando lo recibe, envia y recibe mensajes
 int main(int argc, char **argv)
 {
+	hilos_activos = list_create();
     char*ip,*puerto;
-    int server_fd;
     pthread_t thread_cliente;
     cliente_com_t cliente;
     if(argc<3){
@@ -19,6 +49,8 @@ int main(int argc, char **argv)
 	}
     ip = argv[1];
     puerto = argv[2];
+
+    signal(SIGINT, INThandler);
 
     //Creo dos mensajes de handshake. Uno para los clientes que reciba y otro para los que rechace
     handshake_com_t hs_bienvenido, hs_rechazado;
@@ -39,12 +71,15 @@ int main(int argc, char **argv)
 
     //Levanto el servidor
     do{
-         server_fd = iniciar_servidor(ip,puerto);
-         if( server_fd == -1){
+    	server_fd = iniciar_servidor(ip,puerto);
+        if( server_fd == -1){
             printf("\n**Error al iniciar el servidor. Volviendo a intentar en 5 segundos**\n");
             sleep(5);
         }
     }while(server_fd == -1 );
+
+    printf("\n**Listo para recibir clientes**");
+    printf("\n");
 
     //Esucho el puerto del servidor y voy atendiendo los clientes que llegan
     while(1){
@@ -81,14 +116,14 @@ int main(int argc, char **argv)
 				printf("\nNo sé quién se conecto. Voy a rechazar su conexión!");
 				//Le envío mensaje de rechazo y cierro su conexión
 				enviar_handshake(cliente.socket,hs_rechazado);
-				cerrar_conexion(cliente.socket);
+				close(cliente.socket);
 				break;
 		}
 		printf("\n\n");
     }
 
     //Cierro el socket de escucha de clientes
-    cerrar_conexion(server_fd);
+    close(server_fd);
 
     //Libero la memoria que pedí
     borrar_handshake(hs_bienvenido);
@@ -100,22 +135,27 @@ void * atenderCliente(int * socket_p)
 {
     char pathLog[50];
 	int n_cliente = ++g_n_cliente;
-    snprintf(pathLog,50,"logs/logServidor%d.txt",n_cliente);
+    snprintf(pathLog,50,"../logs/logServidor%d.txt",n_cliente);
     FILE *fp = fopen(pathLog, "w");
     fprintf(fp,"\n***Logger servidor***\n");
     //int cod_op;
     int fin = 0;
     int conexion = * socket_p;
 
+    int *socket = malloc(sizeof(int));
+    memcpy(socket,socket_p,sizeof(int));
     //char * msg;
     str_com_t string;
     msg_com_t recibido;
     gos_com_t gossip;
     handshake_com_t hs;
+    list_add(hilos_activos,socket);
     printf("\nIniciando hilo de lectura!\n\n");
 	printf("\n\n-------------------------------------------------------------");
     while(!fin)
     {
+    	pthread_mutex_lock(&mutex_finalizar);
+    	pthread_mutex_unlock(&mutex_finalizar);
     	recibido=recibir_mensaje(conexion);
 		printf("\n\n***Cliente <%d>***",n_cliente);
     	switch(recibido.tipo){
@@ -138,16 +178,16 @@ void * atenderCliente(int * socket_p)
     			printf("\n\nRequest: %s",string.str);
                 fprintf(fp,"\nRequest: %s",string.str);
     			responder(conexion);
-				borrar_string(string);
+				borrar_request_com(string);
     			break;
-    		case ERROR:
+    	  /*case ERRORCOMANDO:
     			printf("\n\n***Me llego un mensaje de error***");
 				string = procesar_error(recibido);
 				borrar_mensaje(recibido);
 				printf("\n\nMensaje de error: %s",string.str);
 				borrar_string(string);
-				break;
-    		case HANDSHAKE:
+				break;*/
+    		case HANDSHAKECOMANDO:
     			//No tiene sentido recibir un handshake ahora, sólo es para probar los tipos de mensaje
     			printf("\n\n***Me llego un handshake***");
 				hs = procesar_handshake(recibido);
@@ -167,8 +207,10 @@ void * atenderCliente(int * socket_p)
     }
     printf("\n\n**El cliente <%d> se desconecto. Finalizando...**\n",n_cliente);
     fprintf(fp,"\n\n**El cliente <%d> se desconecto. Finalizando...**\n\n",n_cliente);
-    cerrar_conexion(conexion);
+    close(conexion);
+    *socket = -1;
     fclose(fp);
+    return NULL;
 }
 
 int responder(int socket)

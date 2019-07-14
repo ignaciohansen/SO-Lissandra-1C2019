@@ -10,7 +10,7 @@
 
 int main() {
 
-	id_com_t soy = KERNEL;
+
 
 	log_kernel = archivoLogCrear(LOG_PATH, "Proceso Kernel");
 
@@ -36,6 +36,8 @@ int main() {
 	countPID = 0;
 
 	log_info(log_kernel, "Creamos thread para Consola");
+
+	gossiping_Kernel();
 
 	pthread_t hiloConsola;
 	pthread_create(&hiloConsola, NULL, (void*) consola, NULL);
@@ -248,8 +250,8 @@ void validarLinea(char** lineaIngresada, t_log* logger) {
 	}
 
 	log_info(log_kernel, "El tamanio del vector de comandos es: %d", tamanio);
-/*
-	validarComando(lineaIngresada, tamanio, log_kernel);*/
+	/*
+	 validarComando(lineaIngresada, tamanio, log_kernel);*/
 
 }
 
@@ -286,279 +288,279 @@ int conexionKernel() { // Retorn socket por el cual se envían los mensajes.
 	}
 } // int conexionKernel()
 /*
-void validarComando(char** comando, int tamanio, t_log* logger) {
+ void validarComando(char** comando, int tamanio, t_log* logger) {
 
-	int resultadoComando = buscarComando(comando[0], logger);
+ int resultadoComando = buscarComando(comando[0], logger);
 
-	int tamanioCadena = 0;
+ int tamanioCadena = 0;
 
-	switch (resultadoComando) {
+ switch (resultadoComando) {
 
-	case Select: {
-		printf("Se selecciono Select\n");
+ case Select: {
+ printf("Se selecciono Select\n");
 
-		log_info(log_kernel, "Se selecciono select");
+ log_info(log_kernel, "Se selecciono select");
 
-		if (tamanio == 3) {
+ if (tamanio == 3) {
 
-			log_info(log_kernel,
-					"Cantidad de parametros correctos ingresados para el comando select");
+ log_info(log_kernel,
+ "Cantidad de parametros correctos ingresados para el comando select");
 
-			//	t_pcb* procesoNuevo = crearEstructurasAdministrativas();
+ //	t_pcb* procesoNuevo = crearEstructurasAdministrativas();
 
-			//agregarAListo(procesoNuevo);
+ //agregarAListo(procesoNuevo);
 
-			mensaje = malloc(
-					string_length(comando[1]) + string_length(comando[2]) + 1);
+ mensaje = malloc(
+ string_length(comando[1]) + string_length(comando[2]) + 1);
 
-			log_info(log_kernel, "El tamanio de la cadena a guardar es: %d",
-					tamanioCadena);
+ log_info(log_kernel, "El tamanio de la cadena a guardar es: %d",
+ tamanioCadena);
 
-			strcpy(mensaje, comando[1]);
-			strcpy(mensaje, comando[2]);
+ strcpy(mensaje, comando[1]);
+ strcpy(mensaje, comando[2]);
 
-			log_info(log_kernel, "En mensaje ya tengo: %s", mensaje);
+ log_info(log_kernel, "En mensaje ya tengo: %s", mensaje);
 
-			armarMensajeBody(tamanio, mensaje, comando);
+ armarMensajeBody(tamanio, mensaje, comando);
 
-			log_info(log_kernel, "Por llamar a enviarMensaje");
-			int resultadoEnviarComando = enviarMensaje(Select, tamanio, mensaje,
-					log_kernel);
-		}
+ log_info(log_kernel, "Por llamar a enviarMensaje");
+ int resultadoEnviarComando = enviarMensaje(Select, tamanio, mensaje,
+ log_kernel);
+ }
 
-	}
-		break;
+ }
+ break;
 
-	case insert: {
-		printf("Insert seleccionado\n");
+ case insert: {
+ printf("Insert seleccionado\n");
 
-		log_info(log_kernel, "Se selecciono insert");
+ log_info(log_kernel, "Se selecciono insert");
 
-		if (tamanio == 4 || tamanio == 5) {
+ if (tamanio == 4 || tamanio == 5) {
 
-			log_info(log_kernel,
-					"Cantidad de parametros correctos ingresados para el comando insert");
+ log_info(log_kernel,
+ "Cantidad de parametros correctos ingresados para el comando insert");
 
-			log_info(log_kernel, "Por llamar a enviarMensaje");
+ log_info(log_kernel, "Por llamar a enviarMensaje");
 
-			if (tamanio == 4) {
+ if (tamanio == 4) {
 
-				mensaje = malloc(
-						string_length(comando[1]) + string_length(comando[2])
-								+ string_length(comando[3]) + 2);
-				log_info(log_kernel, "Por guardar memoria para 3 argumentos");
-			} else {
-				mensaje = malloc(
-						string_length(comando[1]) + string_length(comando[2])
-								+ string_length(comando[3])
-								+ string_length(comando[4]) + 3);
-				log_info(log_kernel, "Por guardar memoria para 4 argumentos");
-			}
+ mensaje = malloc(
+ string_length(comando[1]) + string_length(comando[2])
+ + string_length(comando[3]) + 2);
+ log_info(log_kernel, "Por guardar memoria para 3 argumentos");
+ } else {
+ mensaje = malloc(
+ string_length(comando[1]) + string_length(comando[2])
+ + string_length(comando[3])
+ + string_length(comando[4]) + 3);
+ log_info(log_kernel, "Por guardar memoria para 4 argumentos");
+ }
 
-			log_info(log_kernel, "Por copiar el primer parametro del comando");
+ log_info(log_kernel, "Por copiar el primer parametro del comando");
 
-			strcpy(mensaje, comando[1]);
+ strcpy(mensaje, comando[1]);
 
-			log_info(log_kernel, "En mensaje ya tengo: %s", mensaje);
+ log_info(log_kernel, "En mensaje ya tengo: %s", mensaje);
 
-			armarMensajeBody(tamanio, mensaje, comando);
-		}
+ armarMensajeBody(tamanio, mensaje, comando);
+ }
 
-		int resultadoEnviarComando = enviarMensaje(insert, tamanio, mensaje,
-				log_kernel);
-	}
-		break;
+ int resultadoEnviarComando = enviarMensaje(insert, tamanio, mensaje,
+ log_kernel);
+ }
+ break;
 
-	case create: {
-		printf("Create seleccionado\n");
-		log_info(log_kernel, "Se selecciono Create");
+ case create: {
+ printf("Create seleccionado\n");
+ log_info(log_kernel, "Se selecciono Create");
 
-		if (tamanio == 5) {
+ if (tamanio == 5) {
 
-			log_info(log_kernel,
-					"Cantidad de parametros correctos ingresados para el comando create");
+ log_info(log_kernel,
+ "Cantidad de parametros correctos ingresados para el comando create");
 
-			mensaje = malloc(
-					string_length(comando[1]) + string_length(comando[2])
-							+ string_length(comando[3])
-							+ string_length(comando[4]) + 3);
+ mensaje = malloc(
+ string_length(comando[1]) + string_length(comando[2])
+ + string_length(comando[3])
+ + string_length(comando[4]) + 3);
 
-			strcpy(mensaje, comando[1]);
+ strcpy(mensaje, comando[1]);
 
-			armarMensajeBody(tamanio, mensaje, comando);
+ armarMensajeBody(tamanio, mensaje, comando);
 
-			log_info(log_kernel, "Por llamar a enviarResultado");
+ log_info(log_kernel, "Por llamar a enviarResultado");
 
-			int resultadoEnviarComando = enviarMensaje(create, tamanio, mensaje,
-					log_kernel);
-		}
+ int resultadoEnviarComando = enviarMensaje(create, tamanio, mensaje,
+ log_kernel);
+ }
 
-	}
-		break;
+ }
+ break;
 
-	case describe: {
-		printf("Describe seleccionado\n");
-		log_info(log_kernel, "Se selecciono Describe");
+ case describe: {
+ printf("Describe seleccionado\n");
+ log_info(log_kernel, "Se selecciono Describe");
 
-		if (tamanio == 1) {
+ if (tamanio == 1) {
 
-			log_info(log_kernel,
-					"Cantidad de parametros correctos ingresados para el comando Describe");
+ log_info(log_kernel,
+ "Cantidad de parametros correctos ingresados para el comando Describe");
 
-			mensaje = malloc(string_length(comando[0]));
+ mensaje = malloc(string_length(comando[0]));
 
-			strcpy(mensaje, comando[0]);
+ strcpy(mensaje, comando[0]);
 
-			log_info(log_kernel, "En mensaje ya tengo: %s y es de tamanio: %d",
-					mensaje, string_length(mensaje));
+ log_info(log_kernel, "En mensaje ya tengo: %s y es de tamanio: %d",
+ mensaje, string_length(mensaje));
 
-			log_info(log_kernel, "Por llamar a enviarMensaje");
+ log_info(log_kernel, "Por llamar a enviarMensaje");
 
-			int resultadoEnviarComando = enviarMensaje(describe, tamanio,
-					mensaje, log_kernel);
+ int resultadoEnviarComando = enviarMensaje(describe, tamanio,
+ mensaje, log_kernel);
 
-		}
-		if (tamanio == 2) {
+ }
+ if (tamanio == 2) {
 
-			log_info(log_kernel,
-					"Cantidad de parametros correctos ingresados para el comando Describe");
+ log_info(log_kernel,
+ "Cantidad de parametros correctos ingresados para el comando Describe");
 
-			mensaje = malloc(string_length(comando[1]));
+ mensaje = malloc(string_length(comando[1]));
 
-			strcpy(mensaje, comando[1]);
+ strcpy(mensaje, comando[1]);
 
-			log_info(log_kernel, "En mensaje ya tengo: %s y es de tamanio: %d",
-					mensaje, string_length(mensaje));
+ log_info(log_kernel, "En mensaje ya tengo: %s y es de tamanio: %d",
+ mensaje, string_length(mensaje));
 
-			log_info(log_kernel, "Por llamar a enviarMensaje");
+ log_info(log_kernel, "Por llamar a enviarMensaje");
 
-			int resultadoEnviarComando = enviarMensaje(describe, tamanio,
-					mensaje, log_kernel);
+ int resultadoEnviarComando = enviarMensaje(describe, tamanio,
+ mensaje, log_kernel);
 
-		}
+ }
 
-	}
-		break;
+ }
+ break;
 
-	case drop: {
-		printf("Drop seleccionado\n");
-		log_info(log_kernel, "Se selecciono Drop");
+ case drop: {
+ printf("Drop seleccionado\n");
+ log_info(log_kernel, "Se selecciono Drop");
 
-		if (tamanio == 2) {
+ if (tamanio == 2) {
 
-			log_info(log_kernel,
-					"Cantidad de parametros correctos ingresados para el comando Drop");
+ log_info(log_kernel,
+ "Cantidad de parametros correctos ingresados para el comando Drop");
 
-			mensaje = malloc(string_length(comando[1]));
+ mensaje = malloc(string_length(comando[1]));
 
-			strcpy(mensaje, comando[1]);
+ strcpy(mensaje, comando[1]);
 
-			log_info(log_kernel, "Queriamos mandar esto: %s", comando[1]);
-			log_info(log_kernel, "Y se mando esto: %s", mensaje);
+ log_info(log_kernel, "Queriamos mandar esto: %s", comando[1]);
+ log_info(log_kernel, "Y se mando esto: %s", mensaje);
 
-			int resultadoEnviarComando = enviarMensaje(drop, tamanio, mensaje,
-					log_kernel);
-		}
+ int resultadoEnviarComando = enviarMensaje(drop, tamanio, mensaje,
+ log_kernel);
+ }
 
-	}
-		break;
+ }
+ break;
 
-	case add: {
-		printf("Add seleccionado\n");
-		log_info(log_kernel, "Se selecciono Add");
+ case add: {
+ printf("Add seleccionado\n");
+ log_info(log_kernel, "Se selecciono Add");
 
-		if (tamanio == 5) {
+ if (tamanio == 5) {
 
-			log_info(log_kernel,
-					"Cantidad de parametros correctos ingresados para el comando add");
+ log_info(log_kernel,
+ "Cantidad de parametros correctos ingresados para el comando add");
 
-			printf(
-					"Cantidad de parametros correctos ingresados para el comando add \n");
+ printf(
+ "Cantidad de parametros correctos ingresados para el comando add \n");
 
-		}
+ }
 
-	}
-		break;
+ }
+ break;
 
-	case run: {
-		printf("Run seleccionado\n");
-		log_info(log_kernel, "Se selecciono Run");
+ case run: {
+ printf("Run seleccionado\n");
+ log_info(log_kernel, "Se selecciono Run");
 
-		if (tamanio == 2) {
+ if (tamanio == 2) {
 
-			log_info(log_kernel,
-					"Cantidad de parametros correctos ingresados para el comando run");
+ log_info(log_kernel,
+ "Cantidad de parametros correctos ingresados para el comando run");
 
-			printf(
-					"Cantidad de parametros correctos ingresados para el comando run \n");
+ printf(
+ "Cantidad de parametros correctos ingresados para el comando run \n");
 
-			comandoRun(comando[1], logger);
+ comandoRun(comando[1], logger);
 
-		}
+ }
 
-	}
-		break;
+ }
+ break;
 
-	case journal: {
+ case journal: {
 
-		printf("Journal seleccionado\n");
-		log_info(log_kernel, "Se selecciono Journal");
+ printf("Journal seleccionado\n");
+ log_info(log_kernel, "Se selecciono Journal");
 
-		if (tamanio == 1) {
+ if (tamanio == 1) {
 
-			log_info(log_kernel,
-					"Cantidad de parametros correctos ingresados para el comando Journal");
+ log_info(log_kernel,
+ "Cantidad de parametros correctos ingresados para el comando Journal");
 
-			printf(
-					"Cantidad de parametros correctos ingresados para el comando Journal \n");
+ printf(
+ "Cantidad de parametros correctos ingresados para el comando Journal \n");
 
-		}
+ }
 
-	}
-		break;
+ }
+ break;
 
-	case metrics: {
+ case metrics: {
 
-		printf("Metrics seleccionado\n");
-		log_info(log_kernel, "Se selecciono Metrics");
+ printf("Metrics seleccionado\n");
+ log_info(log_kernel, "Se selecciono Metrics");
 
-		if (tamanio == 1) {
+ if (tamanio == 1) {
 
-			log_info(log_kernel,
-					"Cantidad de parametros correctos ingresados para el comando Metrics");
+ log_info(log_kernel,
+ "Cantidad de parametros correctos ingresados para el comando Metrics");
 
-			printf(
-					"Cantidad de parametros correctos ingresados para el comando Metrics \n");
+ printf(
+ "Cantidad de parametros correctos ingresados para el comando Metrics \n");
 
-		}
+ }
 
-	}
-		break;
+ }
+ break;
 
-	default: {
-		printf("Comando mal ingresado. \n");
-		log_error(log_kernel, "Opcion mal ingresada por teclado en la consola");
-	}
-		break;
+ default: {
+ printf("Comando mal ingresado. \n");
+ log_error(log_kernel, "Opcion mal ingresada por teclado en la consola");
+ }
+ break;
 
-	}
-}
-/*
-int buscarComando(char* comando, t_log* logger) {
+ }
+ }
+ /*
+ int buscarComando(char* comando, t_log* logger) {
 
-	log_info(logger, "Recibimos el comando: %s", comando);
+ log_info(logger, "Recibimos el comando: %s", comando);
 
-	int i = 0;
+ int i = 0;
 
-	for (i; i <= salir && strcmp(comandosPermitidos[i], comando); i++) {
+ for (i; i <= salir && strcmp(comandosPermitidos[i], comando); i++) {
 
-	}
+ }
 
-	log_info(logger, "Se devuelve el valor %d", i);
+ log_info(logger, "Se devuelve el valor %d", i);
 
-	return i;
+ return i;
 
-}*/
+ }*/
 
 int enviarMensaje(int comando, int tamanio, char* mensaje, t_log* logger) {
 
@@ -730,10 +732,21 @@ t_pcb* crearPcb(char* linea) {
 		tamanio = i + 1;
 	}
 
-	//En caso que sea el comando run voy a leer el archivo
+	int auxComandoInt;
 
-	int auxComandoInt = atoi(comandoSeparado[0]);
-	switch (auxComandoInt){
+	if (strcmp(comandoSeparado[0], "run") == 0) {
+
+		auxComandoInt = 7;
+
+	} else {
+
+		auxComandoInt = 0;
+	}
+
+	log_info(log_kernel, "El valor del comando para el ENUM es: %d",
+			auxComandoInt);
+
+	switch (auxComandoInt) {
 
 	case run: {
 
@@ -741,11 +754,13 @@ t_pcb* crearPcb(char* linea) {
 				"Vino Run de comando, vamos a buscar cuantas lineas tiene el archivo");
 		int aux_rafaga = rafagaComandoRun(comandoSeparado[1]);
 
+		log_info(log_kernel, "La rafaga del run es: %d", aux_rafaga);
 		pcbProceso->pid = countPID;
 		pcbProceso->comando = auxComandoInt;
 		pcbProceso->rafaga = aux_rafaga;
 		pcbProceso->argumentos = tamanio - 1;
 		pcbProceso->estado = 0; //Estado en la cola new porque recien se crea
+		pcbProceso->progamCounter = 0;
 
 	}
 		break;
@@ -757,6 +772,7 @@ t_pcb* crearPcb(char* linea) {
 		pcbProceso->rafaga = 1;
 		pcbProceso->argumentos = tamanio - 1;
 		pcbProceso->estado = 0; //Estado en la cola new porque recien se crea
+		pcbProceso->progamCounter = 0;
 
 	}
 		break;
@@ -899,28 +915,27 @@ void agregarAListo(t_pcb* pcbParaAgregar) {
 
 	log_info(log_kernel, "Verificamos si la cola de nuevos tiene un elemento");
 
+	//Eliminar de la lista de new
+
+	pcbParaAgregar->estado = listo;
+
+	log_info(log_kernel, "Sacamos el elemento de la cola de nuevos");
+
 	if (list_size(colaNuevos) > 0) {
-
-		//Eliminar de la lista de new
-
-		pcbParaAgregar->estado = listo;
-
-		log_info(log_kernel, "Sacamos el elemento de la cola de nuevos");
 
 		mutexBloquear(&mutexColaNuevos);
 		list_remove(colaNuevos, 0);
 		mutexDesbloquear(&mutexColaNuevos);
-
-		log_info(log_kernel,
-				"Bloqueamos Mutex para poder insertar el elemento en la cola de listos");
-
-		mutexBloquear(&mutexColaListos);
-		list_add(colaListos, pcbParaAgregar);
-		mutexDesbloquear(&mutexColaListos);
-
-		log_info(log_kernel,
-				"Desbloqueamos el mutex y agregamos el PCB a la cola de listos.");
 	}
+	log_info(log_kernel,
+			"Bloqueamos Mutex para poder insertar el elemento en la cola de listos");
+
+	mutexBloquear(&mutexColaListos);
+	list_add(colaListos, pcbParaAgregar);
+	mutexDesbloquear(&mutexColaListos);
+
+	log_info(log_kernel,
+			"Desbloqueamos el mutex y agregamos el PCB a la cola de listos.");
 
 	log_info(log_kernel, "Salimos de la funcion AgregarAListo");
 
@@ -930,54 +945,174 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 
 	req_com_t req;
 
-	if (pcbParaAgregar->comando == run) {
+	log_info(log_kernel, "En funcion agregarAEjecutar");
 
-		char* lineaRun = malloc(1024);
-		char* bufferRun = malloc(1024);
-		char** pruebaPath;
+	log_info(log_kernel, "En cola de listos tenemos: %d elementos",
+			listaCantidadElementos(colaListos));
 
-		pruebaPath = string_split(pcbParaAgregar->linea, separator);
+	char** pruebaPath;
 
-		fd = fopen(pruebaPath[1], "r");
+	pruebaPath = string_split(pcbParaAgregar->linea, separator);
 
-		for (int i = 1; arc_config->quantum >= i; i++) {
+	fd = fopen(pruebaPath[1], "r");
 
-			lineaRun = fgets(bufferRun, 1024, fd);
-			req.tam = strlen(lineaRun);
-			strcpy(req.str, lineaRun);
+	while (listaCantidadElementos(colaListos) > 0) {
+
+		if (pcbParaAgregar->comando == run) {
+
+			log_info(log_kernel, "Valor de Rafaga es %d",
+					pcbParaAgregar->rafaga);
+
+			log_info(log_kernel, "Valor de programCounter es %d",
+					pcbParaAgregar->progamCounter);
+
+			log_info(log_kernel, "Valor de Quantum es %d", arc_config->quantum);
+
+			mutexBloquear(&mutexColaListos);
+			list_remove(colaListos, 0);
+			mutexDesbloquear(&mutexColaListos);
+
+			if ((pcbParaAgregar->rafaga - pcbParaAgregar->progamCounter)
+					>= arc_config->quantum) {
+
+				char* bufferRun = malloc(1024);
+
+				for (int i = 1; arc_config->quantum >= i; i++) {
+
+					log_info(log_kernel, "Vuelta del FOR: %d", i);
+
+					char* lineaRun = malloc(1024);
+
+					lineaRun = fgets(bufferRun, 1024, fd);
+
+					//strtok(lineaRun, "\n");
+
+					log_info(log_kernel, "Linea para ejecutar: %s", lineaRun);
+
+					req.tam = strlen(lineaRun) + 1;
+
+					log_info(log_kernel, "Tamanio cadena grabada en req:%d",
+							req.tam);
+
+					req.str = malloc(req.tam);
+
+					strcpy(req.str, lineaRun);
+
+					semaforoValor(&multiprocesamiento,
+							&valorMultiprocesamiento);
+
+					log_info(log_kernel,
+							"El valor del semaforo contador multiprocesamiento, despues de agregar a ejecutar un proceso es: %d",
+							valorMultiprocesamiento);
+
+					log_info(log_kernel, "Cadena grabada en req:%s", req.str);
+
+					pcbParaAgregar->estado = ejecucion;
+
+					mutexBloquear(&mutexColaEjecucion);
+					socket_CMemoria = conexionKernel();
+					list_add(colaEjecucion, pcbParaAgregar);
+					enviar_request(socket_CMemoria, req);
+					mutexDesbloquear(&mutexColaEjecucion);
+
+					log_info(log_kernel,
+							"Desbloqueamos el Mutex de Ejecucion y el PCB fue encolado a la cola de Ejecucion.");
+
+					free(req.str);
+
+					pcbParaAgregar->progamCounter++;
+
+					log_info(log_kernel,
+							"El valor del ProgramCounter para el proceso es: %d",
+							pcbParaAgregar->progamCounter);
+
+					log_info(log_kernel, "Ultima instruccion del FOR");
+
+				}
+
+				free(bufferRun);
+
+				mutexBloquear(&mutexColaEjecucion);
+				list_remove(colaEjecucion, 0);
+				mutexDesbloquear(&mutexColaEjecucion);
+
+				agregarAListo(pcbParaAgregar);
+
+			} else {
+
+				log_info(log_kernel,
+						"===>Seccion de Quantum mayor que rafaga restante del proceso");
+
+				int rafagaRestante = pcbParaAgregar->rafaga
+						- pcbParaAgregar->progamCounter;
+
+				log_info(log_kernel, "===>Rafaga restante: %d", rafagaRestante);
+
+				for (int i = 1; rafagaRestante >= i; i++) {
+
+					char* bufferRun = malloc(1024);
+
+					log_info(log_kernel, "Vuelta del FOR: %d", i);
+
+					char* lineaRun = malloc(1024);
+
+					lineaRun = fgets(bufferRun, 1024, fd);
+
+					log_info(log_kernel, "Linea para ejecutar: %s", lineaRun);
+
+					req.tam = strlen(lineaRun) + 1;
+
+					log_info(log_kernel, "Tamanio cadena grabada en req:%d",
+							req.tam);
+
+					req.str = malloc(req.tam);
+
+					strcpy(req.str, lineaRun);
+
+					log_info(log_kernel, "Cadena grabada en req:%s", req.str);
+
+					semaforoValor(&multiprocesamiento,
+							&valorMultiprocesamiento);
+
+					log_info(log_kernel,
+							"El valor del semaforo contador multiprocesamiento, despues de agregar a ejecutar un proceso es: %d",
+							valorMultiprocesamiento);
+
+					pcbParaAgregar->estado = ejecucion;
+
+					mutexBloquear(&mutexColaEjecucion);
+					socket_CMemoria = conexionKernel();
+					list_add(colaEjecucion, pcbParaAgregar);
+					enviar_request(socket_CMemoria, req);
+					mutexDesbloquear(&mutexColaEjecucion);
+
+					log_info(log_kernel,
+							"Desbloqueamos el Mutex de Ejecucion y el PCB fue encolado a la cola de Ejecucion.");
+
+					free(req.str);
+
+					pcbParaAgregar->progamCounter =
+							pcbParaAgregar->progamCounter + i;
+
+					log_info(log_kernel, "Ultima instruccion del FOR");
+
+					free(bufferRun);
+				}
+			}
+		} else {
+			req.tam = strlen(pcbParaAgregar->linea);
+			req.str = malloc(req.tam);
+			strcpy(req.str, linea);
 
 		}
 
-	} else {
-		req.tam = strlen(pcbParaAgregar->linea);
-		req.str = malloc(req.tam);
-		strcpy(req.str, linea);
-
+		log_info(log_kernel,
+				"Al finalizar el while tenemos en cola de listos tenemos: %d elementos",
+				listaCantidadElementos(colaListos));
 	}
+
 	log_info(log_kernel,
 			"Bloqueamos Mutex para poder sacar el elemento en la cola de listos y colocarlo en ejecucion");
-
-	mutexBloquear(&mutexColaListos);
-	//pcbListoParaEjecutar = list_remove(colaListos, 0);
-	list_remove(colaListos, 0);
-	mutexDesbloquear(&mutexColaListos);
-
-	semaforoValor(&multiprocesamiento, &valorMultiprocesamiento);
-
-	log_info(log_kernel,
-			"El valor del semaforo contador multiprocesamiento, despues de agregar a ejecutar un proceso es: %d",
-			valorMultiprocesamiento);
-
-	pcbParaAgregar->estado = ejecucion;
-
-	mutexBloquear(&mutexColaEjecucion);
-	socket_CMemoria = conexionKernel();
-	list_add(colaEjecucion, pcbParaAgregar);
-	enviar_request(socket_CMemoria, req);
-	mutexDesbloquear(&mutexColaEjecucion);
-
-	log_info(log_kernel,
-			"Desbloqueamos el Mutex de Ejecucion y el PCB fue encolado a la cola de Ejecucion.");
 
 }
 
@@ -996,4 +1131,37 @@ void agregarAExit() {
 	log_info(log_kernel,
 			"El valor del semaforo contador multiprocesamiento, despues de agregar un proceso a la cola exit es: %d",
 			valorMultiprocesamiento);
+}
+
+void gossiping_Kernel(){
+
+	inicializar_estructuras_gossiping(log_kernel, 10000);
+
+
+	char auxPuerto[LARGO_PUERTO];
+
+	sprintf(auxPuerto, "%d",arc_config->puerto_memoria);
+
+	agregar_seed(-1, arc_config->ip_memoria, auxPuerto);
+
+	pthread_t hiloGossiping;
+	iniciar_hilo_gossiping(&soy,&hiloGossiping,actualizarMemoriasDisponibles);
+
+	pthread_detach(hiloGossiping);
+
+
+
+/*	criterioSC;
+	criterioSHC;
+	criterioEC;*/
+
+}
+
+void actualizarMemoriasDisponibles(){
+
+	//Logear diferencias de memorias TODO
+	gossipingKernel = armar_vector_seeds(soy);
+
+	log_info(log_kernel,"Cantidad Memorias: %d",gossipingKernel.cant);
+
 }
