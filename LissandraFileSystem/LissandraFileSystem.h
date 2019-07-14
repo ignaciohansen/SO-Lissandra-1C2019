@@ -101,6 +101,14 @@ void listenSomeLQL();
  */
 
 typedef struct{
+int tam_registro;
+char* value;
+u_int64_t timestamp;
+u_int16_t key;
+
+}t_registroMemtable;
+
+typedef struct{
 	char* consistency;
 	int particiones;
 	int compaction_time;
@@ -158,7 +166,7 @@ t_list* listaRegistrosTabla;
 
 
 
-int comandoSelect(char* tabla, char* key);
+t_registroMemtable* comandoSelect(char* tabla, char* key);
 int comandoInsertSinTimestamp(char* tabla,char* key,char* value);
 int comandoInsert(char* tabla,char* key,char* value,char* timestamp);
 int comandoDrop(char* tabla);
@@ -195,14 +203,6 @@ int cantidadBloquesOcupadosBitmap();
  * 									Elementos de dump
  *--------------------------------------------------------------------------------------------
  */
-
-typedef struct{
-int tam_registro;
-char* value;
-double timestamp;
-u_int16_t key;
-
-}t_registroMemtable;
 
 
 int timestamp_inicio;

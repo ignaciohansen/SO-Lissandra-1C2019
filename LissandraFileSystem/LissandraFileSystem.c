@@ -206,22 +206,19 @@ bool cargarConfiguracion() {
 			configFile->punto_montaje = config_get_string_value(archivoCOnfig,
 					"PUNTO_MONTAJE");
 
-			log_info(logger, "El punto de montaje es: %d",
+			log_info(logger, "El punto de montaje es: %s",
 					configFile->punto_montaje);
 
-			tabla_Path = malloc(string_length(configFile->punto_montaje) + 8);
+			int tamanio = strlen(configFile->punto_montaje) + strlen(TABLE_PATH) + 30;
 
-//			tabla_Path = string_duplicate(configFile->punto_montaje);
+			tabla_Path = malloc(tamanio);
+
+			//tabla_Path = string_duplicate(configFile->punto_montaje);
 //		ARRIBA COMENTADO PARA LIMPIAR LEAKS
-			log_info(logger, "La variabla tabla_path queda con: %s",
-					tabla_Path);
 
-			strtok(tabla_Path, "\"");
-			strtok(tabla_Path, "\"");
+			snprintf(tabla_Path,tamanio,"%s%s",configFile->punto_montaje,TABLE_PATH);
 
-			string_append(&tabla_Path, "/Tables/");
-
-			log_info(logger, "Y ahora la variabla tabla_path queda con: %s",
+			log_info(logger, "Y ahora la variable tabla_path queda con: %s",
 					tabla_Path);
 
 		} else {
@@ -651,9 +648,7 @@ void validarComando(char** comando, int tamanio, t_log* logger) {
 			log_info(logger,
 					"Cantidad de parametros correctos ingresados para el comando select");
 
-			int resultado = comandoSelect(comando[1], comando[2]);
-
-			log_info(logger, "El resultado de la operacion fue: %d", resultado);
+			comandoSelect(comando[1], comando[2]);
 
 		}
 
@@ -1144,7 +1139,7 @@ void esperarTiempoDump() {
 	while (true) {
 
 		//usleep(configFile->tiempo_dump*1000);
-		sleep(5000);
+		sleep(15);
 		log_info(logger, "Es tiempo de dump, hay cosas en la memtable?");
 		mutexBloquear(&listaTablasInsertadas_mx);
 		int tam = list_size(listaTablasInsertadas);
@@ -1253,7 +1248,7 @@ int crearArchivoTemporal(char* path, char* tabla) {
 		if (temporal != NULL) {
 			char* contenido = malloc(
 					string_length("SIZE=") + sizeof(char) * 2
-							+ string_length("BLOCK=[]")
+							+ string_length("BLOCKS=[]")
 							+ sizeof(char) * 2 * list_size(bloquesUsados) - 1); //arreglar para bloques con mas de un numero (string, no char)
 			contenido = string_new();
 			string_append(&contenido, "SIZE=");
@@ -1261,7 +1256,7 @@ int crearArchivoTemporal(char* path, char* tabla) {
 			sprintf(size, "%d", tam_total_registros);
 			string_append(&contenido, size);
 			string_append(&contenido, "\n");
-			string_append(&contenido, "BLOCK=[");
+			string_append(&contenido, "BLOCKS=[");
 			char* bloque = malloc(10);
 			for (int i = 0; i < list_size(bloquesUsados); i++) {
 				int* nroBloque = list_get(bloquesUsados, i);
@@ -1335,8 +1330,8 @@ void* armarBufferConRegistros(t_list* listaRegistros, int tam_total_registros) {
 
 		registro = list_get(listaRegistros, i);
 		memcpy(bufferConRegistros + offset, &registro->timestamp,
-				sizeof(double));
-		offset += sizeof(double);
+				sizeof(u_int64_t));
+		offset += sizeof(u_int64_t);
 		memcpy(bufferConRegistros + offset, &punto_y_coma, sizeof(char));
 		offset += sizeof(char);
 		memcpy(bufferConRegistros + offset, &registro->key, sizeof(u_int16_t));
@@ -1419,8 +1414,7 @@ void crearBloques() {
 	char* pathBloque = malloc(tamanio);
 	log_info(logger, "Voy a crear los bloques");
 	for (int i = 0; i < metadataLFS->blocks; i++) {
-		snprintf(pathBloque, tamanio, "%s%sblock%d.bin",
-				configFile->punto_montaje, PATH_BLOQUES, i);
+		snprintf(pathBloque, tamanio, "%s%sblock%d.bin",configFile->punto_montaje, PATH_BLOQUES, i);
 		FILE* bloque;
 		bloque = fopen(pathBloque, "a");
 		fclose(bloque);
@@ -1465,8 +1459,8 @@ t_list* leerBloque(char* path) {
 
 			//Guardo timestamp
 			memcpy(&registro->timestamp, registros_bloque + offset,
-					sizeof(double));
-			offset += sizeof(double);
+					sizeof(u_int64_t));
+			offset += sizeof(u_int64_t);
 			offset += sizeof(char); // ";"
 
 			//Guardo key
@@ -1499,9 +1493,9 @@ t_list* leerBloque(char* path) {
 
 			//Calculo tamaño
 			registro->tam_registro = strlen(registro->value) + 1
-					+ sizeof(double) + sizeof(uint16_t);
+					+ sizeof(u_int64_t) + sizeof(uint16_t);
 
-			log_info(logger, "timestamp leido: %lf", registro->timestamp);
+			log_info(logger, "timestamp leido: %d", registro->timestamp);
 			log_info(logger, "key leida: %d", registro->key);
 			log_info(logger, "value leido: %s", registro->value);
 			log_info(logger, "tamaño registro: %d", registro->tam_registro);
@@ -1550,10 +1544,10 @@ t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total) {
 	estadoLecturaBloque_t anterior = EST_TIMESTAMP;
 
 	void *aux_campo_leyendo;
-	if (configFile->tamanio_value + 1 > sizeof(double))
+	if (configFile->tamanio_value + 1 > sizeof(u_int64_t))
 		aux_campo_leyendo = malloc(configFile->tamanio_value + 1);
 	else
-		aux_campo_leyendo = malloc(sizeof(double));
+		aux_campo_leyendo = malloc(sizeof(u_int64_t));
 	int offset_bloque = 0, tam_bloque = 0, offset_campo = 0, offset_total = 0,
 			bloques_leidos = 0, num_separador = 0;
 	bool leiValueEntero;
@@ -1600,20 +1594,20 @@ t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total) {
 		case EST_TIMESTAMP:
 //			log_info(logger, "Buscando el timestamp");
 //			log_info(logger, "Al bloque le quedan %d bytes y yo necesito %d",
-//					tam_bloque - offset_bloque, sizeof(double) - offset_campo);
+//					tam_bloque - offset_bloque, sizeof(u_int64_t) - offset_campo);
 
 			//Si con los bytes que le quedan al bloque me alcanza para completar el campo, los copio y avanzo al siguiente estado
-			if (offset_bloque + sizeof(double) - offset_campo <= tam_bloque) {
+			if (offset_bloque + sizeof(u_int64_t) - offset_campo <= tam_bloque) {
 				memcpy(aux_campo_leyendo + offset_campo,
 						registros_bloque + offset_bloque,
-						sizeof(double) - offset_campo);
+						sizeof(u_int64_t) - offset_campo);
 				memcpy(&(registro->timestamp), aux_campo_leyendo,
-						sizeof(double));
-//				log_info(logger, "Timestamp leido: %lf", registro->timestamp);
+						sizeof(u_int64_t));
+//				log_info(logger, "Timestamp leido: %d", registro->timestamp);
 
 				//Avanzo los offset los bytes que acabo de leer
-				offset_bloque += sizeof(double) - offset_campo;
-				offset_total += sizeof(double) - offset_campo;
+				offset_bloque += sizeof(u_int64_t) - offset_campo;
+				offset_total += sizeof(u_int64_t) - offset_campo;
 
 				//Avanzo al siguiente estado que es buscar un separador
 				anterior = estado;
@@ -1630,7 +1624,7 @@ t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total) {
 				offset_total += tam_bloque - offset_bloque;
 				offset_bloque += tam_bloque - offset_bloque;
 //				log_info(logger, "Me faltan %d bytes para leer el timestamp",
-//						sizeof(double) - offset_campo);
+//						sizeof(u_int64_t) - offset_campo);
 
 				//Voy a leer un nuevo bloque
 				anterior = estado;
@@ -1745,13 +1739,13 @@ t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total) {
 				offset_total += strlen(registro->value) - offset_campo;
 
 				//Calculo el tamaño
-				registro->tam_registro = sizeof(double) + sizeof(uint16_t)
+				registro->tam_registro = sizeof(u_int64_t) + sizeof(uint16_t)
 						+ strlen(registro->value) + 1;
 
 				//Agrego el nuevo registro a la lista que voy a retornar
 				list_add(registros_leidos, registro);
 				log_info(logger,
-						"[OBTENIENDO TODO BLOQUES] Registro <%lf;%d;%s> agregado",
+						"[OBTENIENDO TODO BLOQUES] Registro <%d;%d;%s> agregado",
 						registro->timestamp, registro->key, registro->value);
 
 				//Avanzo al siguiente estado que es buscar un separador
@@ -1813,7 +1807,7 @@ t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total) {
 }
 
 void *imprimirRegistro(t_registroMemtable *reg) {
-	log_info(logger, "Registro: <%lf;%d;%s>", reg->timestamp, reg->key,
+	log_info(logger, "Registro: <%d;%d;%s>", reg->timestamp, reg->key,
 			reg->value);
 	return reg;
 }
@@ -1828,7 +1822,7 @@ int pruebaLecturaBloquesConsecutivos(void) {
 	int offset = 0;
 	char value[20];
 	uint16_t key = 0;
-	double timestamp = 0;
+	u_int64_t timestamp = 0;
 	char barran[2], coma[2];
 	strcpy(barran, "\n");
 	strcpy(coma, ",");
@@ -1837,8 +1831,8 @@ int pruebaLecturaBloquesConsecutivos(void) {
 		timestamp += 554;
 		key = i % 15;
 		snprintf(value, 9, "val%d", i * 13);
-		memcpy(buffer + offset, &timestamp, sizeof(double));
-		offset += sizeof(double);
+		memcpy(buffer + offset, &timestamp, sizeof(u_int64_t));
+		offset += sizeof(u_int64_t);
 		memcpy(buffer + offset, coma, sizeof(char));
 		offset += sizeof(char);
 		memcpy(buffer + offset, &key, sizeof(uint16_t));
@@ -1850,7 +1844,7 @@ int pruebaLecturaBloquesConsecutivos(void) {
 		memcpy(buffer + offset, barran, sizeof(char));
 		offset += sizeof(char);
 
-		log_info(logger, "[PRUEBA] Escribi %lf;%d;%s. Hasta ahora son %d bytes",
+		log_info(logger, "[PRUEBA] Escribi %d;%d;%s. Hasta ahora son %d bytes",
 				timestamp, key, value, offset);
 	}
 
@@ -1924,10 +1918,10 @@ int pruebaLecturaBloquesConsecutivos(void) {
 			continue;
 		}
 		if (registroMayor->timestamp != 0) {
-			log_info(logger, "[PRUEBA] El mayor de la key %d es <%lf;%d;%s>", i,
+			log_info(logger, "[PRUEBA] El mayor de la key %d es <%d;%d;%s>", i,
 					registroMayor->timestamp, registroMayor->key,
 					registroMayor->value);
-			printf("\nEl mayor de la key %d es <%lf;%d;%s>", i,
+			printf("\nEl mayor de la key %d es <%d;%d;%s>", i,
 					registroMayor->timestamp, registroMayor->key,
 					registroMayor->value);
 		} else {
@@ -1957,10 +1951,10 @@ t_registroMemtable* pruebaRegMayorTime() {
 	reg3 = armarRegistroNulo();
 	reg4 = armarRegistroNulo();
 
-	reg1->timestamp = 10.0;
-	reg2->timestamp = 21.0;
-	reg3->timestamp = 244.0;
-	reg4->timestamp = 10.0;
+	reg1->timestamp = 10;
+	reg2->timestamp = 21;
+	reg3->timestamp = 244;
+	reg4->timestamp = 10;
 
 	regMayor = tomarMayorRegistro(reg1, reg2, reg3, reg4);
 
@@ -2256,10 +2250,10 @@ t_registroMemtable* armarEstructura(char* value, char* key, char* timestamp) {
 	t_registroMemtable* registroMemtable;
 	registroMemtable = malloc(sizeof(t_registroMemtable));
 
-	int tam_registro = strlen(value) + 1 + sizeof(u_int16_t) + sizeof(double); //es un long no un double
+	int tam_registro = strlen(value) + 1 + sizeof(u_int16_t) + sizeof(u_int64_t); //es un long no un u_int64_t
 	registroMemtable->tam_registro = tam_registro;
 	registroMemtable->value = value;
-	double timestampRegistro = atof(timestamp);
+	u_int64_t timestampRegistro = atoi(timestamp);
 	registroMemtable->timestamp = timestampRegistro;
 	u_int16_t keyRegistro = strtol(key, NULL, 16);
 	registroMemtable->key = keyRegistro;
@@ -2278,7 +2272,7 @@ t_registroMemtable* armarRegistroNulo() {
 	t_registroMemtable* aux = malloc(sizeof(t_registroMemtable));
 	aux->key = 0;
 	aux->tam_registro = 0;
-	aux->timestamp = 0.0;
+	aux->timestamp = 0;
 	aux->value = "asd";
 
 	return aux;
@@ -2353,7 +2347,7 @@ t_registroMemtable* obtenerRegistroMayor(char* tabla, int key,
 				registro = NULL;
 			} else {
 				log_info(logger,
-						"[Primer registro obtenido]timestamp del registro obtenido %lf",
+						"[Primer registro obtenido]timestamp del registro obtenido %d",
 						registro->timestamp);
 				log_info(logger,
 						"[Primer registro obtenido]value del registro obtenido %s",
@@ -2368,7 +2362,7 @@ t_registroMemtable* obtenerRegistroMayor(char* tabla, int key,
 			if (aux->key == key) {
 
 				log_info(logger,
-						"[Ya hay mas de un registro obtenido] timestamp del registro obtenido %lf",
+						"[Ya hay mas de un registro obtenido] timestamp del registro obtenido %d",
 						aux->timestamp);
 				log_info(logger,
 						"[Ya hay mas registro obtenido] value del registro obtenido %s",
@@ -2379,7 +2373,7 @@ t_registroMemtable* obtenerRegistroMayor(char* tabla, int key,
 
 				if (aux->timestamp > registro->timestamp) {
 					registro = aux;
-					log_info(logger, "[fin] me quede con el de timestamp %lf",
+					log_info(logger, "[fin] me quede con el de timestamp %d",
 							registro->timestamp);
 					log_info(logger, "[fin] me quede con el de  value %s",
 							registro->value);
@@ -2406,7 +2400,7 @@ t_registroMemtable* registroMayorMemtable(char* tabla, u_int16_t key) {
 
 		log_info(logger, "arme registro nulo");
 
-		log_info(logger, "Se armo registro nulo, su timestamp es %lf",
+		log_info(logger, "Se armo registro nulo, su timestamp es %d",
 				registro->timestamp);
 	}
 	return registro;
@@ -2444,6 +2438,8 @@ t_registroMemtable* registroMayorTemporal(char* tabla, u_int16_t key,
 
 			}
 		}
+	}else{ // La idea es que nunca entre aca, si tengo temporal es xq un bloque tengo que tener
+		registro = armarRegistroNulo();
 	}
 	return registro;
 }
@@ -2467,10 +2463,14 @@ t_registroMemtable* registroMayorParticion(char* tabla, u_int16_t key,
 
 }
 
-t_registroMemtable* tomarMayorRegistro(t_registroMemtable* reg1,
-		t_registroMemtable* reg2, t_registroMemtable* reg3,
-		t_registroMemtable* reg4) {
+t_registroMemtable* tomarMayorRegistro(t_registroMemtable* reg1,t_registroMemtable* reg2, t_registroMemtable* reg3,t_registroMemtable* reg4) {
 	t_registroMemtable* registroMayor = malloc(sizeof(t_registroMemtable));
+
+	log_info(logger, "timestamp reg1: %d", reg1->timestamp);
+		log_info(logger, "timestamp reg2: %d", reg2->timestamp);
+		log_info(logger, "timestamp reg3: %d", reg3->timestamp);
+		log_info(logger, "timestamp reg4: %d", reg4->timestamp);
+
 
 	if (reg1->timestamp > reg2->timestamp) {
 		registroMayor = reg1;
@@ -2488,23 +2488,29 @@ t_registroMemtable* tomarMayorRegistro(t_registroMemtable* reg1,
 	}
 	}
 	log_info(logger, "verificandoFuncion");
-	log_info(logger, "timestamp reg1: %lf", reg1->timestamp);
-	log_info(logger, "timestamp reg2: %lf", reg2->timestamp);
-	log_info(logger, "timestamp reg3: %lf", reg3->timestamp);
-	log_info(logger, "timestamp reg4: %lf", reg4->timestamp);
-	log_info(logger, "el mayor timestamp  %lf", registroMayor->timestamp);
+	log_info(logger, "timestamp reg1: %d", reg1->timestamp);
+	log_info(logger, "timestamp reg2: %d", reg2->timestamp);
+	log_info(logger, "timestamp reg3: %d", reg3->timestamp);
+	log_info(logger, "timestamp reg4: %d", reg4->timestamp);
+	log_info(logger, "el mayor timestamp  %d", registroMayor->timestamp);
 	return registroMayor;
 }
 
-int comandoSelect(char* tabla, char* key) {
+t_registroMemtable* comandoSelect(char* tabla, char* key) {
+
+	t_registroMemtable* registroMayor;
 
 	if (verificarTabla(tabla) == -1) {
-		return -1;
+		registroMayor = armarRegistroNulo();
+		registroMayor->tam_registro = -1;
+		return registroMayor;
 	} else { // archivo de tabla encontrado
 		int returnObtenerMetadata = obtenerMetadataTabla(tabla);
 
 		if (returnObtenerMetadata == -1) {
-			return -2;
+			registroMayor = armarRegistroNulo();
+			registroMayor->tam_registro = -2;
+			return registroMayor;
 		}; // 0: OK. -1: ERROR. // frenar en caso de error
 
 		int valorKey = atoi(key);
@@ -2514,18 +2520,29 @@ int comandoSelect(char* tabla, char* key) {
 
 		int particiones = determinarParticion(valorKey, metadata->particiones);
 
-		//t_registroMemtable* registroMemtable = registroMayorMemtable(tabla,valorKeyU);
+		t_registroMemtable* registroMemtable = registroMayorMemtable(tabla,valorKeyU);
 
 		//t_registroMemtable* registroParticion = registroMayorParticion(tabla,valorKeyU,particiones);
 
-		//t_registroMemtable* registroTemporal = registroMayorTemporal(tabla, key,
-		//		".tmp");
+		log_info(logger,"obtuve el primer reg");
 
-		//t_registroMemtable* registroTemporalC = registroMayorTemporal(tabla,key,".tmpc");
+		t_registroMemtable* registroParticion = registroMayorTemporal(tabla, valorKeyU,".tmp");
 
-		//t_registroMemtable* registroMayor = tomarMayorRegistro(registroMemtable,registroParticion,registroTemporal,registroTemporalC);
+		log_info(logger,"obtuve el segundo reg");
 
-		return valorKey;
+		t_registroMemtable* registroTemporal = registroMayorTemporal(tabla, valorKeyU,".tmp");
+
+		log_info(logger,"obtuve el tercer reg");
+
+		t_registroMemtable* registroTemporalC = registroMayorTemporal(tabla,valorKeyU,".tmpc");
+
+		log_info(logger,"obtuve el cuarto reg");
+
+		registroMayor = tomarMayorRegistro(registroMemtable,registroParticion,registroTemporal,registroTemporalC);
+
+		log_info(logger,"el timestamp mas grande es %ld",registroMayor->timestamp);
+
+		return registroMayor;
 
 	}
 }
@@ -2566,31 +2583,26 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 		if (archivoMetadata != NULL) {
 			log_info(logger,
 					"El archivo metadata se creo satisfactoriamente\n");
+			int tamanioConsistencia = strlen(consistencia) + sizeof("CONSISTENCY=") + 4;
+			char *lineaConsistencia = malloc(tamanioConsistencia);
 
-			char *lineaConsistencia = malloc(
-					sizeof(consistencia) + sizeof("CONSISTENCY=") + 1);
-			lineaConsistencia = string_new();
-			string_append(&lineaConsistencia, "CONSISTENCY=");
-			string_append(&lineaConsistencia, consistencia);
-			string_append(&lineaConsistencia, "\n");
+			snprintf(lineaConsistencia,tamanioConsistencia,"CONSISTENCY=%s\n",consistencia);
+
 			log_info(logger, "Se agrego la consistencia %s", lineaConsistencia);
 
-			char *lineaParticiones = malloc(
-					sizeof(particiones) + sizeof("PARTITIONS=") + 1);
-			lineaParticiones = string_new();
-			string_append(&lineaParticiones, "PARTITIONS=");
-			string_append(&lineaParticiones, particiones);
-			string_append(&lineaParticiones, "\n");
-			log_info(logger, "Se agregaron las particiones %s",
-					lineaParticiones);
+			int tamanioParticiones = strlen(particiones) + sizeof("PARTITIONS=") + 4;
+			char *lineaParticiones = malloc(tamanioParticiones);
 
-			char *lineaTiempoCompactacion = malloc(
-					sizeof(tiempoCompactacion) + sizeof("COMPACTION_TIME="));
-			lineaTiempoCompactacion = string_new();
-			string_append(&lineaTiempoCompactacion, "COMPACTION_TIME=");
-			string_append(&lineaTiempoCompactacion, tiempoCompactacion);
-			log_info(logger, "Se agrego el tiempo de compactacion %s",
-					lineaTiempoCompactacion);
+			snprintf(lineaParticiones,tamanioParticiones,"PARTITIONS=%s\n",particiones);
+
+			log_info(logger, "Se agregaron las particiones %s",lineaParticiones);
+
+			int tamanioTiempoC = strlen(tiempoCompactacion) + strlen("COMPACTION_TIME=") +1;
+			char *lineaTiempoCompactacion = malloc(tamanioTiempoC);
+
+			snprintf(lineaTiempoCompactacion,tamanioTiempoC,"COMPACTION_TIME=%s",tiempoCompactacion);
+
+			log_info(logger, "Se agrego el tiempo de compactacion %s",lineaTiempoCompactacion);
 
 			fputs(lineaConsistencia, archivoMetadata);
 			fputs(lineaParticiones, archivoMetadata);
@@ -2607,16 +2619,15 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 				char* archivoParticion = rutaParticion(i);
 				FILE* particion;
 				particion = fopen(archivoParticion, "w");
-				char* lineaParticion = malloc(
-						string_length("SIZE=") + sizeof(int)
-								+ string_length("BLOCK=[]") + sizeof(int) + 4);
-				lineaParticion = string_new();
-				string_append(&lineaParticion, "SIZE=0");
-				//string_append(&lineaParticion,"1");
-				string_append(&lineaParticion, "\n");
-				string_append(&lineaParticion, "BLOCKS=[");
-				string_append(&lineaParticion, "1");
-				string_append(&lineaParticion, "]");
+
+				int tamanio = string_length("SIZE=") + sizeof(int)+ string_length("BLOCKS=[]") + sizeof(int) + 4;
+				int bloqueLibre =  obtenerPrimerBloqueLibreBitmap();
+				ocuparBloqueLibreBitmap(bloqueLibre);
+
+				char* lineaParticion = malloc(tamanio);
+
+				snprintf(lineaParticion,tamanio,"SIZE=0\nBLOCKS=[%d]",bloqueLibre);
+
 				fputs(lineaParticion, particion);
 				log_info(logger, "Particion creada: %s", archivoParticion);
 				fclose(particion);
@@ -2641,11 +2652,11 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 
 int comandoInsertSinTimestamp(char* tabla, char* key, char* value) {
 
-	int aux = time(NULL);
+	u_int64_t aux = time(NULL);
 
 	char timestamp[11];
 
-	sprintf(timestamp, "%d", aux);
+	sprintf(timestamp, "%ld", aux);
 
 	log_info(logger, "el timestamp a agregar es: %s", timestamp);
 
@@ -2685,12 +2696,14 @@ int comandoInsert(char* tabla, char* key, char* value, char* timestamp) {
 
 				t_list* listaAux = list_create();
 				list_add(listaAux, registroPorAgregarE);
+				char* aux = malloc(strlen(tabla)+1);
+				strcpy(aux,tabla);
 
 				mutexBloquear(&memtable_mx);
 				dictionary_put(memtable, tabla, listaAux);
 				mutexDesbloquear(&memtable_mx);
 				mutexBloquear(&listaTablasInsertadas_mx);
-				list_add(listaTablasInsertadas, tabla); //puede llegar a romper, agregar un aux
+				list_add(listaTablasInsertadas, aux); //puede llegar a romper, agregar un aux
 				mutexDesbloquear(&listaTablasInsertadas_mx);
 
 			}
@@ -2773,7 +2786,7 @@ t_registroMemtable *leerBloquesConsecutivosUnaKey(t_list *nroBloques,
 
 	t_registroMemtable *registro = malloc(sizeof(t_registroMemtable));
 	registro->value = malloc(configFile->tamanio_value + 1);
-
+	strcpy(registro->value, "");
 	t_registroMemtable *retval = malloc(sizeof(t_registroMemtable));
 	retval->value = malloc(configFile->tamanio_value + 1);
 	retval->timestamp = 0;
@@ -2785,10 +2798,10 @@ t_registroMemtable *leerBloquesConsecutivosUnaKey(t_list *nroBloques,
 	estadoLecturaBloque_t anterior = EST_TIMESTAMP;
 
 	void *aux_campo_leyendo;
-	if (configFile->tamanio_value + 1 > sizeof(double))
+	if (configFile->tamanio_value + 1 > sizeof(u_int64_t))
 		aux_campo_leyendo = malloc(configFile->tamanio_value + 1);
 	else
-		aux_campo_leyendo = malloc(sizeof(double));
+		aux_campo_leyendo = malloc(sizeof(u_int64_t));
 	int offset_bloque = 0, tam_bloque = 0, offset_campo = 0, offset_total = 0,
 			bloques_leidos = 0, num_separador = 0;
 	bool leiValueEntero;
@@ -2830,20 +2843,20 @@ t_registroMemtable *leerBloquesConsecutivosUnaKey(t_list *nroBloques,
 
 		case EST_TIMESTAMP:
 //				log_info(logger, "Buscando el timestamp");
-//				log_info(logger, "Al bloque le quedan %d bytes y yo necesito %d",tam_bloque-offset_bloque, sizeof(double)-offset_campo);
+//				log_info(logger, "Al bloque le quedan %d bytes y yo necesito %d",tam_bloque-offset_bloque, sizeof(u_int64_t)-offset_campo);
 
 			//Si con los bytes que le quedan al bloque me alcanza para completar el campo, los copio y avanzo al siguiente estado
-			if (offset_bloque + sizeof(double) - offset_campo <= tam_bloque) {
+			if (offset_bloque + sizeof(u_int64_t) - offset_campo <= tam_bloque) {
 				memcpy(aux_campo_leyendo + offset_campo,
 						registros_bloque + offset_bloque,
-						sizeof(double) - offset_campo);
+						sizeof(u_int64_t) - offset_campo);
 				memcpy(&(registro->timestamp), aux_campo_leyendo,
-						sizeof(double));
-//					log_info(logger, "Timestamp leido: %lf",registro->timestamp);
+						sizeof(u_int64_t));
+//					log_info(logger, "Timestamp leido: %d",registro->timestamp);
 
 				//Avanzo los offset los bytes que acabo de leer
-				offset_bloque += sizeof(double) - offset_campo;
-				offset_total += sizeof(double) - offset_campo;
+				offset_bloque += sizeof(u_int64_t) - offset_campo;
+				offset_total += sizeof(u_int64_t) - offset_campo;
 
 				//Avanzo al siguiente estado que es buscar un separador
 				anterior = estado;
@@ -2859,7 +2872,7 @@ t_registroMemtable *leerBloquesConsecutivosUnaKey(t_list *nroBloques,
 				offset_campo += tam_bloque - offset_bloque;
 				offset_total += tam_bloque - offset_bloque;
 				offset_bloque += tam_bloque - offset_bloque;
-//					log_info(logger, "Me faltan %d bytes para leer el timestamp",sizeof(double)-offset_campo);
+//					log_info(logger, "Me faltan %d bytes para leer el timestamp",sizeof(u_int64_t)-offset_campo);
 
 				//Voy a leer un nuevo bloque
 				anterior = estado;
@@ -2968,11 +2981,11 @@ t_registroMemtable *leerBloquesConsecutivosUnaKey(t_list *nroBloques,
 				offset_total += strlen(registro->value) - offset_campo;
 
 				//Calculo el tamaño
-				registro->tam_registro = sizeof(double) + sizeof(uint16_t)
+				registro->tam_registro = sizeof(u_int64_t) + sizeof(uint16_t)
 						+ strlen(registro->value) + 1;
 
 				if (registro->key == key_buscada) {
-//						log_info(logger, "[OBTENIENDO KEY BLOQUES] Encontre un registro con la key %d: <%lf;%d;%s>", key_buscada, registro->timestamp,registro->key,registro->value);
+						//log_info(logger, "[OBTENIENDO KEY BLOQUES] Encontre un registro con la key %d: <%d;%d;%s>", key_buscada, registro->timestamp,registro->key,registro->value);
 					if (es_unica) {
 //							log_info(logger, "[OBTENIENDO KEY BLOQUES] Al ser único, no sigo buscando");
 
@@ -3046,16 +3059,21 @@ t_registroMemtable *leerBloquesConsecutivosUnaKey(t_list *nroBloques,
 	free(aux_value);
 	free(aux_campo_leyendo);
 
+	log_info(logger, "libere bloque no nulo");
+
 	if (registro != NULL) {
 		if (registro->value != NULL)
 			free(registro->value);
 		free(registro);
 	}
-
+	log_info(logger, "por imprimir el retval");
 	if (retval->timestamp != 0) {
-		log_info(logger,
-				"[OBTENIENDO KEY BLOQUES] El registro con mayor timestamp es <%lf;%d;%s>",
-				retval->timestamp, retval->key, retval->value);
+		log_info(logger, "antes de imprimir");
+		log_info(logger, "antes de imprimir %d",retval->key);
+		log_info(logger, "antes de imprimir %d",retval->timestamp);
+		log_info(logger, "antes de imprimir %s",retval->value);
+
+		//log_info(logger,"[OBTENIENDO KEY BLOQUES] El registro con mayor timestamp es <%d;%d;%s>",retval->timestamp, retval->key, "retval->value");
 	} else {
 		log_info(logger,
 				"[OBTENIENDO KEY BLOQUES] No encontré un registro con la key indicada");
