@@ -33,6 +33,14 @@ double  timestamp(void) {
 //	return (unsigned)time(NULL);
 }
 */
+
+timestamp_t timestamp(void)
+{
+	struct timeval t;
+	gettimeofday(&t, NULL);
+	timestamp_t result = (((unsigned long long)t.tv_sec)*1000+((unsigned long long)t.tv_usec)/1000);
+	return result;
+}
 //--------------------------------------- Funciones para Socket -------------------------------------
 
 void socketConfigurar(Conexion* conexion, String ip, String puerto,t_log* logger) {
