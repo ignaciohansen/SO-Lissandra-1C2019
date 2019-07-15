@@ -525,7 +525,7 @@ void consola() {
 
 		linea = readline(">");
 
-		if (linea) {
+		if (linea && strcmp(linea,"\n") && strcmp(linea,"")) {
 			add_history(linea);
 
 			sem_wait(&semaforoQueries);
@@ -539,16 +539,18 @@ void consola() {
 			break;
 		}
 
-		//fgets(bufferComando, MAXSIZE_COMANDO, stdin); -> Implementacion anterior
-		comandoSeparado = string_split(linea, separator);
+		if (linea && strcmp(linea,"\n") && strcmp(linea,"")) { //Así no rompe cuando se apreta enter
+			//fgets(bufferComando, MAXSIZE_COMANDO, stdin); -> Implementacion anterior
+			comandoSeparado = string_split(linea, separator);
 
-		validarLinea(comandoSeparado, logger);
-		int i;
-		log_info(logger, "Liberando comando alocado: %s", linea);
-		for (i = 0; comandoSeparado[i] != NULL; i++) {
-			free(comandoSeparado[i]);
-		}
+			validarLinea(comandoSeparado, logger);
+			int i;
+			log_info(logger, "Liberando comando alocado: %s", linea);
+			for (i = 0; comandoSeparado[i] != NULL; i++) {
+				free(comandoSeparado[i]);
+			}
 		free(comandoSeparado);
+		}
 		free(linea);
 	}
 }
@@ -755,6 +757,11 @@ void validarComando(char** comando, int tamanio, t_log* logger) {
 }
 
 int buscarComando(char* comando, t_log* logger) {
+
+	if(comando == NULL){
+		log_info(logger, "Recibimos el comando: NULL");
+		return -1;
+	}
 
 	log_info(logger, "Recibimos el comando: %s", comando);
 
@@ -1215,14 +1222,16 @@ int crearArchivoTemporal(char* path, char* tabla) {
 	int tam_total_registros = tamTotalListaRegistros(listaRegistrosTabla);
 	int cantidad_bloques = cuantosBloquesNecesito(tam_total_registros);
 	int bloqueAux;
-
+	int *bloqueLista;
 	if (cantBloquesLibresBitmap() >= cantidad_bloques) {
 		for (int i = 0; i < cantidad_bloques; i++) {
 			bloqueAux = obtenerPrimerBloqueLibreBitmap();
+			bloqueLista = malloc(sizeof(int));
+			*bloqueLista = bloqueAux;
 			if (bloqueAux != -1) {
 				ocuparBloqueLibreBitmap(bloqueAux);
 				//list_add(bloquesUsados, (void*)bloqueAux);
-				list_add(bloquesUsados, &bloqueAux);
+				list_add(bloquesUsados, bloqueLista);
 			} else {
 				//liberar los bloques de la lista
 				return -1;
@@ -1353,6 +1362,7 @@ int escribirVariosBloques(t_list* bloques, int tam_total_registros,
 
 	int resultado = 1;
 	int offset = 0;
+	int tam_total = tam_total_registros;
 
 	for (int i = 0; i < list_size(bloques); i++) {
 
@@ -1384,6 +1394,10 @@ int escribirVariosBloques(t_list* bloques, int tam_total_registros,
 
 	log_info(logger, "[BLOQUE] Se terminaron de escribir los bloques");
 
+	log_info(logger, "[BLOQUE] Reviso que esté todo bien escrito");
+
+	leerBloquesConsecutivos(bloques,tam_total);
+
 	return resultado;
 }
 
@@ -1398,7 +1412,7 @@ int escribirBloque(int bloque, int size, int offset, void* buffer) {
 		log_info(logger, "entre al if");
 		fwrite(buffer + offset, size, 1, bloqueFile);
 		fclose(bloqueFile);
-		leerBloque(path);
+//		leerBloque(path); //Rompe porque el bloque puede haber quedado cortado
 		free(path);
 		return 0;
 	}
@@ -2541,6 +2555,8 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 		registroMayor = tomarMayorRegistro(registroMemtable,registroParticion,registroTemporal,registroTemporalC);
 
 		log_info(logger,"el timestamp mas grande es %ld",registroMayor->timestamp);
+
+		printf("Registro obtenido: <%d;%ld;%s>\n", registroMayor->key, registroMayor->timestamp, registroMayor->value);
 
 		return registroMayor;
 

@@ -246,6 +246,12 @@ int abrirArchivoBloque(FILE **fp, int nroBloque, char *modo);
  *--------------------------------------------------------------------------------------------
  */
 
+void validarComando(char** comando, int tamanio, t_log* logger);
+
+int buscarComando(char* comando, t_log* logger);
+
+void validarLinea(char** lineaIngresada, t_log* logger);
+
 int obtenerMetadataTabla(char* tabla);
 
 int obtenerMetadata();
