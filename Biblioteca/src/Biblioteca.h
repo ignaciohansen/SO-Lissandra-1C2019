@@ -144,7 +144,7 @@ void abortarProcesoPorUnErrorImportante(t_log* log, char* mensaje);
 //--------------------------------------- Funcion timestamp -------------------------------------
 
 //timestamp_t timestamp(void);
-
+timestamp_t timestamp(void);
 //--------------------------------------- Funciones para Socket -------------------------------------
 
 //void socketConfigurar(Conexion* conexion, String ip, int puerto, t_log* logger);

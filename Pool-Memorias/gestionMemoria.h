@@ -30,7 +30,7 @@ void insertCrearPaginaConNuevoSegmento(char* nombreTabla, u_int16_t keyBuscada,
 /* FUNCIONES INTERNAS A LA BIBLIOTECA */
 
 void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo, timestamp_mem_t timestamp_val);
-timestamp_mem_t timestamp(void);
+//timestamp_mem_t timestamp(void);
 void liberar_todo_segmento(void);
 
 //ESTE DE AQUI ABAJO DEVUELVE LA POSICION EN DONDE SE ENCUENTA LA KEY BUSCADA
