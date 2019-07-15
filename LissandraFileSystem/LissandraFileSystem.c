@@ -651,8 +651,11 @@ void validarComando(char** comando, int tamanio, t_log* logger) {
 			log_info(logger,
 					"Cantidad de parametros correctos ingresados para el comando select");
 
-			comandoSelect(comando[1], comando[2]);
+			t_registroMemtable* reg_aux;
 
+			reg_aux = comandoSelect(comando[1], comando[2]);
+			free(reg_aux->value);
+			free(reg_aux);
 		}
 
 	}
