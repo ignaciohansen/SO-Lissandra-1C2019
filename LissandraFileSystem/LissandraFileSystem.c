@@ -588,8 +588,9 @@ void validarLinea(char** lineaIngresada, t_log* logger) {
 		if (strcmp(lineaIngresada[0], "describe") == 0) {
 
 			printf("Describe seleccionado\n");
-
-			comandoDescribe();
+			char* resultadoDeDESCRIBE;
+			resultadoDeDESCRIBE= comandoDescribe();
+			free(resultadoDeDESCRIBE);
 
 		} else {
 			printf("Comando mal ingresado. \n");
@@ -830,13 +831,15 @@ int verificarTabla(char* tabla) {
 	/*
 	 * REVISAR LUEGO ESTA FUNCION, esta muy mal hecha
 	 */
-
+	if(tablaAverificar!=NULL){
+		free(tablaAverificar);
+	}
 
 	tablaAverificar = malloc(string_length(tabla_Path) + string_length(tabla));
 
 	log_info(logger,
 			"Se reservo memoria para contatenar punto de montaje con la tabla");
-	tablaAverificar = string_new();
+//	tablaAverificar = string_new();
 
 	for (int i = 0; i < strlen(tabla); i++) {
 		tabla[i] = toupper(tabla[i]);
@@ -857,10 +860,12 @@ int verificarTabla(char* tabla) {
 	file = fopen(tablaAverificar, "r");
 
 	if (file == NULL) {
+		free(tablaAverificar);
 		log_error(logger, "[ERROR] No existe la tabla");
 		return -1;
 
 	} else {
+		free(tablaAverificar);
 		log_info(logger, "[ OK ] La tabla ya existe.");
 		fclose(file);
 		return 0;
@@ -941,6 +946,21 @@ int obtenerMetadataTabla(char* tabla) {
 	log_info(logger,
 			"[FREE] variable metadataFile utlizada para navegar el metadata.");
 
+	free(metadataFile->path);
+	int i = 0;
+	t_hash_element* aux_element;
+	while(i < metadataFile->properties->elements_amount){
+		while(metadataFile->properties->elements[i]!=NULL){
+			aux_element = metadataFile->properties->elements[i]->next;
+			free(metadataFile->properties->elements[i]->data);
+			free(metadataFile->properties->elements[i]->key);
+			metadataFile->properties->elements[i] = aux_element;
+		}
+//		free(metadataFile->properties->elements[i]);
+		i++;
+	}
+
+	free(metadataFile->properties);
 	free(metadataFile);
 
 	//log_info(logger, "[obtenerMetadata] (-) metadata a abrir : %s",tablaAverificar);
@@ -1067,7 +1087,7 @@ char* retornarValores(char* tabla) {
 	char* valorDescribe = malloc(
 			strlen(tabla) + strlen(metadata->consistency) + strlen(particiones)
 					+ strlen(tiempoCompactacion) + 4);
-	valorDescribe = string_new();
+//	valorDescribe = string_new();
 
 	string_append(&valorDescribe, tabla);
 	string_append(&valorDescribe, "|");
@@ -1077,6 +1097,8 @@ char* retornarValores(char* tabla) {
 	string_append(&valorDescribe, "|");
 	string_append(&valorDescribe, tiempoCompactacion);
 
+	free(particiones);
+	free(tiempoCompactacion);
 	return valorDescribe;
 
 }
@@ -1088,7 +1110,7 @@ char* retornarValoresDirectorio() {
 	char* pathTabla = malloc(sizeof(char) * 50);
 	char* resultado;
 	int memoriaParaMalloc = 0;
-	pathTabla = string_new();
+//	pathTabla = string_new();
 	t_list* lista_describes;
 	lista_describes = list_create();
 
@@ -1120,7 +1142,7 @@ char* retornarValoresDirectorio() {
 		}
 	}
 	char* resultadoFinal = malloc(memoriaParaMalloc + 1);
-	resultadoFinal = string_new();
+//	resultadoFinal = string_new();
 	for (int i = 0; i < list_size(lista_describes); i++) {
 		char* elemento = list_get(lista_describes, i);
 		string_append(&resultadoFinal, elemento);
@@ -1128,8 +1150,29 @@ char* retornarValoresDirectorio() {
 	}
 	resultadoFinal = stringTomarDesdeInicio(resultadoFinal,
 			strlen(resultadoFinal) - 1);
-	return resultadoFinal;
+
+
+	if(lista_describes->elements_count > 0){
+		t_link_element * aux;
+		while(lista_describes->head!=NULL){
+			aux = lista_describes->head->next;
+			free(lista_describes->head);
+			lista_describes->head=aux;
+		}
+	}
+
+	t_link_element* elemento;
+	while(lista_describes->head!=NULL){
+		elemento = lista_describes->head->next;
+		free(lista_describes->head->data);
+		free(lista_describes->head);
+		lista_describes->head = elemento;
+	}
+	free(resultado);
+	free(lista_describes);
+	free(pathTabla);
 	closedir(dir);
+	return resultadoFinal;
 }
 
 //DUMP
@@ -2740,20 +2783,6 @@ char* comandoDescribe() {
 	return resultado;
 }
 
-void cerrarTodo() {
-	liberarTodosLosRecursosGlobalesQueNoSeCerraron();
-	sem_destroy(&semaforoQueries);
-	dictionary_destroy(memtable);
-	list_destroy(listaTablasInsertadas);
-	fclose(archivoBitmap);
-}
-
-void liberarTodosLosRecursosGlobalesQueNoSeCerraron() {
-	free(metadataLFS);
-	free(bitmapPath);
-	free(tabla_Path);
-}
-
 t_list *obtenerArchivosDirectorio(char *path, char *terminacion) {
 	t_list *retval = list_create();
 
@@ -3079,5 +3108,20 @@ t_registroMemtable *leerBloquesConsecutivosUnaKey(t_list *nroBloques,
 				"[OBTENIENDO KEY BLOQUES] No encontré un registro con la key indicada");
 	}
 	return retval;
+}
+
+void cerrarTodo() {
+	liberarTodosLosRecursosGlobalesQueNoSeCerraron();
+	sem_destroy(&semaforoQueries);
+	dictionary_destroy(memtable);
+	list_destroy(listaTablasInsertadas);
+	fclose(archivoBitmap);
+}
+
+void liberarTodosLosRecursosGlobalesQueNoSeCerraron() {
+	free(metadataLFS);
+	free(bitmapPath);
+	free(tabla_Path);
+	free(path_tabla_metadata);
 }
 
