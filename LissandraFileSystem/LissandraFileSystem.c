@@ -312,11 +312,12 @@ void cargarBitmap() {
 
 	if (!existeArchivo(bitmapPath)) {
 		log_info(logger, "Archivo de bitmap no existe, se procede a crear el bitmap");
-		bitarray = crearBitarray();
+		crearBitarray();
+		abrirBitmap();
 	} else {
 		log_info(logger, "existe archivo, se procede a abrir el bitmap");
-		//abrirBitmap();
-		bitarray = crearBitarray();
+		abrirBitmap();
+
 	}
 
 	log_info(logger, "cantidad de bloques libres en el bitmap: %d",
@@ -325,7 +326,7 @@ void cargarBitmap() {
 	//pruebas de las funciones bitmap
 	log_info(logger, "cantidad de bloques ocupados: %d", cantidadBloquesOcupadosBitmap());
 
-	 ocuparBloqueLibreBitmap(0);
+	 ocuparBloqueLibreBitmap(obtenerPrimerBloqueLibreBitmap());
 	 log_info(logger, "ocupando bloque: %d", 0);
 	 log_info(logger, "se ocupo bien? tiene que ser 1: %d", estadoBloqueBitmap(0));
 
@@ -362,15 +363,14 @@ int abrirBitmap(){
 
 	bitarray = bitarray_create_with_mode(bmap, metadataLFS->blocks / 8, MSB_FIRST);
 
-	close(bitmap);
-
-	log_info(logger, "bitmap abierto correctamente");
+	imprimirMensajeProceso(
+				"[BITMAP ABIERTO] ya se puede operar con los bloques");
 
 	free(fs_path);
 	return 0;
 }
 
-t_bitarray* crearBitarray() {
+void crearBitarray() {
 
 	bytesAEscribir = metadataLFS->blocks / 8;
 
@@ -398,11 +398,12 @@ t_bitarray* crearBitarray() {
 	imprimirMensajeProceso(
 			"[BITMAP CREADO] ya se puede operar con los bloques");
 
-	t_bitarray* bitarrayReturn = bitarray_create_with_mode(bitarrayAux, bytesAEscribir, MSB_FIRST);
+	//t_bitarray* bitarrayReturn = bitarray_create_with_mode(bitarrayAux, bytesAEscribir, MSB_FIRST);
 
-	//fclose(archivoBitmap);
+	fclose(archivoBitmap);
+	free(bitarrayAux);
 
-	return bitarrayReturn;
+	//return bitarrayReturn;
 
 }
 

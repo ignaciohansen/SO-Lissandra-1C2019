@@ -166,7 +166,7 @@ FILE* archivoBitmap;
 int existeArchivo(char* path);
 void cargarBitmap();
 int abrirBitmap();
-t_bitarray* crearBitarray();
+void crearBitarray();
 void persistirCambioBitmap();
 int cantBloquesLibresBitmap();
 int estadoBloqueBitmap(int bloque);
