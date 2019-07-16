@@ -115,7 +115,7 @@ typedef struct{
 
 }t_metadata_tabla;
 
-t_metadata_tabla* metadata;
+//t_metadata_tabla* metadata; //La hago variable local, sino va a romper al tener procesos concurrentes
 
 typedef struct{
 	int size;
@@ -252,13 +252,13 @@ int buscarComando(char* comando, t_log* logger);
 
 void validarLinea(char** lineaIngresada, t_log* logger);
 
-int obtenerMetadataTabla(char* tabla);
+t_metadata_tabla* obtenerMetadataTabla(char* tabla);
 
 int obtenerMetadata();
 
 int verificarTabla(char* tabla);
 
-char* retornarValores(char* tabla);
+char* retornarValores(char* tabla, t_metadata_tabla* metadata);
 
 char* retornarValoresDirectorio();
 
@@ -289,5 +289,7 @@ t_registroMemtable* armarRegistroNulo();
 int pruebaLecturaBloquesConsecutivos(void);
 
 t_list *obtenerArchivosDirectorio(char *path, char *terminacion);
+
+char* rutaParticion(char* tabla, int particion);
 
 #endif /* LFILESSYSTEM_H_ */
