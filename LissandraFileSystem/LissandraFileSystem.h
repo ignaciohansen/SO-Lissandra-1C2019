@@ -292,4 +292,8 @@ t_list *obtenerArchivosDirectorio(char *path, char *terminacion);
 
 char* rutaParticion(char* tabla, int particion);
 
+t_registroMemtable *crearCopiaRegistro(t_registroMemtable *origen);
+
+void borrarRegistro(t_registroMemtable *reg);
+
 #endif /* LFILESSYSTEM_H_ */
