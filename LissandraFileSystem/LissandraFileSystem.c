@@ -340,38 +340,33 @@ void cargarBitmap() {
 	string_append(&bitmapPath, PATH_LFILESYSTEM_BITMAP);*/
 
 	if (!existeArchivo(bitmapPath)) {
-		log_info(log,
-				"Archivo de bitmap no existe, se procede a crear el bitmap");
-		bitarray = crearBitarray();
+		log_info(logger, "Archivo de bitmap no existe, se procede a crear el bitmap");
+		crearBitarray();
+		abrirBitmap();
 	} else {
 		log_info(logger, "existe archivo, se procede a abrir el bitmap");
 		abrirBitmap();
+
 	}
 
 	log_info(logger, "cantidad de bloques libres en el bitmap: %d",
 			cantBloquesLibresBitmap());
 
 	//pruebas de las funciones bitmap
-	log_info(logger, "cantidad de bloques ocupados: %d",
-			cantidadBloquesOcupadosBitmap());
+	log_info(logger, "cantidad de bloques ocupados: %d", cantidadBloquesOcupadosBitmap());
 
-	ocuparBloqueLibreBitmap(0);
-	log_info(logger, "ocupando bloque: %d", 0);
-	log_info(logger, "se ocupo bien? tiene que ser 1: %d",
-			estadoBloqueBitmap(0));
+	 ocuparBloqueLibreBitmap(obtenerPrimerBloqueLibreBitmap());
+	 log_info(logger, "ocupando bloque: %d", 0);
+	 log_info(logger, "se ocupo bien? tiene que ser 1: %d", estadoBloqueBitmap(0));
 
-	log_info(logger, "cantidad de bloques ocupados: %d = 1?",
-			cantidadBloquesOcupadosBitmap());
-	log_info(logger, "primer bloque libre: %d",
-			obtenerPrimerBloqueLibreBitmap());
+	 log_info(logger, "cantidad de bloques ocupados: %d = 1?", cantidadBloquesOcupadosBitmap());
+	 log_info(logger, "primer bloque libre: %d", obtenerPrimerBloqueLibreBitmap());
 
-	liberarBloqueBitmap(0);
-	log_info(logger, "okey... vamos a liberarlo");
-	log_info(logger, "se libero bien? tiene que ser 0: %d",
-			estadoBloqueBitmap(0));
+	 liberarBloqueBitmap(0);
+	 log_info(logger, "okey... vamos a liberarlo");
+	 log_info(logger, "se libero bien? tiene que ser 0: %d", estadoBloqueBitmap(0));
 
-	log_info(logger, "cantidad de bloques ocupados: %d = 0?",
-			cantidadBloquesOcupadosBitmap());
+	 log_info(logger, "cantidad de bloques ocupados: %d = 0?", cantidadBloquesOcupadosBitmap());
 }
 
 int abrirBitmap() {
@@ -402,23 +397,24 @@ int abrirBitmap() {
 	bitarray = bitarray_create_with_mode(bmap, metadataLFS->blocks / 8,
 			MSB_FIRST);
 
-	log_info(logger, "bitmap abierto correctamente");
+	imprimirMensajeProceso(
+				"[BITMAP ABIERTO] ya se puede operar con los bloques");
 
 	free(fs_path);
 	return 0;
 }
 
-t_bitarray* crearBitarray() {
+void crearBitarray() {
 
 	bytesAEscribir = metadataLFS->blocks / 8;
 
 	if (metadataLFS->blocks % 8 != 0)
 		bytesAEscribir++;
 
-	if (fopen(bitmapPath, "rb") != NULL) {
+	/*if (fopen(bitmapPath, "rb") != NULL) {
 
 		return NULL;
-	}
+	}*/
 
 	char* bitarrayAux = malloc(bytesAEscribir);
 	bzero(bitarrayAux, bytesAEscribir);
@@ -436,13 +432,26 @@ t_bitarray* crearBitarray() {
 	imprimirMensajeProceso(
 			"[BITMAP CREADO] ya se puede operar con los bloques");
 
-	return bitarray_create_with_mode(bitarrayAux, bytesAEscribir, MSB_FIRST);
+	//t_bitarray* bitarrayReturn = bitarray_create_with_mode(bitarrayAux, bytesAEscribir, MSB_FIRST);
+
+	fclose(archivoBitmap);
+	free(bitarrayAux);
+
+	//return bitarrayReturn;
 
 }
 
 void persistirCambioBitmap() {
 
+	/*FILE* archivoBitmap = fopen(bitmapPath, "wb");
+
+	if(archivoBitmap == NULL) {
+		log_error(logger, "error al abrir el archivo Bitmap");
+	}*/
+
 	fwrite(bitarray->bitarray, bytesAEscribir, 1, archivoBitmap);
+
+	//fclose(archivoBitmap);
 
 	log_info(logger, "cambios en bitmap persistidos");
 }
@@ -495,8 +504,7 @@ int obtenerPrimerBloqueLibreBitmap() {
 
 int obtenerPrimerBloqueOcupadoBitmap() {
 
-	int posicion = 0;
-
+	int posicion = -1;
 	for (int i = 0; i < bitarray_get_max_bit(bitarray); i++) {
 		if (bitarray_test_bit(bitarray, i) == 1) {
 			posicion = i;
@@ -549,6 +557,7 @@ void consola() {
 			break;
 		}
 
+
 		if (linea && strcmp(linea,"\n") && strcmp(linea,"")) { //Así no rompe cuando se apreta enter
 			//fgets(bufferComando, MAXSIZE_COMANDO, stdin); -> Implementacion anterior
 			comandoSeparado = string_split(linea, separator);
@@ -580,7 +589,7 @@ void menu() {
 
 }
 
-void validarLinea(char** lineaIngresada, t_log* logger) {
+void validarLinea(char** lineaIngresada) {
 
 	for (int i = 0; lineaIngresada[i] != NULL; i++) {
 
@@ -614,22 +623,22 @@ void validarLinea(char** lineaIngresada, t_log* logger) {
 		break;
 	}
 	case 2:
-		validarComando(lineaIngresada, tamanio, logger);
+		validarComando(lineaIngresada, tamanio);
 
 		break;
 
 	case 3:
-		validarComando(lineaIngresada, tamanio, logger);
+		validarComando(lineaIngresada, tamanio);
 
 		break;
 
 	case 4:
-		validarComando(lineaIngresada, tamanio, logger);
+		validarComando(lineaIngresada, tamanio);
 
 		break;
 
 	case 5:
-		validarComando(lineaIngresada, tamanio, logger);
+		validarComando(lineaIngresada, tamanio);
 
 		break;
 
@@ -644,11 +653,9 @@ void validarLinea(char** lineaIngresada, t_log* logger) {
 	}
 }
 
-void validarComando(char** comando, int tamanio, t_log* logger) {
+void validarComando(char** comando, int tamanio) {
 
-	int resultadoComando = buscarComando(comando[0], logger);
-
-	int tamanioCadena = 0;
+	int resultadoComando = buscarComando(comando[0]);
 
 	switch (resultadoComando) {
 
@@ -773,7 +780,7 @@ void validarComando(char** comando, int tamanio, t_log* logger) {
 	}
 }
 
-int buscarComando(char* comando, t_log* logger) {
+int buscarComando(char* comando) {
 
 	if(comando == NULL){
 		log_info(logger, "Recibimos el comando: NULL");
@@ -824,7 +831,7 @@ void listenSomeLQL() {
 
 		comandoSeparado = string_split(msg, separator);
 
-		validarLinea(comandoSeparado, logger);
+		validarLinea(comandoSeparado);
 
 		string_append(&msg, "Mensaje recibido: \"");
 		string_append(&msg, buffer);
@@ -1281,6 +1288,21 @@ char* retornarValoresDirectorio() {
 	return resultadoFinal;
 }
 
+void INThandler(int sig) {
+
+     //char  c;
+
+     signal(sig, SIG_IGN);
+     printf("OUCH, did you hit Ctrl-C?\n");
+            //"Do you really want to quit? [y/n] ");
+     /*c = getchar();
+     if (c == 'y' || c == 'Y')
+          exit(0);
+     else
+          signal(SIGINT, INThandler);
+     getchar(); // Get new line character*/
+}
+
 //DUMP
 
 void esperarTiempoDump() {
@@ -1294,7 +1316,7 @@ void esperarTiempoDump() {
 		int tam = list_size(listaTablasInsertadas);
 		mutexDesbloquear(&listaTablasInsertadas_mx);
 		if (tam > 0) {
-
+			//signal(SIGINT, INThandler);
 			pthread_mutex_lock(&mutex_dump);
 			log_info(logger, "Se encontraron cosas, se hace el dump");
 //			log_info(logger, "[DEBUG] IGNORANDO DUMP!!!!!");
@@ -1302,6 +1324,7 @@ void esperarTiempoDump() {
 			printf("\n****Se realizó un DUMP****\n>");
 			pthread_mutex_unlock(&mutex_dump);
 			cantidad_de_dumps++;
+			//pause();
 		} else {
 			log_info(logger, "La memtable esta vacia");
 		}
@@ -1355,7 +1378,11 @@ char* armarPathTablaParaDump(char* tabla, int dumps) {
 
 	string_append(&path_archivo_temporal, "/");
 
-	sprintf(nombreArchivoTemporal, "%d", dumps);
+	int cantidadDumps = cantidadDumpsTabla(path_archivo_temporal);
+
+	log_info(logger, "[QQQQQ] la cantidad de dumps es: %d", cantidadDumps);
+
+	sprintf(nombreArchivoTemporal, "%d", cantidadDumps);
 
 	string_append(&path_archivo_temporal, nombreArchivoTemporal);
 
@@ -1367,6 +1394,37 @@ char* armarPathTablaParaDump(char* tabla, int dumps) {
 
 }
 
+int cantidadDumpsTabla(char* pathTabla) {
+
+	int size = strlen(pathTabla) + sizeof(int) + strlen(".tmp") + 1;
+	char* auxPath = malloc(size);
+	int cantidad = 0;
+	bool final = false;
+
+
+	FILE* tabla;
+
+	while(!final) {
+
+		snprintf(auxPath,strlen,"%s%d.tmp",pathTabla, cantidad);
+
+		log_info(logger, "[YYYYYY] ruta del tmp a verificar: %s", auxPath);
+
+		tabla = fopen(auxPath, "r");
+		if(tabla != NULL) {
+			cantidad++;
+			fclose(tabla);
+		}
+		else {
+			final = true;
+		}
+	}
+
+	free(auxPath);
+
+	return cantidad;
+}
+
 int crearArchivoTemporal(char* path, char* tabla) {
 
 	// path objetivo: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA/cantidad_de_dumps.tmp
@@ -1375,6 +1433,7 @@ int crearArchivoTemporal(char* path, char* tabla) {
 	t_list* bloquesUsados = list_create();
 	int tam_total_registros = tamTotalListaRegistros(listaRegistrosTabla);
 	int cantidad_bloques = cuantosBloquesNecesito(tam_total_registros);
+
 	int bloqueAux;
 	int *bloqueLista;
 	log_info(logger,"[DEBUG] Tengo %d bloques libres y necesito %d", cantBloquesLibresBitmap(), cantidad_bloques);
@@ -1450,6 +1509,12 @@ int crearArchivoTemporal(char* path, char* tabla) {
 		log_error(logger,
 				"[DUMP] hubo un error al escribir los datos en los bloques");
 	}
+	else {
+		log_error(logger, "[DUMP] hubo un error al escribir los datos en los bloques");
+	}
+
+	//list_clean_and_destroy_elements(bloquesUsados, free);
+	list_destroy_and_destroy_elements(bloquesUsados, free);
 
 	return 0;
 }
@@ -1531,14 +1596,12 @@ int escribirVariosBloques(t_list* bloques, int tam_total_registros,
 
 	for (int i = 0; i < list_size(bloques); i++) {
 
-		log_info(logger, "entro al for");
 		int* auxnroBloque = list_get(bloques, i);
 		int nroBloque = *auxnroBloque;
-		log_info(logger, "numero de bloque %d", nroBloque);
+    log_info(logger, "bloque seleccionado para guardar el tmp %d", nroBloque);
 		if (tam_total_registros <= metadataLFS->block_size) {
 			log_info(logger, "tam registros menor a block size");
-			resultado = escribirBloque(nroBloque, tam_total_registros, offset,
-					buffer);
+			resultado = escribirBloque(nroBloque, tam_total_registros, offset,buffer);
 			offset += tam_total_registros;
 			tam_total_registros -= tam_total_registros;
 		} else {
@@ -1554,7 +1617,6 @@ int escribirVariosBloques(t_list* bloques, int tam_total_registros,
 			//liberar bloques en el bitmap
 			break;
 		}
-		log_info(logger, "salgo del for");
 	}
 
 	log_info(logger, "[BLOQUE] Se terminaron de escribir los bloques");
@@ -1562,7 +1624,6 @@ int escribirVariosBloques(t_list* bloques, int tam_total_registros,
 	log_info(logger, "[BLOQUE] Reviso que esté todo bien escrito");
 
 	leerBloquesConsecutivos(bloques,tam_total);
-
 	return resultado;
 }
 
@@ -1577,7 +1638,6 @@ int escribirBloque(int bloque, int size, int offset, void* buffer) {
 		log_info(logger, "entre al if");
 		fwrite(buffer + offset, size, 1, bloqueFile);
 		fclose(bloqueFile);
-//		leerBloque(path); //Rompe porque el bloque puede haber quedado cortado
 		free(path);
 		return 0;
 	}

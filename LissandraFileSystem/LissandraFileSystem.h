@@ -9,6 +9,7 @@
 //Agregadas para directorio
 #include <stdlib.h>
 #include <stdio.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -188,7 +189,7 @@ FILE* archivoBitmap;
 int existeArchivo(char* path);
 void cargarBitmap();
 int abrirBitmap();
-t_bitarray* crearBitarray();
+void crearBitarray();
 void persistirCambioBitmap();
 int cantBloquesLibresBitmap();
 int estadoBloqueBitmap(int bloque);
@@ -213,6 +214,7 @@ int indiceTablaParaTamanio;
 
 void esperarTiempoDump();
 char* armarPathTablaParaDump(char* tabla,int dumps);
+int cantidadDumpsTabla(char* pathTabla);
 int crearArchivoTemporal(char* path,char* tabla);
 void realizarDump();
 
@@ -238,6 +240,11 @@ int abrirArchivoBloque(FILE **fp, int nroBloque, char *modo);
  *--------------------------------------------------------------------------------------------
  */
 
+/*--------------------------------------------------------------------------------------------
+ * 									Elementos de Compactacion
+ *--------------------------------------------------------------------------------------------
+ */
+
 
 
 
@@ -245,6 +252,8 @@ int abrirArchivoBloque(FILE **fp, int nroBloque, char *modo);
  * 									Otros
  *--------------------------------------------------------------------------------------------
  */
+
+void INThandler(int sig);
 
 void validarComando(char** comando, int tamanio, t_log* logger);
 
@@ -271,6 +280,12 @@ void eliminarTablaCompleta(char* tabla);
 bool validarKey(char* key);
 
 bool validarValue(char* value);
+
+void validarLinea(char** lineaIngresada);
+
+void validarComando(char** comando, int tamanio);
+
+int buscarComando(char* comando);
 
 char* desenmascararValue(char* value);
 
