@@ -551,7 +551,7 @@ void consola() {
 			sem_post(&semaforoQueries);
 		}
 
-		if (!strncmp(linea, "SALIR", 4)) {
+		if (!strncmp(linea, "SALIR", 5)) {
 			log_info(logger, "\n\n**************************** SALIENDO ****************************\n\n");
 			free(linea);
 			break;
@@ -562,13 +562,16 @@ void consola() {
 			//fgets(bufferComando, MAXSIZE_COMANDO, stdin); -> Implementacion anterior
 			comandoSeparado = string_split(linea, separator);
 
-			validarLinea(comandoSeparado, logger);
-			int i;
-			log_info(logger, "Liberando comando alocado: %s", linea);
-			for (i = 0; comandoSeparado[i] != NULL; i++) {
-				free(comandoSeparado[i]);
+			if(comandoSeparado != NULL){
+				validarLinea(comandoSeparado);
+				int i;
+				log_info(logger, "Liberando comando alocado: %s", linea);
+				for (i = 0; comandoSeparado[i] != NULL; i++) {
+					free(comandoSeparado[i]);
+				}
+				free(comandoSeparado);
 			}
-		free(comandoSeparado);
+
 		}
 		free(linea);
 	}
@@ -591,6 +594,7 @@ void menu() {
 
 void validarLinea(char** lineaIngresada) {
 
+	int tamanio = 0;
 	for (int i = 0; lineaIngresada[i] != NULL; i++) {
 
 		log_info(logger, "En la posicion %d del array esta el valor %s", i,
@@ -1509,9 +1513,7 @@ int crearArchivoTemporal(char* path, char* tabla) {
 		log_error(logger,
 				"[DUMP] hubo un error al escribir los datos en los bloques");
 	}
-	else {
-		log_error(logger, "[DUMP] hubo un error al escribir los datos en los bloques");
-	}
+
 
 	//list_clean_and_destroy_elements(bloquesUsados, free);
 	list_destroy_and_destroy_elements(bloquesUsados, free);

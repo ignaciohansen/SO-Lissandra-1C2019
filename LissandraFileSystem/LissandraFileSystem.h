@@ -65,7 +65,7 @@ t_list* list_queries;
 
 char** buffer;
 
-int socketEscuchaMemoria, conexionEntrante, recibiendoMensaje,tamanio;
+int socketEscuchaMemoria, conexionEntrante, recibiendoMensaje;
 
 /*--------------------------------------------------------------------------------------------
  * 									SET UP LISANDRA FILE SYSTEM
@@ -255,11 +255,11 @@ int abrirArchivoBloque(FILE **fp, int nroBloque, char *modo);
 
 void INThandler(int sig);
 
-void validarComando(char** comando, int tamanio, t_log* logger);
+/*void validarComando(char** comando, int tamanio, t_log* logger);
 
 int buscarComando(char* comando, t_log* logger);
 
-void validarLinea(char** lineaIngresada, t_log* logger);
+void validarLinea(char** lineaIngresada, t_log* logger);*/
 
 t_metadata_tabla* obtenerMetadataTabla(char* tabla);
 
