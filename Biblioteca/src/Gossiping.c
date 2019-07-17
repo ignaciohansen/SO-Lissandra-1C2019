@@ -11,12 +11,15 @@ time_gos_t ahora(void);
 pthread_mutex_t gossip_mutex = PTHREAD_MUTEX_INITIALIZER; //Para que no se ejecute 2 veces a la vez
 pthread_mutex_t gossip_table_mutex = PTHREAD_MUTEX_INITIALIZER; //Para proteger las consultas del vector de seeds
 pthread_mutex_t gossip_retardo_mutex = PTHREAD_MUTEX_INITIALIZER; //Para poder actualizar el retardo sin romper nada
+pthread_mutex_t gossip_caidas_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t gossip_cambios_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 t_list *g_lista_seeds;
+t_list *g_memorias_caidas;
 t_log *logger_gossiping = NULL;
 bool gossiping_inicializado = false;
 time_gos_t g_retardo_gos;
-
+bool g_hubo_cambios = false;
 
 time_gos_t proxima_ejecucion_gossiping(time_gos_t ultimo);
 
@@ -26,6 +29,7 @@ void inicializar_estructuras_gossiping(t_log *logger, time_gos_t retardo)
 	if(gossiping_inicializado == false){
 		logger_gossiping = logger;
 		g_lista_seeds = list_create();
+		g_memorias_caidas = list_create();
 		g_retardo_gos = retardo;
 		gossiping_inicializado = true;
 	}
@@ -75,8 +79,12 @@ void incorporar_seeds_gossiping(gos_com_t nuevas)
 		i_mem = conozco_memoria(nuevas.seeds[i]);
 		if(i_mem == -1){
 			nueva_aux = malloc(sizeof(seed_com_t));
-			if(i==0) //Solo doy de alta a la memoria con la que me estoy conectando
+			if(i==0){ //Solo doy de alta a la memoria con la que me estoy conectando
 				nueva_aux->numMemoria = nuevas.seeds[i].numMemoria;
+				pthread_mutex_lock(&gossip_cambios_mutex);
+				g_hubo_cambios = true;
+				pthread_mutex_unlock(&gossip_cambios_mutex);
+			}
 			else
 				nueva_aux->numMemoria = -1;
 			strcpy(nueva_aux->ip,nuevas.seeds[i].ip);
@@ -92,6 +100,9 @@ void incorporar_seeds_gossiping(gos_com_t nuevas)
 			if(aux->numMemoria == -1 && nuevas.seeds[i].numMemoria != -1){
 				aux->numMemoria = nuevas.seeds[i].numMemoria;
 				log_info(logger_gossiping,"[INCORPORAR SEEDS] Memoria de alta en el pool. %d-%s-%s\n",nuevas.seeds[i].numMemoria,nuevas.seeds[i].ip,nuevas.seeds[i].puerto);
+				pthread_mutex_lock(&gossip_cambios_mutex);
+				g_hubo_cambios = true;
+				pthread_mutex_unlock(&gossip_cambios_mutex);
 			}
 			else{
 				log_info(logger_gossiping,"[INCORPORAR SEEDS] Memoria ya conocida. %d-%s-%s\n",nuevas.seeds[i].numMemoria,nuevas.seeds[i].ip,nuevas.seeds[i].puerto);
@@ -100,6 +111,21 @@ void incorporar_seeds_gossiping(gos_com_t nuevas)
 		}
 	}
 }
+
+/*
+gos_com_t memoriasDispoinbles;
+
+actualizar()
+{
+	gos_com_t caidas = obtenerCaidas();
+	if(caidas.cant > 0){
+
+	}
+
+	if(huboCambios()){
+		memoriasDispoinbles = armar_vector_seeds(KERNEL);
+	}
+}*/
 
 gos_com_t armar_vector_seeds(id_com_t id_proceso)
 {
@@ -159,6 +185,19 @@ void registrar_memoria_caida(int i_mem)
 {
 	pthread_mutex_lock(&gossip_table_mutex);
 	seed_com_t *aux = list_get(g_lista_seeds,i_mem);
+
+	seed_com_t *caida = malloc(sizeof(seed_com_t));
+
+	if(aux->numMemoria != -1){
+		memcpy(caida,aux,sizeof(seed_com_t));
+		pthread_mutex_lock(&gossip_caidas_mutex);
+		list_add(g_memorias_caidas,caida);
+		pthread_mutex_unlock(&gossip_caidas_mutex);
+
+		pthread_mutex_lock(&gossip_cambios_mutex);
+		g_hubo_cambios = true;
+		pthread_mutex_unlock(&gossip_cambios_mutex);
+	}
 	aux->numMemoria = -1;
 	pthread_mutex_unlock(&gossip_table_mutex);
 }
@@ -189,7 +228,12 @@ void correr_gossiping(id_com_t id_proceso)
 		conocidas.cant = 0;
 	}
 	imprimirMensaje(logger_gossiping,"[CORRIENDO GOSSIPING] Empiezo a conectarme con las memorias que conozco");
-	for(int i=1; i<list_size(copia_seeds); i++){ //La primera memoria siempre soy yo misma
+	int i;
+	if(id_proceso == KERNEL)
+		i=0;
+	else
+		i=1;//La primera memoria siempre soy yo misma
+	for(; i<list_size(copia_seeds); i++){
 		seed_com_t *memoria = list_get(copia_seeds,i);
 
 		//Me conecto a la memoria
@@ -246,21 +290,25 @@ void correr_gossiping(id_com_t id_proceso)
 	list_destroy(copia_seeds);
 }
 
-int iniciar_hilo_gossiping(id_com_t *id_proceso, pthread_t *thread)
+int iniciar_hilo_gossiping(id_com_t *id_proceso, pthread_t *thread, void (*funcion_actualizacion) (void))
 {
+	thread_gos_args_t *args = malloc(sizeof(thread_gos_args_t));
+	args->id_proceso = *id_proceso;
+	args->funcion = funcion_actualizacion;
 	if(gossiping_inicializado == false){
 		imprimirAviso(logger_gossiping,"[INICIANDO HILO GOSSIPING] Debe inicializar las variables de gossiping. No se lanzará el hilo");
 		return -1;
 	}
 	imprimirMensaje(logger_gossiping,"[INICIANDO HILO GOSSIPING] Voy a crear hilo");
-	pthread_create(thread,NULL,(void*)hilo_gossiping,id_proceso);
+	pthread_create(thread,NULL,(void*)hilo_gossiping,args);
 	pthread_detach(*thread);
 	imprimirMensaje(logger_gossiping,"[INICIANDO HILO GOSSIPING] Hilo creado");
 	return 1;
 }
 
-void *hilo_gossiping(id_com_t * id_proceso)
+void *hilo_gossiping(thread_gos_args_t *args)
 {
+	id_com_t *id_proceso = &(args->id_proceso);
 	imprimirMensaje(logger_gossiping,"[HILO GOSSIPING] Entrando a hilo");
 	log_info(logger_gossiping,"[HILO GOSSIPING] Soy proceso %d",*id_proceso);
 	//time_gos_t t0 = ahora(), t1 = 0;
@@ -271,6 +319,10 @@ void *hilo_gossiping(id_com_t * id_proceso)
 		correr_gossiping(*id_proceso);
 		ultimo = ahora();
 		imprimirMensaje(logger_gossiping,"[HILO GOSSIPING] Terminé de ejecutar gossiping.");
+
+		imprimirMensaje(logger_gossiping,"[HILO GOSSIPING] Voy a correr función de actualización");
+		args->funcion();
+		imprimirMensaje(logger_gossiping,"[HILO GOSSIPING] Corrí función de actualización");
 		proximo = proxima_ejecucion_gossiping(ultimo);
 		do{
 			imprimirMensaje1(logger_gossiping,"[HILO GOSSIPING] La próxima ejecución será en %d milisegundos",proximo-ahora());
@@ -279,6 +331,26 @@ void *hilo_gossiping(id_com_t * id_proceso)
 		}while(proximo>ahora());
 	}
 	return NULL;
+}
+
+t_list *hayMemoriasCaidas(void)
+{
+	t_list *retval;
+	pthread_mutex_lock(&gossip_caidas_mutex);
+	retval = list_duplicate(g_memorias_caidas);
+	list_clean(g_memorias_caidas);
+	pthread_mutex_unlock(&gossip_caidas_mutex);
+	return retval;
+}
+
+bool huboCambios(void)
+{
+	bool retval;
+	pthread_mutex_lock(&gossip_cambios_mutex);
+	retval = g_hubo_cambios;
+	g_hubo_cambios = false;
+	pthread_mutex_unlock(&gossip_cambios_mutex);
+	return retval;
 }
 
 time_gos_t ahora(void)

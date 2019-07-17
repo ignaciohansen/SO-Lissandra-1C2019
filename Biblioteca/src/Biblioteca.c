@@ -33,6 +33,14 @@ double  timestamp(void) {
 //	return (unsigned)time(NULL);
 }
 */
+
+timestamp_t timestamp(void)
+{
+	struct timeval t;
+	gettimeofday(&t, NULL);
+	timestamp_t result = (((unsigned long long)t.tv_sec)*1000+((unsigned long long)t.tv_usec)/1000);
+	return result;
+}
 //--------------------------------------- Funciones para Socket -------------------------------------
 
 void socketConfigurar(Conexion* conexion, String ip, String puerto,t_log* logger) {
@@ -1301,25 +1309,34 @@ msg_com_t recibir_mensaje(int conexion)
 	recibido.payload.stream = NULL;
 
 	//Primero recibo el tipo
-	if(recv(conexion, &(recibido.tipo), sizeof(conexion_t), MSG_WAITALL) == 0){
+	printf("\nVoy a esperar recibir el tipo");
+	if(recv(conexion, &(recibido.tipo), sizeof(conexion_t), 0) < sizeof(conexion_t)){
 		recibido.tipo = DESCONECTADO;
+		printf("\nError al recibir el tipo");
 		return recibido;
 	}
+	printf("\nRecibi el tipo");
 
 	//Ahora recibo el tamaño
-	if(recv(conexion, &(recibido.payload.tam), sizeof(int), MSG_WAITALL) == 0){
+	if(recv(conexion, &(recibido.payload.tam), sizeof(int), MSG_WAITALL) <= 0){
 			recibido.tipo = DESCONECTADO;
+			printf("\nError al recibir el tamaño");
 			return recibido;
 	}
+
+	printf("\nRecibi el tamaño");
 
 	//Ahora aloco en memoria el stream
 	recibido.payload.stream = malloc(recibido.payload.tam);
 
 	//Ahora recibo el payload de tamaño ya conocido
-	if(recv(conexion, recibido.payload.stream, recibido.payload.tam, MSG_WAITALL) == 0){
+	if(recv(conexion, recibido.payload.stream, recibido.payload.tam, MSG_WAITALL) <= 0){
 			recibido.tipo = DESCONECTADO;
+			borrar_buffer(recibido.payload);
+			printf("\nError al recibir el payload");
 			return recibido;
 	}
+	printf("\nRecibi el payload");
 
 	return recibido;
 }
@@ -1477,7 +1494,7 @@ int iniciar_servidor(char*ip,char*puerto)
     freeaddrinfo(servinfo);
 
     //log_trace(logger, "Listo para escuchar a mi cliente");
-//    printf("\n**Servidor listo para escuchar al cliente**\n");
+//   printf("\n**Servidor listo para escuchar al cliente**\n");
     //log_info(logger,"Servidor listo para escuchar al cliente");
 
     return socket_servidor;

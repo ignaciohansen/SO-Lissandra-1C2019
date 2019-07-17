@@ -54,6 +54,7 @@ void* hilo_servidor(int * socket_p) {
 			break;
 		}
 	}
+
 	return NULL;
 }
 
@@ -291,23 +292,26 @@ resp_com_t resolver_drop(request_t req) {
 }
 
 resp_com_t resolver_select(request_t req) {
-	int ret_val;
+	t_registroMemtable* ret_val;
 	imprimirMensaje(logger, "[RESOLVIENDO SELECT] Entro a función");
 
 	if (req.cant_args == 2) {
 		char *nombre_tabla = req.args[0];
 		char *key = req.args[1];
 		ret_val = comandoSelect(nombre_tabla,key);
-		if (ret_val == -1) {
-			return armar_respuesta(RESP_ERROR_TABLA_NO_EXISTE, NULL);
-		} else if (ret_val == -2) {
 
+		if (ret_val->tam_registro == -1) {
+			free(ret_val);
+			return armar_respuesta(RESP_ERROR_TABLA_NO_EXISTE, NULL);
+		} else if (ret_val->tam_registro == -2) {
+			free(ret_val);
 			return armar_respuesta(RESP_ERROR_METADATA, NULL);
 
 		}
-		char* keyRetorno = malloc(4);
-		sprintf(keyRetorno, "%d", ret_val);
-		return armar_respuesta(RESP_OK, keyRetorno);
+		int tamanio = strlen(ret_val->value)+40;
+		char* valueRetorno = malloc(tamanio);
+		snprintf(valueRetorno,tamanio, "%s|%ld", ret_val->value,ret_val->timestamp); // value|timestamp
+		return armar_respuesta(RESP_OK, valueRetorno);
 
 	}
 

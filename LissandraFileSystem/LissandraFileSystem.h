@@ -26,6 +26,8 @@
 	#define PATH_LFILESYSTEM_CONFIG "/home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Config/LFS_CONFIG.txt"
 #endif
 
+//ESTOS CAMBIOS LOS HICE YA QUE TENGO LOS ARCHIVOS EN OTRA RUTA
+
 #define PATH_BIN ".bin"
 #define PATH_TMP ".tmp"
 #define PATH_BLOQUES "/Bloques/"
@@ -100,19 +102,40 @@ void listenSomeLQL();
  */
 
 typedef struct{
+int tam_registro;
+char* value;
+u_int64_t timestamp;
+u_int16_t key;
+
+}t_registroMemtable;
+
+typedef struct{
 	char* consistency;
 	int particiones;
 	int compaction_time;
 
 }t_metadata_tabla;
 
-t_metadata_tabla* metadata;
+//t_metadata_tabla* metadata; //La hago variable local, sino va a romper al tener procesos concurrentes
 
 typedef struct{
 	int size;
 	char** bloques;
 
 }t_particion;
+
+
+typedef struct{
+	int size;
+	t_list* bloques;
+
+}t_bloquesUsados;
+
+typedef struct{
+	int size;
+	t_list* bloques;
+
+}t_regArchivoSelect;
 
 t_particion* particionTabla;
 
@@ -144,7 +167,7 @@ t_list* listaRegistrosTabla;
 
 
 
-int comandoSelect(char* tabla, char* key);
+t_registroMemtable* comandoSelect(char* tabla, char* key);
 int comandoInsertSinTimestamp(char* tabla,char* key,char* value);
 int comandoInsert(char* tabla,char* key,char* value,char* timestamp);
 int comandoDrop(char* tabla);
@@ -182,14 +205,6 @@ int cantidadBloquesOcupadosBitmap();
  *--------------------------------------------------------------------------------------------
  */
 
-typedef struct{
-int tam_registro;
-char* value;
-double timestamp;
-u_int16_t key;
-
-}t_registroMemtable;
-
 
 int timestamp_inicio;
 //int cantidad_de_dumps = 0;
@@ -215,6 +230,7 @@ int escribirVariosBloques(t_list* bloques, int tam_total_registros, void* buffer
 int escribirBloque(int bloque, int size, int offset, void* buffer);
 t_list* leerBloque(char* path);
 t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total);
+t_registroMemtable *leerBloquesConsecutivosUnaKey(t_list *nroBloques, int tam_total, uint16_t key_buscada, bool es_unica);
 void crearBloques();
 char* crearPathBloque(int bloque);
 int abrirArchivoBloque(FILE **fp, int nroBloque, char *modo);
@@ -239,13 +255,19 @@ int abrirArchivoBloque(FILE **fp, int nroBloque, char *modo);
 
 void INThandler(int sig);
 
-int obtenerMetadataTabla(char* tabla);
+void validarComando(char** comando, int tamanio, t_log* logger);
+
+int buscarComando(char* comando, t_log* logger);
+
+void validarLinea(char** lineaIngresada, t_log* logger);
+
+t_metadata_tabla* obtenerMetadataTabla(char* tabla);
 
 int obtenerMetadata();
 
 int verificarTabla(char* tabla);
 
-char* retornarValores(char* tabla);
+char* retornarValores(char* tabla, t_metadata_tabla* metadata);
 
 char* retornarValoresDirectorio();
 
@@ -269,9 +291,24 @@ char* desenmascararValue(char* value);
 
 void cerrarTodo();
 
+void liberarTodosLosRecursosGlobalesQueNoSeCerraron();
+
 void *imprimirRegistro(t_registroMemtable *reg);
+
+t_registroMemtable* tomarMayorRegistro(t_registroMemtable* reg1,t_registroMemtable* reg2, t_registroMemtable* reg3,t_registroMemtable* reg4);
+
+t_registroMemtable* pruebaRegMayorTime();
+
+t_registroMemtable* armarRegistroNulo();
 
 int pruebaLecturaBloquesConsecutivos(void);
 
+t_list *obtenerArchivosDirectorio(char *path, char *terminacion);
+
+char* rutaParticion(char* tabla, int particion);
+
+t_registroMemtable *crearCopiaRegistro(t_registroMemtable *origen);
+
+void borrarRegistro(t_registroMemtable *reg);
 
 #endif /* LFILESSYSTEM_H_ */

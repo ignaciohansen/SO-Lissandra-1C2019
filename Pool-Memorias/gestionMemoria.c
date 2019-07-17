@@ -523,14 +523,14 @@ void liberar_config(void)
 
 /* FUNCIONES INTERNAS A LA BIBLIOTECA */
 
-timestamp_t  timestamp(void) {
+/*timestamp_t  timestamp(void) {
 	struct timeval t;
 	gettimeofday(&t, NULL);
 	unsigned long long result = (((unsigned long long)t.tv_sec)*1000+((unsigned long long)t.tv_usec)/1000);
 	timestamp_t a = result;
 	return a;
 //	return (unsigned)time(NULL);
-}
+}*/ // La moví a biblioteca
 
 void* accederYObtenerInfoDePaginaEnPosicion(int posicion, void* info){
 	log_info(log_memoria, "[ACCEDIENDO A DATOS] Por acceder a la memoria a la posicion '%d'", posicion);
