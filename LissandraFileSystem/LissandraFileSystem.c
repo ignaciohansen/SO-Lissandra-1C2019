@@ -8,7 +8,7 @@
 #include "LissandraFileSystem.h"
 #include "lfsComunicacion.h"
 
-int tamanioTotalTabla = 0;
+//int tamanioTotalTabla = 0;
 char *separador2 = "\n";
 char *separator = " ";
 const char* comandosPermitidos[] = { "select", "insert", "create", "describe",
@@ -21,12 +21,14 @@ int dumps_a_dividir = 1;
 
 //char* tablaAverificar = NULL; // directorio de la tabla
 //char* path_tabla_metadata;
+
+//@martin, @gian, @nacho: me parece que no es buena idea que sea global, puede romper al tener varios hilos al mismo tiempo si la usa el create
 char* archivoParticion;
-char* registroPorAgregar;
-int primerVoidEsRegistro = 1;
+//char* registroPorAgregar;
+//int primerVoidEsRegistro = 1;
 
 
-pthread_mutex_t mutex_dump = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex_dump = PTHREAD_MUTEX_INITIALIZER; //@martin, @gian, @nacho lo puse cuando hice el dump pero habría que revisarlo al hacer la sincro
 
 /*
  * REQUERIMIENTOS:
@@ -66,7 +68,12 @@ int main() {
 	*/
 
 	cargarBitmap();
-	int socketLFS = iniciar_servidor("127.0.0.1", "8010"); // AGREGAR IP A ARCHIV CONFIG
+
+
+	/*compactarTabla("COLORES");
+	return 1;*/
+
+	int socketLFS = iniciar_servidor("127.0.0.1", "8010"); // AGREGAR IP A ARCHIV CONFIG @martin
 	if (socketLFS == -1) {
 		printf("%d ****************************** ", socketLFS);
 		return 0;
@@ -115,9 +122,7 @@ void LisandraSetUP() {
 	if (cargarConfiguracion()) {
 		if (!obtenerMetadata()) {
 			//SI SE CARGO BIEN LA CONFIGURACION ENTONCES PROCESO DE ABRIR UN SERVIDOR
-			imprimirMensajeProceso(
-					"Levantando el servidor del proceso Lisandra");
-			abrirServidorLissandra();
+//			abrirServidorLissandra();
 			crearBloques();
 		}
 	}
@@ -1313,8 +1318,8 @@ void esperarTiempoDump() {
 
 	while (true) {
 
-		//usleep(configFile->tiempo_dump*1000);
-		sleep(15);
+		usleep(configFile->tiempo_dump*1000);
+//		sleep(15);
 		log_info(logger, "Es tiempo de dump, hay cosas en la memtable?");
 		mutexBloquear(&listaTablasInsertadas_mx);
 		int tam = list_size(listaTablasInsertadas);
@@ -1475,7 +1480,7 @@ int crearArchivoTemporal(char* path, char* tabla) {
 		if (temporal != NULL) {
 			char *contenido;
 			/*
-			 * MARTIN: SI SE USAN LAS FUNCIONES DE LAS COMMONS PARA STRINGS NO HACE FALTA HACER UN MALLOC,
+			 * -MARTIN: SI SE USAN LAS FUNCIONES DE LAS COMMONS PARA STRINGS NO HACE FALTA HACER UN MALLOC,
 			 * YA LO HACE EL STRING NEW, Y VA REALOCANDO EL STRING SEGUN NECESITA
 			 */
 			/*char* contenido = malloc(
@@ -1982,6 +1987,8 @@ t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total) {
 				//Calculo el tamaño
 				registro->tam_registro = sizeof(u_int64_t) + sizeof(uint16_t)
 						+ strlen(registro->value) + 1;
+
+				log_info(logger,"[DEBUG] Tamaño de registro %d",registro->tam_registro);
 
 				//Agrego el nuevo registro a la lista que voy a retornar
 				list_add(registros_leidos, registro);
@@ -2866,8 +2873,8 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 		log_info(logger,"obtuve el primer reg");
 
 		t_registroMemtable* registroParticion;
-		registroParticion = armarRegistroNulo();
-		//registroParticion = registroMayorParticion(tabla,valorKeyU,particiones);
+//		registroParticion = armarRegistroNulo();
+		registroParticion = registroMayorParticion(tabla,valorKeyU,particiones);
 
 		log_info(logger,"obtuve el segundo reg");
 
@@ -3470,3 +3477,349 @@ void liberarTodosLosRecursosGlobalesQueNoSeCerraron() {
 //	free(path_tabla_metadata);
 }
 
+t_datos_particion *obtenerDatosParticion(char *path_particion)
+{
+	bool error = false;
+	char **bloques;
+	t_datos_particion *retval = malloc(sizeof(t_datos_particion));
+
+	log_info(logger,"[DATOS PARTICION] Cargando datos de particion %s",path_particion);
+
+	t_config *config_particion = config_create(path_particion);
+
+	if(config_particion == NULL){
+		log_warning(logger, "[OBTENER DATOS PARTICION] Error al leer la metadata de la partición");
+		free(retval);
+		return NULL;
+	}
+
+	if(config_has_property(config_particion,"SIZE")){
+		retval->size = config_get_int_value(config_particion,"SIZE");
+	}
+	else{
+		error = true;
+	}
+	if(config_has_property(config_particion,"BLOCKS")){
+		bloques = config_get_array_value(config_particion,"BLOCKS");
+	}
+	else{
+		error = true;
+	}
+
+	if(error){
+		log_warning(logger, "[OBTENER DATOS PARTICION] Error al obtener los datos de la partición");
+		free(retval);
+		return NULL;
+	}
+	retval->bloques = list_create();
+	for(int i=0; bloques[i]!= NULL; i++){
+		int aux = atoi(bloques[i]);
+		int *num = malloc(sizeof(int));
+		memcpy(num,&aux,sizeof(int));
+		list_add(retval->bloques,num);
+	}
+	config_destroy(config_particion);
+
+	log_info(logger,"[OBTENER DATOS PARTICION] Datos obtenidos");
+	return retval;
+}
+
+
+/* COMPACTACIÓN */
+int compactarTabla(char *tabla)
+{
+	//Renombro los temporales
+	log_info(logger,"[COMPACTACION] Entrando a proceso de compactación de tabla %s", tabla);
+
+	char *path_tabla = armarPathTabla(tabla);
+	t_list * temporales_list = obtenerArchivosDirectorio(path_tabla, ".tmp");
+
+	if(list_size(temporales_list) == 0){
+		log_info(logger,"[COMPACTACION] No se encontraron temporales de la tabla %s. No se hace compactación",tabla);
+		list_destroy_and_destroy_elements(temporales_list,free);
+		return 0;
+	}
+	//@martin: hay que sincronizar esta parte para que no se esté leyendo el archivo por un select
+	char *path_tmp, *path_tmpc;
+	for(int i=0; i<list_size(temporales_list); i++){
+		path_tmp = list_get(temporales_list,i);
+		path_tmpc = malloc(strlen(path_tmp)+2);
+		sprintf(path_tmpc,"%s%s",path_tmp,"c"); //Le agrego la "c" al final
+		log_info(logger,"[COMPACTACION] Renombrando %s a %s",path_tmp,path_tmpc);
+		if(rename(path_tmp,path_tmpc) == 0){
+			log_info(logger,"[COMPACTACION] Archivo renombrado correctamente");
+		}
+		else{
+			log_error(logger,"[COMPACTACION] No se pudo renombrar el archivo");
+			exit(-1);
+		}
+		free(path_tmpc);
+	}
+	list_destroy_and_destroy_elements(temporales_list,free);
+
+	log_info(logger,"[COMPACTACION] Se renombraron todos los temporales de %s correctamente", tabla);
+
+	//Obtengo lo que hay en las particiones
+
+	log_info(logger,"[COMPACTACION] Obtengo todos los archivos de particiones");
+
+//	t_list *particiones_list = obtenerArchivosDirectorio(path_tabla,".bin");
+
+	t_metadata_tabla *metadataTabla = obtenerMetadataTabla(tabla);
+	if(metadataTabla == NULL){
+		log_error(logger,"[COMPACTACION] Error al leer la metadata de la tabla");
+		free(path_tabla);
+		return -1;
+	}
+
+	t_list *particiones_list = list_create();
+	for(int i=0;i<metadataTabla->particiones; i++){
+		char *aux_path_particion = malloc(strlen(path_tabla)+20);
+		sprintf(aux_path_particion,"%s/%d.bin",path_tabla,i);
+		list_add(particiones_list,aux_path_particion);
+	}
+
+	if(list_size(particiones_list) == 0){
+		log_error(logger,"[COMPACTACION] No se encontraron particiones de la tabla %s",tabla);
+		list_destroy_and_destroy_elements(particiones_list,free);
+		free(path_tabla);
+		return -1;
+	}
+
+	//Armo una lista indexada por numero de partición en la que voy a poner las listas de registros de todas las particiones
+	t_list *registros_tabla = list_create();
+
+	for(int i = 0; i<list_size(particiones_list); i++){
+		char *path_particion = list_get(particiones_list,i);
+		t_datos_particion * datos_particion = obtenerDatosParticion(path_particion);
+		if(datos_particion != NULL){
+			log_info(logger,"[COMPACTACION] Se obtuvieron los datos de la particion %s",path_particion);
+			log_info(logger,"[COMPACTACION] Tamaño: %d",datos_particion->size);
+			for(int j=0 ; j<list_size(datos_particion->bloques); j++){
+				int *num_aux = list_get(datos_particion->bloques,j);
+				log_info(logger,"[COMPACTACION] (%d) Bloque: %d",j,*num_aux);
+			}
+			log_info(logger,"[COMPACTACION] Voy a leer todo lo que hay en la partición");
+
+			t_list *registros_particion = leerBloquesConsecutivos(datos_particion->bloques, datos_particion->size);
+			list_add(registros_tabla,registros_particion);
+			log_info(logger,"[COMPACTACION] %d registros de la particion %d agregados a la lista", list_size(registros_particion),i);
+			list_destroy_and_destroy_elements(datos_particion->bloques,free);
+			free(datos_particion);
+		}
+		else{
+			log_info(logger,"[COMPACTACION] Error al obtener los datos de la partición %d", i);
+		}
+	}
+
+	list_destroy_and_destroy_elements(particiones_list,free);
+
+	log_info(logger,"[COMPACTACION] Todas las particiones fueron agregadas a la lista");
+
+
+	/* Obtengo lo que hay en el temporal
+	 * Unifico lo de las participaciones y lo del temporal
+	 * Repito para cada temporal
+	 */
+	t_list *tmpc_list = obtenerArchivosDirectorio(path_tabla,".tmpc");
+	for(int i=0; i<list_size(tmpc_list); i++){
+		char *path_tmpc = list_get(tmpc_list,i);
+		t_datos_particion *datos_particion = obtenerDatosParticion(path_tmpc);
+		if(datos_particion != NULL){
+			log_info(logger,"[COMPACTACION] Se obtuvieron los datos del temporal %s",path_tmpc);
+			log_info(logger,"[COMPACTACION] Tamaño: %d",datos_particion->size);
+			for(int j=0 ; j<list_size(datos_particion->bloques); j++){
+				int *num_aux = list_get(datos_particion->bloques,j);
+				log_info(logger,"[COMPACTACION] (%d) Bloque: %d",j,*num_aux);
+			}
+			log_info(logger,"[COMPACTACION] Voy a leer todo lo que hay en el temporal");
+			t_list *registros_temporal = leerBloquesConsecutivos(datos_particion->bloques, datos_particion->size);
+
+			actualizarListaRegistros(registros_tabla, registros_temporal);
+
+			log_info(logger,"[COMPACTACION] Registros del temporal %s agregados a las particiones", path_tmpc);
+
+			list_destroy_and_destroy_elements(registros_temporal,(void*)borrarRegistro);
+			free(datos_particion);
+		}
+		else{
+			log_info(logger,"[COMPACTACION] Error al obtener los datos de la partición %d", i);
+		}
+	}
+
+	list_destroy_and_destroy_elements(tmpc_list,free);
+
+	//Bloqueo tabla @martin @nacho @gian
+
+	//Borro temporales de compactación y libero sus bloques
+	liberarBloquesDeArchivo(path_tabla,".tmpc");
+
+	//Libero bloques particiones​
+	liberarBloquesDeArchivo(path_tabla,".bin");
+
+	//Llevar registro del tiempo que estuvo bloqueada
+
+	//Pido nuevos bloques y escribo
+	for(int i=0; i<list_size(registros_tabla); i++){
+		t_list* registros_particion = list_get(registros_tabla,i);
+		log_info(logger,"[COMPACTACION] Guardando los registros de la partición %d",i);
+		guardarRegistrosParticion(path_tabla,i,registros_particion);
+	}
+
+	//Desbloqueo tabla @martin @nacho @gian
+
+	//Libero la memoria
+	for(int i=0; i<list_size(registros_tabla); i++){
+		t_list *aux = list_get(registros_tabla,i);
+		list_destroy_and_destroy_elements(aux,(void*)borrarRegistro);
+	}
+	list_destroy(registros_tabla);
+
+	log_info(logger,"[COMPACTACION] Compactacion de la tabla %s realizada con exito",tabla);
+
+	free(path_tabla);
+	return 1;
+}
+
+void actualizarListaRegistros(t_list *listas_registros, t_list *nuevos)
+{
+	int particion;
+	int cant_particiones = list_size(listas_registros);
+	for(int i=0; i<list_size(nuevos);i++){
+		t_registroMemtable *aux_registro = list_get(nuevos,i);
+		particion = determinarParticion(aux_registro->key,cant_particiones);
+		t_list *registros_particion = list_get(listas_registros,particion);
+		incorporarRegistro(registros_particion,aux_registro);
+	}
+}
+
+void incorporarRegistro(t_list *registros, t_registroMemtable *nuevo)
+{
+	log_info(logger,"[INCORPORANDO REGISTRO]");
+	log_info(logger,"[INCORPORANDO REGISTRO] El que quiero agregar es");
+	imprimirRegistro(nuevo);
+	for(int i=0; i<list_size(registros);i++){
+		t_registroMemtable *aux = list_get(registros,i);
+		if(aux->key == nuevo->key){
+			log_info(logger,"[INCORPORANDO REGISTRO] Había");
+			imprimirRegistro(aux);
+			if(aux->timestamp < nuevo->timestamp){
+				free(aux->value);
+				aux->value = malloc(strlen(nuevo->value)+1);
+				strcpy(aux->value, nuevo->value);
+				aux->timestamp = nuevo->timestamp;
+				aux->tam_registro = sizeof(uint16_t) + sizeof(uint64_t) + strlen(aux->value) + 1; //@martin, @gian: se calcula así?
+				log_info(logger,"[INCORPORANDO REGISTRO] Actualicé el registro anterior");
+			}
+			else{
+				log_info(logger,"[INCORPORANDO REGISTRO] El registro anterior era más reciente");
+			}
+			return;
+		}
+	}
+	//Si llego hastá acá, no teníamos la key
+	t_registroMemtable *copia = crearCopiaRegistro(nuevo);
+	list_add(registros,copia);
+	log_info(logger,"[INCORPORANDO REGISTRO] No estaba esta key. Registro agregado");
+}
+
+void liberarBloquesDeArchivo(char *path_tabla, char *extension){
+	log_info(logger,"[COMPACTACION] Borrando temporales de compactacion");
+	t_list *tmpc_list = obtenerArchivosDirectorio(path_tabla,extension);
+	for(int i=0; i<list_size(tmpc_list);i++){
+		char *path = list_get(tmpc_list,i);
+		t_datos_particion *datos_tmpc = obtenerDatosParticion(path);
+		for(int j=0; j<list_size(datos_tmpc->bloques); j++){
+			int *bloque = list_get(datos_tmpc->bloques,j);
+			liberarBloqueBitmap(*bloque);
+			log_info(logger,"[COMPACTACION] Bloque %d liberado",*bloque);
+		}
+		list_destroy_and_destroy_elements(datos_tmpc->bloques,free);
+		remove(path);
+	}
+	list_destroy_and_destroy_elements(tmpc_list,free);
+}
+
+int guardarRegistrosParticion(char *path_tabla, int particion, t_list *registros_list)
+{
+	t_list* bloquesUsados = list_create();
+	int tam_total_registros = tamTotalListaRegistros(registros_list);
+	int cantidad_bloques = cuantosBloquesNecesito(tam_total_registros);
+	if(cantidad_bloques == 0){
+		cantidad_bloques = 1;
+	}
+	int bloqueAux;
+	int *bloqueLista;
+	log_info(logger,"[COMPACTACION] Tengo %d bloques libres y necesito %d", cantBloquesLibresBitmap(), cantidad_bloques);
+	if (cantBloquesLibresBitmap() >= cantidad_bloques) {
+		for (int i = 0; i < cantidad_bloques; i++) {
+			bloqueAux = obtenerPrimerBloqueLibreBitmap();
+			bloqueLista = malloc(sizeof(int));
+			*bloqueLista = bloqueAux;
+			if (bloqueAux != -1) {
+				ocuparBloqueLibreBitmap(bloqueAux);
+				//list_add(bloquesUsados, (void*)bloqueAux);
+				list_add(bloquesUsados, bloqueLista);
+			} else {
+				//liberar los bloques de la lista
+				return -1;
+			}
+		}
+	} else {
+		log_error(logger,"[COMPACTACION] no hay bloques disponibles para hacer la compactación");
+	}
+
+	void* bufferRegistros = malloc(tam_total_registros);
+	bufferRegistros = armarBufferConRegistros(registros_list,tam_total_registros);
+	int resultadoEscritura = escribirVariosBloques(bloquesUsados,tam_total_registros, bufferRegistros);
+
+	char *path_particion = malloc(strlen(path_tabla)+20);
+	sprintf(path_particion,"%s/%d.bin",path_tabla,particion);
+
+	if (resultadoEscritura != -1) {
+		FILE* fp;
+		fp = fopen(path_particion,"w");
+		log_info(logger, "[COMPACTACION] creamos el archivo, ahora  lo llenamos");
+		log_info(logger, "[COMPACTACION] path del archivo %s", path_particion);
+
+		if (fp != NULL) {
+			char *contenido;
+			contenido = string_new();
+			string_append(&contenido, "SIZE=");
+			char* size = malloc(10);
+			sprintf(size, "%d", tam_total_registros);
+			string_append(&contenido, size);
+			string_append(&contenido, "\n");
+			string_append(&contenido, "BLOCKS=[");
+			char* bloque = malloc(10);
+			for (int i = 0; i < list_size(bloquesUsados); i++) {
+				int* nroBloque = list_get(bloquesUsados, i);
+				sprintf(bloque, "%d", *nroBloque);
+				string_append(&contenido, bloque);
+				string_append(&contenido, ",");
+			}
+			contenido = stringTomarDesdeInicio(contenido,
+					strlen(contenido) - 1);
+			string_append(&contenido, "]");
+			fputs(contenido, fp);
+			log_info(logger, "[COMPACTACION] Temporal completado con: %s", contenido);
+			free(contenido);
+			fclose(fp);
+		} else {
+			//liberar bloques de la lista de bloquesUsados
+			log_error(logger,
+					"[COMPACTACION] error al abrir el archivo con path: %s",
+					path_particion);
+		}
+	} else {
+		log_error(logger,
+				"[COMPACTACION] hubo un error al escribir los datos en los bloques");
+	}
+
+	free(path_particion);
+
+	//list_clean_and_destroy_elements(bloquesUsados, free);
+	list_destroy_and_destroy_elements(bloquesUsados, free);
+
+	return 0;
+}

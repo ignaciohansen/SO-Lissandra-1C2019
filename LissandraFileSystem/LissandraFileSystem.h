@@ -124,6 +124,10 @@ typedef struct{
 
 }t_particion;
 
+typedef struct{
+	int size;
+	t_list *bloques;
+}t_datos_particion;
 
 typedef struct{
 	int size;
@@ -245,7 +249,12 @@ int abrirArchivoBloque(FILE **fp, int nroBloque, char *modo);
  *--------------------------------------------------------------------------------------------
  */
 
-
+t_datos_particion *obtenerDatosParticion(char *path_particion);
+int compactarTabla(char *tabla);
+int guardarRegistrosParticion(char *path_tabla, int particion, t_list *registros_list);
+void liberarBloquesDeArchivo(char *path_tabla, char *extension);
+void incorporarRegistro(t_list *registros, t_registroMemtable *nuevo);
+void actualizarListaRegistros(t_list *listas_registros, t_list *nuevos);
 
 
 /*--------------------------------------------------------------------------------------------

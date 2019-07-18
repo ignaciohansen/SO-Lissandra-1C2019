@@ -300,13 +300,12 @@ resp_com_t resolver_select(request_t req) {
 		char *key = req.args[1];
 		ret_val = comandoSelect(nombre_tabla,key);
 
-		if (ret_val->tam_registro == -1) {
-			free(ret_val);
+		if (ret_val->value == NULL) {
+			borrarRegistro(ret_val);
 			return armar_respuesta(RESP_ERROR_TABLA_NO_EXISTE, NULL);
 		} else if (ret_val->tam_registro == -2) {
 			free(ret_val);
 			return armar_respuesta(RESP_ERROR_METADATA, NULL);
-
 		}
 		int tamanio = strlen(ret_val->value)+40;
 		char* valueRetorno = malloc(tamanio);
