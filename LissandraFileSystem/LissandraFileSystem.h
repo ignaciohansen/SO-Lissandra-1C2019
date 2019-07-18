@@ -43,6 +43,7 @@
 t_log* logger;
 
 typedef struct{	
+	char* ip;
 	int puerto_escucha;
 	char* punto_montaje;
 	int retardo;

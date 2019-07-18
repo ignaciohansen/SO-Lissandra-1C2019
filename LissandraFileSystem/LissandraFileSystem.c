@@ -73,7 +73,7 @@ int main() {
 	/*compactarTabla("COLORES");
 	return 1;*/
 
-	int socketLFS = iniciar_servidor("127.0.0.1", "8010"); // AGREGAR IP A ARCHIV CONFIG @martin
+	int socketLFS = iniciar_servidor(configFile->ip, "8010"); // AGREGAR IP A ARCHIV CONFIG @martin
 	if (socketLFS == -1) {
 		printf("%d ****************************** ", socketLFS);
 		return 0;
@@ -289,6 +289,24 @@ bool cargarConfiguracion() {
 			ok--;
 
 		}
+
+		if (config_has_property(archivoCOnfig, "IP")) {
+
+					log_info(logger, "Almacenando la IP");
+
+					//Por lo que dice el texto
+					configFile->ip = config_get_string_value(archivoCOnfig,
+							"IP");
+
+					log_info(logger, "La IP es: %s",
+							configFile->ip);
+
+				} else {
+					imprimirError(logger,
+							"El archivo de configuracion no contiene la IP");
+					ok--;
+
+				}
 
 		if (ok > 0) {
 //			free(archivoCOnfig->properties->elements);	//AGREGADO PARA LIMPIAR LEAKS
@@ -1177,8 +1195,6 @@ int obtenerMetadata() {
 
 char* retornarValores(char* tabla, t_metadata_tabla* metadata) {
 
-	log_info(logger, "llego aca");
-
 	printf("\n");
 	printf("Valores de la %s \n", tabla);
 	printf("\n");
@@ -1192,18 +1208,11 @@ char* retornarValores(char* tabla, t_metadata_tabla* metadata) {
 	sprintf(particiones, "%d", metadata->particiones);
 	sprintf(tiempoCompactacion, "%d", metadata->compaction_time);
 
-	/*char* valorDescribe = malloc(
-			strlen(tabla) + strlen(metadata->consistency) + strlen(particiones)
-					+ strlen(tiempoCompactacion) + 4);*/
-	char *valorDescribe = string_new();
+	int tamanio = strlen(tabla) + strlen(metadata->consistency) + strlen(particiones)+ strlen(tiempoCompactacion) + strlen("|||") + 3;
 
-	string_append(&valorDescribe, tabla);
-	string_append(&valorDescribe, "|");
-	string_append(&valorDescribe, metadata->consistency);
-	string_append(&valorDescribe, "|");
-	string_append(&valorDescribe, particiones);
-	string_append(&valorDescribe, "|");
-	string_append(&valorDescribe, tiempoCompactacion);
+	char* valorDescribe = malloc(tamanio);
+
+	snprintf(valorDescribe,tamanio,"%s|%s|%s|%s",tabla,metadata->consistency,particiones,tiempoCompactacion);
 
 	free(particiones);
 	free(tiempoCompactacion);
@@ -1487,6 +1496,8 @@ int crearArchivoTemporal(char* path, char* tabla) {
 					string_length("SIZE=") + sizeof(char) * 2
 							+ string_length("BLOCKS=[]")
 							+ sizeof(char) * 2 * list_size(bloquesUsados) - 1);*/ //arreglar para bloques con mas de un numero (string, no char)
+
+
 			contenido = string_new();
 			string_append(&contenido, "SIZE=");
 			char* size = malloc(10);
@@ -3651,6 +3662,8 @@ int compactarTabla(char *tabla)
 
 	//Bloqueo tabla @martin @nacho @gian
 
+	u_int64_t comienzoBloqueo = timestamp();
+
 	//Borro temporales de compactación y libero sus bloques
 	liberarBloquesDeArchivo(path_tabla,".tmpc");
 
@@ -3666,7 +3679,10 @@ int compactarTabla(char *tabla)
 		guardarRegistrosParticion(path_tabla,i,registros_particion);
 	}
 
+	u_int64_t finBloqueo = timestamp();
 	//Desbloqueo tabla @martin @nacho @gian
+
+	u_int64_t tiempoQueEstuvoBloqueada = finBloqueo - comienzoBloqueo;
 
 	//Libero la memoria
 	for(int i=0; i<list_size(registros_tabla); i++){
@@ -3761,6 +3777,8 @@ int guardarRegistrosParticion(char *path_tabla, int particion, t_list *registros
 				//list_add(bloquesUsados, (void*)bloqueAux);
 				list_add(bloquesUsados, bloqueLista);
 			} else {
+
+
 				//liberar los bloques de la lista
 				return -1;
 			}
