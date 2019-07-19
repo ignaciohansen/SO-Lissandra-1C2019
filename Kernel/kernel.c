@@ -26,6 +26,7 @@ int main() {
 	semaforoIniciar(&multiprocesamiento, arc_config->multiprocesamiento);
 
 	inicializarListasPlanificador();
+	lista_memorias = list_create();
 
 	mutexIniciar(&countProcess);
 	mutexIniciar(&mutexColaNuevos);
@@ -179,8 +180,8 @@ void cargarConfiguracion() {
 	free(configFile->path);
 	int i;
 	t_hash_element* nextHash;
-	for(i=0; i < configFile->properties->elements_amount ; i++){
-		while(configFile->properties->elements[i]!=NULL){
+	for (i = 0; i < configFile->properties->elements_amount; i++) {
+		while (configFile->properties->elements[i] != NULL) {
 			nextHash = configFile->properties->elements[i]->next;
 			free(configFile->properties->elements[i]->data);
 			free(configFile->properties->elements[i]->key);
@@ -209,10 +210,9 @@ void consola() {
 			comandoSeparado = string_split(linea, separator);
 		}
 
-<<<<<<< HEAD
 		log_info(log_kernel, "Viene el comando en la cadena: %s",
 				comandoSeparado[0]);
-=======
+
 		if (!strncmp(linea, "SALIR", 4)) {
 			free(linea);
 			break;
@@ -222,8 +222,8 @@ void consola() {
 
 		strtok(linea, "\n");
 
-		log_info(log_kernel, "Viene el comando en la cadena: %s",comandoSeparado[0]);
->>>>>>> 6c88ee90a61a71eb5ccef55e3c183c4404df1c42
+		log_info(log_kernel, "Viene el comando en la cadena: %s",
+				comandoSeparado[0]);
 
 
 		int comando = buscarComando(comandoSeparado[0]);
@@ -334,8 +334,8 @@ int conexionAMemoria(char ip[LARGO_IP], char puerto[LARGO_PUERTO]) { // Retorn s
 	log_info(log_kernel, "PRUEBA: %s ", ip);
 
 	int aux_puerto = atoi(puerto);
-	resultado_Conectar = conectarSocket(socket_CMemoria, ip,
-			aux_puerto, log_kernel);
+	resultado_Conectar = conectarSocket(socket_CMemoria, ip, aux_puerto,
+			log_kernel);
 
 	if (resultado_Conectar == ERROR) {
 		log_error(log_kernel,
@@ -1218,7 +1218,9 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 
 					mutexBloquear(&mutexColaEjecucion);
 					//socket_CMemoria = conexionKernel();
-					socket_CMemoria = conexionAMemoria(criterio_memoria.listMemoriaas->ip,criterio_memoria.listMemoriaas->puerto);
+					socket_CMemoria = conexionAMemoria(
+							criterio_memoria.listMemoriaas->ip,
+							criterio_memoria.listMemoriaas->puerto);
 					list_add(colaEjecucion, pcbParaAgregar);
 					enviar_request(socket_CMemoria, req);
 					mutexDesbloquear(&mutexColaEjecucion);
@@ -1232,7 +1234,6 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 							pcbParaAgregar->progamCounter + i;
 
 					log_info(log_kernel, "Ultima instruccion del FOR");
-
 
 					free(lineaRun);	//AGREGADO PARA LIMPIAR LEAKSs
 					free(bufferRun);
@@ -1264,10 +1265,9 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 	log_info(log_kernel,
 			"Bloqueamos Mutex para poder sacar el elemento en la cola de listos y colocarlo en ejecucion");
 
-
 	//AGREGADO PARA LIMPIAR LEAKSs
 	int indice = 0;
-	while(pruebaPath[indice]!=NULL){
+	while (pruebaPath[indice] != NULL) {
 		free(pruebaPath[indice]);
 		indice++;
 	}
@@ -1417,6 +1417,7 @@ void comandoAdd(char** comandoSeparado) {
 				comandoSeparado[4], criterioInt);
 		criterio_memoria.criterio = criterioInt;
 		criterio_memoria.listMemoriaas = resultado;
+		list_add(lista_memorias, resultado);
 
 		log_info(log_kernel, "Llenamos la estructura de criterio/memoria.");
 
@@ -1453,6 +1454,29 @@ int buscarCriterio(char* criterio) {
 }
 
 void comandoJournal(char** comandoSeparado) {
+
+	seed_com_t *aux = malloc(sizeof(seed_com_t));
+	req_com_t req;
+	req.tam = strlen(comandoSeparado[0]);
+	req.str = malloc(req.tam);
+
+	log_info(log_kernel, "Tamanio cadena grabada en req:%d", req.tam);
+
+	strcpy(req.str, comandoSeparado[0]);
+
+	log_info(log_kernel, "Cadena grabada en req:%s", req.str);
+
+	for (int i = 0; i < list_size(lista_memorias); i++) {
+
+		aux = list_get(g_lista_seeds, i);
+
+		socket_CMemoria = conexionAMemoria(aux->ip,aux->puerto);
+
+		enviar_request(socket_CMemoria, req);
+
+		free(req.str);
+
+	}
 
 }
 

@@ -178,6 +178,7 @@ t_criterios criterioEC;
 
 gos_com_t gossipingKernel;
 seed_com_t memorias;
+t_list *lista_memorias;
 
 /*TODO Enum de Criterios*/
 
