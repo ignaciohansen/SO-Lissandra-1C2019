@@ -1,0 +1,1062 @@
+[INFO] 21:36:24:38 Proceso Lissandra File System/(3120:3120): [LOG CREADO] continuamos cargando la estructura de configuracion.
+[INFO] 21:36:24:38 Proceso Lissandra File System/(3120:3120): Por reservar memoria para variable de configuracion.
+[INFO] 21:36:24:38 Proceso Lissandra File System/(3120:3120): Por crear el archivo de config para levantar archivo con datos.
+[INFO] 21:36:24:41 Proceso Lissandra File System/(3120:3120): LissandraFS: Leyendo Archivo de Configuracion...
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): Almacenando el puerto
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): El puerto de escucha es: 8001
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): Almacenando el PUNTO DE MONTAJE: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): El punto de montaje es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): Y ahora la variable tabla_path queda con: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): Almacenando el retardo
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): El retardo de respuesta es: 600
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): Almacenando el tamanio del valor de una key
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): El tamanio del valor es: 20
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): Almacenando el puerto
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): El tiempo de dumpeo es: 50000
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): Almacenando la IP
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): La IP es: 127.0.0.1
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): Se ha cargado todos los datos del archivo de configuracion
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): levantando metadata del File System
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): ruta de la metadata: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Metadata/Metadata
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): LFS: Leyendo metadata...
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): Almacenando tamanio de bloque
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): el tamanio del bloque es: 64
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): Almacenando cantidad de bloques
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): La cantidad de bloques es: 5192
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): Almacenando magic number
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): el magic number es: LISSANDRA
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): [FREE] variable metadataFile utlizada para navegar el metadata.
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): result: 0
+[INFO] 21:36:24:42 Proceso Lissandra File System/(3120:3120): Voy a crear los bloques
+[INFO] 21:36:24:159 Proceso Lissandra File System/(3120:3120): los bloques fueron creados
+[INFO] 21:36:24:159 Proceso Lissandra File System/(3120:3120): la configuracion y la metadata se levantaron ok
+[INFO] 21:36:24:159 Proceso Lissandra File System/(3120:3120): Voy a cargar bitmap
+[INFO] 21:36:24:159 Proceso Lissandra File System/(3120:3120): Path del bitmap: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Metadata/Bitmap.bin
+[INFO] 21:36:24:159 Proceso Lissandra File System/(3120:3120): Archivo de bitmap no existe, se procede a crear el bitmap
+[INFO] 21:36:24:169 Proceso Lissandra File System/(3120:3120): cantidad de bloques libres en el bitmap: 5192
+[INFO] 21:36:24:169 Proceso Lissandra File System/(3120:3120): cantidad de bloques ocupados: 0
+[INFO] 21:36:24:169 Proceso Lissandra File System/(3120:3120): cambios en bitmap persistidos
+[INFO] 21:36:24:169 Proceso Lissandra File System/(3120:3120): ocupando bloque: 0
+[INFO] 21:36:24:169 Proceso Lissandra File System/(3120:3120): se ocupo bien? tiene que ser 1: 1
+[INFO] 21:36:24:169 Proceso Lissandra File System/(3120:3120): cantidad de bloques ocupados: 1 = 1?
+[INFO] 21:36:24:169 Proceso Lissandra File System/(3120:3120): primer bloque libre: 1
+[INFO] 21:36:24:169 Proceso Lissandra File System/(3120:3120): cambios en bitmap persistidos
+[INFO] 21:36:24:169 Proceso Lissandra File System/(3120:3120): okey... vamos a liberarlo
+[INFO] 21:36:24:169 Proceso Lissandra File System/(3120:3120): se libero bien? tiene que ser 0: 0
+[INFO] 21:36:24:169 Proceso Lissandra File System/(3120:3120): cantidad de bloques ocupados: 0 = 0?
+[INFO] 21:36:24:169 Proceso Lissandra File System/(3120:3125): [SERVIDOR] Entrando a hilo de escucha del servidor del LFS
+[INFO] 21:36:24:169 Proceso Lissandra File System/(3120:3125): [SERVIDOR] Esperando recibir un cliente
+[INFO] 21:36:24:170 Proceso Lissandra File System/(3120:3124): En el hilo de consola
+[INFO] 21:36:32:888 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:36:32:888 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver CREATE
+
+
+[INFO] 21:36:32:888 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO CREATE] Entro a función
+[INFO] 21:36:32:888 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:36:32:888 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:36:32:888 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[ERROR] 21:36:32:888 Proceso Lissandra File System/(3120:3124): [ERROR] No existe la tabla
+[INFO] 21:36:32:888 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:36:32:888 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:36:32:888 Proceso Lissandra File System/(3120:3124): Se crea la tabla y su direccion es /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1 
+[INFO] 21:36:32:888 Proceso Lissandra File System/(3120:3124): Por crear archivo metadata
+[INFO] 21:36:32:888 Proceso Lissandra File System/(3120:3124): [ARMAR PATH METADATA TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1/metadata
+[INFO] 21:36:32:888 Proceso Lissandra File System/(3120:3124): El archivo metadata se creo satisfactoriamente
+
+[INFO] 21:36:32:888 Proceso Lissandra File System/(3120:3124): Se agrego la consistencia CONSISTENCY=SC
+
+[INFO] 21:36:32:888 Proceso Lissandra File System/(3120:3124): Se agregaron las particiones PARTITIONS=3
+
+[INFO] 21:36:32:888 Proceso Lissandra File System/(3120:3124): Se agrego el tiempo de compactacion COMPACTION_TIME=3
+[INFO] 21:36:32:888 Proceso Lissandra File System/(3120:3124): Por crear particiones
+[INFO] 21:36:32:889 Proceso Lissandra File System/(3120:3124): aux=3
+[INFO] 21:36:32:889 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:36:32:889 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:36:32:889 Proceso Lissandra File System/(3120:3124): La ruta de la particion es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1/0.bin
+[INFO] 21:36:32:889 Proceso Lissandra File System/(3120:3124): cambios en bitmap persistidos
+[INFO] 21:36:32:889 Proceso Lissandra File System/(3120:3124): Particion creada: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1/0.bin
+[INFO] 21:36:32:889 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:36:32:889 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:36:32:889 Proceso Lissandra File System/(3120:3124): La ruta de la particion es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1/1.bin
+[INFO] 21:36:32:889 Proceso Lissandra File System/(3120:3124): cambios en bitmap persistidos
+[INFO] 21:36:32:889 Proceso Lissandra File System/(3120:3124): Particion creada: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1/1.bin
+[INFO] 21:36:32:889 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:36:32:889 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:36:32:889 Proceso Lissandra File System/(3120:3124): La ruta de la particion es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1/2.bin
+[INFO] 21:36:32:889 Proceso Lissandra File System/(3120:3124): cambios en bitmap persistidos
+[INFO] 21:36:32:889 Proceso Lissandra File System/(3120:3124): Particion creada: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1/2.bin
+[INFO] 21:36:32:889 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] CREATE hecho correctamente
+[INFO] 21:36:38:766 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:36:38:766 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:36:38:766 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:36:38:766 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496598766
+[INFO] 21:36:38:766 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:36:38:766 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:36:38:766 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:36:38:766 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:36:38:766 Proceso Lissandra File System/(3120:3124): el value desenmascarado es VALUE
+[INFO] 21:36:38:766 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 16
+[INFO] 21:36:38:766 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:36:38:766 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 0
+[INFO] 21:36:38:766 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:36:41:74 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:36:41:74 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:36:41:74 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:36:41:74 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496601074
+[INFO] 21:36:41:74 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:36:41:74 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:36:41:74 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:36:41:74 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:36:41:74 Proceso Lissandra File System/(3120:3124): el value desenmascarado es VALUE
+[INFO] 21:36:41:74 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 16
+[INFO] 21:36:41:74 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:36:41:74 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:36:41:74 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:36:41:74 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <1;VALUE>
+[INFO] 21:36:41:74 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:36:41:74 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 2 : 
+[INFO] 21:36:41:74 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:36:41:75 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:36:41:75 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:36:42:537 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:36:42:537 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:36:42:537 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:36:42:537 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496602536
+[INFO] 21:36:42:537 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:36:42:537 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:36:42:537 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:36:42:537 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:36:42:537 Proceso Lissandra File System/(3120:3124): el value desenmascarado es VALUE434
+[INFO] 21:36:42:537 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 19
+[INFO] 21:36:42:537 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:36:42:537 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:36:42:537 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:36:42:537 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <1;VALUE434>
+[INFO] 21:36:42:537 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:36:42:537 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 3 : 
+[INFO] 21:36:42:537 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:36:42:537 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:36:42:537 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:36:42:537 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:36:44:980 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:36:44:981 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:36:44:981 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:36:44:981 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496604980
+[INFO] 21:36:44:981 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:36:44:981 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:36:44:981 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:36:44:981 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:36:44:981 Proceso Lissandra File System/(3120:3124): el value desenmascarado es 1VALUE434
+[INFO] 21:36:44:981 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 20
+[INFO] 21:36:44:981 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:36:44:981 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:36:44:981 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:36:44:981 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <3;1VALUE434>
+[INFO] 21:36:44:981 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:36:44:981 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 4 : 
+[INFO] 21:36:44:981 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:36:44:981 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:36:44:981 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:36:44:981 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:36:44:981 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:36:50:58 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:36:50:59 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:36:50:59 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:36:50:59 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496610058
+[INFO] 21:36:50:59 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:36:50:59 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:36:50:59 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:36:50:59 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:36:50:59 Proceso Lissandra File System/(3120:3124): el value desenmascarado es 1E434
+[INFO] 21:36:50:59 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 16
+[INFO] 21:36:50:59 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:36:50:59 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:36:50:59 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:36:50:59 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <4;1E434>
+[INFO] 21:36:50:59 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:36:50:59 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 5 : 
+[INFO] 21:36:50:59 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:36:50:59 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:36:50:59 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:36:50:59 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:36:50:59 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:36:50:59 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:36:52:571 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:36:52:571 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:36:52:571 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:36:52:571 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496612571
+[INFO] 21:36:52:571 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:36:52:571 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:36:52:571 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:36:52:572 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:36:52:572 Proceso Lissandra File System/(3120:3124): el value desenmascarado es 1E434
+[INFO] 21:36:52:572 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 16
+[INFO] 21:36:52:572 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:36:52:572 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:36:52:572 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:36:52:572 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <1;1E434>
+[INFO] 21:36:52:572 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:36:52:572 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 6 : 
+[INFO] 21:36:52:572 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:36:52:572 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:36:52:572 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:36:52:572 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:36:52:572 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:36:52:572 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:36:52:572 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496615863
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): el value desenmascarado es 1456
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 15
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <3;1456>
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 7 : 
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): [DEBUG] 6 <4294967295;3;1456>
+[INFO] 21:36:55:863 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:36:57:266 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:36:57:266 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:36:57:266 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:36:57:266 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496617266
+[INFO] 21:36:57:266 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:36:57:266 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:36:57:266 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:36:57:266 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:36:57:266 Proceso Lissandra File System/(3120:3124): el value desenmascarado es 1456123
+[INFO] 21:36:57:266 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 18
+[INFO] 21:36:57:266 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:36:57:266 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:36:57:267 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:36:57:267 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <3;1456123>
+[INFO] 21:36:57:267 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:36:57:267 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 8 : 
+[INFO] 21:36:57:267 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:36:57:267 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:36:57:267 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:36:57:267 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:36:57:267 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:36:57:267 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:36:57:267 Proceso Lissandra File System/(3120:3124): [DEBUG] 6 <4294967295;3;1456>
+[INFO] 21:36:57:267 Proceso Lissandra File System/(3120:3124): [DEBUG] 7 <4294967295;3;1456123>
+[INFO] 21:36:57:267 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:36:59:516 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496619516
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): el value desenmascarado es 1456123
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 18
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <2;1456123>
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 9 : 
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): [DEBUG] 6 <4294967295;3;1456>
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): [DEBUG] 7 <4294967295;3;1456123>
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): [DEBUG] 8 <4294967295;2;1456123>
+[INFO] 21:36:59:517 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:37:02:422 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:37:02:422 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:37:02:422 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:37:02:422 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496622422
+[INFO] 21:37:02:422 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:37:02:422 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:02:422 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:02:422 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:37:02:422 Proceso Lissandra File System/(3120:3124): el value desenmascarado es 1456123
+[INFO] 21:37:02:423 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 18
+[INFO] 21:37:02:423 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:37:02:423 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:37:02:423 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:37:02:423 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <5;1456123>
+[INFO] 21:37:02:423 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:37:02:423 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 10 : 
+[INFO] 21:37:02:423 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:37:02:423 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:37:02:423 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:37:02:423 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:37:02:423 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:37:02:423 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:37:02:423 Proceso Lissandra File System/(3120:3124): [DEBUG] 6 <4294967295;3;1456>
+[INFO] 21:37:02:423 Proceso Lissandra File System/(3120:3124): [DEBUG] 7 <4294967295;3;1456123>
+[INFO] 21:37:02:423 Proceso Lissandra File System/(3120:3124): [DEBUG] 8 <4294967295;2;1456123>
+[INFO] 21:37:02:423 Proceso Lissandra File System/(3120:3124): [DEBUG] 9 <4294967295;5;1456123>
+[INFO] 21:37:02:423 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:37:05:142 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:37:05:142 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:37:05:142 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:37:05:142 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496625142
+[INFO] 21:37:05:142 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:37:05:142 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:05:142 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:05:142 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:37:05:142 Proceso Lissandra File System/(3120:3124): el value desenmascarado es HOLA
+[INFO] 21:37:05:142 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 15
+[INFO] 21:37:05:142 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:37:05:142 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:37:05:142 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:37:05:142 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <5;HOLA>
+[INFO] 21:37:05:142 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:37:05:143 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 11 : 
+[INFO] 21:37:05:143 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:37:05:143 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:37:05:143 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:37:05:143 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:37:05:143 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:37:05:143 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:37:05:143 Proceso Lissandra File System/(3120:3124): [DEBUG] 6 <4294967295;3;1456>
+[INFO] 21:37:05:143 Proceso Lissandra File System/(3120:3124): [DEBUG] 7 <4294967295;3;1456123>
+[INFO] 21:37:05:143 Proceso Lissandra File System/(3120:3124): [DEBUG] 8 <4294967295;2;1456123>
+[INFO] 21:37:05:143 Proceso Lissandra File System/(3120:3124): [DEBUG] 9 <4294967295;5;1456123>
+[INFO] 21:37:05:143 Proceso Lissandra File System/(3120:3124): [DEBUG] 10 <4294967295;5;HOLA>
+[INFO] 21:37:05:143 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496627291
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): el value desenmascarado es HOLA
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 15
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <1;HOLA>
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 12 : 
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): [DEBUG] 6 <4294967295;3;1456>
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): [DEBUG] 7 <4294967295;3;1456123>
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): [DEBUG] 8 <4294967295;2;1456123>
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): [DEBUG] 9 <4294967295;5;1456123>
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): [DEBUG] 10 <4294967295;5;HOLA>
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): [DEBUG] 11 <4294967295;1;HOLA>
+[INFO] 21:37:07:292 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496628021
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): el value desenmascarado es HOLA
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 15
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <1;HOLA>
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 13 : 
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [DEBUG] 6 <4294967295;3;1456>
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [DEBUG] 7 <4294967295;3;1456123>
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [DEBUG] 8 <4294967295;2;1456123>
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [DEBUG] 9 <4294967295;5;1456123>
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [DEBUG] 10 <4294967295;5;HOLA>
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [DEBUG] 11 <4294967295;1;HOLA>
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [DEBUG] 12 <4294967295;1;HOLA>
+[INFO] 21:37:08:22 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496628319
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): el value desenmascarado es HOLA
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 15
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <1;HOLA>
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 14 : 
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [DEBUG] 6 <4294967295;3;1456>
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [DEBUG] 7 <4294967295;3;1456123>
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [DEBUG] 8 <4294967295;2;1456123>
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [DEBUG] 9 <4294967295;5;1456123>
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [DEBUG] 10 <4294967295;5;HOLA>
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [DEBUG] 11 <4294967295;1;HOLA>
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [DEBUG] 12 <4294967295;1;HOLA>
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [DEBUG] 13 <4294967295;1;HOLA>
+[INFO] 21:37:08:320 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:37:08:606 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:37:08:606 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:37:08:606 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:37:08:606 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496628606
+[INFO] 21:37:08:606 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:37:08:606 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:08:606 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): el value desenmascarado es HOLA
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 15
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <1;HOLA>
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 15 : 
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): [DEBUG] 6 <4294967295;3;1456>
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): [DEBUG] 7 <4294967295;3;1456123>
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): [DEBUG] 8 <4294967295;2;1456123>
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): [DEBUG] 9 <4294967295;5;1456123>
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): [DEBUG] 10 <4294967295;5;HOLA>
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): [DEBUG] 11 <4294967295;1;HOLA>
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): [DEBUG] 12 <4294967295;1;HOLA>
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): [DEBUG] 13 <4294967295;1;HOLA>
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): [DEBUG] 14 <4294967295;1;HOLA>
+[INFO] 21:37:08:607 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496628816
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): el value desenmascarado es HOLA
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 15
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <1;HOLA>
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 16 : 
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [DEBUG] 6 <4294967295;3;1456>
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [DEBUG] 7 <4294967295;3;1456123>
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [DEBUG] 8 <4294967295;2;1456123>
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [DEBUG] 9 <4294967295;5;1456123>
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [DEBUG] 10 <4294967295;5;HOLA>
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [DEBUG] 11 <4294967295;1;HOLA>
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [DEBUG] 12 <4294967295;1;HOLA>
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [DEBUG] 13 <4294967295;1;HOLA>
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [DEBUG] 14 <4294967295;1;HOLA>
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [DEBUG] 15 <4294967295;1;HOLA>
+[INFO] 21:37:08:817 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496629182
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): el value desenmascarado es HOLA
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 15
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <1;HOLA>
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 17 : 
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [DEBUG] 6 <4294967295;3;1456>
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [DEBUG] 7 <4294967295;3;1456123>
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [DEBUG] 8 <4294967295;2;1456123>
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [DEBUG] 9 <4294967295;5;1456123>
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [DEBUG] 10 <4294967295;5;HOLA>
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [DEBUG] 11 <4294967295;1;HOLA>
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [DEBUG] 12 <4294967295;1;HOLA>
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [DEBUG] 13 <4294967295;1;HOLA>
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [DEBUG] 14 <4294967295;1;HOLA>
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [DEBUG] 15 <4294967295;1;HOLA>
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [DEBUG] 16 <4294967295;1;HOLA>
+[INFO] 21:37:09:183 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496629804
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): el value desenmascarado es HOLA
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 15
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <1;HOLA>
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 18 : 
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [DEBUG] 6 <4294967295;3;1456>
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [DEBUG] 7 <4294967295;3;1456123>
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [DEBUG] 8 <4294967295;2;1456123>
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [DEBUG] 9 <4294967295;5;1456123>
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [DEBUG] 10 <4294967295;5;HOLA>
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [DEBUG] 11 <4294967295;1;HOLA>
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [DEBUG] 12 <4294967295;1;HOLA>
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [DEBUG] 13 <4294967295;1;HOLA>
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [DEBUG] 14 <4294967295;1;HOLA>
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [DEBUG] 15 <4294967295;1;HOLA>
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [DEBUG] 16 <4294967295;1;HOLA>
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [DEBUG] 17 <4294967295;1;HOLA>
+[INFO] 21:37:09:805 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496630293
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): el value desenmascarado es HOLA
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 15
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <1;HOLA>
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 19 : 
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [DEBUG] 6 <4294967295;3;1456>
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [DEBUG] 7 <4294967295;3;1456123>
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [DEBUG] 8 <4294967295;2;1456123>
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [DEBUG] 9 <4294967295;5;1456123>
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [DEBUG] 10 <4294967295;5;HOLA>
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [DEBUG] 11 <4294967295;1;HOLA>
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [DEBUG] 12 <4294967295;1;HOLA>
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [DEBUG] 13 <4294967295;1;HOLA>
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [DEBUG] 14 <4294967295;1;HOLA>
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [DEBUG] 15 <4294967295;1;HOLA>
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [DEBUG] 16 <4294967295;1;HOLA>
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [DEBUG] 17 <4294967295;1;HOLA>
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [DEBUG] 18 <4294967295;1;HOLA>
+[INFO] 21:37:10:294 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:37:10:568 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:37:10:568 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:37:10:568 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:37:10:568 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496630568
+[INFO] 21:37:10:568 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:37:10:568 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:10:568 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:10:568 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:37:10:568 Proceso Lissandra File System/(3120:3124): el value desenmascarado es HOLA
+[INFO] 21:37:10:568 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 15
+[INFO] 21:37:10:568 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:37:10:568 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:37:10:568 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:37:10:568 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <1;HOLA>
+[INFO] 21:37:10:568 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:37:10:568 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 20 : 
+[INFO] 21:37:10:568 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:37:10:569 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:37:10:569 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:37:10:569 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:37:10:569 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:37:10:569 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:37:10:569 Proceso Lissandra File System/(3120:3124): [DEBUG] 6 <4294967295;3;1456>
+[INFO] 21:37:10:569 Proceso Lissandra File System/(3120:3124): [DEBUG] 7 <4294967295;3;1456123>
+[INFO] 21:37:10:569 Proceso Lissandra File System/(3120:3124): [DEBUG] 8 <4294967295;2;1456123>
+[INFO] 21:37:10:569 Proceso Lissandra File System/(3120:3124): [DEBUG] 9 <4294967295;5;1456123>
+[INFO] 21:37:10:569 Proceso Lissandra File System/(3120:3124): [DEBUG] 10 <4294967295;5;HOLA>
+[INFO] 21:37:10:569 Proceso Lissandra File System/(3120:3124): [DEBUG] 11 <4294967295;1;HOLA>
+[INFO] 21:37:10:569 Proceso Lissandra File System/(3120:3124): [DEBUG] 12 <4294967295;1;HOLA>
+[INFO] 21:37:10:569 Proceso Lissandra File System/(3120:3124): [DEBUG] 13 <4294967295;1;HOLA>
+[INFO] 21:37:10:569 Proceso Lissandra File System/(3120:3124): [DEBUG] 14 <4294967295;1;HOLA>
+[INFO] 21:37:10:569 Proceso Lissandra File System/(3120:3124): [DEBUG] 15 <4294967295;1;HOLA>
+[INFO] 21:37:10:569 Proceso Lissandra File System/(3120:3124): [DEBUG] 16 <4294967295;1;HOLA>
+[INFO] 21:37:10:569 Proceso Lissandra File System/(3120:3124): [DEBUG] 17 <4294967295;1;HOLA>
+[INFO] 21:37:10:569 Proceso Lissandra File System/(3120:3124): [DEBUG] 18 <4294967295;1;HOLA>
+[INFO] 21:37:10:569 Proceso Lissandra File System/(3120:3124): [DEBUG] 19 <4294967295;1;HOLA>
+[INFO] 21:37:10:569 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496630794
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): el value desenmascarado es HOLA
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 15
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <1;HOLA>
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 21 : 
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] 6 <4294967295;3;1456>
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] 7 <4294967295;3;1456123>
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] 8 <4294967295;2;1456123>
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] 9 <4294967295;5;1456123>
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] 10 <4294967295;5;HOLA>
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] 11 <4294967295;1;HOLA>
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] 12 <4294967295;1;HOLA>
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] 13 <4294967295;1;HOLA>
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] 14 <4294967295;1;HOLA>
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] 15 <4294967295;1;HOLA>
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] 16 <4294967295;1;HOLA>
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] 17 <4294967295;1;HOLA>
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] 18 <4294967295;1;HOLA>
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] 19 <4294967295;1;HOLA>
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [DEBUG] 20 <4294967295;1;HOLA>
+[INFO] 21:37:10:795 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496630997
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): el value desenmascarado es HOLA
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 15
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <1;HOLA>
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 22 : 
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] 6 <4294967295;3;1456>
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] 7 <4294967295;3;1456123>
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] 8 <4294967295;2;1456123>
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] 9 <4294967295;5;1456123>
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] 10 <4294967295;5;HOLA>
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] 11 <4294967295;1;HOLA>
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] 12 <4294967295;1;HOLA>
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] 13 <4294967295;1;HOLA>
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] 14 <4294967295;1;HOLA>
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] 15 <4294967295;1;HOLA>
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] 16 <4294967295;1;HOLA>
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] 17 <4294967295;1;HOLA>
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] 18 <4294967295;1;HOLA>
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] 19 <4294967295;1;HOLA>
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] 20 <4294967295;1;HOLA>
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [DEBUG] 21 <4294967295;1;HOLA>
+[INFO] 21:37:10:998 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496631164
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): el value desenmascarado es HOLA
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 15
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <1;HOLA>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 23 : 
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] 6 <4294967295;3;1456>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] 7 <4294967295;3;1456123>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] 8 <4294967295;2;1456123>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] 9 <4294967295;5;1456123>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] 10 <4294967295;5;HOLA>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] 11 <4294967295;1;HOLA>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] 12 <4294967295;1;HOLA>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] 13 <4294967295;1;HOLA>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] 14 <4294967295;1;HOLA>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] 15 <4294967295;1;HOLA>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] 16 <4294967295;1;HOLA>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] 17 <4294967295;1;HOLA>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] 18 <4294967295;1;HOLA>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] 19 <4294967295;1;HOLA>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] 20 <4294967295;1;HOLA>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] 21 <4294967295;1;HOLA>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [DEBUG] 22 <4294967295;1;HOLA>
+[INFO] 21:37:11:165 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:37:11:466 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:37:11:466 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:37:11:466 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:37:11:466 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496631466
+[INFO] 21:37:11:466 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:37:11:466 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:11:466 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:11:466 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:37:11:466 Proceso Lissandra File System/(3120:3124): el value desenmascarado es HOLA
+[INFO] 21:37:11:466 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 15
+[INFO] 21:37:11:466 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:37:11:466 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:37:11:466 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <1;HOLA>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 24 : 
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 6 <4294967295;3;1456>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 7 <4294967295;3;1456123>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 8 <4294967295;2;1456123>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 9 <4294967295;5;1456123>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 10 <4294967295;5;HOLA>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 11 <4294967295;1;HOLA>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 12 <4294967295;1;HOLA>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 13 <4294967295;1;HOLA>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 14 <4294967295;1;HOLA>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 15 <4294967295;1;HOLA>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 16 <4294967295;1;HOLA>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 17 <4294967295;1;HOLA>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 18 <4294967295;1;HOLA>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 19 <4294967295;1;HOLA>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 20 <4294967295;1;HOLA>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 21 <4294967295;1;HOLA>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 22 <4294967295;1;HOLA>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [DEBUG] 23 <4294967295;1;HOLA>
+[INFO] 21:37:11:467 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496631647
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): el value desenmascarado es HOLA
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 15
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <1;HOLA>
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 25 : 
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] 6 <4294967295;3;1456>
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] 7 <4294967295;3;1456123>
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] 8 <4294967295;2;1456123>
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] 9 <4294967295;5;1456123>
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] 10 <4294967295;5;HOLA>
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] 11 <4294967295;1;HOLA>
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] 12 <4294967295;1;HOLA>
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] 13 <4294967295;1;HOLA>
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] 14 <4294967295;1;HOLA>
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] 15 <4294967295;1;HOLA>
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] 16 <4294967295;1;HOLA>
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] 17 <4294967295;1;HOLA>
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] 18 <4294967295;1;HOLA>
+[INFO] 21:37:11:648 Proceso Lissandra File System/(3120:3124): [DEBUG] 19 <4294967295;1;HOLA>
+[INFO] 21:37:11:649 Proceso Lissandra File System/(3120:3124): [DEBUG] 20 <4294967295;1;HOLA>
+[INFO] 21:37:11:649 Proceso Lissandra File System/(3120:3124): [DEBUG] 21 <4294967295;1;HOLA>
+[INFO] 21:37:11:649 Proceso Lissandra File System/(3120:3124): [DEBUG] 22 <4294967295;1;HOLA>
+[INFO] 21:37:11:649 Proceso Lissandra File System/(3120:3124): [DEBUG] 23 <4294967295;1;HOLA>
+[INFO] 21:37:11:649 Proceso Lissandra File System/(3120:3124): [DEBUG] 24 <4294967295;1;HOLA>
+[INFO] 21:37:11:649 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:37:11:824 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496631824
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): el value desenmascarado es HOLA
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 15
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <1;HOLA>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 26 : 
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 6 <4294967295;3;1456>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 7 <4294967295;3;1456123>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 8 <4294967295;2;1456123>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 9 <4294967295;5;1456123>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 10 <4294967295;5;HOLA>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 11 <4294967295;1;HOLA>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 12 <4294967295;1;HOLA>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 13 <4294967295;1;HOLA>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 14 <4294967295;1;HOLA>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 15 <4294967295;1;HOLA>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 16 <4294967295;1;HOLA>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 17 <4294967295;1;HOLA>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 18 <4294967295;1;HOLA>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 19 <4294967295;1;HOLA>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 20 <4294967295;1;HOLA>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 21 <4294967295;1;HOLA>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 22 <4294967295;1;HOLA>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 23 <4294967295;1;HOLA>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 24 <4294967295;1;HOLA>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [DEBUG] 25 <4294967295;1;HOLA>
+[INFO] 21:37:11:825 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:37:13:78 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:37:13:79 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:37:13:79 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:37:13:79 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496633079
+[INFO] 21:37:13:79 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:37:13:79 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:13:79 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:13:79 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): el value desenmascarado es HOLA
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 15
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <1;HOLA>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 27 : 
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 6 <4294967295;3;1456>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 7 <4294967295;3;1456123>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 8 <4294967295;2;1456123>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 9 <4294967295;5;1456123>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 10 <4294967295;5;HOLA>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 11 <4294967295;1;HOLA>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 12 <4294967295;1;HOLA>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 13 <4294967295;1;HOLA>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 14 <4294967295;1;HOLA>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 15 <4294967295;1;HOLA>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 16 <4294967295;1;HOLA>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 17 <4294967295;1;HOLA>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 18 <4294967295;1;HOLA>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 19 <4294967295;1;HOLA>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 20 <4294967295;1;HOLA>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 21 <4294967295;1;HOLA>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 22 <4294967295;1;HOLA>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 23 <4294967295;1;HOLA>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 24 <4294967295;1;HOLA>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 25 <4294967295;1;HOLA>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [DEBUG] 26 <4294967295;1;HOLA>
+[INFO] 21:37:13:80 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:37:13:561 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:37:13:561 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:37:13:561 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:37:13:561 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496633561
+[INFO] 21:37:13:561 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:37:13:561 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): el value desenmascarado es HOLA
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 15
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <1;HOLA>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 28 : 
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 6 <4294967295;3;1456>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 7 <4294967295;3;1456123>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 8 <4294967295;2;1456123>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 9 <4294967295;5;1456123>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 10 <4294967295;5;HOLA>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 11 <4294967295;1;HOLA>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 12 <4294967295;1;HOLA>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 13 <4294967295;1;HOLA>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 14 <4294967295;1;HOLA>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 15 <4294967295;1;HOLA>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 16 <4294967295;1;HOLA>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 17 <4294967295;1;HOLA>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 18 <4294967295;1;HOLA>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 19 <4294967295;1;HOLA>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 20 <4294967295;1;HOLA>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 21 <4294967295;1;HOLA>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 22 <4294967295;1;HOLA>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 23 <4294967295;1;HOLA>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 24 <4294967295;1;HOLA>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 25 <4294967295;1;HOLA>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 26 <4294967295;1;HOLA>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [DEBUG] 27 <4294967295;1;HOLA>
+[INFO] 21:37:13:562 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496633986
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): el value desenmascarado es HOLA
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 15
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): valor tablaRepetida 1
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): Encontre una tabla repetida
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] agregué registro a la memtable <1;HOLA>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] esta tabla en la memtable tiene: 
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño tabla registros 29 : 
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 0 <4294967295;2;VALUE>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 1 <4294967295;1;VALUE>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 2 <4294967295;1;VALUE434>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 3 <4294967295;3;1VALUE434>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 4 <4294967295;4;1E434>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 5 <4294967295;1;1E434>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 6 <4294967295;3;1456>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 7 <4294967295;3;1456123>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 8 <4294967295;2;1456123>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 9 <4294967295;5;1456123>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 10 <4294967295;5;HOLA>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 11 <4294967295;1;HOLA>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 12 <4294967295;1;HOLA>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 13 <4294967295;1;HOLA>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 14 <4294967295;1;HOLA>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 15 <4294967295;1;HOLA>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 16 <4294967295;1;HOLA>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 17 <4294967295;1;HOLA>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 18 <4294967295;1;HOLA>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 19 <4294967295;1;HOLA>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 20 <4294967295;1;HOLA>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 21 <4294967295;1;HOLA>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 22 <4294967295;1;HOLA>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 23 <4294967295;1;HOLA>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 24 <4294967295;1;HOLA>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 25 <4294967295;1;HOLA>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 26 <4294967295;1;HOLA>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 27 <4294967295;1;HOLA>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [DEBUG] 28 <4294967295;1;HOLA>
+[INFO] 21:37:13:987 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] INSERT hecho correctamente
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): Es tiempo de dump, hay cosas en la memtable?
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): Se encontraron cosas, se hace el dump
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): la tabla insertada en la memtable es TABLA1
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): la ruta es /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1/0.tmp
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): cantidad de registros de la lista: 29
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (0) = 16
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (1) = 16
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (2) = 19
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (3) = 20
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (4) = 16
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (5) = 16
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (6) = 15
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (7) = 18
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (8) = 18
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (9) = 18
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (10) = 15
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (11) = 15
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (12) = 15
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (13) = 15
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (14) = 15
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (15) = 15
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (16) = 15
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (17) = 15
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (18) = 15
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (19) = 15
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (20) = 15
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (21) = 15
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (22) = 15
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (23) = 15
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (24) = 15
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (25) = 15
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (26) = 15
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (27) = 15
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [DEBUG] tam registro (28) = 15
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): tamanio total de registros: 515
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [CUANTOS BLOQUES NECESITO] Entra tamaño total 515
+[INFO] 21:37:14:172 Proceso Lissandra File System/(3120:3126): [CUANTOS BLOQUES NECESITO] El tamaño de los bloques es 64
+[INFO] 21:37:14:173 Proceso Lissandra File System/(3120:3126): [DEBUG] Tengo 5189 bloques libres y necesito 9
+[INFO] 21:37:14:334 Proceso Lissandra File System/(3120:3124): Llego aca
+[INFO] 21:37:14:334 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO PEDIDO] Voy a resolver INSERT
+[INFO] 21:37:14:334 Proceso Lissandra File System/(3120:3124): [RESOLVIENDO INSERT] Entro a función
+[INFO] 21:37:14:334 Proceso Lissandra File System/(3120:3124): el timestamp a agregar es: 1563496634333
+[INFO] 21:37:14:334 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] tabla recibida TABLA1
+[INFO] 21:37:14:334 Proceso Lissandra File System/(3120:3124): [ARMAR PATH TABLA] Path armado /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:14:334 Proceso Lissandra File System/(3120:3124): [VERIFICADO] La direccion de la tabla que se quiere verificar es: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA1
+[INFO] 21:37:14:334 Proceso Lissandra File System/(3120:3124): [ OK ] La tabla ya existe.
+[INFO] 21:37:14:334 Proceso Lissandra File System/(3120:3124): el value desenmascarado es HOLA
+[INFO] 21:37:14:334 Proceso Lissandra File System/(3120:3124): [DEBUG] tamaño de registro agregado = 15
+[INFO] 21:37:14:334 Proceso Lissandra File System/(3120:3124): Timestamp = 4294967295 

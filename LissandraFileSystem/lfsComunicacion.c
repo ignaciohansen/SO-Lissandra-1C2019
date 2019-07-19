@@ -298,6 +298,7 @@ resp_com_t resolver_select(request_t req) {
 	if (req.cant_args == 2) {
 		char *nombre_tabla = req.args[0];
 		char *key = req.args[1];
+		//string_to_upper(nombre_tabla);
 		ret_val = comandoSelect(nombre_tabla,key);
 
 		if (ret_val->value == NULL) {
