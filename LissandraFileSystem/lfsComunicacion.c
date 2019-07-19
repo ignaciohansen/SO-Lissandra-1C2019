@@ -310,7 +310,7 @@ resp_com_t resolver_select(request_t req) {
 		}
 		int tamanio = strlen(ret_val->value)+40;
 		char* valueRetorno = malloc(tamanio);
-		snprintf(valueRetorno,tamanio, "%s|%ld", ret_val->value,ret_val->timestamp); // value|timestamp
+		snprintf(valueRetorno,tamanio, "%s|%llu", ret_val->value,ret_val->timestamp); // value|timestamp
 		return armar_respuesta(RESP_OK, valueRetorno);
 
 	}

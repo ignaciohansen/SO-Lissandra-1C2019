@@ -625,8 +625,8 @@ void atenderRequest(char* linea) {
 		imprimirMensaje(logger, "[RESOLVIENDO PEDIDO] Voy a resolver SELECT");
 		respuesta = resolver_select(req);
 		if (respuesta.tipo == RESP_OK && respuesta.msg.tam > 0) {
-			//imprimirMensaje1(logger,"[RESOLVIENDO PEDIDO] SELECT hecho correctamente. Valor %s obtenido",respuesta.msg.str);
-			//printf("[SELECT] Valor obtenido: %s\n",respuesta.msg.str);
+			imprimirMensaje1(logger,"[RESOLVIENDO PEDIDO] SELECT hecho correctamente. Valor %s obtenido",respuesta.msg.str);
+			printf("[SELECT] Valor obtenido: %s\n",respuesta.msg.str);
 		} else {
 			imprimirMensaje(logger,"[RESOLVIENDO PEDIDO] El SELECT no pudo realizarse");
 			printf("[SELECT] El comando no pudo realizarse\n");
@@ -3174,7 +3174,7 @@ int comandoInsertSinTimestamp(char* tabla, char* key, char* value) {
 
 	char timestamp_s[30];
 
-	sprintf(timestamp_s, "%llu", aux);
+	sprintf(timestamp_s, "%ld", aux);
 
 	log_info(logger, "el timestamp a agregar es: %s", timestamp_s);
 
