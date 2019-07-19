@@ -1,6 +1,14 @@
+<<<<<<< HEAD
+PUERTO_ESCUCHA=8001	
+PUNTO_MONTAJE=/home/martin/Documentos/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem	
+RETARDO=600	
+TAMANIO_VALUE=20	
+TIEMPO_DUMP=5000
+=======
 PUERTO_ESCUCHA=8001
 PUNTO_MONTAJE=/home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem
 RETARDO=600
 TAMANIO_VALUE=4
 TIEMPO_DUMP=5000
 IP=127.0.0.1
+>>>>>>> 8fe9c469b57298b93251290f492d8ddf38fed112
