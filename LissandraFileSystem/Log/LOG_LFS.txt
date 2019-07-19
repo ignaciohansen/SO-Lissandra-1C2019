@@ -1,54 +1,49 @@
-[INFO] 23:45:59:144 Proceso Lissandra File System/(9985:9985): [LOG CREADO] continuamos cargando la estructura de configuracion.
-[INFO] 23:45:59:144 Proceso Lissandra File System/(9985:9985): Por reservar memoria para variable de configuracion.
-[INFO] 23:45:59:144 Proceso Lissandra File System/(9985:9985): Por crear el archivo de config para levantar archivo con datos.
-[INFO] 23:45:59:144 Proceso Lissandra File System/(9985:9985): LissandraFS: Leyendo Archivo de Configuracion...
-[INFO] 23:45:59:144 Proceso Lissandra File System/(9985:9985): Almacenando el puerto
-[INFO] 23:45:59:144 Proceso Lissandra File System/(9985:9985): El puerto de escucha es: 8001
-[INFO] 23:45:59:144 Proceso Lissandra File System/(9985:9985): Almacenando el PUNTO DE MONTAJE: /home/martin/Documentos/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem
-[INFO] 23:45:59:144 Proceso Lissandra File System/(9985:9985): El punto de montaje es: /home/martin/Documentos/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem
-[INFO] 23:45:59:144 Proceso Lissandra File System/(9985:9985): Y ahora la variable tabla_path queda con: /home/martin/Documentos/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/
-[INFO] 23:45:59:144 Proceso Lissandra File System/(9985:9985): Almacenando el retardo
-[INFO] 23:45:59:144 Proceso Lissandra File System/(9985:9985): El retardo de respuesta es: 600
-[INFO] 23:45:59:144 Proceso Lissandra File System/(9985:9985): Almacenando el tamanio del valor de una key
-[INFO] 23:45:59:144 Proceso Lissandra File System/(9985:9985): El tamanio del valor es: 4
-[INFO] 23:45:59:144 Proceso Lissandra File System/(9985:9985): Almacenando el puerto
-[INFO] 23:45:59:144 Proceso Lissandra File System/(9985:9985): El tiempo de dumpeo es: 5000
-[INFO] 23:45:59:144 Proceso Lissandra File System/(9985:9985): Almacenando la IP
-[INFO] 23:45:59:144 Proceso Lissandra File System/(9985:9985): La IP es: 127.0.0.1
-[INFO] 23:45:59:144 Proceso Lissandra File System/(9985:9985): Se ha cargado todos los datos del archivo de configuracion
-[INFO] 23:45:59:144 Proceso Lissandra File System/(9985:9985): levantando metadata del File System
-[INFO] 23:45:59:144 Proceso Lissandra File System/(9985:9985): ruta de la metadata: /home/martin/Documentos/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Metadata/Metadata
-[INFO] 23:45:59:145 Proceso Lissandra File System/(9985:9985): LFS: Leyendo metadata...
-[INFO] 23:45:59:145 Proceso Lissandra File System/(9985:9985): Almacenando tamanio de bloque
-[INFO] 23:45:59:145 Proceso Lissandra File System/(9985:9985): el tamanio del bloque es: 64
-[INFO] 23:45:59:145 Proceso Lissandra File System/(9985:9985): Almacenando cantidad de bloques
-[INFO] 23:45:59:145 Proceso Lissandra File System/(9985:9985): La cantidad de bloques es: 5192
-[INFO] 23:45:59:145 Proceso Lissandra File System/(9985:9985): Almacenando magic number
-[INFO] 23:45:59:145 Proceso Lissandra File System/(9985:9985): el magic number es: LISSANDRA
-[INFO] 23:45:59:145 Proceso Lissandra File System/(9985:9985): [FREE] variable metadataFile utlizada para navegar el metadata.
-[INFO] 23:45:59:145 Proceso Lissandra File System/(9985:9985): result: 0
-[INFO] 23:45:59:145 Proceso Lissandra File System/(9985:9985): Voy a crear los bloques
-[INFO] 23:45:59:189 Proceso Lissandra File System/(9985:9985): los bloques fueron creados
-[INFO] 23:45:59:189 Proceso Lissandra File System/(9985:9985): la configuracion y la metadata se levantaron ok
-[INFO] 23:45:59:189 Proceso Lissandra File System/(9985:9985): Voy a cargar bitmap
-[INFO] 23:45:59:189 Proceso Lissandra File System/(9985:9985): Path del bitmap: /home/martin/Documentos/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Metadata/Bitmap.bin
-[INFO] 23:45:59:189 Proceso Lissandra File System/(9985:9985): Archivo de bitmap no existe, se procede a crear el bitmap
-[INFO] 23:45:59:189 Proceso Lissandra File System/(9985:9985): cantidad de bloques libres en el bitmap: 5192
-[INFO] 23:45:59:189 Proceso Lissandra File System/(9985:9985): cantidad de bloques ocupados: 0
-[INFO] 23:45:59:189 Proceso Lissandra File System/(9985:9985): cambios en bitmap persistidos
-[INFO] 23:45:59:189 Proceso Lissandra File System/(9985:9985): ocupando bloque: 0
-[INFO] 23:45:59:189 Proceso Lissandra File System/(9985:9985): se ocupo bien? tiene que ser 1: 1
-[INFO] 23:45:59:190 Proceso Lissandra File System/(9985:9985): cantidad de bloques ocupados: 1 = 1?
-[INFO] 23:45:59:190 Proceso Lissandra File System/(9985:9985): primer bloque libre: 1
-[INFO] 23:45:59:190 Proceso Lissandra File System/(9985:9985): cambios en bitmap persistidos
-[INFO] 23:45:59:190 Proceso Lissandra File System/(9985:9985): okey... vamos a liberarlo
-[INFO] 23:45:59:190 Proceso Lissandra File System/(9985:9985): se libero bien? tiene que ser 0: 0
-[INFO] 23:45:59:190 Proceso Lissandra File System/(9985:9985): cantidad de bloques ocupados: 0 = 0?
-[INFO] 23:45:59:190 Proceso Lissandra File System/(9985:9988): En el hilo de consola
-[INFO] 23:45:59:190 Proceso Lissandra File System/(9985:9989): [SERVIDOR] Entrando a hilo de escucha del servidor del LFS
-[INFO] 23:45:59:190 Proceso Lissandra File System/(9985:9989): [SERVIDOR] Esperando recibir un cliente
-[INFO] 23:46:01:122 Proceso Lissandra File System/(9985:9988): 
-
-**************************** SALIENDO ****************************
-
-
+[INFO] 08:14:35:482 Proceso Lissandra File System/(2472:2472): [LOG CREADO] continuamos cargando la estructura de configuracion.
+[INFO] 08:14:35:483 Proceso Lissandra File System/(2472:2472): Por reservar memoria para variable de configuracion.
+[INFO] 08:14:35:483 Proceso Lissandra File System/(2472:2472): Por crear el archivo de config para levantar archivo con datos.
+[INFO] 08:14:35:509 Proceso Lissandra File System/(2472:2472): LissandraFS: Leyendo Archivo de Configuracion...
+[INFO] 08:14:35:509 Proceso Lissandra File System/(2472:2472): Almacenando el puerto
+[INFO] 08:14:35:510 Proceso Lissandra File System/(2472:2472): El puerto de escucha es: 8001
+[INFO] 08:14:35:510 Proceso Lissandra File System/(2472:2472): Almacenando el PUNTO DE MONTAJE: /home/martin/Documentos/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem
+[INFO] 08:14:35:510 Proceso Lissandra File System/(2472:2472): El punto de montaje es: /home/martin/Documentos/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem
+[INFO] 08:14:35:510 Proceso Lissandra File System/(2472:2472): Y ahora la variable tabla_path queda con: /home/martin/Documentos/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/
+[INFO] 08:14:35:510 Proceso Lissandra File System/(2472:2472): Almacenando el retardo
+[INFO] 08:14:35:510 Proceso Lissandra File System/(2472:2472): El retardo de respuesta es: 600
+[INFO] 08:14:35:510 Proceso Lissandra File System/(2472:2472): Almacenando el tamanio del valor de una key
+[INFO] 08:14:35:510 Proceso Lissandra File System/(2472:2472): El tamanio del valor es: 4
+[INFO] 08:14:35:510 Proceso Lissandra File System/(2472:2472): Almacenando el puerto
+[INFO] 08:14:35:510 Proceso Lissandra File System/(2472:2472): El tiempo de dumpeo es: 5000
+[INFO] 08:14:35:510 Proceso Lissandra File System/(2472:2472): Almacenando la IP
+[INFO] 08:14:35:510 Proceso Lissandra File System/(2472:2472): La IP es: 127.0.0.1
+[INFO] 08:14:35:510 Proceso Lissandra File System/(2472:2472): Se ha cargado todos los datos del archivo de configuracion
+[INFO] 08:14:35:510 Proceso Lissandra File System/(2472:2472): levantando metadata del File System
+[INFO] 08:14:35:510 Proceso Lissandra File System/(2472:2472): ruta de la metadata: /home/martin/Documentos/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Metadata/Metadata
+[INFO] 08:14:35:520 Proceso Lissandra File System/(2472:2472): LFS: Leyendo metadata...
+[INFO] 08:14:35:520 Proceso Lissandra File System/(2472:2472): Almacenando tamanio de bloque
+[INFO] 08:14:35:520 Proceso Lissandra File System/(2472:2472): el tamanio del bloque es: 64
+[INFO] 08:14:35:520 Proceso Lissandra File System/(2472:2472): Almacenando cantidad de bloques
+[INFO] 08:14:35:520 Proceso Lissandra File System/(2472:2472): La cantidad de bloques es: 5192
+[INFO] 08:14:35:520 Proceso Lissandra File System/(2472:2472): Almacenando magic number
+[INFO] 08:14:35:520 Proceso Lissandra File System/(2472:2472): el magic number es: LISSANDRA
+[INFO] 08:14:35:520 Proceso Lissandra File System/(2472:2472): [FREE] variable metadataFile utlizada para navegar el metadata.
+[INFO] 08:14:35:520 Proceso Lissandra File System/(2472:2472): result: 0
+[INFO] 08:14:35:520 Proceso Lissandra File System/(2472:2472): Voy a crear los bloques
+[INFO] 08:14:35:558 Proceso Lissandra File System/(2472:2472): los bloques fueron creados
+[INFO] 08:14:35:559 Proceso Lissandra File System/(2472:2472): la configuracion y la metadata se levantaron ok
+[INFO] 08:14:35:559 Proceso Lissandra File System/(2472:2472): Voy a cargar bitmap
+[INFO] 08:14:35:559 Proceso Lissandra File System/(2472:2472): Path del bitmap: /home/martin/Documentos/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Metadata/Bitmap.bin
+[INFO] 08:14:35:559 Proceso Lissandra File System/(2472:2472): existe archivo, se procede a abrir el bitmap
+[INFO] 08:14:35:568 Proceso Lissandra File System/(2472:2472): cantidad de bloques libres en el bitmap: 5192
+[INFO] 08:14:35:569 Proceso Lissandra File System/(2472:2472): cantidad de bloques ocupados: 0
+[INFO] 08:14:35:569 Proceso Lissandra File System/(2472:2472): cambios en bitmap persistidos
+[INFO] 08:14:35:569 Proceso Lissandra File System/(2472:2472): ocupando bloque: 0
+[INFO] 08:14:35:569 Proceso Lissandra File System/(2472:2472): se ocupo bien? tiene que ser 1: 1
+[INFO] 08:14:35:569 Proceso Lissandra File System/(2472:2472): cantidad de bloques ocupados: 1 = 1?
+[INFO] 08:14:35:569 Proceso Lissandra File System/(2472:2472): primer bloque libre: 1
+[INFO] 08:14:35:569 Proceso Lissandra File System/(2472:2472): cambios en bitmap persistidos
+[INFO] 08:14:35:569 Proceso Lissandra File System/(2472:2472): okey... vamos a liberarlo
+[INFO] 08:14:35:569 Proceso Lissandra File System/(2472:2472): se libero bien? tiene que ser 0: 0
+[INFO] 08:14:35:569 Proceso Lissandra File System/(2472:2472): cantidad de bloques ocupados: 0 = 0?
+[INFO] 08:14:35:570 Proceso Lissandra File System/(2472:2480): En el hilo de consola
+[INFO] 08:14:35:570 Proceso Lissandra File System/(2472:2481): [SERVIDOR] Entrando a hilo de escucha del servidor del LFS
+[INFO] 08:14:35:570 Proceso Lissandra File System/(2472:2481): [SERVIDOR] Esperando recibir un cliente
