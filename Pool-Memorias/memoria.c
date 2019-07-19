@@ -893,6 +893,10 @@ void escucharConexionKernel() {
 void cargarConfiguracion(char *path_config) {
 //	printf("\n\n**********CARGANDO CONFIGURACION**********\n\n");
 	log_info(log_memoria, "[CONFIGURANDO MODULO] RESERVAR MEMORIA.");
+	if(arc_config != NULL){
+		//FUE CARGADA PREVIAMENTE POR LO TANTO DEBO LIMPIARLO PARA RECARGARLA DE NUEVO
+		config_destroy(arc_config);
+	}
 	arc_config = malloc(sizeof(t_memoria_config));
 
 	// Lo inicializo así no generó segmentation fault al salir (puedo saber cuáles aloqué)
