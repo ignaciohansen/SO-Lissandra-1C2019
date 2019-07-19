@@ -5,6 +5,8 @@
 #include <commons/collections/list.h>
 #include <commons/collections/dictionary.h>
 #include <commons/bitarray.h>
+#include "InotifyLFS.h"
+#include "lfsComunicacion.h"
 
 //Agregadas para directorio
 #include <stdlib.h>
