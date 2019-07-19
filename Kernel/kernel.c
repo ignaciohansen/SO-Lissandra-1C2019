@@ -12,13 +12,17 @@ int main() {
 
 	log_kernel = archivoLogCrear(LOG_PATH, "Proceso Kernel");
 
-	log_info(log_kernel,"Ya creado el Log, continuamos cargando la estructura de configuracion, llamando a la funcion.");
+	log_info(log_kernel,
+			"Ya creado el Log, continuamos cargando la estructura de configuracion, llamando a la funcion.");
 
 	cargarConfiguracion();
 
-	log_info(log_kernel,"En Main nuevamente, la carga de archivo de configuracion finalizo.");
+	log_info(log_kernel,
+			"En Main nuevamente, la carga de archivo de configuracion finalizo.");
 
-	log_info(log_kernel,"El valor que le vamos a poner al semaforo de multiprocesamiento es: %d.",arc_config->multiprocesamiento);
+	log_info(log_kernel,
+			"El valor que le vamos a poner al semaforo de multiprocesamiento es: %d.",
+			arc_config->multiprocesamiento);
 	semaforoIniciar(&multiprocesamiento, arc_config->multiprocesamiento);
 
 	inicializarListasPlanificador();
@@ -205,6 +209,10 @@ void consola() {
 			comandoSeparado = string_split(linea, separator);
 		}
 
+<<<<<<< HEAD
+		log_info(log_kernel, "Viene el comando en la cadena: %s",
+				comandoSeparado[0]);
+=======
 		if (!strncmp(linea, "SALIR", 4)) {
 			free(linea);
 			break;
@@ -215,11 +223,13 @@ void consola() {
 		strtok(linea, "\n");
 
 		log_info(log_kernel, "Viene el comando en la cadena: %s",comandoSeparado[0]);
+>>>>>>> 6c88ee90a61a71eb5ccef55e3c183c4404df1c42
 
 
 		int comando = buscarComando(comandoSeparado[0]);
 
-		log_info(log_kernel, "El enum correspondiente para el comando es: %d",comando);
+		log_info(log_kernel, "El enum correspondiente para el comando es: %d",
+				comando);
 
 		switch (comando) {
 		case add:
@@ -302,6 +312,40 @@ void validarLinea(char** lineaIngresada, t_log* logger) {
 	/*
 	 validarComando(lineaIngresada, tamanio, log_kernel);*/
 
+}
+
+int conexionAMemoria(char ip[LARGO_IP], char puerto[LARGO_PUERTO]) { // Retorn socket por el cual se envían los mensajes.
+
+	socket_CMemoria = nuevoSocket(log_kernel);
+
+	if (socket_CMemoria == ERROR) {
+
+		log_error(log_kernel,
+				"Hubo un problema al querer crear el socket desde Kernel. Salimos del Proceso");
+
+		return ERROR;
+	}
+
+	log_info(log_kernel, "El Socket creado es: %d .", socket_CMemoria);
+
+	log_info(log_kernel,
+			"por llamar a la funcion connectarSocket() para conectarnos con Memoria");
+
+	log_info(log_kernel, "PRUEBA: %s ", ip);
+
+	int aux_puerto = atoi(puerto);
+	resultado_Conectar = conectarSocket(socket_CMemoria, ip,
+			aux_puerto, log_kernel);
+
+	if (resultado_Conectar == ERROR) {
+		log_error(log_kernel,
+				"Hubo un problema al querer Conectarnos con Memoria. Salimos del proceso");
+		return -1;
+	} else {
+		log_info(log_kernel, "Nos conectamos con exito, el resultado fue %d",
+				resultado_Conectar);
+		return socket_CMemoria;
+	}
 }
 
 int conexionKernel() { // Retorn socket por el cual se envían los mensajes.
@@ -952,8 +996,6 @@ void planificar(char* linea) {
 			"El valor del semaforo contador multiprocesamiento, antes de agregar a ejecutar un proceso es: %d",
 			valorMultiprocesamiento);
 
-	semaforoWait(&multiprocesamiento);
-
 	agregarAEjecutar(pcbProceso);
 
 	//termino
@@ -1009,6 +1051,7 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 	pruebaPath = string_split(pcbParaAgregar->linea, separator);
 
 	//fd = fopen(pruebaPath[1], "r");
+	semaforoWait(&multiprocesamiento);
 
 	while (listaCantidadElementos(colaListos) > 0) {
 
@@ -1041,9 +1084,25 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 
 					lineaRun = fgets(bufferRun, 1024, fd);
 
-					//strtok(lineaRun, "\n");
-
 					log_info(log_kernel, "Linea para ejecutar: %s", lineaRun);
+
+					pruebaPath = string_split(lineaRun, separator);
+					log_info(log_kernel, "El comando es: %s", pruebaPath[0]);
+					int aux_comando = buscarComando(pruebaPath[0]);
+
+					if (aux_comando == create) {
+
+						tablaPrueba.criterio = buscarCriterio(pruebaPath[2]);
+						tablaPrueba.nombreTabla = malloc(
+								strlen(pruebaPath[1]) + 1);
+						strcpy(tablaPrueba.nombreTabla, pruebaPath[1]);
+						log_info(log_kernel,
+								"En la tabla/criterios se guardo el criterio: %d",
+								tablaPrueba.criterio);
+						log_info(log_kernel,
+								"En la tabla/criterios se guardo el nombre %s",
+								tablaPrueba.nombreTabla);
+					}
 
 					req.tam = strlen(lineaRun) + 1;
 
@@ -1118,7 +1177,26 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 
 					log_info(log_kernel, "Linea para ejecutar: %s", lineaRun);
 
-					req.tam = strlen(lineaRun) + 1;
+					pruebaPath = string_split(lineaRun, separator);
+					log_info(log_kernel, "El comando es: %s", pruebaPath[0]);
+					int aux_comando = buscarComando(pruebaPath[0]);
+
+					if (aux_comando == create) {
+
+						tablaPrueba.criterio = buscarCriterio(pruebaPath[2]);
+						tablaPrueba.nombreTabla = malloc(
+								strlen(pruebaPath[1]) + 1);
+						strcpy(tablaPrueba.nombreTabla, pruebaPath[1]);
+						log_info(log_kernel,
+								"En la tabla/criterios se guardo el criterio: %d",
+								tablaPrueba.criterio);
+						log_info(log_kernel,
+								"En la tabla/criterios se guardo el nombre %s",
+								tablaPrueba.nombreTabla);
+					}
+
+					//strtok(lineaRun, "\n");
+					req.tam = strlen(lineaRun);
 
 					log_info(log_kernel, "Tamanio cadena grabada en req:%d",
 							req.tam);
@@ -1139,7 +1217,8 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 					pcbParaAgregar->estado = ejecucion;
 
 					mutexBloquear(&mutexColaEjecucion);
-					socket_CMemoria = conexionKernel();
+					//socket_CMemoria = conexionKernel();
+					socket_CMemoria = conexionAMemoria(criterio_memoria.listMemoriaas->ip,criterio_memoria.listMemoriaas->puerto);
 					list_add(colaEjecucion, pcbParaAgregar);
 					enviar_request(socket_CMemoria, req);
 					mutexDesbloquear(&mutexColaEjecucion);
@@ -1259,16 +1338,19 @@ int buscarMemoria(char** pruebaPath) {
 
 		if (aux->numMemoria == aux_num) {
 
+			log_info(log_kernel,
+					"Se encontró la memoria: %s en a lista de seeds. Por devolver",
+					pruebaPath[2]);
 			retval = aux_num;
 
 			//break;
 		}
 	}
-	log_info(log_kernel, "Aca 2");
+
 	//pthread_mutex_unlock(&gossip_table_mutex);
 
 	if (retval >= 0) {
-		log_info(log_kernel, "La memoria se encontró");
+		log_info(log_kernel, "La memoria se encontró,devolviendo");
 		return retval;
 	} else {
 		log_info(log_kernel, "La memoria no se encontró");
@@ -1277,16 +1359,69 @@ int buscarMemoria(char** pruebaPath) {
 
 }
 
+seed_com_t* buscarMemoria2(char** pruebaPath) {
+
+	seed_com_t *aux = malloc(sizeof(seed_com_t));
+
+	//int retval = -1;
+
+	int aux_num = atoi(pruebaPath[2]);
+	//pthread_mutex_lock(&gossip_table_mutex);
+
+	log_info(log_kernel, "El numero de la memoria a buscar es: %s",
+			pruebaPath[2]);
+
+	for (int i = 0; i < list_size(g_lista_seeds); i++) {
+
+		aux = list_get(g_lista_seeds, i);
+
+		if (aux->numMemoria == aux_num) {
+
+			log_info(log_kernel,
+					"Se encontró la memoria: %s en a lista de seeds. Por devolver",
+					pruebaPath[2]);
+			//retval = aux_num;
+			return aux;
+			//break;
+		}
+	}
+
+	return NULL;
+	//pthread_mutex_unlock(&gossip_table_mutex);
+
+	/*if (retval >= 0) {
+	 log_info(log_kernel, "La memoria se encontró,devolviendo");
+	 return retval;
+	 } else {
+	 log_info(log_kernel, "La memoria no se encontró");
+	 return retval;
+	 }*/
+}
+
 void comandoAdd(char** comandoSeparado) {
 
 	log_info(log_kernel, "Llego el comando ADD.");
 
-	int resultado = buscarMemoria(comandoSeparado);
+	seed_com_t* resultado = buscarMemoria2(comandoSeparado);
 
-	if (resultado >= 0) {
+	if (resultado != NULL) {
 
 		log_info(log_kernel, "La memoria numero %s ha sido encontrada.\n",
 				comandoSeparado[2]);
+
+		log_info(log_kernel, "El criterio para asociar es el: %s",
+				comandoSeparado[4]);
+		int criterioInt = buscarCriterio(comandoSeparado[4]);
+		log_info(log_kernel,
+				"El criterio para asociar es el: %s,corresponde al valor: %d",
+				comandoSeparado[4], criterioInt);
+		criterio_memoria.criterio = criterioInt;
+		criterio_memoria.listMemoriaas = resultado;
+
+		log_info(log_kernel, "Llenamos la estructura de criterio/memoria.");
+
+		printf("La memoria: %s fue asociada al criterio %s con exito.\n",
+				comandoSeparado[2], comandoSeparado[4]);
 
 	} else {
 
@@ -1298,12 +1433,29 @@ void comandoAdd(char** comandoSeparado) {
 
 }
 
-void comandoJournal(char** comandoSeparado){
+int buscarCriterio(char* criterio) {
 
+	if (criterio == NULL) {
+		log_info(log_kernel, "Recibimos el criterio: NULL");
+		return -1;
+	}
+
+	log_info(log_kernel, "Recibimos el criterio: %s", criterio);
+
+	int i = 0;
+
+	for (i; i <= salir && strcmp(criterios[i], criterio); i++) {
+	}
+
+	log_info(log_kernel, "Se devuelve el valor %d", i);
+
+	return i;
+}
+
+void comandoJournal(char** comandoSeparado) {
 
 }
 
-void comandoMetrics(){
-
+void comandoMetrics() {
 
 }
