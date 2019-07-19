@@ -659,7 +659,7 @@ void atenderRequest(char* linea) {
 		} else {
 			imprimirError(logger,
 					"[RESOLVIENDO PEDIDO] El DROP no pudo realizarse");
-			printf("[DROP] La %s no se pudo borrar\n",req.args[0]);
+			printf("[DROP] El comando no pudo realizarse\n",req.args[0]);
 		}
 
 		break;
@@ -2373,6 +2373,7 @@ char* rutaParticion(char* tabla, int particion) {
 
 	int tamanio = string_length(path) + string_length(stringParticion)
 			+ string_length(PATH_BIN) + 2;
+
 	char* archivoParticion = malloc(tamanio);
 
 	snprintf(archivoParticion, tamanio, "%s%s%d%s", path, "/", particion,
@@ -2380,6 +2381,7 @@ char* rutaParticion(char* tabla, int particion) {
 	log_info(logger, "La ruta de la particion es: %s", archivoParticion);
 
 	free(path);
+	free(stringParticion);
 	return archivoParticion;
 }
 
@@ -2539,7 +2541,9 @@ void eliminarTablaCompleta(char* tabla) {
 				log_info(logger, "No se pudo eliminar el archivo\n");
 
 			}
+			free(archivoParticion);
 		}
+		free(metadata->consistency);
 		free(metadata);
 
 	}
@@ -2664,6 +2668,7 @@ char* desenmascararValue(char* value) {
 	char* valueSinPimeraComilla = stringTomarDesdePosicion(value, 1);
 	char* valueDesenmascarado = strtok(valueSinPimeraComilla, "\"");
 	log_info(logger, "el value desenmascarado es %s", valueDesenmascarado);
+	free(valueSinPimeraComilla);
 	return valueDesenmascarado;
 
 }
@@ -2926,6 +2931,7 @@ t_registroMemtable* registroMayorParticion(char* tabla, u_int16_t key,
 				ListaBloques->size, key, true);
 	}
 
+	free(pathParticion);
 	return registro;
 
 }
@@ -3125,7 +3131,11 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 			fputs(lineaParticiones, archivoMetadata);
 			fputs(lineaTiempoCompactacion, archivoMetadata);
 
+
 			fclose(archivoMetadata);
+			free(lineaConsistencia);
+			free(lineaParticiones);
+			free(lineaTiempoCompactacion);
 
 			log_info(logger, "Por crear particiones");
 
@@ -3148,7 +3158,9 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 						bloqueLibre);
 
 				fputs(lineaParticion, particion);
+				free(lineaParticion);
 				log_info(logger, "Particion creada: %s", archivoParticion);
+				free(archivoParticion);
 				fclose(particion);
 
 			}
@@ -3264,6 +3276,7 @@ char* comandoDescribeEspecifico(char* tabla) {
 		metadata = obtenerMetadataTabla(tabla);
 		if (metadata != NULL) {
 			char* resultado = retornarValores(tabla, metadata);
+			free(metadata->consistency);
 			free(metadata);
 			log_info(logger, "resultado describe %s", resultado);
 			return resultado;
