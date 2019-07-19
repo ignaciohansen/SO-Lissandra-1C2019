@@ -6,7 +6,7 @@
  */
 
 #include "LissandraFileSystem.h"
-#include "lfsComunicacion.h"
+
 
 //int tamanioTotalTabla = 0;
 char *separador2 = "\n";
@@ -62,9 +62,16 @@ int main() {
 	}
 
 	inicializar_comunicacion(logger, configFile->tamanio_value); //tamanio value config
-	pthread_t hiloConsola, hiloEjecutor, hiloDump, hiloServidor;
-	pthread_create(&hiloConsola, NULL, (void*) consola, NULL);
 
+
+
+	pthread_t hiloConsola, hiloEjecutor, hiloDump, hiloServidor, hiloInotifyLFS;
+
+
+	char* path_de_config_lfs = malloc(strlen(PATH_LFILESYSTEM_CONFIG)+1);
+	strcpy(path_de_config_lfs, PATH_LFILESYSTEM_CONFIG);
+	pthread_create(&hiloInotifyLFS,NULL, (void *)inotifyAutomaticoLFS,path_de_config_lfs);
+	pthread_create(&hiloConsola, NULL, (void*) consola, NULL);
 	pthread_create(&hiloServidor, NULL, (void*) hilo_servidor, &socketLFS);
 	pthread_create(&hiloDump, NULL, (void*) esperarTiempoDump, NULL);
 
@@ -72,6 +79,7 @@ int main() {
 
 	//pthread_join(hiloDump, NULL);
 
+	pthread_detach(hiloInotifyLFS);
 	pthread_detach(hiloDump);
 	pthread_join(hiloConsola, NULL);
 	//pthread_kill(hiloDump, SIGKILL);
@@ -294,22 +302,23 @@ bool cargarConfiguracion() {
 		}
 
 		if (ok > 0) {
-//			free(archivoCOnfig->properties->elements);	//AGREGADO PARA LIMPIAR LEAKS
-//			free(archivoCOnfig->properties);			//AGREGADO PARA LIMPIAR LEAKS
-//			free(archivoCOnfig->path); 					//AGREGADO PARA LIMPIAR LEAKS
-//			free(archivoCOnfig); 						//AGREGADO PARA LIMPIAR LEAKS
+			//@nacho DESCOMENTE ACA
+free(archivoCOnfig->properties->elements);	//AGREGADO PARA LIMPIAR LEAKS
+free(archivoCOnfig->properties);			//AGREGADO PARA LIMPIAR LEAKS
+free(archivoCOnfig->path); 					//AGREGADO PARA LIMPIAR LEAKS
+free(archivoCOnfig); 						//AGREGADO PARA LIMPIAR LEAKS
 			imprimirVerde(logger,
 					"Se ha cargado todos los datos del archivo de configuracion");
 			//	log_info(logger, "Se ha cargado todos los datos del archivo de configuracion");
 			return true;
 
 		} else {
-//			free(archivoCOnfig->properties->elements);	//AGREGADO PARA LIMPIAR LEAKS
-//			free(archivoCOnfig->properties);			//AGREGADO PARA LIMPIAR LEAKS
-//			free(archivoCOnfig->path); 					//AGREGADO PARA LIMPIAR LEAKS
-//			free(archivoCOnfig); 						//AGREGADO PARA LIMPIAR LEAKS
-			imprimirError(logger,
-					"ERROR: No Se han cargado todos o algunos los datos del archivo de configuracion\n");
+			//@nacho DESCOMENTE ACA
+		free(archivoCOnfig->properties->elements);	//AGREGADO PARA LIMPIAR LEAKS
+		free(archivoCOnfig->properties);			//AGREGADO PARA LIMPIAR LEAKS
+		free(archivoCOnfig->path); 					//AGREGADO PARA LIMPIAR LEAKS
+		free(archivoCOnfig); 						//AGREGADO PARA LIMPIAR LEAKS
+		imprimirError(logger,"ERROR: No se han cargado los datos del archivo de configuracion\n");
 			//		imprimirMensajeProceso("ERROR: No Se han cargado todos los datos del archivo de configuracion\n");
 			return false;
 		}
@@ -324,6 +333,53 @@ bool cargarConfiguracion() {
 	return false;
 
 }
+
+void recargarConfiguracionLFS(char *path_config){
+
+
+	//mutexBloquear(&mutex_retardos_memoria);
+
+	t_config* auxConfigFile = config_create(path_config);
+
+	if (auxConfigFile != NULL) {
+
+		log_info(logger, "[ACTUALIZANDO RETARDOS] LEYENDO CONFIGURACION...");
+
+		if (config_has_property(auxConfigFile, "RETARDO")) {
+
+			configFile->retardo = config_get_int_value(auxConfigFile,"RETARDO");
+
+			log_info(logger, "[ACTUALIZANDO RETARDOS] RETARDO : %d",configFile->retardo);
+
+		} else {
+			log_error(logger, "[ACTUALIZANDO RETARDOS] NO HAY RETARDO CONFIGURADO");
+		} // RETARDO
+
+		if (config_has_property(auxConfigFile, "TIEMPO_DUMP")) {
+
+			configFile->tiempo_dump = config_get_int_value(auxConfigFile, "TIEMPO_DUMP");
+			log_info(logger, "[ACTUALIZANDO RETARDOS] TIEMPO DUMP: %d",
+					configFile->tiempo_dump);
+
+		} else {
+			log_error(logger, "[ACTUALIZANDO RETARDOS] NO HAY TIEMPO DUMP CONFIGURADO");
+		} // TIEMPO_DUMP
+
+
+	} else {
+		log_error(logger,
+				"[ACTUALIZANDO RETARDOS] NO HAY ARCHIVO DE CONFIGURACION DEL LFS"); // ERROR: SIN ARCHIVO CONFIGURACION
+	}
+
+	config_destroy(auxConfigFile);
+
+	//actualizar_retardo_gossiping(arc_config->retardo_gossiping);
+
+	log_info(logger, "[ACTUALIZANDO RETARDOS] RETARDOS ACTUALIZADOS CORRECTAMENTE");
+
+	//mutexDesbloquear(&mutex_retardos_memoria);
+}
+
 
 int existeArchivo(char* path) {
 	FILE* reader = fopen(path, "r");
@@ -1365,6 +1421,7 @@ char* retornarValoresDirectorio() {
 				log_info(logger, "tamanio malloc es %d", memoriaParaMalloc);
 				list_add(lista_describes, resultado);
 				encontreAlgoEnDirectorio = true;
+				free(metadata->consistency);
 				free(metadata);
 			}
 
@@ -2668,7 +2725,7 @@ char* desenmascararValue(char* value) {
 	char* valueSinPimeraComilla = stringTomarDesdePosicion(value, 1);
 	char* valueDesenmascarado = strtok(valueSinPimeraComilla, "\"");
 	log_info(logger, "el value desenmascarado es %s", valueDesenmascarado);
-	free(valueSinPimeraComilla);
+	free(valueSinPimeraComilla); //@nacho agregado
 	return valueDesenmascarado;
 
 }
@@ -2740,6 +2797,7 @@ t_bloquesUsados* leerTemporaloParticion(char* path) {
 
 		log_info(logger, "llego al while");
 
+
 		while (aux != NULL) {
 
 			auxNroBloque = malloc(sizeof(int));
@@ -2756,6 +2814,9 @@ t_bloquesUsados* leerTemporaloParticion(char* path) {
 		retVal->size = size;
 
 		free(bloques);
+		free(path);//@nacho agregado
+		config_destroy(tempFile);  //@nacho agregado
+
 
 	}
 	return retVal;
@@ -2882,10 +2943,10 @@ t_registroMemtable* registroMayorTemporal(char* tabla, u_int16_t key,
 					aux = leerBloquesConsecutivosUnaKey(lecturaTMP->bloques,
 							lecturaTMP->size, key, false);
 					if (aux->value != NULL) {
-						registro = aux;
-						log_info(logger, "Registro encontrado: <%llu;%d;%s>",
-								registro->timestamp, registro->key,
-								registro->value);
+						//registro = aux;
+						registro = crearCopiaRegistro(aux);	//@nacho agregado
+						log_info(logger, "Registro encontrado: <%llu;%d;%s>",registro->timestamp, registro->key,registro->value);
+						borrarRegistro(aux); //@nacho agregado
 					}
 				} else {
 					aux = leerBloquesConsecutivosUnaKey(lecturaTMP->bloques,
@@ -2895,9 +2956,12 @@ t_registroMemtable* registroMayorTemporal(char* tabla, u_int16_t key,
 								"Nuevo registro encontrado: <%llu;%d;%s>",
 								aux->timestamp, aux->key, aux->value);
 						if (aux->timestamp > registro->timestamp) {
-							free(registro->value);
-							free(registro);
-							registro = aux;
+							borrarRegistro(registro);
+							//free(registro->value);
+							//free(registro);
+							//registro = aux;
+							registro = crearCopiaRegistro(aux); //@nacho agregado
+
 							log_info(logger,
 									"Pisa al anterior por tener timestamp más grande");
 						}
@@ -2931,7 +2995,7 @@ t_registroMemtable* registroMayorParticion(char* tabla, u_int16_t key,
 				ListaBloques->size, key, true);
 	}
 
-	free(pathParticion);
+	free(pathParticion); //@nacho agregado
 	return registro;
 
 }
@@ -2984,7 +3048,6 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 		return registroMayor;
 	} else { // archivo de tabla encontrado
 		t_metadata_tabla *metadata = obtenerMetadataTabla(tabla);
-//		int returnObtenerMetadata =
 
 		if (metadata == NULL) {
 			registroMayor = armarRegistroNulo();
@@ -2999,13 +3062,14 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 
 		int particiones = determinarParticion(valorKey, metadata->particiones);
 
+
 		t_registroMemtable* registroMemtable = registroMayorMemtable(tabla,
 				valorKeyU);
 
 		log_info(logger, "Obtuve el registro de la memtable (1ero)");
 
 		t_registroMemtable* registroParticion;
-//		registroParticion = armarRegistroNulo();
+
 		registroParticion = registroMayorParticion(tabla, valorKeyU,
 				particiones);
 
@@ -3046,7 +3110,8 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 		}
 //		printf("Registro obtenido: <%d;%llu;%s>\n", registroMemtable->key, registroMemtable->timestamp, registroMemtable->value);
 
-//		free(metadata);
+		free(metadata->consistency); //@nacho agregado
+		free(metadata); //@nacho agregado
 		return registroMayor;
 
 	}
@@ -3626,6 +3691,7 @@ void cerrarTodo() {
 	sem_destroy(&semaforoQueries);
 	dictionary_destroy(memtable);
 	list_destroy(listaTablasInsertadas);
+	//config_destroy()
 	fclose(archivoBitmap);
 }
 
