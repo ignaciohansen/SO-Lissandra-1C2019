@@ -1,0 +1,6 @@
+
+***Logger servidor***
+
+
+**El cliente <2> se desconecto. Finalizando...**
+
