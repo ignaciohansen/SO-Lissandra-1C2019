@@ -169,7 +169,12 @@ t_list* listaRegistrosTabla;
  *--------------------------------------------------------------------------------------------
  */
 
+typedef struct{
+	RWlock rwLockTabla; //*?
+	Mutex drop_mx;
+}t_sems_tabla;
 
+t_dictionary* dicSemTablas;
 
 t_registroMemtable* comandoSelect(char* tabla, char* key);
 int comandoInsertSinTimestamp(char* tabla,char* key,char* value);

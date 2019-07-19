@@ -592,6 +592,24 @@ void mutexDesbloquear(Mutex* mutex) {
 	pthread_mutex_unlock(mutex);
 }
 
+//--------------------------------------- Funciones RWLock -------------------------------------
+
+void rwLockIniciar(RWlock* rwLock) {
+	pthread_rwlock_init(rwLock, NULL);
+}
+
+void rwLockLeer(RWlock* rwLock) {
+	pthread_rwlock_rdlock(rwLock);
+}
+
+void rwLockEscribir(RWlock* rwLock) {
+	pthread_rwlock_wrlock(rwLock);
+}
+
+void rwLockDesbloquear(RWlock* rwLock) {
+	pthread_rwlock_unlock(rwLock);
+}
+
 //--------------------------------------- Funciones para Hilo -------------------------------------
 
 void hiloCrear(Hilo* hilo, void*(*funcionHilo)(void*), void* parametroHilo) {

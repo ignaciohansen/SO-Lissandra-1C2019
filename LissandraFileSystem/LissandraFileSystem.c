@@ -113,6 +113,7 @@ void LisandraSetUP() {
 	log_info(logger, "la configuracion y la metadata se levantaron ok");
 
 	memtable = dictionary_create();
+	dicSemTablas = dictionary_create();
 	listaTablasInsertadas = list_create();
 	listaRegistrosMemtable = list_create();
 }
@@ -1458,9 +1459,12 @@ void esperarTiempoDump() {
 void realizarDump() {
 	mutexBloquear(&listaTablasInsertadas_mx);
 	int tam = list_size(listaTablasInsertadas);
-	mutexBloquear(&memtable_mx);
+	mutexDesbloquear(&listaTablasInsertadas_mx);
+	//mutexBloquear(&memtable_mx);
 	for (int i = 0; i < tam; i++) {
+		mutexBloquear(&listaTablasInsertadas_mx);
 		char* tabla = list_get(listaTablasInsertadas, i);
+		mutexDesbloquear(&listaTablasInsertadas_mx);
 		indiceTablaParaTamanio = i;
 		log_info(logger, "la tabla insertada en la memtable es %s", tabla);
 		char* path = armarPathTablaParaDump(tabla, cantidad_de_dumps);
@@ -1469,7 +1473,8 @@ void realizarDump() {
 	}
 	log_info(logger, "Se limpia diccionario y la listaTablasInsertadas");
 	dictionary_clean(memtable);
-	mutexDesbloquear(&memtable_mx);
+	//mutexDesbloquear(&memtable_mx);
+	mutexBloquear(&listaTablasInsertadas_mx);
 	list_clean(listaTablasInsertadas);
 	mutexDesbloquear(&listaTablasInsertadas_mx);
 }
@@ -1555,7 +1560,13 @@ int crearArchivoTemporal(char* path, char* tabla) {
 
 	// path objetivo: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA/cantidad_de_dumps.tmp
 
+	mutexBloquear(&memtable_mx);
 	t_list* listaRegistrosTabla = dictionary_get(memtable, tabla);
+	mutexDesbloquear(&memtable_mx);
+
+	t_sems_tabla* semsTabla = dictionary_get(tabla);
+	rwLockEscribir(semsTabla->rwLockTabla);
+
 	t_list* bloquesUsados = list_create();
 	int tam_total_registros = tamTotalListaRegistros(listaRegistrosTabla);
 	int cantidad_bloques = cuantosBloquesNecesito(tam_total_registros);
@@ -1571,7 +1582,7 @@ int crearArchivoTemporal(char* path, char* tabla) {
 			*bloqueLista = bloqueAux;
 			if (bloqueAux != -1) {
 				ocuparBloqueLibreBitmap(bloqueAux);
-				//list_add(bloquesUsados, (void*)bloqueAux);
+				//list_add(bloquesUsadcrearArchivoTemporalos, (void*)bloqueAux);
 				list_add(bloquesUsados, bloqueLista);
 			} else {
 				//liberar los bloques de la lista
@@ -1637,7 +1648,9 @@ int crearArchivoTemporal(char* path, char* tabla) {
 				"[DUMP] hubo un error al escribir los datos en los bloques");
 	}
 
-	//list_clean_and_destroy_elements(bloquesUsados, free);
+	rwLockDesbloquear(semsTabla->rwLockTabla);
+	free(semsTabla);
+
 	list_destroy_and_destroy_elements(bloquesUsados, free);
 
 	return 0;
@@ -2977,12 +2990,17 @@ t_registroMemtable* tomarMayorRegistro(t_registroMemtable* reg1,
 t_registroMemtable* comandoSelect(char* tabla, char* key) {
 
 	t_registroMemtable* registroMayor;
+	t_sems_tabla* semsTabla;
 
 	if (verificarTabla(tabla) == -1) {
 		registroMayor = armarRegistroNulo();
 		registroMayor->tam_registro = -1;
 		return registroMayor;
 	} else { // archivo de tabla encontrado
+
+		semsTabla = dictionary_get(dicSemTablas, tabla);
+		rwLockLeer(semsTabla->rwLockTabla);
+
 		t_metadata_tabla *metadata = obtenerMetadataTabla(tabla);
 //		int returnObtenerMetadata =
 
@@ -3047,6 +3065,11 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 //		printf("Registro obtenido: <%d;%llu;%s>\n", registroMemtable->key, registroMemtable->timestamp, registroMemtable->value);
 
 //		free(metadata);
+
+		rwLockDesbloquear(semsTabla->rwLockTabla);
+
+		free(semsTabla);
+
 		return registroMayor;
 
 	}
@@ -3054,16 +3077,28 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 
 int comandoDrop(char* tabla) {
 
+	t_sems_tabla* semsTabla;
+
 	log_info(logger, "Por verificar tabla");
 
 	int retornoVerificar = verificarTabla(tabla);
 	if (retornoVerificar == 0) {
+
+		semsTabla = dictionary_get(dicSemTablas, tabla);
+		mutexBloquear(semsTabla->drop_mx);
+		rwLockEscribir(semsTabla->rwLockTabla);
+
 		char*path = armarPathTabla(tabla);
-
 		log_info(logger, "Vamos a eliminar la tabla: %s", path);
-
 		free(path);
+
 		eliminarTablaCompleta(tabla);
+
+		rwLockDesbloquear(semsTabla->rwLockTabla);
+		mutexDesbloquear(semsTabla->drop_mx);
+
+		free(semsTabla);
+
 		return retornoVerificar;
 	} else {
 		return -1;
@@ -3083,6 +3118,7 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 		mkdir(path, 0777);
 
 		log_info(logger, "Se crea la tabla y su direccion es %s ", path);
+
 		log_info(logger, "Por crear archivo metadata");
 
 		free(path);
@@ -3098,6 +3134,22 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 		if (archivoMetadata != NULL) {
 			log_info(logger,
 					"El archivo metadata se creo satisfactoriamente\n");
+
+			log_info(logger, "Se crean los semaforos de la tabla");
+
+			RWlock rw_lock; //*?
+			Mutex drop_mx;
+			rwLockIniciar(&rw_lock,NULL);
+			mutexIniciar(&drop_mx);
+
+			t_sems_tabla* sems_tabla;
+			sems_tabla = malloc(sizeof(sems_tabla));
+
+			sems_tabla->rwLockTabla = rw_lock;
+			sems_tabla->drop_mx = drop_mx;
+
+			dictionary_put(dicSemTablas, tabla, sems_tabla);
+
 			int tamanioConsistencia = strlen(consistencia)
 					+ sizeof("CONSISTENCY=") + 4;
 			char *lineaConsistencia = malloc(tamanioConsistencia);
@@ -3232,8 +3284,6 @@ int comandoInsert(char* tabla, char* key, char* valueOriginal, char* timestamp) 
 				for (int i = 0; i < list_size(tableRegisters2); i++) {
 					t_registroMemtable * regAux = list_get(tableRegisters2, i);
 					log_info(logger, "[DEBUG] %d <%llu;%d;%s>", i,regAux->timestamp, regAux->key, regAux->value);
-
-
 				}
 
 				mutexDesbloquear(&memtable_mx);
@@ -3272,15 +3322,23 @@ int comandoInsert(char* tabla, char* key, char* valueOriginal, char* timestamp) 
 char* comandoDescribeEspecifico(char* tabla) {
 
 	t_metadata_tabla *metadata;
+	t_sems_tabla* semsTabla;
+
 	if (verificarTabla(tabla) == 0) {
+		semsTabla = dictionary_get(dicSemTablas, tabla);
+		rwLockLeer(semsTabla->rwLockTabla);
 		metadata = obtenerMetadataTabla(tabla);
 		if (metadata != NULL) {
 			char* resultado = retornarValores(tabla, metadata);
 			free(metadata->consistency);
 			free(metadata);
 			log_info(logger, "resultado describe %s", resultado);
+			rwLockDesbloquear(semsTabla->rwLockTabla);
+			free(semsTabla);
 			return resultado;
 		} else {
+			rwLockDesbloquear(semsTabla->rwLockTabla);
+			free(semsTabla);
 			return NULL;
 		}
 	} else {
@@ -3290,10 +3348,19 @@ char* comandoDescribeEspecifico(char* tabla) {
 
 char* comandoDescribe() {
 
+	/*for(int i=0; i<dictionary_size(dicSemTablas); i++) {
+		semsTabla = dictionary_get(dicSemTablas, i);
+		rwLockLeer(semsTabla->rwLockTabla);
+	}*/
 	char* resultado = retornarValoresDirectorio();
 	if (resultado != NULL)
 		log_info(logger, "resultado describe de todas las tablas %s",
 				resultado);
+
+	/*for(int i=0; i<dictionary_size(dicSemTablas); i++) {
+		t_sems_tabla* semsTabla = dictionary_get(i);
+		rwLockDesbloquear(semsTabla->rwLockTabla);
+	}*/
 	return resultado;
 }
 
@@ -3685,6 +3752,9 @@ t_datos_particion *obtenerDatosParticion(char *path_particion) {
 
 /* COMPACTACIÓN */
 int compactarTabla(char *tabla) {
+
+	t_sems_tabla* semsTabla;
+
 	//Renombro los temporales
 	log_info(logger,
 			"[COMPACTACION] Entrando a proceso de compactación de tabla %s",
@@ -3700,7 +3770,12 @@ int compactarTabla(char *tabla) {
 		list_destroy_and_destroy_elements(temporales_list, free);
 		return 0;
 	}
-	//@martin: hay que sincronizar esta parte para que no se esté leyendo el archivo por un select
+
+	semsTabla = dictionary_get(dicSemTablas, tabla);
+
+	mutexBloquear(semsTabla->drop_mx);
+	rwLockEscribir(semsTabla->rwLockTabla);
+
 	char *path_tmp, *path_tmpc;
 	for (int i = 0; i < list_size(temporales_list); i++) {
 		path_tmp = list_get(temporales_list, i);
@@ -3716,6 +3791,9 @@ int compactarTabla(char *tabla) {
 		}
 		free(path_tmpc);
 	}
+
+	rwLockDesbloquear(semsTabla->rwLockTabla);
+
 	list_destroy_and_destroy_elements(temporales_list, free);
 
 	log_info(logger,
@@ -3834,7 +3912,7 @@ int compactarTabla(char *tabla) {
 
 	list_destroy_and_destroy_elements(tmpc_list, free);
 
-	//Bloqueo tabla @martin @nacho @gian
+	rwLockEscribir(semsTabla->rwLockTabla);
 
 	u_int64_t comienzoBloqueo = timestamp();
 
@@ -3855,7 +3933,9 @@ int compactarTabla(char *tabla) {
 	}
 
 	u_int64_t finBloqueo = timestamp();
-	//Desbloqueo tabla @martin @nacho @gian
+
+	rwLockDesbloquear(semsTabla->rwLockTabla);
+	mutexDesbloquear(semsTabla->drop_mx);
 
 	u_int64_t tiempoQueEstuvoBloqueada = finBloqueo - comienzoBloqueo;
 
@@ -3870,6 +3950,7 @@ int compactarTabla(char *tabla) {
 			"[COMPACTACION] Compactacion de la tabla %s realizada con exito",
 			tabla);
 
+	free(semsTabla);
 	free(path_tabla);
 	return 1;
 }

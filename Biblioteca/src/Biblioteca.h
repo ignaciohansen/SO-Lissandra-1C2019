@@ -79,6 +79,7 @@ typedef t_log* ArchivoLog;
 typedef t_log_level NivelLog;
 typedef sem_t Semaforo;
 typedef pthread_mutex_t Mutex;
+typedef pthread_rwlock_t RWlock;
 typedef pthread_t Hilo;
 typedef t_list* Lista;
 typedef FILE* File;
@@ -260,6 +261,13 @@ void semaforoDestruir(Semaforo* semaforo);
 void mutexIniciar(Mutex* mutex);
 void mutexBloquear(Mutex* mutex);
 void mutexDesbloquear(Mutex* mutex);
+
+//--------------------------------------- Funciones para RWLock -------------------------------------
+
+void rwLockIniciar(RWlock* rwLock);
+void rwLockLeer(RWlock* rwLock);
+void rwLockEscribir(RWlock* rwLock);
+void rwLockDesbloquear(RWlock* rwLock);
 
 //--------------------------------------- Funciones para Hilo -------------------------------------
 
