@@ -659,7 +659,7 @@ void atenderRequest(char* linea) {
 		} else {
 			imprimirError(logger,
 					"[RESOLVIENDO PEDIDO] El DROP no pudo realizarse");
-			printf("[DROP] El comando no pudo realizarse\n",req.args[0]);
+			printf("[DROP] El comando no pudo realizarse\n");
 		}
 
 		break;
