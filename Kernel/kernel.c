@@ -184,6 +184,20 @@ void cargarConfiguracion() {
 	log_info(log_kernel,
 			"Cargamos todo lo que se encontro en el archivo de configuracion. Liberamos la variable config que fue utlizada para navegar el archivo de configuracion");
 
+	free(configFile->path);
+	int i;
+	t_hash_element* nextHash;
+	for(i=0; i < configFile->properties->elements_amount ; i++){
+		while(configFile->properties->elements[i]!=NULL){
+			nextHash = configFile->properties->elements[i]->next;
+			free(configFile->properties->elements[i]->data);
+			free(configFile->properties->elements[i]->key);
+
+			configFile->properties->elements[i] = nextHash;
+		}
+		free(configFile->properties->elements[i]);
+	}
+	free(configFile->properties);
 	free(configFile);
 
 }
@@ -202,7 +216,7 @@ void consola() {
 			add_history(linea);
 		}
 
-		if (!strncmp(linea, "exit", 4)) {
+		if (!strncmp(linea, "SALIR", 4)) {
 			free(linea);
 			break;
 		}
@@ -589,6 +603,8 @@ int enviarMensaje(int comando, int tamanio, char* mensaje, t_log* logger) {
 	resultado_sendMsj = socketEnviar(socket_CMemoria, headerParaEnviar,
 			sizeof(t_header), log_kernel);
 
+	free(headerParaEnviar); //AGREGADO PARA LIMPIAR LEAK
+
 	if (resultado_sendMsj == ERROR) {
 
 		log_error(log_kernel, "Error al enviar mensaje a memoria. Salimos");
@@ -909,6 +925,9 @@ void planificar(char* linea) {
 
 	agregarAExit();
 
+	//2 LINEAS AGRGADAS PARA LIMPIAR LEAKS
+	free(pcbProceso->linea);
+	free(pcbProceso);
 }
 
 void agregarAListo(t_pcb* pcbParaAgregar) {
@@ -1028,6 +1047,8 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 
 					log_info(log_kernel, "Ultima instruccion del FOR");
 
+					//AGREGADO PARA LIMPIAR LEAKSs
+					free(lineaRun);
 				}
 
 				free(bufferRun);
@@ -1096,6 +1117,8 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 
 					log_info(log_kernel, "Ultima instruccion del FOR");
 
+
+					free(lineaRun);	//AGREGADO PARA LIMPIAR LEAKSs
 					free(bufferRun);
 				}
 			}
@@ -1104,6 +1127,8 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 			req.str = malloc(req.tam);
 			strcpy(req.str, linea);
 
+			//DAM: NO se que sentido tiene que este req este aqui si no lo usa nadie y ademas es local
+			free(req.str);	//LO AGREGO POR LAS DUDAS
 		}
 
 		log_info(log_kernel,
@@ -1114,6 +1139,13 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 	log_info(log_kernel,
 			"Bloqueamos Mutex para poder sacar el elemento en la cola de listos y colocarlo en ejecucion");
 
+
+	//AGREGADO PARA LIMPIAR LEAKSs
+	int indice = 0;
+	while(pruebaPath[indice]!=NULL){
+		free(pruebaPath[indice]);
+		indice++;
+	}
 }
 
 void agregarAExit() {
