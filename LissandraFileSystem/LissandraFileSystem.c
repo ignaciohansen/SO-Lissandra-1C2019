@@ -309,20 +309,14 @@ bool cargarConfiguracion() {
 				}
 
 		if (ok > 0) {
-//			free(archivoCOnfig->properties->elements);	//AGREGADO PARA LIMPIAR LEAKS
-//			free(archivoCOnfig->properties);			//AGREGADO PARA LIMPIAR LEAKS
-//			free(archivoCOnfig->path); 					//AGREGADO PARA LIMPIAR LEAKS
-//			free(archivoCOnfig); 						//AGREGADO PARA LIMPIAR LEAKS
+			config_destroy(archivoCOnfig);
 			imprimirVerde(logger,
 					"Se ha cargado todos los datos del archivo de configuracion");
 			//	log_info(logger, "Se ha cargado todos los datos del archivo de configuracion");
 			return true;
 
 		} else {
-//			free(archivoCOnfig->properties->elements);	//AGREGADO PARA LIMPIAR LEAKS
-//			free(archivoCOnfig->properties);			//AGREGADO PARA LIMPIAR LEAKS
-//			free(archivoCOnfig->path); 					//AGREGADO PARA LIMPIAR LEAKS
-//			free(archivoCOnfig); 						//AGREGADO PARA LIMPIAR LEAKS
+			config_destroy(archivoCOnfig);
 			imprimirError(logger,
 					"ERROR: No Se han cargado todos o algunos los datos del archivo de configuracion\n");
 			//		imprimirMensajeProceso("ERROR: No Se han cargado todos los datos del archivo de configuracion\n");
@@ -330,12 +324,27 @@ bool cargarConfiguracion() {
 		}
 
 	}
+	/*	archivoCOnfig es LOCAL por lo tanto se debe liberarse	*/
+	config_destroy(archivoCOnfig);
 	/*
+	t_hash_element* siguienteELementoAELiminar;
+	while(archivoCOnfig->properties->elements[i] != NULL) {
+		//LIBERO TODOO LOS ELEMENTOS CARGADOS
+		while(archivoCOnfig->properties->elements[i]->next!=NULL) {
+			siguienteELementoAELiminar = archivoCOnfig->properties->elements[i]->next;
+			free(archivoCOnfig->properties->elements[i]);
+			free(archivoCOnfig->properties->elements[i]->key);
+			archivoCOnfig->properties->elements[i] = siguienteELementoAELiminar;
+		}
+		free(archivoCOnfig->properties->elements[i]);
+		free(archivoCOnfig->properties->elements[i]->key);
+		i++;
+	}
 	free(archivoCOnfig->properties->elements);	//AGREGADO PARA LIMPIAR LEAKS
 	free(archivoCOnfig->properties);			//AGREGADO PARA LIMPIAR LEAKS
 	free(archivoCOnfig->path); 					//AGREGADO PARA LIMPIAR LEAKS
-	free(archivoCOnfig); 						//AGREGADO PARA LIMPIAR LEAKS*/
-
+	free(archivoCOnfig); 						//AGREGADO PARA LIMPIAR LEAKS
+	*/
 	return false;
 
 }
@@ -353,7 +362,9 @@ void cargarBitmap() {
 
 //	bitmapPath = malloc(sizeof(char) * 50);
 	int tamanio = strlen(configFile->punto_montaje)+strlen(PATH_LFILESYSTEM_BITMAP)+1;
+	printf("HOLA\n");
 	bitmapPath = malloc(tamanio);
+	printf("HOLA22\n");
 	snprintf(bitmapPath, tamanio, "%s%s",configFile->punto_montaje, PATH_LFILESYSTEM_BITMAP);
 //	strcpy(bitmapPath, "");
 //	bitmapPath = string_new();	--COMENTADO PARA LIMPIAR LEAKS
@@ -2268,6 +2279,7 @@ char* rutaParticion(char* tabla, int particion) {
 	log_info(logger, "La ruta de la particion es: %s", archivoParticion);
 
 	free(path);
+	free(stringParticion);
 	return archivoParticion;
 }
 
@@ -3019,9 +3031,18 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 				log_info(logger, "Particion creada: %s", archivoParticion);
 				fclose(particion);
 
+				free(lineaParticion);	//AGREGADO PARA LIMPIAR LEAKS
+				free(archivoParticion);	//AGREGADO PARA LIMPIAR LEAKS
+
 			}
 
 			// FALTA ASIGNAR BLOQUE PARA LA PARTICION
+
+
+			//PONGO ESTOS FREES PORUQE 1 VEZ AFUERA DE IF SE PERDERAN
+			free(lineaParticiones);			//AGREGADO PARA LIMPIAR LEAKS
+			free(lineaTiempoCompactacion);	//AGREGADO PARA LIMPIAR LEAKS
+			free(lineaConsistencia);		//AGREGADO PARA LIMPIAR LEAKS
 			return 0;
 		} else {
 			log_info(logger, "No se pudo crear el archivo metadata \n");
