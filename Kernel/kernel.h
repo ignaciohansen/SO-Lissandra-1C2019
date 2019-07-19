@@ -113,7 +113,7 @@ typedef struct{
 
 t_pcb* crearPcb(char* comando);
 
-const char* comandosPermitidos[] = { "select", "insert", "create", "describe",
+const char* comandosPermitidos[] = { "select", "insert", "CREATE", "describe",
 		"drop", "journal", "add", "run", "metrics", "salir"
 
 };
@@ -157,6 +157,8 @@ typedef struct{
 	int criterio;
 }t_tablas;
 
+t_tablas tablaPrueba;
+
 /*TODO Estructuras para memoria*///GOSSIPING
 
 typedef struct{
@@ -164,12 +166,19 @@ typedef struct{
 	gos_com_t listMemoriaas;
 }t_criterios;
 
+typedef struct{
+	int criterio;
+	seed_com_t* listMemoriaas;
+}t_criterios_prueba;
+t_criterios_prueba criterio_memoria;
+
 t_criterios criterioSC;
 t_criterios criterioSHC;
 t_criterios criterioEC;
 
 gos_com_t gossipingKernel;
 seed_com_t memorias;
+t_list *lista_memorias;
 
 /*TODO Enum de Criterios*/
 
@@ -179,16 +188,19 @@ enum criterios{
 	SHC,
 	EC
 };
+const char* criterios[] = { "SC", "SHC", "EC"};
 
 
-
+int buscarCriterio(char* criterio);
 void actualizarMemoriasDisponibles();
 void gossiping_Kernel();
 int buscarMemoria(char** pruebaPath);
+seed_com_t* buscarMemoria2(char** pruebaPath);
 
 //
 void  cargarConfiguracion();
 int   conexionKernel();
+int conexionAMemoria(char ip[LARGO_IP], char puerto[LARGO_PUERTO]);
 
 // RED
 int   enviarComando(char** comando,t_log* logger);
