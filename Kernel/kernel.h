@@ -48,6 +48,7 @@ id_com_t soy = KERNEL;
 int socket_CMemoria,tamanio,countPID,multiProcesamiento;
 t_log* log_kernel;
 t_list* list_queries;
+int aux_memoria;
 
 //Socket
 
@@ -94,8 +95,7 @@ int confirmacionRecibida;
 FILE* fd;
 char *separador2 = "\n";
 char *separator = " ";
-void consola();
-void menu();
+
 
 /*
  * PCB
@@ -112,6 +112,11 @@ typedef struct{
 }t_pcb;
 
 t_pcb* crearPcb(char* comando);
+
+const char* comandosPermitidos[] = { "select", "insert", "create", "describe",
+		"drop", "journal", "add", "run", "metrics", "salir"
+
+};
 
 
 /*
@@ -164,6 +169,7 @@ t_criterios criterioSHC;
 t_criterios criterioEC;
 
 gos_com_t gossipingKernel;
+seed_com_t memorias;
 
 /*TODO Enum de Criterios*/
 
@@ -178,6 +184,7 @@ enum criterios{
 
 void actualizarMemoriasDisponibles();
 void gossiping_Kernel();
+int buscarMemoria(char** pruebaPath);
 
 //
 void  cargarConfiguracion();
@@ -189,9 +196,13 @@ int   enviarMensaje(int comando, int tamanio,char* mensaje, t_log* logger);
 void  armarMensajeBody(int tamanio,char* mensaje,char** comando);
 
 // CONSOLA
-int   buscarComando(char* comandoSeparado,t_log* logger);
+void consola();
+void menu();
+int buscarComando(char* comandoSeparado);
 void  validarLinea(char** lineaIngresada,t_log* logger);
 void  comandoRun(char* path,t_log* logger);
 void  validarComando(char** comandoSeparado,int tamanio,t_log* logger);
-
+void comandoAdd(char** comandoSeparado);
+void comandoJournal(char** comandoSeparado);
+void comandoMetrics();
 #endif /* KERNEL_H_ */
