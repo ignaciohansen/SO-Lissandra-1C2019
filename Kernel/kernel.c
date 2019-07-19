@@ -10,45 +10,33 @@
 
 int main() {
 
-
-
 	log_kernel = archivoLogCrear(LOG_PATH, "Proceso Kernel");
 
-	log_info(log_kernel,
-			"Ya creado el Log, continuamos cargando la estructura de configuracion, llamando a la funcion.");
+	log_info(log_kernel,"Ya creado el Log, continuamos cargando la estructura de configuracion, llamando a la funcion.");
 
 	cargarConfiguracion();
 
-	log_info(log_kernel,
-			"Devuelta en Main, Funcion cargarConfiguracion() finalizo.");
+	log_info(log_kernel,"En Main nuevamente, la carga de archivo de configuracion finalizo.");
 
-	log_info(log_kernel,
-			"El valor que le vamos a poner al semaforo de multiprocesamiento es: %d",
-			arc_config->multiprocesamiento);
+	log_info(log_kernel,"El valor que le vamos a poner al semaforo de multiprocesamiento es: %d.",arc_config->multiprocesamiento);
 	semaforoIniciar(&multiprocesamiento, arc_config->multiprocesamiento);
 
 	inicializarListasPlanificador();
 
 	mutexIniciar(&countProcess);
 	mutexIniciar(&mutexColaNuevos);
-	//mutexIniciar(&mutexMultiprocesamiento);
 
 	countPID = 0;
 
-	log_info(log_kernel, "Creamos thread para Consola");
-
 	gossiping_Kernel();
 
+	log_info(log_kernel, "Creamos hilo para Consola.");
 	pthread_t hiloConsola;
 	pthread_create(&hiloConsola, NULL, (void*) consola, NULL);
 
-	//pthread_t hiloConexion;
-	//pthread_create(&hiloConexion,NULL,(void*) conexionKernel,NULL);
-
-	//pthread_join(hiloConexion,NULL);
 	pthread_join(hiloConsola, NULL);
 
-	log_info(log_kernel, "Salimoooos");
+	log_info(log_kernel, "Salimoooos, fin del main.");
 
 	return 0;
 
@@ -190,7 +178,7 @@ void cargarConfiguracion() {
 
 void consola() {
 
-	log_info(log_kernel, "En el hilo de consola");
+	log_info(log_kernel, "En el hilo de consola.");
 
 	menu();
 
@@ -200,32 +188,50 @@ void consola() {
 
 		if (linea) {
 			add_history(linea);
+			comandoSeparado = string_split(linea, separator);
 		}
 
-		if (!strncmp(linea, "exit", 4)) {
+		log_info(log_kernel, "Viene el comando en la cadena: %s",comandoSeparado[0]);
+
+		int comando = buscarComando(comandoSeparado[0]);
+
+		log_info(log_kernel, "El enum correspondiente para el comando es: %d",comando);
+
+		switch (comando) {
+		case add:
+			printf("Vino ADD.\n");
+			log_info(log_kernel, "ADD.");
+			comandoAdd(comandoSeparado);
+			break;
+		case journal:
+			printf("Vino journal.\n");
+			log_info(log_kernel, "Journal.");
+			comandoJournal(comandoSeparado);
+			break;
+		case metrics:
+			printf("Vino meterics.\n");
+			log_info(log_kernel, "Metrics.");
+			comandoMetrics();
+			break;
+		case salir:
+			printf("Salimos de la consola y el proceso!.\n");
+			log_info(log_kernel, "Vino comando salir. Cerramos todo");
 			free(linea);
+			return;
+		default:
+			log_info(log_kernel, "Entramos por default, a Planificar");
+			strtok(linea, "\n");
+			planificar(linea);
 			break;
 		}
 
-		//fgets(bufferComando, MAXSIZE_COMANDO, stdin); -> Implementacion anterior
-
-		strtok(linea, "\n");
-
-		planificar(linea);
-
-		//comandoSeparado = string_split(linea, separator);
-
-		//validarLinea(comandoSeparado, log_kernel);
-
 		free(linea);
-
 	}
 }
 
 void menu() {
 
 	printf("Los comandos que se pueden ingresar son: \n"
-			"COMANDOS \n"
 			"Insert \n"
 			"Select \n"
 			"Create \n"
@@ -237,6 +243,25 @@ void menu() {
 			"metrics \n"
 			"SALIR \n"
 			"\n");
+}
+int buscarComando(char* comando) {
+
+	if (comando == NULL) {
+		log_info(log_kernel, "Recibimos el comando: NULL");
+		return -1;
+	}
+
+	log_info(log_kernel, "Recibimos el comando: %s", comando);
+
+	int i = 0;
+
+	for (i; i <= salir && strcmp(comandosPermitidos[i], comando); i++) {
+	}
+
+	log_info(log_kernel, "Se devuelve el valor %d", i);
+
+	return i;
+
 }
 
 void validarLinea(char** lineaIngresada, t_log* logger) {
@@ -736,11 +761,11 @@ t_pcb* crearPcb(char* linea) {
 
 	if (strcmp(comandoSeparado[0], "run") == 0) {
 
-		auxComandoInt = 7;
+		auxComandoInt = run;
 
 	} else {
 
-		auxComandoInt = 0;
+		auxComandoInt = add;
 	}
 
 	log_info(log_kernel, "El valor del comando para el ENUM es: %d",
@@ -954,11 +979,13 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 
 	pruebaPath = string_split(pcbParaAgregar->linea, separator);
 
-	fd = fopen(pruebaPath[1], "r");
+	//fd = fopen(pruebaPath[1], "r");
 
 	while (listaCantidadElementos(colaListos) > 0) {
 
 		if (pcbParaAgregar->comando == run) {
+
+			fd = fopen(pruebaPath[1], "r");
 
 			log_info(log_kernel, "Valor de Rafaga es %d",
 					pcbParaAgregar->rafaga);
@@ -1099,7 +1126,16 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 					free(bufferRun);
 				}
 			}
+		} else if (pcbParaAgregar->comando == add) {
+
 		} else {
+			log_info(log_kernel, "Entro por ELSE.");
+
+			mutexBloquear(&mutexColaListos);
+			list_remove(colaListos, 0);
+
+			mutexDesbloquear(&mutexColaListos);
+
 			req.tam = strlen(pcbParaAgregar->linea);
 			req.str = malloc(req.tam);
 			strcpy(req.str, linea);
@@ -1133,35 +1169,99 @@ void agregarAExit() {
 			valorMultiprocesamiento);
 }
 
-void gossiping_Kernel(){
+void gossiping_Kernel() {
 
 	inicializar_estructuras_gossiping(log_kernel, 10000);
 
-
 	char auxPuerto[LARGO_PUERTO];
 
-	sprintf(auxPuerto, "%d",arc_config->puerto_memoria);
+	sprintf(auxPuerto, "%d", arc_config->puerto_memoria);
 
 	agregar_seed(-1, arc_config->ip_memoria, auxPuerto);
 
 	pthread_t hiloGossiping;
-	iniciar_hilo_gossiping(&soy,&hiloGossiping,actualizarMemoriasDisponibles);
+	iniciar_hilo_gossiping(&soy, &hiloGossiping, actualizarMemoriasDisponibles);
 
 	pthread_detach(hiloGossiping);
 
-
-
-/*	criterioSC;
-	criterioSHC;
-	criterioEC;*/
+	/*	criterioSC;
+	 criterioSHC;
+	 criterioEC;*/
 
 }
 
-void actualizarMemoriasDisponibles(){
+void actualizarMemoriasDisponibles() {
 
 	//Logear diferencias de memorias TODO
 	gossipingKernel = armar_vector_seeds(soy);
 
-	log_info(log_kernel,"Cantidad Memorias: %d",gossipingKernel.cant);
+	log_info(log_kernel, "Cantidad Memorias: %d", gossipingKernel.cant);
+
+}
+
+int buscarMemoria(char** pruebaPath) {
+
+	seed_com_t *aux;
+
+	int retval = -1;
+
+	int aux_num = atoi(pruebaPath[2]);
+	//pthread_mutex_lock(&gossip_table_mutex);
+
+	log_info(log_kernel, "El numero de la memoria a buscar es: %s",
+			pruebaPath[2]);
+
+	for (int i = 0; i < list_size(g_lista_seeds); i++) {
+
+		aux = list_get(g_lista_seeds, i);
+
+		if (aux->numMemoria == aux_num) {
+
+			retval = aux_num;
+
+			//break;
+		}
+	}
+	log_info(log_kernel, "Aca 2");
+	//pthread_mutex_unlock(&gossip_table_mutex);
+
+	if (retval >= 0) {
+		log_info(log_kernel, "La memoria se encontró");
+		return retval;
+	} else {
+		log_info(log_kernel, "La memoria no se encontró");
+		return retval;
+	}
+
+}
+
+void comandoAdd(char** comandoSeparado) {
+
+	log_info(log_kernel, "Llego el comando ADD.");
+
+	int resultado = buscarMemoria(comandoSeparado);
+
+	if (resultado >= 0) {
+
+		log_info(log_kernel, "La memoria numero %s ha sido encontrada.\n",
+				comandoSeparado[2]);
+
+	} else {
+
+		printf("No se encontro la memoria.\n");
+		log_info(log_kernel,
+				"Ese numero de memoria no ha sido encontrada, la misma con numero: %s",
+				comandoSeparado[2]);
+	}
+
+}
+
+void comandoJournal(char** comandoSeparado){
+
+
+}
+
+void comandoMetrics(){
+
 
 }
