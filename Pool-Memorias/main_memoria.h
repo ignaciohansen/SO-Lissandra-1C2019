@@ -37,6 +37,10 @@ void * hilo_cliente(hilo_cliente_args_t *args);
 int responder_request(int socket,char *msg, resp_tipo_com_t tipo_resp);
 int inicializar_gossiping_memoria(void);
 int responder_gossiping(gos_com_t recibido,id_com_t id_proceso,int socket);
+void cliente_dar_de_alta(int socket);
+void cliente_dar_de_baja(int socket);
+void cerrar_todos_clientes(void);
+void  INThandler(int sig);
 
 char *armar_insert(char *respuesta_select, char *tab, int key);
 

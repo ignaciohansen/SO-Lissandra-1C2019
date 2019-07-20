@@ -87,6 +87,9 @@ void * enviarLoQueEscribo(int * socket_p)
     		break;
     	}
     	borrar_string(req);
+        printf("\n***Esperando respuesta");
+        printf("***");
+        printf("\n");
     	msg = recibir_mensaje(conexion);
     	if(msg.tipo == RESPUESTA){
     		resp = procesar_respuesta(msg);
@@ -96,10 +99,13 @@ void * enviarLoQueEscribo(int * socket_p)
     			printf("--->S/R");
     		borrar_respuesta(resp);
     	}
+        else if(msg.tipo == DESCONECTADO){
+            printf("\n***Servidor desconectado***");
+        	borrar_mensaje(msg);
+    		break;
+        }
     	borrar_mensaje(msg);
-
     }
-
     printf("\n\n**Finalizando...**\n");
 }
 
