@@ -585,14 +585,18 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 	char** pruebaPath = string_split(pcbParaAgregar->linea, separator);
 
 	semaforoWait(&multiprocesamiento);
+	FILE* fd;
+	fd = fopen(pruebaPath[1], "r");
 
 	while (listaCantidadElementos(colaListos) > 0) {
+
+		int count = 0;
 		log_info(log_kernel,"Entrando While == colaListos > 0");
 		if (pcbParaAgregar->comando == RUN) {
 
-			FILE* fd_aux;
+			//FILE* fd;
 
-			fd_aux = fopen(pruebaPath[1], "r");
+			//fd = fopen(pruebaPath[1], "r");
 
 			log_info(log_kernel, "Valor de Rafaga es %d",pcbParaAgregar->rafaga);
 			log_info(log_kernel, "Valor de programCounter es %d",pcbParaAgregar->progamCounter);
@@ -604,20 +608,26 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 			list_remove(colaListos, 0);
 			mutexDesbloquear(&mutexColaListos);
 			//char* bufferRun = malloc(1024);
+			char* bufferRun = malloc(100);
+			char* bufferRun2 = malloc(100);
+
 
 			//Rafaga restante del PCB sea mayor o igual que el Quantum
 			if ((pcbParaAgregar->rafaga - pcbParaAgregar->progamCounter)>= arc_config->quantum) {
 
 				for (int i = 1; arc_config->quantum >= i; i++) {
 
+					count++;
 					log_info(log_kernel, "Vuelta del FOR: %d", i);
-					char* bufferRun = malloc(100);
-					log_info(log_kernel, "Reservé memoria para bufferRun");
-					fgets(bufferRun, 100, fd_aux);
-					log_info(log_kernel, "1");
-					log_info(log_kernel, "Linea para ejecutar: %s", bufferRun);
 
-					pruebaPath = string_split(bufferRun, separator);
+					log_info(log_kernel, "Reservé memoria para bufferRun");
+
+					bufferRun2 = fgets(bufferRun, 100, fd);
+
+					log_info(log_kernel, "1");
+					log_info(log_kernel, "Linea para ejecutar: %s", bufferRun2);
+
+					pruebaPath = string_split(bufferRun2, separator);
 					log_info(log_kernel, "El comando es: %s", pruebaPath[0]);
 					int aux_comando = buscarComando(pruebaPath[0]);
 
@@ -635,14 +645,14 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 								tablaPrueba.nombreTabla);
 					}
 
-					req.tam = strlen(bufferRun) + 1;
+					req.tam = strlen(bufferRun2) + 1;
 
 					log_info(log_kernel, "Tamanio cadena grabada en req:%d",
 							req.tam);
 
 					req.str = malloc(req.tam);
 
-					strcpy(req.str, bufferRun);
+					strcpy(req.str, bufferRun2);
 
 					semaforoValor(&multiprocesamiento,
 							&valorMultiprocesamiento);
@@ -712,7 +722,7 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 
 					//AGREGADO PARA LIMPIAR LEAKSs
 
-					free(bufferRun);
+					//free(bufferRun);
 
 				}
 
@@ -733,14 +743,14 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 				log_info(log_kernel, "===>Rafaga restante: %d", rafagaRestante);
 
 				for (int i = 1; rafagaRestante >= i; i++) {
-
+					count++;
 					char* bufferRun = malloc(1024);
 
 					log_info(log_kernel, "Vuelta del FOR: %d", i);
 
 					char* lineaRun = malloc(1024);
 
-					lineaRun = fgets(bufferRun, 1024, fd_aux);
+					lineaRun = fgets(bufferRun, 1024, fd);
 
 					strtok(lineaRun, "\n");
 					log_info(log_kernel, "Linea para ejecutar: %s", lineaRun);
@@ -848,11 +858,11 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 
 				}
 			}
-			close(fd_aux);
 			
+
 		} else {
 			log_info(log_kernel, "Entro por ELSE. Ya que el comando vino por consola y no por RUN.");
-
+			count++;
 			mutexBloquear(&mutexColaListos);
 			list_remove(colaListos, 0);
 			mutexDesbloquear(&mutexColaListos);
@@ -932,6 +942,8 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 			free(req.str);	//LO AGREGO POR LAS DUDAS
 			
 		}
+
+		log_info(log_kernel,"El total es: %d",count);
 
 		log_info(log_kernel,
 				"Al finalizar el while tenemos en cola de listos tenemos: %d elementos",
