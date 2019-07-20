@@ -123,16 +123,16 @@ typedef struct{
 
 
 enum comandos{
-	Select = 0,
-	insert,
-	create,
-	describe,
-	drop,
-	journal,
-	add,
-	run,
-	metrics,
-	salir
+	SELECT = 0,
+	INSERT,
+	CREATE,
+	DESCRIBE,
+	DROP,
+	JOURNAL,
+	ADD,
+	RUN,
+	METRICS,
+	SALIR
 	
 };
 

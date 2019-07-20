@@ -92,7 +92,7 @@ char** lineaSeparada;
 char **comandoSeparado;
 int comando;
 int confirmacionRecibida;
-FILE* fd;
+//FILE* fd;
 char *separador2 = "\n";
 char *separator = " ";
 
@@ -113,8 +113,8 @@ typedef struct{
 
 t_pcb* crearPcb(char* comando);
 
-const char* comandosPermitidos[] = { "select", "insert", "CREATE", "describe",
-		"drop", "journal", "add", "run", "metrics", "salir"
+const char* comandosPermitidos[] = { "SELECT", "INSERT", "CREATE", "DESCRIBE",
+		"DROP", "JOURNAL", "ADD", "RUN", "METRICS", "SALIR"
 
 };
 

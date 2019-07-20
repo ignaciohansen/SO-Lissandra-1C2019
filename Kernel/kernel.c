@@ -12,13 +12,16 @@ int main() {
 
 	log_kernel = archivoLogCrear(LOG_PATH, "Proceso Kernel");
 
-	log_info(log_kernel,"Ya creado el Log, continuamos cargando la estructura de configuracion, llamando a la funcion.");
+	log_info(log_kernel,
+			"Ya creado el Log, continuamos cargando la estructura de configuracion, llamando a la funcion.");
 
 	cargarConfiguracion();
 
-	log_info(log_kernel,"La carga de archivo de configuracion finalizo.");
+	log_info(log_kernel, "La carga de archivo de configuracion finalizo.");
 
-	log_info(log_kernel,"El valor que le vamos a poner al semaforo de multiprocesamiento es: %d.",	arc_config->multiprocesamiento);
+	log_info(log_kernel,
+			"El valor que le vamos a poner al semaforo de multiprocesamiento es: %d.",
+			arc_config->multiprocesamiento);
 	semaforoIniciar(&multiprocesamiento, arc_config->multiprocesamiento);
 
 	inicializarListasPlanificador();
@@ -32,10 +35,12 @@ int main() {
 	char* path_de_kernel = malloc(strlen(PATH_KERNEL_CONFIG) + 1);
 	strcpy(path_de_kernel, PATH_KERNEL_CONFIG);
 	pthread_t inotify_c;
-	pthread_create(&inotify_c, NULL, (void *) inotifyAutomatico,path_de_kernel);
+	pthread_create(&inotify_c, NULL, (void *) inotifyAutomatico,
+			path_de_kernel);
 	pthread_detach(inotify_c);
 	printf("\n*Hilo de actualización de retardos y Quantum corriendo.\n");
-	log_info(log_kernel,"Hilo de actualización de retardos y Quantum corriendo");
+	log_info(log_kernel,
+			"Hilo de actualización de retardos y Quantum corriendo");
 
 	gossiping_Kernel();
 
@@ -215,36 +220,39 @@ void consola() {
 		}
 
 		if (!strncmp(linea, "SALIR", 4)) {
-			log_info(log_kernel, "Viene el comando en la cadena: %s",comandoSeparado[0]);
+			log_info(log_kernel, "Viene el comando en la cadena: %s",
+					comandoSeparado[0]);
 			free(linea);
 			break;
 		}
 
 		strtok(linea, "\n");
 
-		log_info(log_kernel, "Viene el comando en la cadena: %s",comandoSeparado[0]);
+		log_info(log_kernel, "Viene el comando en la cadena: %s",
+				comandoSeparado[0]);
 
 		int comando = buscarComando(comandoSeparado[0]);
 
-		log_info(log_kernel, "El enum correspondiente para el comando es: %d",comando);
+		log_info(log_kernel, "El enum correspondiente para el comando es: %d",
+				comando);
 
 		switch (comando) {
-		case add:
+		case ADD:
 			printf("Vino ADD.\n");
 			log_info(log_kernel, "ADD.");
 			comandoAdd(comandoSeparado);
 			break;
-		case journal:
+		case JOURNAL:
 			printf("Vino journal.\n");
 			log_info(log_kernel, "Journal.");
 			comandoJournal(comandoSeparado);
 			break;
-		case metrics:
+		case METRICS:
 			printf("Vino meterics.\n");
 			log_info(log_kernel, "Metrics.");
 			comandoMetrics();
 			break;
-		case salir:
+		case SALIR:
 			printf("Salimos de la consola y el proceso!.\n");
 			log_info(log_kernel, "Vino comando salir. Cerramos todo");
 			free(linea);
@@ -287,7 +295,7 @@ int buscarComando(char* comando) {
 
 	int i = 0;
 
-	for (i; i <= salir && strcmp(comandosPermitidos[i], comando); i++) {
+	for (i; i <= SALIR && strcmp(comandosPermitidos[i], comando); i++) {
 	}
 
 	log_info(log_kernel, "Se devuelve el valor %d", i);
@@ -338,13 +346,28 @@ t_pcb* crearPcb(char* linea) {
 
 	int auxComandoInt;
 
-	if (strcmp(comandoSeparado[0], "run") == 0) {
+	if (strcmp(comandoSeparado[0], "RUN") == 0) {
 
-		auxComandoInt = run;
+		auxComandoInt = RUN;
 
-	} else {
+	} else if(strcmp(comandoSeparado[0], "ADD") == 0){
 
-		auxComandoInt = add;
+		auxComandoInt = ADD;
+
+	} else if(strcmp(comandoSeparado[0], "SELECT") == 0){
+
+		auxComandoInt = SELECT;
+
+	}else if(strcmp(comandoSeparado[0], "INSERT") == 0){
+
+		auxComandoInt = INSERT;
+
+	}else if(strcmp(comandoSeparado[0], "CREATE") == 0){
+
+		auxComandoInt = CREATE;
+	}else if(strcmp(comandoSeparado[0], "DESCRIBE") == 0){
+
+		auxComandoInt = DESCRIBE;
 	}
 
 	log_info(log_kernel, "El valor del comando para el ENUM es: %d",
@@ -352,7 +375,7 @@ t_pcb* crearPcb(char* linea) {
 
 	switch (auxComandoInt) {
 
-	case run: {
+	case RUN: {
 
 		log_info(log_kernel,
 				"Vino Run de comando, vamos a buscar cuantas lineas tiene el archivo");
@@ -393,6 +416,8 @@ int rafagaComandoRun(char* path) {
 	int caracter, contador;
 
 	contador = 0;
+
+	FILE* fd;
 
 	fd = fopen(path, "r");
 
@@ -470,7 +495,8 @@ t_pcb* crearEstructurasAdministrativas(char* linea) {
 
 void planificar(char* linea) {
 
-	log_info(log_kernel,"En funcion planificar, por agregar la linea a la cola de nuevos");
+	log_info(log_kernel,
+			"En funcion planificar, por agregar la linea a la cola de nuevos");
 
 	agregarANuevo(linea);
 
@@ -478,13 +504,16 @@ void planificar(char* linea) {
 
 	t_pcb* pcbProceso = crearEstructurasAdministrativas(linea);
 
-	log_info(log_kernel,"Retornamos la estructura administrativa, se encuentra en %p",pcbProceso);
+	log_info(log_kernel,
+			"Retornamos la estructura administrativa, se encuentra en %p",
+			pcbProceso);
 
 	if (pcbProceso == NULL) {
 
 		printf("Hubo un error al crear las estructuras administrativas");
 
-		log_error(log_kernel,"Hubo un error al crear las estructuras administrativas");
+		log_error(log_kernel,
+				"Hubo un error al crear las estructuras administrativas");
 
 		return;
 	}
@@ -551,54 +580,48 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 
 	log_info(log_kernel, "En funcion agregarAEjecutar");
 
-	log_info(log_kernel, "En cola de listos tenemos: %d elementos",
-			listaCantidadElementos(colaListos));
+	log_info(log_kernel, "En cola de listos tenemos: %d elementos",	listaCantidadElementos(colaListos));
 
-	char** pruebaPath;
+	char** pruebaPath = string_split(pcbParaAgregar->linea, separator);
 
-	pruebaPath = string_split(pcbParaAgregar->linea, separator);
-
-	//fd = fopen(pruebaPath[1], "r");
 	semaforoWait(&multiprocesamiento);
 
 	while (listaCantidadElementos(colaListos) > 0) {
+		log_info(log_kernel,"Entrando While == colaListos > 0");
+		if (pcbParaAgregar->comando == RUN) {
 
-		if (pcbParaAgregar->comando == run) {
+			FILE* fd_aux;
 
-			fd = fopen(pruebaPath[1], "r");
+			fd_aux = fopen(pruebaPath[1], "r");
 
-			log_info(log_kernel, "Valor de Rafaga es %d",
-					pcbParaAgregar->rafaga);
-
-			log_info(log_kernel, "Valor de programCounter es %d",
-					pcbParaAgregar->progamCounter);
+			log_info(log_kernel, "Valor de Rafaga es %d",pcbParaAgregar->rafaga);
+			log_info(log_kernel, "Valor de programCounter es %d",pcbParaAgregar->progamCounter);
+			log_info(log_kernel, "Le queda por ejecutar %d",pcbParaAgregar->rafaga - pcbParaAgregar->progamCounter);
 
 			log_info(log_kernel, "Valor de Quantum es %d", arc_config->quantum);
 
 			mutexBloquear(&mutexColaListos);
 			list_remove(colaListos, 0);
 			mutexDesbloquear(&mutexColaListos);
+			//char* bufferRun = malloc(1024);
 
-			if ((pcbParaAgregar->rafaga - pcbParaAgregar->progamCounter)
-					>= arc_config->quantum) {
-
-				char* bufferRun = malloc(1024);
+			//Rafaga restante del PCB sea mayor o igual que el Quantum
+			if ((pcbParaAgregar->rafaga - pcbParaAgregar->progamCounter)>= arc_config->quantum) {
 
 				for (int i = 1; arc_config->quantum >= i; i++) {
 
 					log_info(log_kernel, "Vuelta del FOR: %d", i);
+					char* bufferRun = malloc(100);
+					log_info(log_kernel, "Reservé memoria para bufferRun");
+					fgets(bufferRun, 100, fd_aux);
+					log_info(log_kernel, "1");
+					log_info(log_kernel, "Linea para ejecutar: %s", bufferRun);
 
-					char* lineaRun = malloc(1024);
-
-					lineaRun = fgets(bufferRun, 1024, fd);
-
-					log_info(log_kernel, "Linea para ejecutar: %s", lineaRun);
-
-					pruebaPath = string_split(lineaRun, separator);
+					pruebaPath = string_split(bufferRun, separator);
 					log_info(log_kernel, "El comando es: %s", pruebaPath[0]);
 					int aux_comando = buscarComando(pruebaPath[0]);
 
-					if (aux_comando == create) {
+					if (aux_comando == CREATE) {
 
 						tablaPrueba.criterio = buscarCriterio(pruebaPath[2]);
 						tablaPrueba.nombreTabla = malloc(
@@ -612,14 +635,14 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 								tablaPrueba.nombreTabla);
 					}
 
-					req.tam = strlen(lineaRun) + 1;
+					req.tam = strlen(bufferRun) + 1;
 
 					log_info(log_kernel, "Tamanio cadena grabada en req:%d",
 							req.tam);
 
 					req.str = malloc(req.tam);
 
-					strcpy(req.str, lineaRun);
+					strcpy(req.str, bufferRun);
 
 					semaforoValor(&multiprocesamiento,
 							&valorMultiprocesamiento);
@@ -632,10 +655,46 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 
 					pcbParaAgregar->estado = ejecucion;
 
-					mutexBloquear(&mutexColaEjecucion);
-					//socket_CMemoria = conexionKernel();
+					socket_CMemoria = conectar_a_memoria(criterio_memoria.listMemoriaas->ip,criterio_memoria.listMemoriaas->puerto);
+
 					list_add(colaEjecucion, pcbParaAgregar);
-					enviar_request(socket_CMemoria, req);
+
+					int respuesta = enviar_request(socket_CMemoria, req);
+
+					if (respuesta != 0) {
+						log_info(log_kernel,
+								"Hubo un error al enviar la request a memoria");
+						return;
+					}
+					log_info(log_kernel,
+							"No Hubo error al enviar la request a memoria");
+
+					msg_com_t msg = recibir_mensaje(socket_CMemoria);
+					if (msg.tipo == RESPUESTA) {
+
+						log_info(log_kernel,
+								"Llego un mensaje de tipo RESPUESTA");
+
+						resp_com_t respuesta = procesar_respuesta(msg);
+						if (respuesta.tipo == RESP_OK) {
+							printf("La respuesta fue correcta %d: \n",
+									respuesta.tipo);
+							log_info(log_kernel,
+									"La respuesta fue correcta luego de procesarla");
+						} else {
+
+							log_info(log_kernel,
+									"La respuesta no fue correcta luego de procesarla");
+						}
+
+						borrar_respuesta(respuesta);
+
+					}
+
+					mutexBloquear(&mutexColaEjecucion);
+
+					list_add(colaEjecucion, pcbParaAgregar);
+
 					mutexDesbloquear(&mutexColaEjecucion);
 
 					log_info(log_kernel,
@@ -652,10 +711,10 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 					log_info(log_kernel, "Ultima instruccion del FOR");
 
 					//AGREGADO PARA LIMPIAR LEAKSs
-					free(lineaRun);
-				}
 
-				free(bufferRun);
+					free(bufferRun);
+
+				}
 
 				mutexBloquear(&mutexColaEjecucion);
 				list_remove(colaEjecucion, 0);
@@ -681,7 +740,7 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 
 					char* lineaRun = malloc(1024);
 
-					lineaRun = fgets(bufferRun, 1024, fd);
+					lineaRun = fgets(bufferRun, 1024, fd_aux);
 
 					strtok(lineaRun, "\n");
 					log_info(log_kernel, "Linea para ejecutar: %s", lineaRun);
@@ -690,7 +749,7 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 					log_info(log_kernel, "El comando es: %s", pruebaPath[0]);
 					int aux_comando = buscarComando(pruebaPath[0]);
 
-					if (aux_comando == create) {
+					if (aux_comando == CREATE) {
 
 						tablaPrueba.criterio = buscarCriterio(pruebaPath[2]);
 						tablaPrueba.nombreTabla = malloc(
@@ -751,7 +810,7 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 
 						resp_com_t respuesta = procesar_respuesta(msg);
 						if (respuesta.tipo == RESP_OK) {
-							printf("La respuesta fue correcta %d: ",
+							printf("La respuesta fue correcta %d: \n",
 									respuesta.tipo);
 							log_info(log_kernel,
 									"La respuesta fue correcta luego de procesarla");
@@ -789,32 +848,97 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 
 				}
 			}
-		} else if (pcbParaAgregar->comando == add) {
-
+			close(fd_aux);
+			
 		} else {
-			log_info(log_kernel, "Entro por ELSE.");
+			log_info(log_kernel, "Entro por ELSE. Ya que el comando vino por consola y no por RUN.");
 
 			mutexBloquear(&mutexColaListos);
 			list_remove(colaListos, 0);
-
 			mutexDesbloquear(&mutexColaListos);
 
-			req.tam = strlen(pcbParaAgregar->linea);
+			if (pcbParaAgregar->comando == CREATE) {
+
+				tablaPrueba.criterio = buscarCriterio(pruebaPath[2]);
+				tablaPrueba.nombreTabla = malloc(
+				strlen(pruebaPath[1]) + 1);
+				strcpy(tablaPrueba.nombreTabla, pruebaPath[1]);
+				log_info(log_kernel,"En la tabla/criterios se guardo el criterio: %d",tablaPrueba.criterio);
+				log_info(log_kernel,"En la tabla/criterios se guardo el nombre %s",tablaPrueba.nombreTabla);
+			}
+
+			req.tam = strlen(pcbParaAgregar->linea) + 1;
+
+			log_info(log_kernel, "Tamanio cadena grabada en req:%d",req.tam);
+
 			req.str = malloc(req.tam);
-			strcpy(req.str, linea);
+
+			strcpy(req.str, pcbParaAgregar->linea);
+
+			log_info(log_kernel, "Cadena grabada en req:%s", req.str);
+
+			semaforoValor(&multiprocesamiento,&valorMultiprocesamiento);
+
+			log_info(log_kernel,"El valor del semaforo contador multiprocesamiento, despues de agregar a ejecutar un proceso es: %d",valorMultiprocesamiento);
+
+			pcbParaAgregar->estado = ejecucion;
+
+			//mutexBloquear(&mutexColaEjecucion);
+
+			log_info(log_kernel,"Conectando con la memoria numero: %d",criterio_memoria.listMemoriaas->numMemoria);
+			socket_CMemoria = conectar_a_memoria(criterio_memoria.listMemoriaas->ip,criterio_memoria.listMemoriaas->puerto);
+
+			list_add(colaEjecucion, pcbParaAgregar);
+
+			log_info(log_kernel,"Por enviar request a memoria");
+			int respuesta = enviar_request(socket_CMemoria, req);
+
+			if (respuesta != 0) {
+				log_info(log_kernel,"Hubo un error al enviar la request a memoria");
+				return;
+			}
+		
+			log_info(log_kernel,"No Hubo error al enviar la request a memoria");
+
+			msg_com_t msg = recibir_mensaje(socket_CMemoria);
+			if (msg.tipo == RESPUESTA) {
+
+				log_info(log_kernel,"Llego un mensaje de tipo RESPUESTA");
+
+				resp_com_t respuesta = procesar_respuesta(msg);
+						
+				if (respuesta.tipo == RESP_OK) {
+							printf("La respuesta fue correcta: %d \n",respuesta.tipo);
+							log_info(log_kernel,"La respuesta fue correcta luego de procesarla");
+				} else {
+							printf("La respuesta no fue correcta, Llegó: %d\n",respuesta.tipo);
+							log_info(log_kernel,"La respuesta no fue correcta luego de procesarla, llegó: %d",respuesta.tipo);
+					}
+
+				borrar_respuesta(respuesta);
+
+			}
+
+			if (msg.tipo != RESPUESTA) {
+				imprimirError(log_kernel,"[CREATE] Memoria no responde como se espera");
+				borrar_mensaje(msg);
+
+			}/*
+			mutexBloquear(&mutexColaEjecucion);
+			list_remove(colaEjecucion, 0);
+			mutexDesbloquear(&mutexColaEjecucion);		*/
 
 			//DAM: NO se que sentido tiene que este req este aqui si no lo usa nadie y ademas es local
 			free(req.str);	//LO AGREGO POR LAS DUDAS
+			
 		}
 
 		log_info(log_kernel,
 				"Al finalizar el while tenemos en cola de listos tenemos: %d elementos",
 				listaCantidadElementos(colaListos));
+
+		
 	}
-
-	log_info(log_kernel,
-			"Bloqueamos Mutex para poder sacar el elemento en la cola de listos y colocarlo en ejecucion");
-
 	//AGREGADO PARA LIMPIAR LEAKSs
 	int indice = 0;
 	while (pruebaPath[indice] != NULL) {
@@ -880,7 +1004,8 @@ seed_com_t* buscarMemoria(char** pruebaPath) {
 
 	lista_memorias = lista_seeds();
 
-	log_info(log_kernel, "El numero de la memoria a buscar es: %s",	pruebaPath[2]);
+	log_info(log_kernel, "El numero de la memoria a buscar es: %s",
+			pruebaPath[2]);
 
 	for (int i = 0; i < list_size(lista_memorias); i++) {
 
@@ -917,23 +1042,30 @@ void comandoAdd(char** comandoSeparado) {
 
 	if (resultado != NULL) {
 
-		log_info(log_kernel, "La memoria numero %s ha sido encontrada.\n",comandoSeparado[2]);
+		log_info(log_kernel, "La memoria numero %s ha sido encontrada.\n",
+				comandoSeparado[2]);
 
-		log_info(log_kernel, "El criterio para asociar es el: %s",comandoSeparado[4]);
+		log_info(log_kernel, "El criterio para asociar es el: %s",
+				comandoSeparado[4]);
 		int criterioInt = buscarCriterio(comandoSeparado[4]);
-		log_info(log_kernel,"El criterio para asociar es el: %s,corresponde al valor: %d",comandoSeparado[4], criterioInt);
+		log_info(log_kernel,
+				"El criterio para asociar es el: %s,corresponde al valor: %d",
+				comandoSeparado[4], criterioInt);
 		criterio_memoria.criterio = criterioInt;
 		criterio_memoria.listMemoriaas = resultado;
 		list_add(lista_memorias, resultado);
 
 		log_info(log_kernel, "Llenamos la estructura de criterio/memoria.");
 
-		printf("La memoria: %s fue asociada al criterio %s con exito.\n",comandoSeparado[2], comandoSeparado[4]);
+		printf("La memoria: %s fue asociada al criterio %s con exito.\n",
+				comandoSeparado[2], comandoSeparado[4]);
 
 	} else {
 
 		printf("No se encontro la memoria.\n");
-		log_info(log_kernel,"Ese numero de memoria no ha sido encontrada, la misma con numero: %s",	comandoSeparado[2]);
+		log_info(log_kernel,
+				"Ese numero de memoria no ha sido encontrada, la misma con numero: %s",
+				comandoSeparado[2]);
 	}
 
 }
@@ -949,7 +1081,7 @@ int buscarCriterio(char* criterio) {
 
 	int i = 0;
 
-	for (i; i <= salir && strcmp(criterios[i], criterio); i++) {
+	for (i; i <= SALIR && strcmp(criterios[i], criterio); i++) {
 	}
 
 	log_info(log_kernel, "Se devuelve el valor %d", i);
@@ -1106,7 +1238,7 @@ void inotifyAutomatico(char* pathDelArchivoAEscuchar) {
 	return;
 }
 
-void recargarConfiguracion(char* path_config){
+void recargarConfiguracion(char* path_config) {
 
 	log_info(log_kernel, "[ACTUALIZANDO RETARDOS y QUANTUM] Voy a actualizar");
 
@@ -1114,44 +1246,59 @@ void recargarConfiguracion(char* path_config){
 
 	t_config* auxConfigFile = config_create(path_config);
 
-		if (auxConfigFile != NULL) {
+	if (auxConfigFile != NULL) {
 
-			log_info(log_kernel, "[ACTUALIZANDO RETARDOS y QUANTUM] LEYENDO CONFIGURACION...");
+		log_info(log_kernel,
+				"[ACTUALIZANDO RETARDOS y QUANTUM] LEYENDO CONFIGURACION...");
 
-			if (config_has_property(auxConfigFile, "SLEEP_EJECUCION")) {
+		if (config_has_property(auxConfigFile, "SLEEP_EJECUCION")) {
 
-				arc_config->sleep_ejecucion = config_get_int_value(auxConfigFile,"SLEEP_EJECUCION");
-				log_info(log_kernel, "[ACTUALIZANDO RETARDOS y QUANTUM] SLEEP_EJECUCION: %d",arc_config->sleep_ejecucion);
-
-			} else {
-				log_error(log_kernel, "[ACTUALIZANDO RETARDOS y QUANTUM] NO HAY SLEEP_EJECUCION CONFIGURADO");
-			} // SLEEP_EJECUCION
-
-			if (config_has_property(auxConfigFile, "METADATA_REFRESH")) {
-
-				arc_config->metadata_refresh = config_get_int_value(auxConfigFile, "METADATA_REFRESH");
-				log_info(log_kernel, "[ACTUALIZANDO RETARDOS y QUANTUM] METADATA_REFRESH es de: %d",arc_config->metadata_refresh);
-
-			} else {
-				log_error(log_kernel, "[ACTUALIZANDO RETARDOS y QUANTUM] NO HAY METADATA_REFRESH CONFIGURADO");
-			} // METADATA_REFRESH
-
-			if (config_has_property(auxConfigFile, "QUANTUM")) {
-
-				arc_config->quantum = config_get_int_value(auxConfigFile,"QUANTUM");
-				log_info(log_kernel,"[ACTUALIZANDO RETARDOS y QUANTUM] Valor DEL QUANTUM: %d",arc_config->quantum);
-
-			} else {
-				log_error(log_kernel,"[ACTUALIZANDO RETARDOS y QUANTUM] NO HAY QUANTUM CONFIGURADO");
-			} // QUANTUM
+			arc_config->sleep_ejecucion = config_get_int_value(auxConfigFile,
+					"SLEEP_EJECUCION");
+			log_info(log_kernel,
+					"[ACTUALIZANDO RETARDOS y QUANTUM] SLEEP_EJECUCION: %d",
+					arc_config->sleep_ejecucion);
 
 		} else {
-			log_error(log_kernel,"[ACTUALIZANDO RETARDOS y QUANTUM] NO HAY ARCHIVO DE CONFIGURACION DE MODULO DEL KERNEL"); // ERROR: SIN ARCHIVO CONFIGURACION
-		}
+			log_error(log_kernel,
+					"[ACTUALIZANDO RETARDOS y QUANTUM] NO HAY SLEEP_EJECUCION CONFIGURADO");
+		} // SLEEP_EJECUCION
 
-		config_destroy(auxConfigFile);
+		if (config_has_property(auxConfigFile, "METADATA_REFRESH")) {
 
-		log_info(log_kernel, "[ACTUALIZANDO RETARDOS y QUANTUM] RETARDOS y QUANTUM ACTUALIZADOS CORRECTAMENTE");
+			arc_config->metadata_refresh = config_get_int_value(auxConfigFile,
+					"METADATA_REFRESH");
+			log_info(log_kernel,
+					"[ACTUALIZANDO RETARDOS y QUANTUM] METADATA_REFRESH es de: %d",
+					arc_config->metadata_refresh);
 
-		mutexDesbloquear(&mutex_retardos_kernel);
+		} else {
+			log_error(log_kernel,
+					"[ACTUALIZANDO RETARDOS y QUANTUM] NO HAY METADATA_REFRESH CONFIGURADO");
+		} // METADATA_REFRESH
+
+		if (config_has_property(auxConfigFile, "QUANTUM")) {
+
+			arc_config->quantum = config_get_int_value(auxConfigFile,
+					"QUANTUM");
+			log_info(log_kernel,
+					"[ACTUALIZANDO RETARDOS y QUANTUM] Valor DEL QUANTUM: %d",
+					arc_config->quantum);
+
+		} else {
+			log_error(log_kernel,
+					"[ACTUALIZANDO RETARDOS y QUANTUM] NO HAY QUANTUM CONFIGURADO");
+		} // QUANTUM
+
+	} else {
+		log_error(log_kernel,
+				"[ACTUALIZANDO RETARDOS y QUANTUM] NO HAY ARCHIVO DE CONFIGURACION DE MODULO DEL KERNEL"); // ERROR: SIN ARCHIVO CONFIGURACION
+	}
+
+	config_destroy(auxConfigFile);
+
+	log_info(log_kernel,
+			"[ACTUALIZANDO RETARDOS y QUANTUM] RETARDOS y QUANTUM ACTUALIZADOS CORRECTAMENTE");
+
+	mutexDesbloquear(&mutex_retardos_kernel);
 }

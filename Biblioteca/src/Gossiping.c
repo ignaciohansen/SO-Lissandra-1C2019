@@ -169,9 +169,11 @@ int conozco_memoria(seed_com_t memoria)
 }
 
 t_list* lista_seeds(void){
+	t_list* aux;
 	pthread_mutex_lock(&gossip_table_mutex);
-	return g_lista_seeds;
+	aux = list_duplicate(g_lista_seeds);
 	pthread_mutex_unlock(&gossip_table_mutex);
+	return aux;
 }
 
 void borrar_seed(seed_com_t *memoria)
