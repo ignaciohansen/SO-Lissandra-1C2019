@@ -1149,14 +1149,13 @@ int JOURNAL(int socket_lfs) {
 	imprimirAviso(log_memoria, "[JOURNAL] ENTRANDO");
 //	char* datosAPasar=NULL;
 	datosJournal* journalAPasar;
-	retardo_memoria();
+
 	journalAPasar = obtener_todos_journal();
 	log_info(log_memoria, "[JOURNAL] PROCEDO A ENVIAR LA INFORMACION A LISANDRA");
 
 	log_info(log_memoria, "[JOURNAL] ENVIO EL MENSAJE A LISANDRA");
 
 	int cant_pasados = pasarValoresALisandra(journalAPasar,socket_lfs);
-
 	log_info(log_memoria, "[JOURNAL] JOURNAL HECHO, LISANDRA HA RECIBIDO BIEN %d REGISTROS, LIMPIO TODO",cant_pasados);
 
 	liberarDatosJournal(journalAPasar);
@@ -1212,6 +1211,7 @@ int pasarValoresALisandra(datosJournal* datos,int socket_lfs)
 
 		//Espero su respuesta
 		msg_com_t msg = recibir_mensaje(socket_lfs);
+		retardo_fs();
 		if(msg.tipo == RESPUESTA){
 			resp_com_t recibido = procesar_respuesta(msg);
 			borrar_mensaje(msg);
