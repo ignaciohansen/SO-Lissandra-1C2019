@@ -327,6 +327,7 @@ void imprimirPorPantallaTodosLosComandosDisponibles(){
 			"INSERT <nombre Tabla> <Key a poner> <Valor a ingresar>\n"
 			"JOURNAL\n"
 			"DESCRIBE [nombre tabla - OPCIONAL]\n"
+			"CREATE <nombre tabla> <tipo> <particiones> <dump>\n"
 			"DROP <nombre tabla>\n"
 			/*"RETARDO_MEMORIA <milisegundos>\n"
 			"RETARDO_FS <milisegundos>\n"

@@ -72,8 +72,10 @@ int main() {
 
 	/*compactarTabla("COLORES");
 	return 1;*/
-
-	int socketLFS = iniciar_servidor(configFile->ip, "8010"); // AGREGAR IP A ARCHIV CONFIG @martin
+	char* stringPuerto = malloc(5);
+	sprintf(stringPuerto, "%d", configFile->puerto_escucha);
+	int socketLFS = iniciar_servidor(configFile->ip, stringPuerto); // AGREGAR IP A ARCHIV CONFIG @martin
+	free(stringPuerto);
 	if (socketLFS == -1) {
 		printf("%d ****************************** ", socketLFS);
 		return 0;
