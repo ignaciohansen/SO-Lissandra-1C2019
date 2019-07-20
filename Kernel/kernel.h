@@ -203,6 +203,7 @@ int   conexionKernel();
 int conexionAMemoria(char ip[LARGO_IP], char puerto[LARGO_PUERTO]);
 
 // RED
+int conectar_a_memoria(char ip[LARGO_IP], char puerto[LARGO_PUERTO]);
 int   enviarComando(char** comando,t_log* logger);
 int   enviarMensaje(int comando, int tamanio,char* mensaje, t_log* logger);
 void  armarMensajeBody(int tamanio,char* mensaje,char** comando);

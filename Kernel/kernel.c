@@ -225,7 +225,6 @@ void consola() {
 		log_info(log_kernel, "Viene el comando en la cadena: %s",
 				comandoSeparado[0]);
 
-
 		int comando = buscarComando(comandoSeparado[0]);
 
 		log_info(log_kernel, "El enum correspondiente para el comando es: %d",
@@ -259,7 +258,10 @@ void consola() {
 			break;
 		}
 
-		free(linea);
+		//free(linea);
+
+
+
 	}
 }
 
@@ -1003,8 +1005,11 @@ void planificar(char* linea) {
 	agregarAExit();
 
 	//2 LINEAS AGRGADAS PARA LIMPIAR LEAKS
+
 	free(pcbProceso->linea);
+
 	free(pcbProceso);
+
 }
 
 void agregarAListo(t_pcb* pcbParaAgregar) {
@@ -1175,6 +1180,7 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 
 					lineaRun = fgets(bufferRun, 1024, fd);
 
+					strtok(lineaRun, "\n");
 					log_info(log_kernel, "Linea para ejecutar: %s", lineaRun);
 
 					pruebaPath = string_split(lineaRun, separator);
@@ -1196,7 +1202,7 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 					}
 
 					//strtok(lineaRun, "\n");
-					req.tam = strlen(lineaRun);
+					req.tam = strlen(lineaRun) + 1;
 
 					log_info(log_kernel, "Tamanio cadena grabada en req:%d",
 							req.tam);
@@ -1217,26 +1223,58 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 					pcbParaAgregar->estado = ejecucion;
 
 					mutexBloquear(&mutexColaEjecucion);
-					//socket_CMemoria = conexionKernel();
-					socket_CMemoria = conexionAMemoria(
+
+					socket_CMemoria = conectar_a_memoria(
 							criterio_memoria.listMemoriaas->ip,
 							criterio_memoria.listMemoriaas->puerto);
+
 					list_add(colaEjecucion, pcbParaAgregar);
-					enviar_request(socket_CMemoria, req);
+
+					int respuesta = enviar_request(socket_CMemoria, req);
+
+					if (respuesta != 0) {
+						log_info(log_kernel,"Hubo un error al enviar la request a memoria");
+						return;
+					}
+					log_info(log_kernel,"No Hubo error al enviar la request a memoria");
+
+					msg_com_t msg = recibir_mensaje(socket_CMemoria);
+					if(msg.tipo == RESPUESTA){
+
+						log_info(log_kernel,"Llego un mensaje de tipo RESPUESTA");
+
+						resp_com_t respuesta = procesar_respuesta(msg);
+						if(respuesta.tipo == RESP_OK){
+							printf("La respuesta fue correcta %d: ",respuesta.tipo);
+							log_info(log_kernel,"La respuesta fue correcta luego de procesarla");
+						}else{
+
+							log_info(log_kernel,"La respuesta no fue correcta luego de procesarla");
+						}
+
+						borrar_respuesta(respuesta);
+
+					}
+
+					if (msg.tipo != RESPUESTA) {
+						imprimirError(log_kernel,"[CREATE] Memoria no responde como se espera");
+						borrar_mensaje(msg);
+
+					}
+
 					mutexDesbloquear(&mutexColaEjecucion);
 
-					log_info(log_kernel,
-							"Desbloqueamos el Mutex de Ejecucion y el PCB fue encolado a la cola de Ejecucion.");
+					log_info(log_kernel,"Desbloqueamos el Mutex de Ejecucion y el PCB fue encolado a la cola de Ejecucion.");
 
 					free(req.str);
 
-					pcbParaAgregar->progamCounter =
-							pcbParaAgregar->progamCounter + i;
+					pcbParaAgregar->progamCounter =	pcbParaAgregar->progamCounter + i;
 
 					log_info(log_kernel, "Ultima instruccion del FOR");
 
 					free(lineaRun);	//AGREGADO PARA LIMPIAR LEAKSs
-					free(bufferRun);
+					//free(bufferRun);
+
 				}
 			}
 		} else if (pcbParaAgregar->comando == add) {
@@ -1470,7 +1508,7 @@ void comandoJournal(char** comandoSeparado) {
 
 		aux = list_get(g_lista_seeds, i);
 
-		socket_CMemoria = conexionAMemoria(aux->ip,aux->puerto);
+		socket_CMemoria = conexionAMemoria(aux->ip, aux->puerto);
 
 		enviar_request(socket_CMemoria, req);
 
@@ -1483,3 +1521,53 @@ void comandoJournal(char** comandoSeparado) {
 void comandoMetrics() {
 
 }
+
+int conectar_a_memoria(char ip[LARGO_IP], char puerto[LARGO_PUERTO]) {
+
+	char puerto_memoria[20];
+	snprintf(puerto_memoria, 19, "%d", arc_config->puerto_memoria);
+	imprimirMensaje2(log_kernel,
+			"[CONECTANDO A MEMORIA] Me voy a intentar conectar a ip: <%s> puerto: <%s>",
+			arc_config->ip_memoria, puerto_memoria);
+	int socket = conectar_a_servidor(ip, puerto, soy);
+	if (socket == -1) {
+		imprimirError(log_kernel,
+				"[CONECTANDO A MEMORIA] No fue posible conectarse con la Memoria. TERMINANDO\n");
+		return -1;
+	}
+
+	imprimirMensaje(log_kernel,
+			"[CONECTANDO A MEMORIA] Me conecté con éxito a la MEMORIA. Espero su hs");
+	//Si me conecté, espero su msg de bienvenida
+
+	msg_com_t msg = recibir_mensaje(socket);
+
+	if (msg.tipo != HANDSHAKECOMANDO) {
+		borrar_mensaje(msg);
+		imprimirError(log_kernel,
+				"[CONECTANDO A MEMORIA] MEMORIA no responde el hs. TERMINANDO\n");
+		return -1;
+	}
+
+	handshake_com_t hs = procesar_handshake(msg);
+	borrar_mensaje(msg);
+
+	if (hs.id == RECHAZADO) {
+		if (hs.msg.tam == 0)
+			imprimirError(log_kernel,
+					"[CONECTANDO A MEMORIA] MEMORIA rechazo la conexión. TERMINANDO\n");
+		else
+			imprimirError1(log_kernel,
+					"[CONECTANDO A MEMORIA] MEMORIA rechazo la conexión [%s]. TERMINANDO\n",
+					hs.msg.str);
+		borrar_handshake(hs);
+		close(socket);
+		return -1;
+	}
+
+	imprimirMensaje(log_kernel,
+			"[CONECTANDO A MEMORIA] Me conecté con éxito a la MEMORIA");
+
+	return socket;
+}
+
