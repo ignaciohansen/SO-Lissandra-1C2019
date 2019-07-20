@@ -12,27 +12,14 @@ int main() {
 
 	log_kernel = archivoLogCrear(LOG_PATH, "Proceso Kernel");
 
-	log_info(log_kernel,
-			"Ya creado el Log, continuamos cargando la estructura de configuracion, llamando a la funcion.");
+	log_info(log_kernel,"Ya creado el Log, continuamos cargando la estructura de configuracion, llamando a la funcion.");
 
 	cargarConfiguracion();
 
-	log_info(log_kernel,
-			"En Main nuevamente, la carga de archivo de configuracion finalizo.");
+	log_info(log_kernel,"La carga de archivo de configuracion finalizo.");
 
-	log_info(log_kernel,
-			"El valor que le vamos a poner al semaforo de multiprocesamiento es: %d.",
-			arc_config->multiprocesamiento);
+	log_info(log_kernel,"El valor que le vamos a poner al semaforo de multiprocesamiento es: %d.",	arc_config->multiprocesamiento);
 	semaforoIniciar(&multiprocesamiento, arc_config->multiprocesamiento);
-
-	mutexIniciar(&mutex_retardos_kernel);
-	char* path_de_kernel = malloc(strlen(PATH_KERNEL_CONFIG) + 1);
-	strcpy(path_de_kernel, PATH_KERNEL_CONFIG);
-	pthread_t inotify_c;
-	pthread_create(&inotify_c, NULL, (void *) inotifyAutomatico,path_de_kernel);
-	pthread_detach(inotify_c);
-	printf("\n*Hilo de actualización de retardos y Quantum corriendo");
-	log_info(log_kernel,"Hilo de actualización de retardos y Quantum corriendo");
 
 	inicializarListasPlanificador();
 	lista_memorias = list_create();
@@ -41,6 +28,14 @@ int main() {
 	mutexIniciar(&mutexColaNuevos);
 
 	countPID = 0;
+	mutexIniciar(&mutex_retardos_kernel);
+	char* path_de_kernel = malloc(strlen(PATH_KERNEL_CONFIG) + 1);
+	strcpy(path_de_kernel, PATH_KERNEL_CONFIG);
+	pthread_t inotify_c;
+	pthread_create(&inotify_c, NULL, (void *) inotifyAutomatico,path_de_kernel);
+	pthread_detach(inotify_c);
+	printf("\n*Hilo de actualización de retardos y Quantum corriendo.\n");
+	log_info(log_kernel,"Hilo de actualización de retardos y Quantum corriendo");
 
 	gossiping_Kernel();
 
@@ -219,25 +214,19 @@ void consola() {
 			comandoSeparado = string_split(linea, separator);
 		}
 
-		log_info(log_kernel, "Viene el comando en la cadena: %s",
-				comandoSeparado[0]);
-
 		if (!strncmp(linea, "SALIR", 4)) {
+			log_info(log_kernel, "Viene el comando en la cadena: %s",comandoSeparado[0]);
 			free(linea);
 			break;
 		}
 
-		//fgets(bufferComando, MAXSIZE_COMANDO, stdin); -> Implementacion anterior
-
 		strtok(linea, "\n");
 
-		log_info(log_kernel, "Viene el comando en la cadena: %s",
-				comandoSeparado[0]);
+		log_info(log_kernel, "Viene el comando en la cadena: %s",comandoSeparado[0]);
 
 		int comando = buscarComando(comandoSeparado[0]);
 
-		log_info(log_kernel, "El enum correspondiente para el comando es: %d",
-				comando);
+		log_info(log_kernel, "El enum correspondiente para el comando es: %d",comando);
 
 		switch (comando) {
 		case add:
@@ -481,8 +470,7 @@ t_pcb* crearEstructurasAdministrativas(char* linea) {
 
 void planificar(char* linea) {
 
-	log_info(log_kernel,
-			"En funcion planificar, por agregar la linea a la cola de nuevos");
+	log_info(log_kernel,"En funcion planificar, por agregar la linea a la cola de nuevos");
 
 	agregarANuevo(linea);
 
@@ -490,16 +478,13 @@ void planificar(char* linea) {
 
 	t_pcb* pcbProceso = crearEstructurasAdministrativas(linea);
 
-	log_info(log_kernel,
-			"Retornamos la estructura administrativa, se encuentra en %p",
-			pcbProceso);
+	log_info(log_kernel,"Retornamos la estructura administrativa, se encuentra en %p",pcbProceso);
 
 	if (pcbProceso == NULL) {
 
 		printf("Hubo un error al crear las estructuras administrativas");
 
-		log_error(log_kernel,
-				"Hubo un error al crear las estructuras administrativas");
+		log_error(log_kernel,"Hubo un error al crear las estructuras administrativas");
 
 		return;
 	}
@@ -889,17 +874,17 @@ seed_com_t* buscarMemoria(char** pruebaPath) {
 
 	seed_com_t *aux = malloc(sizeof(seed_com_t));
 
-	//int retval = -1;
-
 	int aux_num = atoi(pruebaPath[2]);
-	//pthread_mutex_lock(&gossip_table_mutex);
 
-	log_info(log_kernel, "El numero de la memoria a buscar es: %s",
-			pruebaPath[2]);
+	lista_memorias = list_create();
 
-	for (int i = 0; i < list_size(g_lista_seeds); i++) {
+	lista_memorias = lista_seeds();
 
-		aux = list_get(g_lista_seeds, i);
+	log_info(log_kernel, "El numero de la memoria a buscar es: %s",	pruebaPath[2]);
+
+	for (int i = 0; i < list_size(lista_memorias); i++) {
+
+		aux = list_get(lista_memorias, i);
 
 		if (aux->numMemoria == aux_num) {
 
@@ -932,30 +917,23 @@ void comandoAdd(char** comandoSeparado) {
 
 	if (resultado != NULL) {
 
-		log_info(log_kernel, "La memoria numero %s ha sido encontrada.\n",
-				comandoSeparado[2]);
+		log_info(log_kernel, "La memoria numero %s ha sido encontrada.\n",comandoSeparado[2]);
 
-		log_info(log_kernel, "El criterio para asociar es el: %s",
-				comandoSeparado[4]);
+		log_info(log_kernel, "El criterio para asociar es el: %s",comandoSeparado[4]);
 		int criterioInt = buscarCriterio(comandoSeparado[4]);
-		log_info(log_kernel,
-				"El criterio para asociar es el: %s,corresponde al valor: %d",
-				comandoSeparado[4], criterioInt);
+		log_info(log_kernel,"El criterio para asociar es el: %s,corresponde al valor: %d",comandoSeparado[4], criterioInt);
 		criterio_memoria.criterio = criterioInt;
 		criterio_memoria.listMemoriaas = resultado;
 		list_add(lista_memorias, resultado);
 
 		log_info(log_kernel, "Llenamos la estructura de criterio/memoria.");
 
-		printf("La memoria: %s fue asociada al criterio %s con exito.\n",
-				comandoSeparado[2], comandoSeparado[4]);
+		printf("La memoria: %s fue asociada al criterio %s con exito.\n",comandoSeparado[2], comandoSeparado[4]);
 
 	} else {
 
 		printf("No se encontro la memoria.\n");
-		log_info(log_kernel,
-				"Ese numero de memoria no ha sido encontrada, la misma con numero: %s",
-				comandoSeparado[2]);
+		log_info(log_kernel,"Ese numero de memoria no ha sido encontrada, la misma con numero: %s",	comandoSeparado[2]);
 	}
 
 }
