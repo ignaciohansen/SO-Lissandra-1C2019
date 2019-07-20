@@ -309,14 +309,16 @@ bool cargarConfiguracion() {
 				}
 
 		if (ok > 0) {
-			config_destroy(archivoCOnfig);
+//			config_destroy(archivoCOnfig);
 			imprimirVerde(logger,
 					"Se ha cargado todos los datos del archivo de configuracion");
+
+
 			//	log_info(logger, "Se ha cargado todos los datos del archivo de configuracion");
 			return true;
 
 		} else {
-			config_destroy(archivoCOnfig);
+//			config_destroy(archivoCOnfig);
 			imprimirError(logger,
 					"ERROR: No Se han cargado todos o algunos los datos del archivo de configuracion\n");
 			//		imprimirMensajeProceso("ERROR: No Se han cargado todos los datos del archivo de configuracion\n");
@@ -325,7 +327,7 @@ bool cargarConfiguracion() {
 
 	}
 	/*	archivoCOnfig es LOCAL por lo tanto se debe liberarse	*/
-	config_destroy(archivoCOnfig);
+//	config_destroy(archivoCOnfig);
 	/*
 	t_hash_element* siguienteELementoAELiminar;
 	while(archivoCOnfig->properties->elements[i] != NULL) {
@@ -362,9 +364,7 @@ void cargarBitmap() {
 
 //	bitmapPath = malloc(sizeof(char) * 50);
 	int tamanio = strlen(configFile->punto_montaje)+strlen(PATH_LFILESYSTEM_BITMAP)+1;
-	printf("HOLA\n");
 	bitmapPath = malloc(tamanio);
-	printf("HOLA22\n");
 	snprintf(bitmapPath, tamanio, "%s%s",configFile->punto_montaje, PATH_LFILESYSTEM_BITMAP);
 //	strcpy(bitmapPath, "");
 //	bitmapPath = string_new();	--COMENTADO PARA LIMPIAR LEAKS
