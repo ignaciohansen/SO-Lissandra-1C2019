@@ -26,11 +26,11 @@ C_DEPS += \
 %.o: ../%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C Compiler'
-<<<<<<< HEAD
+
 	gcc -Im -Ipthread -Icommons -Ireadline -O2 -g -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
-=======
-	gcc -O2 -g -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
->>>>>>> 10c7dc442d0451c54d3d19e119d0bbde224bbdee
+
+
+
 	@echo 'Finished building: $<'
 	@echo ' '
 
