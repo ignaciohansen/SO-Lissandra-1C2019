@@ -204,7 +204,8 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 		} else {
 			log_info(log_memoria, "[INSERT] Se encontro un segmento asociado a la tabla '%s'",
 					segmentoBuscado->path_tabla);
-			//EXISTE EL SEGMENTO, SOLO CREO LA TABLA Y LA PAGINA Y SE LA ASIGNO A LA COLA DE TABLA DE PAGINAS DE SEGMENTO
+			//EXISTE EL SEGMENTO, SOLO CREO LA TABLA Y LA PAGINA Y SE LA ASIGNO
+			//A LA COLA DE TABLA DE PAGINAS DE SEGMENTO
 
 			tabla_pagina_crear(keyBuscada, valorAPoner, estadoAPoner,
 					&ref, nombreTabla, true, segmentoBuscado, timestamp_val);
@@ -256,7 +257,9 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 		 * SE CREO PERFECTAMENTE, CONOSCO EL SEGMENTO Y LA PAGINA A REFERENCIAR, PROCEDO A MODIFICAR Y ACCEDER
 		 * A LA MEMORIA PARA LA MODIFICACION DE LOS CAMPOS
 		 */
-		log_info(log_memoria, "[INSERT A MODIFICAR] Existe el segmento '%s' y la pagina que referencia la key (%d) que es NRO '%d' Procedo a poner el nuevo valor que es '%s'",
+		log_info(log_memoria, "[INSERT A MODIFICAR] Existe el segmento '%s' y "
+				"la pagina que referencia la key (%d) que es NRO '%d'\nProcedo "
+				"a poner el nuevo valor que es '%s'",
 				segmentoBuscado->path_tabla, keyBuscada, posicionAIr, valorAPoner);
 		free(ref);
 
@@ -521,18 +524,6 @@ void liberar_config(void)
 	config_destroy(configFile);
 
 }
-
-
-/* FUNCIONES INTERNAS A LA BIBLIOTECA */
-
-/*timestamp_t  timestamp(void) {
-	struct timeval t;
-	gettimeofday(&t, NULL);
-	unsigned long long result = (((unsigned long long)t.tv_sec)*1000+((unsigned long long)t.tv_usec)/1000);
-	timestamp_t a = result;
-	return a;
-//	return (unsigned)time(NULL);
-}*/ // La moví a biblioteca
 
 void* accederYObtenerInfoDePaginaEnPosicion(int posicion, void* info){
 	log_info(log_memoria, "[ACCEDIENDO A DATOS] Por acceder a la memoria a la posicion '%d'", posicion);
@@ -1327,6 +1318,7 @@ void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo, 
 	mutexBloquear(&mutex_memoria);
 	pagina* aux = malloc(sizeof(pagina));
 //	char valorString[max_valor_key];
+
 	log_info(log_memoria, "[Modificar valores de pagina] Entrando");
 	memcpy(aux, bloque_memoria+posAIr*(sizeof(pagina)+max_valor_key), sizeof(pagina));
 //	printf("1 hecho\n");
@@ -1346,11 +1338,11 @@ void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo, 
 	actualizarTiempoUltimoAcceso(posAIr, true, true);
 
 	//strcpy(valorString, valorNuevo);
-
+/*
 	log_info(log_memoria,
 "[Modificar valor pagina] Pagina modificada con key '%d' VALORES NUEVOS;  TIMESTAMP '%ld'; VALOR '%s'",
 											aux->key, aux->timestamp, valorNuevo);
-
+*/
 	log_info(log_memoria,
 			"[MOdificar valor pagina] Guardando los datos actualizados la pagina con key: %d",
 			aux->key);
@@ -1358,9 +1350,11 @@ void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo, 
 
 //	printf("\n\nEN MODIFICACION NUEVO TIMESTAMP: %d - %ld\n\n", aux->key, aux->timestamp);
 
-
+	printf("\n\n asdasd \n\n");
 	memcpy(bloque_memoria+posAIr*(sizeof(pagina)+max_valor_key), aux, sizeof(pagina));
-	memcpy(bloque_memoria+posAIr*(sizeof(pagina)+max_valor_key)+sizeof(pagina)-1, valorNuevo, max_valor_key);
+	printf("\n\n POR AQUI \n\n");
+	memcpy(bloque_memoria+posAIr*(sizeof(pagina)+max_valor_key)+sizeof(pagina)-1, valorNuevo,
+			max_valor_key);
 	log_info(log_memoria,
 			"[MOdificar valor pagina] key: '%d', VALOR NUEVO: %s",
 			aux->key, valorNuevo);
@@ -1373,8 +1367,9 @@ void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo, 
 //	actualizarFlagDeLaKey(aux->key);
 
 	log_info(log_memoria,
-"[MOdificar valor tabla pagina] FLAG ACTUALIZADO EN MODIFICADO PARA LA TABLA DE LA KEY|NRO DE PAGINA: %d|%d",
-	aux->key, posAIr);
+			"[MOdificar valor tabla pagina] FLAG ACTUALIZADO EN MODIFICADO PARA LA TABLA "
+			"DE LA KEY|NRO DE PAGINA: %d|%d",
+			aux->key, posAIr);
 
 	log_info(log_memoria,
 			"[Modificar valor pagina] Se ham modificado el FLAG de la tabla KEY|NRO DE PAGINA: %d|%d",
@@ -1431,7 +1426,8 @@ void modificar_bloque_LRU(char* nombreTabla, timestamp_mem_t timestamp, int nroP
 		*/
 		/*printf("[MODIFICAR BLOQUE LRU] DATOS INGRESADOS: NOMBRE TABLA <%s>. NUMERO PAGINA: <%d>. TIMESTAMP: <%ld>. ESTADO PAGINA: <%d>.",
 				nombreDeTabla, nroPosicion, timestamp, estado);*/
-		log_info(log_memoria, "[MODIFICAR BLOQUE LRU] DATOS INGRESADOS: NOMBRE TABLA <%s>. NUMERO PAGINA: <%d>. TIMESTAMP: <%ld> ESTADO PAGINA: <%d>",
+		log_info(log_memoria, "[MODIFICAR BLOQUE LRU] DATOS INGRESADOS: NOMBRE TABLA <%s>. "
+				"NUMERO PAGINA: <%d>. TIMESTAMP: <%ld> ESTADO PAGINA: <%d>",
 				nombreDeTabla, nroPosicion, timestamp, estado);
 	//	free(nuevoNodo->nombreTabla);
 	} else {
