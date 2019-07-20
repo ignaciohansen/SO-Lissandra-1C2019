@@ -238,6 +238,7 @@ void* hilo_consola(int * socket_p){
 			case CREATE:
 			case DROP:
 			case JOURNALCOMANDO:
+				retardo_memoria();	//SIEMPRE TENDRAN 1 RETARNO AL ENTRAR UN NUEVO PEDIDO
 				respuesta = resolver_pedido(req,socket_lfs);
 				if(respuesta.tipo == RESP_OK){
 					if(respuesta.msg.tam > 0 && respuesta.msg.str != NULL)
@@ -401,6 +402,7 @@ void * hilo_cliente(hilo_cliente_args_t *args)
 	while(fin == false){
 		msg = recibir_mensaje(socket_cliente);
 		imprimirMensaje(log_memoria,"[CLIENTE] Recibí un mensaje");
+		retardo_memoria();	//SIEMPRE TENDRAN 1 RETARNO AL ENTRAR UN NUEVO PEDIDO
 		req_com_t request;
 		request_t req_parseado;
 		gos_com_t gossip;
@@ -414,11 +416,14 @@ void * hilo_cliente(hilo_cliente_args_t *args)
 				borrar_request_com(request);
 				respuesta = resolver_pedido(req_parseado,socket_lfs);
 				if(respuesta.tipo == RESP_OK)
-					imprimirMensaje1(log_memoria,"[CLIENTE] Pedido resuelto OK. La resupuesta obtenida para el pedido es %s",respuesta.msg.str);
+					imprimirMensaje1(log_memoria,"[CLIENTE] Pedido resuelto OK. "
+							"La resupuesta obtenida para el pedido es %s",respuesta.msg.str);
 				else
-					imprimirMensaje1(log_memoria,"[CLIENTE] Pedido no pudo ser resuelto. La resupuesta obtenida para el pedido es %s",respuesta.msg.str);
+					imprimirMensaje1(log_memoria,"[CLIENTE] Pedido no pudo ser resuelto. "
+							"La resupuesta obtenida para el pedido es %s",respuesta.msg.str);
 				if(enviar_respuesta(socket_cliente,respuesta) != -1) {
-					imprimirMensaje(log_memoria,"[CLIENTE] La resupuesta fue enviada con éxito al cliente");
+					imprimirMensaje(log_memoria,"[CLIENTE] La resupuesta fue enviada "
+							"con éxito al cliente");
 				}
 				else {
 					imprimirError(log_memoria,"[CLIENTE] La resupuesta no pudo ser enviada al cliente");
@@ -588,6 +593,7 @@ resp_com_t resolver_drop(int socket_lfs,request_t req)
 	borrar_request_com(enviar);
 	//Espero su respuesta
 	msg_com_t msg = recibir_mensaje(socket_lfs);
+	retardo_fs();
 	if(msg.tipo == RESPUESTA){
 		respuesta = procesar_respuesta(msg);
 		borrar_mensaje(msg);
@@ -829,6 +835,9 @@ resp_com_t resolver_select(int socket_lfs,request_t req)
 			char *aux;
 
 			msg = recibir_mensaje(socket_lfs);
+
+			retardo_fs();
+
 			imprimirMensaje(log_memoria,"[RESOLVIENDO SELECT] Recibi respuesta del lfs");
 			if(msg.tipo == RESPUESTA){
 				resp = procesar_respuesta(msg);
@@ -924,7 +933,7 @@ resp_com_t resolver_describe(int socket_lfs, request_t req)
 	a_enviar.tam = strlen(req.request_str)+1;
 	a_enviar.str = malloc(a_enviar.tam);
 	strcpy(a_enviar.str,req.request_str);
-	retardo_fs();
+
 	imprimirMensaje1(log_memoria, "[RESOLVIENDO DESCRIBE] Voy a enviar request a lfs: %s",a_enviar.str);
 	if(enviar_request(socket_lfs,a_enviar) == -1){
 		imprimirError(log_memoria,"[RESOLVIENDO DESCRIBE] Error al enviar el request");
@@ -936,6 +945,9 @@ resp_com_t resolver_describe(int socket_lfs, request_t req)
 	imprimirMensaje(log_memoria, "[RESOLVIENDO DESCRIBE] Request enviado. Esperando respuesta");
 
 	msg_com_t msg = recibir_mensaje(socket_lfs);
+
+	retardo_fs();
+
 	if(msg.tipo != RESPUESTA){
 		imprimirError(log_memoria,"[RESOLVIENDO DESCRIBE] El lfs no responde como se espera");
 		borrar_mensaje(msg);

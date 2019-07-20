@@ -147,7 +147,7 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 	log_info(log_memoria, "[INSERT] EN funcion INSERT");
 	if(strlen(valorAPoner)>=max_valor_key){
 		log_error(log_memoria, "[INSERT] El valor VALUE '%s' es mayor que el max value KEY\nMOTIVO: %d Mayor que %d",
-				valorAPoner, strlen(valorAPoner), max_valor_key);
+				valorAPoner, strlen(valorAPoner), max_valor_key-1);
 		return -1;
 	}
 
