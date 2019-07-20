@@ -2,13 +2,16 @@
 # Automatically-generated file. Do not edit!
 ################################################################################
 
+OBJ_SRCS := 
+ASM_SRCS := 
+C_SRCS := 
+O_SRCS := 
+S_UPPER_SRCS := 
+EXECUTABLES := 
+OBJS := 
+C_DEPS := 
 
-USER_OBJS := /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/Biblioteca/src/Biblioteca.c
-
-LIBS := -lreadline -lcommons -lm -lpthread
-
-
-
-
-
+# Every subdirectory with source files must be described here
+SUBDIRS := \
+. \
 

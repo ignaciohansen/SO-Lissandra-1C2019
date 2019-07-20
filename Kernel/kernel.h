@@ -28,7 +28,7 @@
 #include <commons/collections/queue.h>
 #include <commons/collections/list.h>
 // BICLIOTECA
-#include "../Biblioteca/src/Biblioteca.c"
+//#include "../Biblioteca/src/Biblioteca.c"
 #include "../Biblioteca/src/Biblioteca.h"
 // READLINE
 #include <readline/readline.h>
@@ -39,7 +39,7 @@
 
 //GOSSIPING
 #include "../Biblioteca/src/Gossiping.h"
-#include "../Biblioteca/src/Gossiping.c"
+//#include "../Biblioteca/src/Gossiping.c"
 
 #define PATH_KERNEL_CONFIG "../Config/KERNEL.txt"
 #define LOG_PATH "../Log/LOG_KERNEL.txt"
@@ -118,7 +118,7 @@ const char* comandosPermitidos[] = { "SELECT", "INSERT", "CREATE", "DESCRIBE",
 
 };
 
-enum comandos{
+enum comandos2{
 	SELECT = 0,
 	INSERT,
 	CREATE,

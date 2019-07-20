@@ -4,33 +4,35 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../InotifyLFS.c \
-../LissandraFileSystem.c \
-../lfsComunicacion.c \
-../parser.c 
+../Inotify.c \
+../gestionMemoria.c \
+../main_memoria.c \
+../memoria.c \
+../parser.c \
+../retardos.c 
 
 OBJS += \
-./InotifyLFS.o \
-./LissandraFileSystem.o \
-./lfsComunicacion.o \
-./parser.o 
+./Inotify.o \
+./gestionMemoria.o \
+./main_memoria.o \
+./memoria.o \
+./parser.o \
+./retardos.o 
 
 C_DEPS += \
-./InotifyLFS.d \
-./LissandraFileSystem.d \
-./lfsComunicacion.d \
-./parser.d 
+./Inotify.d \
+./gestionMemoria.d \
+./main_memoria.d \
+./memoria.d \
+./parser.d \
+./retardos.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
 %.o: ../%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C Compiler'
-
-	gcc -Im -Ipthread -Icommons -Ireadline -O2 -g -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
-
-
-
+	gcc -O2 -g -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
