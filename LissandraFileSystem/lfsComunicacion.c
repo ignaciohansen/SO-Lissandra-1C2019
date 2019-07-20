@@ -256,8 +256,7 @@ resp_com_t resolver_create(request_t req) {
 		char *consistencia = req.args[1];
 		char *particiones = req.args[2];
 		char *tiempoCompactacion = req.args[3];
-		ret_val = comandoCreate(nombre_tabla, consistencia, particiones,
-				tiempoCompactacion);
+		ret_val = comandoCreate(nombre_tabla, consistencia, particiones,tiempoCompactacion);
 		if (ret_val == -2) {
 			return armar_respuesta(RESP_ERROR_TABLA_NO_EXISTE, NULL);
 		} else if (ret_val == -1) {

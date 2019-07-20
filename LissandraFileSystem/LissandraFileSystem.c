@@ -1416,7 +1416,7 @@ char* retornarValoresDirectorio() {
 				encontreAlgoEnDirectorio = true;
 				free(metadata->consistency);
 				free(metadata);
-				free(resultado);
+//				free(resultado); //NO AGREGAR XFA
 			}
 
 		}
@@ -1431,14 +1431,15 @@ char* retornarValoresDirectorio() {
 //			log_info(logger, "[DEBUG] Entré al for");
 			char* elemento = list_get(lista_describes, i);
 			string_append(&resultadoFinal, elemento);
-			string_append(&resultadoFinal, "|");
+			if(i < list_size(lista_describes)-1)
+				string_append(&resultadoFinal, "|");
 		}
-		char *aux = stringTomarDesdeInicio(resultadoFinal,strlen(resultadoFinal) - 1);
-		free(resultadoFinal);
-		resultadoFinal = aux;
+		//char *aux = stringTomarDesdeInicio(resultadoFinal,strlen(resultadoFinal) - 1);
+		//free(resultadoFinal);
+		//resultadoFinal = aux;
 
 	}
-	if (lista_describes->elements_count > 0) {
+	/*if (lista_describes->elements_count > 0) {
 		t_link_element * aux;
 		while (lista_describes->head != NULL) {
 			aux = lista_describes->head->next;
@@ -1446,7 +1447,7 @@ char* retornarValoresDirectorio() {
 			lista_describes->head = aux;
 		}
 	}
-	free(lista_describes);
+	free(lista_describes);*/
 
 //	list_destroy_and_destroy_elements(lista_describes,free);
 	/*t_link_element* elemento;
@@ -3338,9 +3339,6 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 				free(archivoParticion);
 				fclose(particion);
 
-				free(lineaParticion);	//AGREGADO PARA LIMPIAR LEAKS
-				free(archivoParticion);	//AGREGADO PARA LIMPIAR LEAKS
-
 			}
 			pthread_t *hilo = malloc(sizeof(pthread_t));
 			args_compactacion_t *args = malloc(sizeof(args_compactacion_t));
@@ -3852,7 +3850,7 @@ void cerrarTodo() {
 	list_destroy_and_destroy_elements(listaTablasInsertadas,free);
 	fclose(archivoBitmap);
 	dictionary_destroy_and_destroy_elements(dicSemTablas,free);
-	dictionary_destroy_and_destroy_elements(dicHilosCompactacion,matarYBorrarHilos);
+	dictionary_destroy_and_destroy_elements(dicHilosCompactacion,(void*)matarYBorrarHilos);
 }
 
 void matarYBorrarHilos(pthread_t *thread)
