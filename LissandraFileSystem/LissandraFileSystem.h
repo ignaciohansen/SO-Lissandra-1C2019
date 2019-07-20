@@ -256,7 +256,19 @@ int abrirArchivoBloque(FILE **fp, int nroBloque, char *modo);
  *--------------------------------------------------------------------------------------------
  */
 
+
+typedef struct{
+	uint64_t retardo;
+	char *tabla;
+}args_compactacion_t;
+
+t_dictionary* dicHilosCompactacion;
+
+t_list *obtenerTablas(void);
+void iniciarSemaforosCompactacion(void);
+void *correrCompactacion(args_compactacion_t *args);
 t_datos_particion *obtenerDatosParticion(char *path_particion);
+void matarYBorrarHilos(pthread_t *thread);
 int compactarTabla(char *tabla);
 int guardarRegistrosParticion(char *path_tabla, int particion, t_list *registros_list);
 void liberarBloquesDeArchivo(char *path_tabla, char *extension);
