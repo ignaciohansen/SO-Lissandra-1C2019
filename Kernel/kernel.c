@@ -686,9 +686,11 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 								"Llego un mensaje de tipo RESPUESTA");
 
 						resp_com_t respuesta = procesar_respuesta(msg);
+						borrar_mensaje(msg);
 						if (respuesta.tipo == RESP_OK) {
-							printf("La respuesta fue correcta %d: \n",
-									respuesta.tipo);
+							printf("La respuesta fue correcta %d \n",respuesta.tipo);
+							if(respuesta.msg.str != NULL)
+								printf("Respuesta recibida %s\n",respuesta.msg.str);
 							log_info(log_kernel,
 									"La respuesta fue correcta luego de procesarla");
 						} else {
@@ -822,6 +824,8 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 						if (respuesta.tipo == RESP_OK) {
 							printf("La respuesta fue correcta %d: \n",
 									respuesta.tipo);
+							if(respuesta.msg.tam >0)
+									printf("Respuesta recibida %s: \n",respuesta.msg.str);
 							log_info(log_kernel,
 									"La respuesta fue correcta luego de procesarla");
 						} else {
@@ -920,6 +924,8 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 				if (respuesta.tipo == RESP_OK) {
 							printf("La respuesta fue correcta: %d \n",respuesta.tipo);
 							log_info(log_kernel,"La respuesta fue correcta luego de procesarla");
+							if(respuesta.msg.tam >0)
+									printf("Respuesta recibida %s: \n",respuesta.msg.str);
 				} else {
 							printf("La respuesta no fue correcta, Llegó: %d\n",respuesta.tipo);
 							log_info(log_kernel,"La respuesta no fue correcta luego de procesarla, llegó: %d",respuesta.tipo);
@@ -1116,7 +1122,7 @@ void comandoJournal(char** comandoSeparado) {
 
 	for (int i = 0; i < list_size(lista_memorias); i++) {
 
-		aux = list_get(g_lista_seeds, i);
+		aux = list_get(lista_memorias, i);
 
 		socket_CMemoria = conectar_a_memoria(aux->ip, aux->puerto);
 
@@ -1139,6 +1145,8 @@ void comandoJournal(char** comandoSeparado) {
 			resp_com_t respuesta = procesar_respuesta(msg);
 			if (respuesta.tipo == RESP_OK) {
 				printf("La respuesta fue correcta %d: ", respuesta.tipo);
+				if(respuesta.msg.tam >0)
+													printf("Respuesta recibida %s: \n",respuesta.msg.str);
 				log_info(log_kernel,
 						"La respuesta fue correcta luego de procesarla");
 			} else {

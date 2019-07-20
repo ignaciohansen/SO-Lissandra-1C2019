@@ -592,7 +592,7 @@ resp_com_t resolver_drop(int socket_lfs,request_t req)
 	borrar_request_com(enviar);
 	//Espero su respuesta
 	msg_com_t msg = recibir_mensaje(socket_lfs);
-	retardo_fs();
+//	retardo_fs();
 	if(msg.tipo == RESPUESTA){
 		respuesta = procesar_respuesta(msg);
 		borrar_mensaje(msg);
@@ -835,7 +835,7 @@ resp_com_t resolver_select(int socket_lfs,request_t req)
 
 			msg = recibir_mensaje(socket_lfs);
 
-			retardo_fs();
+//			retardo_fs();
 
 			imprimirMensaje(log_memoria,"[RESOLVIENDO SELECT] Recibi respuesta del lfs");
 			if(msg.tipo == RESPUESTA){

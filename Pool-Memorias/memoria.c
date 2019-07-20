@@ -1039,19 +1039,6 @@ void cargarConfiguracion(char *path_config) {
 			log_error(log_memoria, "[ERROR] NO HAY NUMERO DE MEMORIA CONFIGURADO");
 		} // MEMORY NUMBER
 
-		if (config_has_property(configFile, "MAX_VAL_KEY")) {
-
-		arc_config->max_value_key = config_get_int_value(configFile,
-				"MAX_VAL_KEY");
-		log_info(log_memoria, "[CONFIGURANDO MODULO] MAXIMO TAM PARA KEY: %d",
-					arc_config->max_value_key);
-
-		} else {
-			arc_config->max_value_key = 10;
-			log_error(log_memoria, "[ERROR] NO HAY TAMANIO MAXIMO PARA LA KEY. SETEANDO POR DEFAULT: 10");
-		} // MEMORY NUMBER
-
-
 	} else {
 
 		log_error(log_memoria,
@@ -1211,7 +1198,7 @@ int pasarValoresALisandra(datosJournal* datos,int socket_lfs)
 
 		//Espero su respuesta
 		msg_com_t msg = recibir_mensaje(socket_lfs);
-		retardo_fs();
+//		retardo_fs();
 		if(msg.tipo == RESPUESTA){
 			resp_com_t recibido = procesar_respuesta(msg);
 			borrar_mensaje(msg);
