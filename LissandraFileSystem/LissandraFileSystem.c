@@ -766,8 +766,9 @@ void validarComando(char** comando, int tamanio) {
 
 			strcpy(mensaje, comando[1]);
 
-			comandoDescribeEspecifico(comando[1]);
-
+			char* valorALiberar = comandoDescribeEspecifico(comando[1]);
+			free(mensaje);
+			free(valorALiberar);
 			//log_info(logger, "En mensaje ya tengo: %s y es de tamanio: %d",mensaje, string_length(mensaje));
 
 			//log_info(logger, "Por llamar a enviarMensaje");
@@ -1096,6 +1097,7 @@ t_metadata_tabla* obtenerMetadataTabla(char* tabla) {
 	//log_info(logger, "[obtenerMetadata] (-) metadata a abrir : %s",tablaAverificar);
 
 	if(result == -1){
+		free(metadataTabla->consistency);
 		free(metadataTabla);
 		return NULL;
 	}
@@ -1272,7 +1274,9 @@ char* retornarValoresDirectorio() {
 				log_info(logger, "tamanio malloc es %d", memoriaParaMalloc);
 				list_add(lista_describes, resultado);
 				encontreAlgoEnDirectorio = true;
+				free(metadata->consistency);
 				free(metadata);
+				free(resultado);
 			}
 
 		}
@@ -1309,8 +1313,9 @@ char* retornarValoresDirectorio() {
 		free(lista_describes->head);
 		lista_describes->head = elemento;
 	}
-	if(resultado != NULL)
+/*	if(resultado != NULL) {
 		free(resultado);
+	}*/
 	free(lista_describes);
 	free(pathTabla);
 	closedir(dir);
@@ -2439,7 +2444,9 @@ void eliminarTablaCompleta(char* tabla) {
 				log_info(logger, "No se pudo eliminar el archivo\n");
 
 			}
+			free(archivoParticion);
 		}
+		free(metadata->consistency);
 		free(metadata);
 
 	}
@@ -3147,6 +3154,7 @@ char* comandoDescribeEspecifico(char* tabla) {
 		metadata = obtenerMetadataTabla(tabla);
 		if(metadata != NULL){
 			char* resultado = retornarValores(tabla, metadata);
+			free(metadata->consistency);
 			free(metadata);
 			log_info(logger, "resultado describe %s", resultado);
 			return resultado;
