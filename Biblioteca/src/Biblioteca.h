@@ -79,6 +79,7 @@ typedef t_log* ArchivoLog;
 typedef t_log_level NivelLog;
 typedef sem_t Semaforo;
 typedef pthread_mutex_t Mutex;
+typedef pthread_rwlock_t RWlock;
 typedef pthread_t Hilo;
 typedef t_list* Lista;
 typedef FILE* File;
@@ -261,6 +262,13 @@ void mutexIniciar(Mutex* mutex);
 void mutexBloquear(Mutex* mutex);
 void mutexDesbloquear(Mutex* mutex);
 
+//--------------------------------------- Funciones para RWLock -------------------------------------
+
+void rwLockIniciar(RWlock* rwLock);
+void rwLockLeer(RWlock* rwLock);
+void rwLockEscribir(RWlock* rwLock);
+void rwLockDesbloquear(RWlock* rwLock);
+
 //--------------------------------------- Funciones para Hilo -------------------------------------
 
 void hiloCrear(Hilo* hilo, void*(*funcionHilo)(void*), void* parametroHilo);
@@ -392,6 +400,7 @@ typedef enum
 typedef enum{
 	RESP_OK, //Cualquier pedido
 	RESP_ERROR_TABLA_NO_EXISTE, //SELECT-DROP
+	RESP_ERROR_NO_HAY_TABLAS,
 	RESP_ERROR_KEY_NO_EXISTE, //SELECT
 	RESP_ERROR_MEM_FULL, //SELECT-INSERT
 	RESP_ERROR_GENERAL,

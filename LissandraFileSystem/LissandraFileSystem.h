@@ -5,6 +5,8 @@
 #include <commons/collections/list.h>
 #include <commons/collections/dictionary.h>
 #include <commons/bitarray.h>
+#include "InotifyLFS.h"
+#include "lfsComunicacion.h"
 
 //Agregadas para directorio
 #include <stdlib.h>
@@ -75,7 +77,7 @@ int socketEscuchaMemoria, conexionEntrante, recibiendoMensaje;
 void LisandraSetUP();
 bool cargarConfiguracion();
 void iniciaabrirServidorLissandra();
-
+void atenderRequest(char* linea);
 
 /*--------------------------------------------------------------------------------------------
  * 									Elementos de consola
@@ -84,7 +86,6 @@ void iniciaabrirServidorLissandra();
 
 #define MAXSIZE_COMANDO 200
 //enum {Select, insert, create, describe, drop, salir};
-char* linea;
 char* tabla_Path;
 void consola();
 void menu();
@@ -170,7 +171,12 @@ t_list* listaRegistrosTabla;
  *--------------------------------------------------------------------------------------------
  */
 
+typedef struct{
+	RWlock rwLockTabla; //*?
+	Mutex drop_mx;
+}t_sems_tabla;
 
+t_dictionary* dicSemTablas;
 
 t_registroMemtable* comandoSelect(char* tabla, char* key);
 int comandoInsertSinTimestamp(char* tabla,char* key,char* value);
@@ -250,7 +256,19 @@ int abrirArchivoBloque(FILE **fp, int nroBloque, char *modo);
  *--------------------------------------------------------------------------------------------
  */
 
+
+typedef struct{
+	uint64_t retardo;
+	char *tabla;
+}args_compactacion_t;
+
+t_dictionary* dicHilosCompactacion;
+
+t_list *obtenerTablas(void);
+void iniciarSemaforosCompactacion(void);
+void *correrCompactacion(args_compactacion_t *args);
 t_datos_particion *obtenerDatosParticion(char *path_particion);
+void matarYBorrarHilos(pthread_t *thread);
 int compactarTabla(char *tabla);
 int guardarRegistrosParticion(char *path_tabla, int particion, t_list *registros_list);
 void liberarBloquesDeArchivo(char *path_tabla, char *extension);
@@ -320,5 +338,9 @@ char* rutaParticion(char* tabla, int particion);
 t_registroMemtable *crearCopiaRegistro(t_registroMemtable *origen);
 
 void borrarRegistro(t_registroMemtable *reg);
+
+void vaciarMemtable(void);
+
+void borrarListaMemtable(t_list *lista);
 
 #endif /* LFILESSYSTEM_H_ */

@@ -211,6 +211,7 @@ resp_com_t resolver_pedido(request_t req) {
 
 resp_com_t resolver_describe(request_t req) {
 	char *ret_val;
+	resp_com_t respuesta;
 	imprimirMensaje(logger, "[RESOLVIENDO DESCRIBE] Entro a función");
 
 	if (req.cant_args == 1) {
@@ -219,14 +220,22 @@ resp_com_t resolver_describe(request_t req) {
 		if (ret_val == NULL) {
 			return armar_respuesta(RESP_ERROR_TABLA_NO_EXISTE, ret_val);
 		} else {
-			return armar_respuesta(RESP_OK, ret_val);
+			respuesta = armar_respuesta(RESP_OK, ret_val);
+			free(ret_val);
+			return respuesta;
 		}
 	}
 
 	else if (req.cant_args == 0) {
 		ret_val = comandoDescribe();
-
-		return armar_respuesta(RESP_OK, ret_val);
+		if(ret_val == NULL){
+			return armar_respuesta(RESP_ERROR_NO_HAY_TABLAS, ret_val);
+		}
+		else{
+			respuesta = armar_respuesta(RESP_OK, ret_val);
+			free(ret_val);
+			return respuesta;
+		}
 
 	}
 
@@ -298,6 +307,7 @@ resp_com_t resolver_select(request_t req) {
 	if (req.cant_args == 2) {
 		char *nombre_tabla = req.args[0];
 		char *key = req.args[1];
+		//string_to_upper(nombre_tabla);
 		ret_val = comandoSelect(nombre_tabla,key);
 
 		if (ret_val->value == NULL) {
@@ -309,7 +319,7 @@ resp_com_t resolver_select(request_t req) {
 		}
 		int tamanio = strlen(ret_val->value)+40;
 		char* valueRetorno = malloc(tamanio);
-		snprintf(valueRetorno,tamanio, "%s|%ld", ret_val->value,ret_val->timestamp); // value|timestamp
+		snprintf(valueRetorno,tamanio, "%s|%llu", ret_val->value,ret_val->timestamp); // value|timestamp
 		return armar_respuesta(RESP_OK, valueRetorno);
 
 	}
