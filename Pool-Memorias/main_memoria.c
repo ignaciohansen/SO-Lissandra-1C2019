@@ -162,6 +162,7 @@ int conectar_a_lfs(bool inicializando, int *tam_valor)
 	snprintf(puerto_fs,19,"%d",arc_config->puerto_fs);
 	imprimirMensaje2(log_memoria,"[CONECTANDO A LFS] Me voy a intentar conectar a ip: <%s> puerto: <%s>", arc_config->ip_fs, puerto_fs);
 	int socket = conectar_a_servidor(arc_config->ip_fs,puerto_fs,memoria);
+	printf("\nOBTUVE RESPUESTA\n\n\n");
 	if(socket == -1){
 		imprimirError(log_memoria,"[CONECTANDO A LFS] No fue posible conectarse con lissandra. TERMINANDO\n");
 		return -1;

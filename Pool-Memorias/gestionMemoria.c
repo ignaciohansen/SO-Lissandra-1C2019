@@ -590,9 +590,16 @@ void asignarNuevaPaginaALaPosicion(
 				pagNew->nroPosicion, pagNew->key, valorString, pagNew->timestamp,
 				pagina_nueva->key, valorAPoner,pagina_nueva->timestamp);
 */
-	log_info(log_memoria,"[asignarNuevaTablaAPosicionLibre]POSICION %d\nVALORES PUESTOS en bl: KEY|VALUE|TIMESTAMP %d|%s|%ld\nVALORES PUESTOS: KEY|VALUE|TIMESTAMP %d|%s|%f\n",
+	/*
+	log_info(log_memoria,"[asignarNuevaTablaAPosicionLibre]POSICION %d\n"
+			"VALORES PUESTOS en bl: KEY|VALUE|TIMESTAMP %d|%s|%ld\n"
+			"VALORES PUESTOS: KEY|VALUE|TIMESTAMP %d|%s|%ld\n",
 			pagNew->nroPosicion, pagNew->key, valorString, pagNew->timestamp,
 			pagina_nueva->key, valorAPoner,pagina_nueva->timestamp);
+			*/
+	log_info(log_memoria,"[asignarNuevaTablaAPosicionLibre]POSICION %d\n"
+				"VALORES PUESTOS en bl: KEY|VALUE|TIMESTAMP %d|%s|%ld\n",
+				pagNew->nroPosicion, pagNew->key, valorString, pagNew->timestamp);
 	free(pagNew);
 	free(pagina_nueva);
 	mutexDesbloquear(&mutex_bitmap);
@@ -1402,7 +1409,8 @@ void modificar_bloque_LRU(char* nombreTabla, timestamp_mem_t timestamp, int nroP
 			memcpy(bloque_LRU+nroPosicion*desplazamiento+sizeof(nodoLRU), nombreTabla,
 					strlen(nombreTabla)+1);
 		}
-		memcpy(nombreDeTabla, bloque_LRU+nroPosicion*desplazamiento+sizeof(nodoLRU),tamanioPredefinidoParaNombreTabla);
+		memcpy(nombreDeTabla, bloque_LRU+nroPosicion*desplazamiento+sizeof(nodoLRU),
+				tamanioPredefinidoParaNombreTabla);
 		if(verificarSiEstaFUll()){
 			imprimirAviso(log_memoria,
 					"******"
@@ -1438,8 +1446,9 @@ void modificar_bloque_LRU(char* nombreTabla, timestamp_mem_t timestamp, int nroP
 		}
 		*/
 
-		memcpy(bloque_LRU+nroPosicion*desplazamiento, nuevoNodo, sizeof(nodoLRU));
-		log_info(log_memoria,"[MODIFICAR LRU] DATOS INGRESADOS: NOMBRE TABLA <%s>. NUMERO PAGINA: <%d>. TIMESTAMP: <%ld>. ESTADO PAGINA: <%d>",
+		memcpy(bloque_LRU+nroPosicion*desplazamiento, nuevoNodo, sizeof(nodoLRU)-1);
+		log_info(log_memoria,"[MODIFICAR LRU] DATOS INGRESADOS: NOMBRE TABLA <%s>."
+				" NUMERO PAGINA: <%d>. TIMESTAMP: <%ld>. ESTADO PAGINA: <%d>",
 				nombreDeTabla, nroPosicion, timestamp, estado);
 		log_info(log_memoria, "[MODIFICAR BLOQUE LRU] DATOS ACTUALIZADOS DE LA POSICION: <%d>",
 				nroPosicion);

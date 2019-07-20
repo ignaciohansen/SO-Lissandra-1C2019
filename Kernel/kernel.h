@@ -136,6 +136,7 @@ pthread_mutex_t mutexColaNuevos;
 pthread_mutex_t mutexColaListos;
 pthread_mutex_t mutexColaExit;
 pthread_mutex_t mutexColaEjecucion;
+pthread_mutex_t mutex_retardos_kernel;
 sem_t s_Multiprocesamiento;
 
 t_list* colaNuevos;
@@ -194,8 +195,7 @@ const char* criterios[] = { "SC", "SHC", "EC"};
 int buscarCriterio(char* criterio);
 void actualizarMemoriasDisponibles();
 void gossiping_Kernel();
-int buscarMemoria(char** pruebaPath);
-seed_com_t* buscarMemoria2(char** pruebaPath);
+seed_com_t* buscarMemoria(char** pruebaPath);
 
 //
 void  cargarConfiguracion();
@@ -203,6 +203,7 @@ int   conexionKernel();
 int conexionAMemoria(char ip[LARGO_IP], char puerto[LARGO_PUERTO]);
 
 // RED
+int conectar_a_memoria(char ip[LARGO_IP], char puerto[LARGO_PUERTO]);
 int   enviarComando(char** comando,t_log* logger);
 int   enviarMensaje(int comando, int tamanio,char* mensaje, t_log* logger);
 void  armarMensajeBody(int tamanio,char* mensaje,char** comando);
@@ -217,4 +218,25 @@ void  validarComando(char** comandoSeparado,int tamanio,t_log* logger);
 void comandoAdd(char** comandoSeparado);
 void comandoJournal(char** comandoSeparado);
 void comandoMetrics();
+void recargarConfiguracion(char* path_config);
+
+//Inotify para parametros de configuracion que cambian durante ejecucion
+#include <sys/inotify.h>
+
+//void inotifyAutomatico(char* pathDelArchivoAEscuchar);
+
+// El tamaño de un evento es igual al tamaño de la estructura de inotify
+// mas el tamaño maximo de nombre de archivo que nosotros soportemos
+// en este caso el tamaño de nombre maximo que vamos a manejar es de 24
+// caracteres. Esto es porque la estructura inotify_event tiene un array
+// sin dimension ( Ver C-Talks I - ANSI C ).
+#define EVENT_SIZE  ( sizeof (struct inotify_event) + 24 )
+
+// El tamaño del buffer es igual a la cantidad maxima de eventos simultaneos
+// que quiero manejar por el tamaño de cada uno de los eventos. En este caso
+// Puedo manejar hasta 1024 eventos simultaneos.
+#define BUF_LEN     ( 1024 * EVENT_SIZE )
+
+void inotifyAutomatico(char* pathDelArchivoAEscuchar);
+
 #endif /* KERNEL_H_ */

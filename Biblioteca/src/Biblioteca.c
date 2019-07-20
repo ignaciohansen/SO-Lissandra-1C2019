@@ -1528,6 +1528,7 @@ int conectar_a_servidor(char *ip,char *puerto, id_com_t id)
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
 
+	printf("\nIP: %s\nPUERTO: %s", ip, puerto);
 	getaddrinfo(ip, puerto, &hints, &server_info);
 
 	int socket_cliente = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);

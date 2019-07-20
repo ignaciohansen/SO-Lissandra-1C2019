@@ -42,17 +42,8 @@ int main() {
 
 	LisandraSetUP(); // CONFIGURACION Y SETEO SOCKET
 
-	/*				PRUEBA MAYOR TIMESTAMP ENTRE 4 REGISTROS
-
-	 t_registroMemtable* reg;
-	 reg = pruebaRegMayorTime();
-	 return 0;
-	 */
-
 	cargarBitmap();
 
-	/*compactarTabla("COLORES");
-	 return 1;*/
 	char* puertoString = malloc(LARGO_PUERTO);
 	snprintf(puertoString, LARGO_PUERTO, "%d", configFile->puerto_escucha);
 	int socketLFS = iniciar_servidor(configFile->ip, puertoString); // AGREGAR IP A ARCHIV CONFIG @martin
@@ -912,8 +903,9 @@ void validarComando(char** comando, int tamanio) {
 
 			strcpy(mensaje, comando[1]);
 
-			comandoDescribeEspecifico(comando[1]);
-
+			char* valorALiberar = comandoDescribeEspecifico(comando[1]);
+			free(mensaje);
+			free(valorALiberar);
 			//log_info(logger, "En mensaje ya tengo: %s y es de tamanio: %d",mensaje, string_length(mensaje));
 
 			//log_info(logger, "Por llamar a enviarMensaje");
@@ -1424,6 +1416,7 @@ char* retornarValoresDirectorio() {
 				encontreAlgoEnDirectorio = true;
 				free(metadata->consistency);
 				free(metadata);
+				free(resultado);
 			}
 
 		}
@@ -1465,6 +1458,7 @@ char* retornarValoresDirectorio() {
 	}*/
 	if (resultado != NULL)
 		free(resultado);
+
 	free(pathTabla);
 	closedir(dir);
 	return resultadoFinal;
