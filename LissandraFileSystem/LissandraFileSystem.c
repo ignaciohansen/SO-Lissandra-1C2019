@@ -111,6 +111,14 @@ void LisandraSetUP() {
 
 	log_info(logger, "la configuracion y la metadata se levantaron ok");
 
+
+	if(!existeDirectorio(tabla_Path)){
+		if(mkdir(tabla_Path,0777)==-1){
+			log_info(logger,"NO SE PUDO CREAR LA CARPETA PARA LAS TABLAS %s",tabla_Path);
+			exit(-1);
+		}
+	}
+
 	memtable = dictionary_create();
 	dicSemTablas = dictionary_create();
 	dicHilosCompactacion = dictionary_create();
@@ -119,6 +127,22 @@ void LisandraSetUP() {
 
 	iniciarSemaforosCompactacion();
 }
+
+bool existeDirectorio(char *path)
+{
+	DIR* dir = opendir(path);
+	if (dir) {
+	    /* Directory exists. */
+	    closedir(dir);
+	    return true;
+	} else if (ENOENT == errno) {
+	    /* Directory does not exist. */
+	} else {
+	    /* opendir() failed for some other reason. */
+	}
+	return false;
+}
+
 /*
  int abrirServidorLissandra() {
  return 1;
@@ -453,7 +477,7 @@ int abrirBitmap() {
 		log_error(logger, "Error en el fstat\n");
 		close(bitmap);
 	}
-//	log_info(logger,"Sin error");
+	log_info(logger,"Sin error");
 	char *bmap;
 	bmap = mmap(NULL, mystat.st_size, PROT_WRITE | PROT_READ, MAP_SHARED,
 			bitmap, 0);
@@ -1065,6 +1089,7 @@ int verificarTabla(char *tabla) {
 			"[VERIFICADO] La direccion de la tabla que se quiere verificar es: %s",
 			path);
 	file = fopen(path, "r");
+	log_info(logger,"Hizo open");
 	free(path);
 
 	if (file == NULL) {
@@ -1847,6 +1872,16 @@ int escribirBloque(int bloque, int size, int offset, void* buffer) {
 void crearBloques() {
 
 	int tamanio = strlen(configFile->punto_montaje) + strlen(PATH_BLOQUES) + 30;
+	char *pathBloqueDir = malloc(tamanio);
+	snprintf(pathBloqueDir, tamanio, "%s%s",configFile->punto_montaje, PATH_BLOQUES);
+	if(!existeDirectorio(pathBloqueDir)){
+		if(mkdir(pathBloqueDir,0777)==-1){
+			log_error(logger,"ERROR AL CREAR EL DIRECTORIO DE BLOQUES %s",pathBloqueDir);
+			free(pathBloqueDir);
+			exit(-1);
+		}
+	}
+	free(pathBloqueDir);
 	char* pathBloque = malloc(tamanio);
 	log_info(logger, "Voy a crear los bloques");
 	for (int i = 0; i < metadataLFS->blocks; i++) {
@@ -2608,9 +2643,9 @@ void eliminarTablaCompleta(char* tabla) {
 				log_info(logger, "No se pudo eliminar el archivo\n");
 
 			}
-			free(archivoParticion);
+//			free(archivoParticion);
 		}
-		free(metadata->consistency);
+//		free(metadata->consistency);
 		free(metadata);
 
 	}
@@ -3076,15 +3111,18 @@ void iniciarSemaforosCompactacion(void)
 		dictionary_put(dicSemTablas,copia,sems_tabla);
 
 		log_info(logger,"Iniciando hilo compactación tabla %s",nombre);
-		pthread_t *hilo = malloc(sizeof(pthread_t));
+		pthread_t hilo;// = malloc(sizeof(pthread_t));
 		args_compactacion_t *args = malloc(sizeof(args_compactacion_t));
 		args->retardo = tiempoCompactacion;
 		args->tabla = malloc(strlen(nombre)+1);
 		strcpy(args->tabla,nombre);
-		pthread_create(hilo,NULL,(void*)correrCompactacion,args);
+		pthread_create(&hilo,NULL,(void*)correrCompactacion,args);
+		pthread_t *hilo_copia = malloc(sizeof(pthread_t));
+		memcpy(hilo_copia,&hilo, sizeof(pthread_t));
+//		pthread_detach(hilo);
 		char *copia2 = malloc(strlen(nombre)+1);
 		strcpy(copia2,nombre);
-		dictionary_put(dicHilosCompactacion,copia2,hilo);
+		dictionary_put(dicHilosCompactacion,copia2,hilo_copia);
 
 		free(metadata->consistency);
 		free(metadata);
@@ -3195,29 +3233,59 @@ int comandoDrop(char* tabla) {
 	int retornoVerificar = verificarTabla(tabla);
 	if (retornoVerificar == 0) {
 
+		log_info(logger,"[DEBUG] arranco");
+		log_info(logger,"[DEBUG] tabla %s",tabla);
 		semsTabla = dictionary_get(dicSemTablas, tabla);
+		log_info(logger,"[DEBUG] 1");
 		if(semsTabla == NULL){
 			log_info(logger,"[DEBUG] es null");
 		}
+		log_info(logger,"[DEBUG] 2");
 		mutexBloquear(&(semsTabla->drop_mx));
 		rwLockEscribir(&(semsTabla->rwLockTabla));
-
+		log_info(logger,"[DEBUG] 3");
 		pthread_t *hiloCompactacion = dictionary_get(dicHilosCompactacion,tabla);
-		pthread_kill(*hiloCompactacion, SIGKILL);
-		dictionary_remove_and_destroy(dicHilosCompactacion,tabla,free);
+		log_info(logger,"[DEBUG] 4");
 
+//		pthread_kill(*hiloCompactacion, SIGKILL);
+		log_info(logger,"[DEBUG] pase kill");
+//		dictionary_remove_and_destroy(dicHilosCompactacion,tabla,free);
+		dictionary_remove(dicHilosCompactacion,tabla);
+		log_info(logger,"[DEBUG] voy a armar path");
 
 		char*path = armarPathTabla(tabla);
 		log_info(logger, "Vamos a eliminar la tabla: %s", path);
 		free(path);
 
+		mutexBloquear(&memtable_mx);
+		t_list *lista_reg = dictionary_get(memtable,tabla);
+		dictionary_remove(memtable,tabla);
+		mutexDesbloquear(&memtable_mx);
+		if (lista_reg != NULL)
+			list_destroy_and_destroy_elements(lista_reg,(void*)borrarRegistro);
+
+		mutexBloquear(&listaTablasInsertadas_mx);
+		for(int i=0; i<list_size(listaTablasInsertadas);i++){
+			char *tablaBorrar = list_get(listaTablasInsertadas,i);
+			if(!strcmp(tablaBorrar,tabla)){
+				list_remove_and_destroy_element(listaTablasInsertadas,i,free);
+				break;
+			}
+		}
+		mutexDesbloquear(&listaTablasInsertadas_mx);
+
 		eliminarTablaCompleta(tabla);
 
+//		usleep(5000);
+
+		pthread_cancel(*hiloCompactacion);
+
 		dictionary_remove(dicSemTablas,tabla);
-		free(semsTabla);
 
 		rwLockDesbloquear(&(semsTabla->rwLockTabla));
 		mutexDesbloquear(&(semsTabla->drop_mx));
+
+		free(semsTabla);
 
 		return retornoVerificar;
 	} else {
@@ -3231,6 +3299,7 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 
 	int retornoVerificar = verificarTabla(tabla);
 	if (retornoVerificar == -1) {     // La tabla no existe, se crea
+
 
 //		log_info(logger,"%s---%s",tabla,tablaAverificar);
 		char *path = armarPathTabla(tabla);
@@ -3340,15 +3409,18 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 				fclose(particion);
 
 			}
-			pthread_t *hilo = malloc(sizeof(pthread_t));
+			pthread_t hilo;// = malloc(sizeof(pthread_t));
 			args_compactacion_t *args = malloc(sizeof(args_compactacion_t));
 			args->retardo = strtoul(tiempoCompactacion,NULL,10);
 			args->tabla = malloc(strlen(tabla)+1);
 			strcpy(args->tabla,tabla);
-			pthread_create(hilo,NULL,(void*)correrCompactacion,args);
+			pthread_create(&hilo,NULL,(void*)correrCompactacion,args);
+			pthread_t *hilo_copia = malloc(sizeof(pthread_t));
+			memcpy(hilo_copia,&hilo, sizeof(pthread_t));
+//			pthread_detach(*hilo);
 			char *copia2 = malloc(strlen(tabla)+1);
 			strcpy(copia2,tabla);
-			dictionary_put(dicHilosCompactacion,copia2,hilo);
+			dictionary_put(dicHilosCompactacion,copia2,hilo_copia);
 			return 0;
 		} else {
 			log_info(logger, "No se pudo crear el archivo metadata \n");
@@ -3941,8 +4013,8 @@ void *correrCompactacion(args_compactacion_t *args)
 	usleep(retardo*1000);
 	while(1){
 		log_info(logger,"[COMPACTACION] Se lanzara compactacion tabla %s",tabla);
-		compactarTabla(tabla);
-		printf("***Se compacto***\n>");
+		if(compactarTabla(tabla)>0)
+			printf("***Se compacto tabla %s***\n>",tabla);
 		usleep(retardo*1000);
 	}
 }

@@ -19,10 +19,10 @@
 #include <errno.h>
 #include <time.h>
 
-#define MARTIN
-#ifdef MARTIN
-	#define LOG_PATH "/home/martin/Documentos/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Log/LOG_LFS.txt"
-	#define PATH_LFILESYSTEM_CONFIG "/home/martin/Documentos/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Config/LFS_CONFIG.txt"
+#define PRUEBAS
+#ifdef PRUEBAS
+	#define LOG_PATH "../Log/LOG_LFS.txt"
+	#define PATH_LFILESYSTEM_CONFIG "../Config/LFS_CONFIG.txt"
 #else
 	#define LOG_PATH "/home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Log/LOG_LFS.txt"
 	#define PATH_LFILESYSTEM_CONFIG "/home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Config/LFS_CONFIG.txt"
@@ -342,5 +342,7 @@ void borrarRegistro(t_registroMemtable *reg);
 void vaciarMemtable(void);
 
 void borrarListaMemtable(t_list *lista);
+
+bool existeDirectorio(char *path);
 
 #endif /* LFILESSYSTEM_H_ */
