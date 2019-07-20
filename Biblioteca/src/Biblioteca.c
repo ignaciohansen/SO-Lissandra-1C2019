@@ -1129,7 +1129,7 @@ void memoriaLiberar(Puntero puntero) {
 }
 
 void pantallaLimpiar() {
-	system("clear");
+//	system("clear");
 }
 
 int caracterObtener() {
@@ -1327,22 +1327,22 @@ msg_com_t recibir_mensaje(int conexion)
 	recibido.payload.stream = NULL;
 
 	//Primero recibo el tipo
-	printf("\nVoy a esperar recibir el tipo");
+//	printf("\nVoy a esperar recibir el tipo");
 	if(recv(conexion, &(recibido.tipo), sizeof(conexion_t), 0) < sizeof(conexion_t)){
 		recibido.tipo = DESCONECTADO;
-		printf("\nError al recibir el tipo");
+//		printf("\nError al recibir el tipo");
 		return recibido;
 	}
-	printf("\nRecibi el tipo");
+//	printf("\nRecibi el tipo");
 
 	//Ahora recibo el tamaño
 	if(recv(conexion, &(recibido.payload.tam), sizeof(int), MSG_WAITALL) <= 0){
 			recibido.tipo = DESCONECTADO;
-			printf("\nError al recibir el tamaño");
+//			printf("\nError al recibir el tamaño");
 			return recibido;
 	}
 
-	printf("\nRecibi el tamaño");
+//	printf("\nRecibi el tamaño");
 
 	//Ahora aloco en memoria el stream
 	recibido.payload.stream = malloc(recibido.payload.tam);
@@ -1351,10 +1351,10 @@ msg_com_t recibir_mensaje(int conexion)
 	if(recv(conexion, recibido.payload.stream, recibido.payload.tam, MSG_WAITALL) <= 0){
 			recibido.tipo = DESCONECTADO;
 			borrar_buffer(recibido.payload);
-			printf("\nError al recibir el payload");
+//			printf("\nError al recibir el payload");
 			return recibido;
 	}
-	printf("\nRecibi el payload");
+//	printf("\nRecibi el payload");
 
 	return recibido;
 }

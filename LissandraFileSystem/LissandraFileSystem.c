@@ -328,11 +328,14 @@ bool cargarConfiguracion() {
 		}
 
 	}
+	/*	archivoCOnfig es LOCAL por lo tanto se debe liberarse	*/
+//	config_destroy(archivoCOnfig);
 	/*
 	 free(archivoCOnfig->properties->elements);	//AGREGADO PARA LIMPIAR LEAKS
 	 free(archivoCOnfig->properties);			//AGREGADO PARA LIMPIAR LEAKS
 	 free(archivoCOnfig->path); 					//AGREGADO PARA LIMPIAR LEAKS
 	 free(archivoCOnfig); 						//AGREGADO PARA LIMPIAR LEAKS*/
+
 
 	return false;
 
@@ -3340,6 +3343,9 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 				log_info(logger, "Particion creada: %s", archivoParticion);
 				free(archivoParticion);
 				fclose(particion);
+
+				free(lineaParticion);	//AGREGADO PARA LIMPIAR LEAKS
+				free(archivoParticion);	//AGREGADO PARA LIMPIAR LEAKS
 
 			}
 			pthread_t *hilo = malloc(sizeof(pthread_t));

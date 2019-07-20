@@ -361,15 +361,11 @@ void cerrarTodosLosHilosPendientes() {
 }
 
 
-void inicioLogYConfig(char* path_config) {
+void inicioLogYConfig(char* path_config, bool loggearEnConsola) {
 	tamanioPredefinidoParaNombreTabla = 50;
 //	log_memoria = archivoLogCrear(LOG_PATH, "Proceso Memoria");
 	archivoLogValidar(LOG_PATH);
-#ifdef LOGGEAR_EN_CONSOLA
-	log_memoria = log_create(LOG_PATH, "Proceso Memoria", true, LOG_LEVEL_DEBUG);
-#else
-	log_memoria = log_create(LOG_PATH, "Proceso Memoria", false, LOG_LEVEL_DEBUG);
-#endif
+	log_memoria = log_create(LOG_PATH, "Proceso Memoria", loggearEnConsola, LOG_LEVEL_DEBUG);
 	log_info(log_memoria,
 			" \n ========== Iniciación de Pool de Memoria ========== \n \n ");
 
@@ -893,6 +889,10 @@ void escucharConexionKernel() {
 void cargarConfiguracion(char *path_config) {
 //	printf("\n\n**********CARGANDO CONFIGURACION**********\n\n");
 	log_info(log_memoria, "[CONFIGURANDO MODULO] RESERVAR MEMORIA.");
+	if(arc_config != NULL){
+		//FUE CARGADA PREVIAMENTE POR LO TANTO DEBO LIMPIARLO PARA RECARGARLA DE NUEVO
+		config_destroy(arc_config);
+	}
 	arc_config = malloc(sizeof(t_memoria_config));
 
 	// Lo inicializo así no generó segmentation fault al salir (puedo saber cuáles aloqué)

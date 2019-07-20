@@ -420,7 +420,9 @@ int funcionDescribe(char* nombreTablaAIr){
 }
 
 void liberar_todo_por_cierre_de_modulo() {
-	//ESTE TIENE 1 ERROR, REVISARLO LUEGO
+
+	config_destroy(arc_config);
+	// ESTE TIENE 1 ERROR el de abajo comentado
 	//	cerrarTodosLosHilosPendientes();
 	log_info(log_memoria,
 			"[LIBERAR] Por liberar Segmentos y sus tablas de paginas");
