@@ -194,7 +194,7 @@ char* comandoDescribe();
 
 char* bitmapPath;
 t_bitarray* bitarray;
-int bytesAEscribir;
+//int bytesAEscribir;
 FILE* archivoBitmap;
 
 int existeArchivo(char* path);
