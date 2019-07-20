@@ -211,6 +211,7 @@ resp_com_t resolver_pedido(request_t req) {
 
 resp_com_t resolver_describe(request_t req) {
 	char *ret_val;
+	resp_com_t respuesta;
 	imprimirMensaje(logger, "[RESOLVIENDO DESCRIBE] Entro a función");
 
 	if (req.cant_args == 1) {
@@ -219,14 +220,22 @@ resp_com_t resolver_describe(request_t req) {
 		if (ret_val == NULL) {
 			return armar_respuesta(RESP_ERROR_TABLA_NO_EXISTE, ret_val);
 		} else {
-			return armar_respuesta(RESP_OK, ret_val);
+			respuesta = armar_respuesta(RESP_OK, ret_val);
+			free(ret_val);
+			return respuesta;
 		}
 	}
 
 	else if (req.cant_args == 0) {
 		ret_val = comandoDescribe();
-
-		return armar_respuesta(RESP_OK, ret_val);
+		if(ret_val == NULL){
+			return armar_respuesta(RESP_ERROR_NO_HAY_TABLAS, ret_val);
+		}
+		else{
+			respuesta = armar_respuesta(RESP_OK, ret_val);
+			free(ret_val);
+			return respuesta;
+		}
 
 	}
 

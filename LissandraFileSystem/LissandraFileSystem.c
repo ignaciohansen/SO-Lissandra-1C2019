@@ -202,28 +202,24 @@ bool cargarConfiguracion() {
 
 			log_info(logger, "Almacenando el PUNTO DE MONTAJE: %s",
 					config_get_string_value(archivoCOnfig, "PUNTO_MONTAJE"));
-
 			//Por lo que dice el texto		
+			char *aux = config_get_string_value(archivoCOnfig,"PUNTO_MONTAJE");
+			configFile->punto_montaje = malloc(strlen(aux)+1);
+			strcpy(configFile->punto_montaje,aux);
+			/*configFile->punto_montaje = config_get_string_value(archivoCOnfig,"PUNTO_MONTAJE");*/
 
-			configFile->punto_montaje = config_get_string_value(archivoCOnfig,
-					"PUNTO_MONTAJE");
+			log_info(logger, "El punto de montaje es: %s",configFile->punto_montaje);
 
-			log_info(logger, "El punto de montaje es: %s",
-					configFile->punto_montaje);
-
-			int tamanio = strlen(configFile->punto_montaje) + strlen(TABLE_PATH)
-					+ 30;
+			int tamanio = strlen(configFile->punto_montaje) + strlen(TABLE_PATH)+ 30;
 
 			tabla_Path = malloc(tamanio);
 
 			//tabla_Path = string_duplicate(configFile->punto_montaje);
 //		ARRIBA COMENTADO PARA LIMPIAR LEAKS
 
-			snprintf(tabla_Path, tamanio, "%s%s", configFile->punto_montaje,
-			TABLE_PATH);
+			snprintf(tabla_Path, tamanio, "%s%s", configFile->punto_montaje,TABLE_PATH);
 
-			log_info(logger, "Y ahora la variable tabla_path queda con: %s",
-					tabla_Path);
+			log_info(logger, "Y ahora la variable tabla_path queda con: %s",tabla_Path);
 
 		} else {
 			imprimirError(logger,
@@ -289,9 +285,11 @@ bool cargarConfiguracion() {
 		if (config_has_property(archivoCOnfig, "IP")) {
 
 			log_info(logger, "Almacenando la IP");
-
+			char *aux = config_get_string_value(archivoCOnfig,"IP");
+			configFile->ip = malloc(strlen(aux)+1);
+			strcpy(configFile->ip,aux);
 			//Por lo que dice el texto
-			configFile->ip = config_get_string_value(archivoCOnfig, "IP");
+//			configFile->ip = config_get_string_value(archivoCOnfig, "IP");
 
 			log_info(logger, "La IP es: %s", configFile->ip);
 
@@ -303,23 +301,25 @@ bool cargarConfiguracion() {
 		}
 
 		if (ok > 0) {
-			//@nacho DESCOMENTE ACA
-free(archivoCOnfig->properties->elements);	//AGREGADO PARA LIMPIAR LEAKS
-free(archivoCOnfig->properties);			//AGREGADO PARA LIMPIAR LEAKS
-free(archivoCOnfig->path); 					//AGREGADO PARA LIMPIAR LEAKS
-free(archivoCOnfig); 						//AGREGADO PARA LIMPIAR LEAKS
+			/*//@nacho DESCOMENTE ACA
+			free(archivoCOnfig->properties->elements);	//AGREGADO PARA LIMPIAR LEAKS
+			free(archivoCOnfig->properties);			//AGREGADO PARA LIMPIAR LEAKS
+			free(archivoCOnfig->path); 					//AGREGADO PARA LIMPIAR LEAKS
+			free(archivoCOnfig); 						//AGREGADO PARA LIMPIAR LEAKS
 			imprimirVerde(logger,
 					"Se ha cargado todos los datos del archivo de configuracion");
-			//	log_info(logger, "Se ha cargado todos los datos del archivo de configuracion");
+			//	log_info(logger, "Se ha cargado todos los datos del archivo de configuracion");*/
+			config_destroy(archivoCOnfig);
 			return true;
 
 		} else {
 			//@nacho DESCOMENTE ACA
-		free(archivoCOnfig->properties->elements);	//AGREGADO PARA LIMPIAR LEAKS
-		free(archivoCOnfig->properties);			//AGREGADO PARA LIMPIAR LEAKS
-		free(archivoCOnfig->path); 					//AGREGADO PARA LIMPIAR LEAKS
-		free(archivoCOnfig); 						//AGREGADO PARA LIMPIAR LEAKS
-		imprimirError(logger,"ERROR: No se han cargado los datos del archivo de configuracion\n");
+		/*	free(archivoCOnfig->properties->elements);	//AGREGADO PARA LIMPIAR LEAKS
+			free(archivoCOnfig->properties);			//AGREGADO PARA LIMPIAR LEAKS
+			free(archivoCOnfig->path); 					//AGREGADO PARA LIMPIAR LEAKS
+			free(archivoCOnfig); 						//AGREGADO PARA LIMPIAR LEAKS*/
+			config_destroy(archivoCOnfig);
+			imprimirError(logger,"ERROR: No se han cargado los datos del archivo de configuracion\n");
 			//		imprimirMensajeProceso("ERROR: No Se han cargado todos los datos del archivo de configuracion\n");
 			return false;
 		}
@@ -726,8 +726,7 @@ void atenderRequest(char* linea) {
 				"[RESOLVIENDO PEDIDO] Voy a resolver CREATE\n\n");
 		respuesta = resolver_create(req);
 		if (respuesta.tipo == RESP_OK) {
-			imprimirMensaje(logger,
-					"[RESOLVIENDO PEDIDO] CREATE hecho correctamente");
+			imprimirMensaje(logger,"[RESOLVIENDO PEDIDO] CREATE hecho correctamente");
 			printf("[CREATE] La %s se creo correctamente\n",req.args[0]);
 		} else {
 			if(respuesta.tipo == RESP_ERROR_TABLA_NO_EXISTE){printf("[CREATE] La %s ya existe\n",req.args[0]);}
@@ -735,9 +734,7 @@ void atenderRequest(char* linea) {
 			imprimirError(logger,"[RESOLVIENDO PEDIDO] El CREATE no pudo realizarse");
 
 		}
-
 		break;
-
 	case SALIR:
 		printf("Se selecciono SALIR\n");
 		//cerrarTodo(); terminar
@@ -1142,13 +1139,10 @@ t_metadata_tabla* obtenerMetadataTabla(char* tabla) {
 	t_metadata_tabla* metadataTabla;
 
 	char *path_tabla_metadata = armarPathMetadataTabla(tabla);
-	log_info(logger, "[obtenerMetadata] (+) metadata a abrir : %s",
-			path_tabla_metadata);
+	log_info(logger, "[obtenerMetadata] (+) metadata a abrir : %s",	path_tabla_metadata);
 
 	int result = 0;
-
 	metadataTabla = malloc(sizeof(t_metadata_tabla)); // Vatiable global.--->la hago local para soportar varios procesos concurrentes
-
 	t_config* metadataFile;
 	metadataFile = config_create(path_tabla_metadata);
 
@@ -1435,13 +1429,14 @@ char* retornarValoresDirectorio() {
 //		resultadoFinal = malloc(memoriaParaMalloc + 1);
 		resultadoFinal = string_new();
 		for (int i = 0; i < list_size(lista_describes); i++) {
-			log_info(logger, "[DEBUG] Entré al for");
+//			log_info(logger, "[DEBUG] Entré al for");
 			char* elemento = list_get(lista_describes, i);
 			string_append(&resultadoFinal, elemento);
 			string_append(&resultadoFinal, "|");
 		}
-		resultadoFinal = stringTomarDesdeInicio(resultadoFinal,
-				strlen(resultadoFinal) - 1);
+		char *aux = stringTomarDesdeInicio(resultadoFinal,strlen(resultadoFinal) - 1);
+		free(resultadoFinal);
+		resultadoFinal = aux;
 
 	}
 	if (lista_describes->elements_count > 0) {
@@ -1452,17 +1447,18 @@ char* retornarValoresDirectorio() {
 			lista_describes->head = aux;
 		}
 	}
+	free(lista_describes);
 
-	t_link_element* elemento;
+//	list_destroy_and_destroy_elements(lista_describes,free);
+	/*t_link_element* elemento;
 	while (lista_describes->head != NULL) {
 		elemento = lista_describes->head->next;
 		free(lista_describes->head->data);
 		free(lista_describes->head);
 		lista_describes->head = elemento;
-	}
+	}*/
 	if (resultado != NULL)
 		free(resultado);
-	free(lista_describes);
 	free(pathTabla);
 	closedir(dir);
 	return resultadoFinal;
@@ -1529,7 +1525,7 @@ void realizarDump() {
 		//tamanioRegistros[i] = 0;
 	}
 	log_info(logger, "Se limpia diccionario y la listaTablasInsertadas");
-	dictionary_clean(memtable);
+	vaciarMemtable(); //
 	//mutexDesbloquear(&memtable_mx);
 	mutexBloquear(&listaTablasInsertadas_mx);
 	list_clean(listaTablasInsertadas);
@@ -1621,8 +1617,9 @@ int crearArchivoTemporal(char* path, char* tabla) {
 	t_list* listaRegistrosTabla = dictionary_get(memtable, tabla);
 	mutexDesbloquear(&memtable_mx);
 
-	//t_sems_tabla* semsTabla = dictionary_get(tabla); @semaforo
-	//rwLockEscribir(semsTabla->rwLockTabla); @semaforo
+	t_sems_tabla* semsTabla = dictionary_get(dicSemTablas,tabla);
+	rwLockEscribir(&(semsTabla->rwLockTabla));
+//	printf("\nMandale\n");
 
 	t_list* bloquesUsados = list_create();
 	int tam_total_registros = tamTotalListaRegistros(listaRegistrosTabla);
@@ -1705,8 +1702,7 @@ int crearArchivoTemporal(char* path, char* tabla) {
 				"[DUMP] hubo un error al escribir los datos en los bloques");
 	}
 
-	//rwLockDesbloquear(semsTabla->rwLockTabla);@semaforo
-	//free(semsTabla);@semaforo
+	rwLockDesbloquear(&(semsTabla->rwLockTabla));
 
 	list_destroy_and_destroy_elements(bloquesUsados, free);
 
@@ -2949,7 +2945,7 @@ t_registroMemtable* registroMayorTemporal(char* tabla, u_int16_t key,
 					pathTemp);
 
 			t_bloquesUsados* lecturaTMP = leerTemporaloParticion(pathTemp);
-			if (lecturaTMP->size == 0) { // La idea es que nunca entre aca, si tengo temporal es xq un bloque tengo que tener
+			if (lecturaTMP->bloques == NULL) { // La idea es que nunca entre aca, si tengo temporal es xq un bloque tengo que tener
 				registro = armarRegistroNulo();
 			} else {
 				if (registro == NULL) {
@@ -2980,8 +2976,9 @@ t_registroMemtable* registroMayorTemporal(char* tabla, u_int16_t key,
 						}
 					}
 				}
-
+				list_destroy_and_destroy_elements(lecturaTMP->bloques,free);
 			}
+			free(lecturaTMP);
 		}
 	} else { // La idea es que nunca entre aca, si tengo temporal es xq un bloque tengo que tener
 		registro = armarRegistroNulo();
@@ -3001,12 +2998,13 @@ t_registroMemtable* registroMayorParticion(char* tabla, u_int16_t key,
 
 	log_info(logger, "ruta %s", pathParticion);
 	t_bloquesUsados* ListaBloques = leerTemporaloParticion(pathParticion);
-	if (ListaBloques->size == 0) {
+	if (ListaBloques->bloques == NULL) {
 		registro = armarRegistroNulo();
 	} else {
-		registro = leerBloquesConsecutivosUnaKey(ListaBloques->bloques,
-				ListaBloques->size, key, true);
+		registro = leerBloquesConsecutivosUnaKey(ListaBloques->bloques,	ListaBloques->size, key, true);
+		list_destroy_and_destroy_elements(ListaBloques->bloques,free);
 	}
+	free(ListaBloques);
 
 	return registro;
 
@@ -3062,7 +3060,10 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 	} else { // archivo de tabla encontrado
 
 		semsTabla = dictionary_get(dicSemTablas, tabla);
-		////rwLockLeer(semsTabla->rwLockTabla);
+		if(semsTabla == NULL){
+			log_info(logger,"es null");
+		}
+		rwLockLeer(&(semsTabla->rwLockTabla));
 
 		t_metadata_tabla *metadata = obtenerMetadataTabla(tabla);
 
@@ -3130,9 +3131,8 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 
 //		free(metadata);
 
-		//rwLockDesbloquear(semsTabla->rwLockTabla);
+		rwLockDesbloquear(&(semsTabla->rwLockTabla));
 
-		free(semsTabla);
 
 		free(metadata->consistency); //@nacho agregado
 		free(metadata); //@nacho agregado
@@ -3152,8 +3152,11 @@ int comandoDrop(char* tabla) {
 	if (retornoVerificar == 0) {
 
 		semsTabla = dictionary_get(dicSemTablas, tabla);
-		//mutexBloquear(semsTabla->drop_mx);@semaforo
-		//rwLockEscribir(semsTabla->rwLockTabla);@semaforo
+		if(semsTabla == NULL){
+			log_info(logger,"[DEBUG] es null");
+		}
+		mutexBloquear(&(semsTabla->drop_mx));
+		rwLockEscribir(&(semsTabla->rwLockTabla));
 
 		char*path = armarPathTabla(tabla);
 		log_info(logger, "Vamos a eliminar la tabla: %s", path);
@@ -3161,9 +3164,9 @@ int comandoDrop(char* tabla) {
 
 		eliminarTablaCompleta(tabla);
 
-		//rwLockDesbloquear(semsTabla->rwLockTabla);@semaforo
-		//mutexDesbloquear(semsTabla->drop_mx);@semaforo
-
+		rwLockDesbloquear(&(semsTabla->rwLockTabla));
+		mutexDesbloquear(&(semsTabla->drop_mx));
+		dictionary_remove(dicSemTablas,tabla);
 		free(semsTabla);
 
 		return retornoVerificar;
@@ -3201,22 +3204,26 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 		if (archivoMetadata != NULL) {
 			log_info(logger,
 					"El archivo metadata se creo satisfactoriamente\n");
-/*
+
 			log_info(logger, "Se crean los semaforos de la tabla");
 
-			RWlock rw_lock; //*?
+			RWlock rw_lock;
 			Mutex drop_mx;
-			//rwLockIniciar(&rw_lock,NULL);@semaforo
+			rwLockIniciar(&rw_lock);
 			mutexIniciar(&drop_mx);
 
 			t_sems_tabla* sems_tabla;
-			sems_tabla = malloc(sizeof(sems_tabla));
+			sems_tabla = malloc(sizeof(t_sems_tabla));
 
 			sems_tabla->rwLockTabla = rw_lock;
 			sems_tabla->drop_mx = drop_mx;
 
-			dictionary_put(dicSemTablas, tabla, sems_tabla);
-*/
+			char *copia = malloc(strlen(tabla)+1);
+			strcpy(copia,tabla);
+
+			log_info(logger,"create tabla %s",copia);
+			dictionary_put(dicSemTablas, copia, sems_tabla);
+
 			int tamanioConsistencia = strlen(consistencia)
 					+ sizeof("CONSISTENCY=") + 4;
 			char *lineaConsistencia = malloc(tamanioConsistencia);
@@ -3315,10 +3322,11 @@ int comandoInsertSinTimestamp(char* tabla, char* key, char* value) {
 
 int comandoInsert(char* tabla, char* key, char* valueOriginal, char* timestamp) {
 	int retornoVerificar = verificarTabla(tabla);
-	char* value = malloc(strlen(valueOriginal) + 1);
-	strcpy(value, valueOriginal);
 
 	if (retornoVerificar == 0) {
+		char* value = malloc(strlen(valueOriginal) + 1);
+		strcpy(value, valueOriginal);
+
 
 		bool verificarValue = validarValue(value);
 		bool verificarKey = validarKey(key);
@@ -3355,7 +3363,8 @@ int comandoInsert(char* tabla, char* key, char* valueOriginal, char* timestamp) 
 
 				mutexDesbloquear(&memtable_mx);
 
-			} else {
+			}
+			else {
 
 				t_list* listaAux = list_create();
 				list_add(listaAux, registroPorAgregarE);
@@ -3370,18 +3379,14 @@ int comandoInsert(char* tabla, char* key, char* valueOriginal, char* timestamp) 
 				mutexDesbloquear(&listaTablasInsertadas_mx);
 
 			}
-
-			/*free(valueDesenmascarado);
-			 free(registroPorAgregarE);
+			free(value);
+			/*
 			 free(resultado);
 			 free(elementoDiccionario);*/
 		}
 
 	} else {
 		retornoVerificar = -1;
-		//free(value);
-
-
 	}
 	return retornoVerificar;
 }
@@ -3393,19 +3398,17 @@ char* comandoDescribeEspecifico(char* tabla) {
 
 	if (verificarTabla(tabla) == 0) {
 		semsTabla = dictionary_get(dicSemTablas, tabla);
-		//rwLockLeer(semsTabla->rwLockTabla);
+		rwLockLeer(&(semsTabla->rwLockTabla));
 		metadata = obtenerMetadataTabla(tabla);
 		if (metadata != NULL) {
 			char* resultado = retornarValores(tabla, metadata);
 			free(metadata->consistency);
 			free(metadata);
 			log_info(logger, "resultado describe %s", resultado);
-			//rwLockDesbloquear(semsTabla->rwLockTabla);
-			free(semsTabla);
+			rwLockDesbloquear(&(semsTabla->rwLockTabla));
 			return resultado;
 		} else {
-			//rwLockDesbloquear(semsTabla->rwLockTabla);
-			free(semsTabla);
+			rwLockDesbloquear(&(semsTabla->rwLockTabla));
 			return NULL;
 		}
 	} else {
@@ -3418,7 +3421,7 @@ char* comandoDescribe() {
 	/*for(int i=0; i<dictionary_size(dicSemTablas); i++) {
 		semsTabla = dictionary_get(dicSemTablas, i);
 		//rwLockLeer(semsTabla->rwLockTabla);
-	}*/
+	}*///@gian
 	char* resultado = retornarValoresDirectorio();
 	if (resultado != NULL)
 		log_info(logger, "resultado describe de todas las tablas %s",
@@ -3758,17 +3761,34 @@ t_registroMemtable *leerBloquesConsecutivosUnaKey(t_list *nroBloques,
 void cerrarTodo() {
 	liberarTodosLosRecursosGlobalesQueNoSeCerraron();
 	sem_destroy(&semaforoQueries);
+	vaciarMemtable();
 	dictionary_destroy(memtable);
-	list_destroy(listaTablasInsertadas);
-	//config_destroy()
+	list_destroy_and_destroy_elements(listaTablasInsertadas,free);
 	fclose(archivoBitmap);
 }
 
+
+void vaciarMemtable(void)
+{
+	mutexBloquear(&memtable_mx);
+	dictionary_clean_and_destroy_elements(memtable,(void *)borrarListaMemtable);
+	mutexDesbloquear(&memtable_mx);
+}
+
+void borrarListaMemtable(t_list *lista)
+{
+	list_destroy_and_destroy_elements(lista,free);
+}
+
 void liberarTodosLosRecursosGlobalesQueNoSeCerraron() {
+	free(metadataLFS->magic_number);
 	free(metadataLFS);
 	free(bitmapPath);
 	free(tabla_Path);
-//	free(path_tabla_metadata);
+
+	free(configFile->ip);
+	free(configFile->punto_montaje);
+	free(configFile);
 }
 
 t_datos_particion *obtenerDatosParticion(char *path_particion) {
@@ -3841,8 +3861,8 @@ int compactarTabla(char *tabla) {
 
 	semsTabla = dictionary_get(dicSemTablas, tabla);
 
-	//mutexBloquear(semsTabla->drop_mx);@semaforo
-	//rwLockEscribir(semsTabla->rwLockTabla);@semaforo
+	mutexBloquear(&(semsTabla->drop_mx));
+	rwLockEscribir(&(semsTabla->rwLockTabla));
 
 	char *path_tmp, *path_tmpc;
 	for (int i = 0; i < list_size(temporales_list); i++) {
@@ -3860,7 +3880,7 @@ int compactarTabla(char *tabla) {
 		free(path_tmpc);
 	}
 
-	//rwLockDesbloquear(semsTabla->rwLockTabla);
+	rwLockDesbloquear(&(semsTabla->rwLockTabla));
 
 	list_destroy_and_destroy_elements(temporales_list, free);
 
@@ -3980,7 +4000,7 @@ int compactarTabla(char *tabla) {
 
 	list_destroy_and_destroy_elements(tmpc_list, free);
 
-	//rwLockEscribir(semsTabla->rwLockTabla);@semaforo
+	rwLockEscribir(&(semsTabla->rwLockTabla));
 
 	u_int64_t comienzoBloqueo = timestamp();
 
@@ -4002,8 +4022,8 @@ int compactarTabla(char *tabla) {
 
 	u_int64_t finBloqueo = timestamp();
 
-	//rwLockDesbloquear(semsTabla->rwLockTabla);@semaforo
-	//mutexDesbloquear(semsTabla->drop_mx);@semaforo
+	rwLockDesbloquear(&(semsTabla->rwLockTabla));
+	mutexDesbloquear(&(semsTabla->drop_mx));
 
 	u_int64_t tiempoQueEstuvoBloqueada = finBloqueo - comienzoBloqueo;
 
@@ -4018,7 +4038,6 @@ int compactarTabla(char *tabla) {
 			"[COMPACTACION] Compactacion de la tabla %s realizada con exito",
 			tabla);
 
-	free(semsTabla);
 	free(path_tabla);
 	return 1;
 }

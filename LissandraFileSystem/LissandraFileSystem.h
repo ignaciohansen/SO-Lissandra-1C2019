@@ -327,4 +327,8 @@ t_registroMemtable *crearCopiaRegistro(t_registroMemtable *origen);
 
 void borrarRegistro(t_registroMemtable *reg);
 
+void vaciarMemtable(void);
+
+void borrarListaMemtable(t_list *lista);
+
 #endif /* LFILESSYSTEM_H_ */
