@@ -361,15 +361,11 @@ void cerrarTodosLosHilosPendientes() {
 }
 
 
-void inicioLogYConfig(char* path_config) {
+void inicioLogYConfig(char* path_config, bool loggearEnConsola) {
 	tamanioPredefinidoParaNombreTabla = 50;
 //	log_memoria = archivoLogCrear(LOG_PATH, "Proceso Memoria");
 	archivoLogValidar(LOG_PATH);
-#ifdef LOGGEAR_EN_CONSOLA
-	log_memoria = log_create(LOG_PATH, "Proceso Memoria", true, LOG_LEVEL_DEBUG);
-#else
-	log_memoria = log_create(LOG_PATH, "Proceso Memoria", false, LOG_LEVEL_DEBUG);
-#endif
+	log_memoria = log_create(LOG_PATH, "Proceso Memoria", loggearEnConsola, LOG_LEVEL_DEBUG);
 	log_info(log_memoria,
 			" \n ========== Iniciación de Pool de Memoria ========== \n \n ");
 

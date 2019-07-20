@@ -10,11 +10,10 @@
 
 #include "main_memoria.h"
 
-//#define AUTOLANZAR_SERVER
-//#define AUTOLANZAR_CLIENTE
-#define EJECUTAR_GOSSIPING
 #define TESTEAR_GOSSIPING
 
+t_list *clientes_activos;
+pthread_mutex_t mutex_clientes_activos = PTHREAD_MUTEX_INITIALIZER;
 
 void actualizarMemoriasDisponibles(void)
 {
@@ -40,23 +39,32 @@ int main(int argc, char **argv)
 	// LOGGING
 	printf("\n***INICIANDO EL PROCESO MEMORIA***");
 
-#ifdef TESTEAR_GOSSIPING
+/*#ifdef TESTEAR_GOSSIPING
 	if(argc>1)
 		inicioLogYConfig(argv[1]);
 	else
 		inicioLogYConfig(PATH_MEMORIA_CONFIG);
 #else
 	inicioLogYConfig(PATH_MEMORIA_CONFIG);
-#endif
+//#endif*/
+
+	//Si quiero que no logge en consola ejecuto poniendo "./PoolMemorias -cl". En cualquier otro caso loggea en consola
+	if(argc <= 1){
+		printf("\n*Se loggea en consola. Para desactivarlo ejecutar el proceso con -cl*\n\n");
+		inicioLogYConfig(PATH_MEMORIA_CONFIG,true);
+	}
+	else if(!strcmp(argv[1],"-cl")){
+		printf("\n*Opción -cl. No se loggea en consola*");
+		inicioLogYConfig(PATH_MEMORIA_CONFIG,false);
+	}
+	else{
+		printf("\n*Se loggea en consola. Para desactivarlo ejecutar el proceso con -cl\n\n*");
+		inicioLogYConfig(PATH_MEMORIA_CONFIG,true);
+	}
+
 
 	printf("\n*Log creado en %s", LOG_PATH);
 	printf("\n*Archivo de configuración cargado*");
-
-#ifdef AUTOLANZAR_SERVER
-	char cmd_server[100];
-	snprintf(cmd_server,99,"gnome-terminal -- ./servidor %s %d",arc_config->ip_fs,arc_config->puerto_fs);
-	system(cmd_server);
-#endif
 
 	int socket_lfs = conectar_a_lfs(true,&max_valor_key);
 
@@ -88,20 +96,14 @@ int main(int argc, char **argv)
 	}
 	printf("\n*El servidor de memoria está inicializado y listo para recibir clientes");
 
-#ifdef AUTOLANZAR_CLIENTE
-	char cmd_cliente[100];
-	snprintf(cmd_cliente,99,"gnome-terminal -- ./cliente %s %d",arc_config->ip,arc_config->puerto);
-	system(cmd_cliente);
-#endif
+	signal(SIGINT, INThandler);
 
 	pthread_t servidor_h, consola_h, gossiping_h, inotify_c;
 
-#ifdef EJECUTAR_GOSSIPING
 	id_com_t mi_id = MEMORIA;
 	inicializar_gossiping_memoria();
 	iniciar_hilo_gossiping(&mi_id,&gossiping_h,actualizarMemoriasDisponibles);
 	printf("\n*Gossiping corriendo");
-#endif
 
 	pthread_create(&servidor_h,NULL,(void *)hilo_servidor,&socket_servidor);
 	pthread_detach(servidor_h);
@@ -129,9 +131,9 @@ int main(int argc, char **argv)
 
 	liberar_todo_por_cierre_de_modulo();
 
-#ifdef EJECUTAR_GOSSIPING
 	liberar_memoria_gossiping();
-#endif
+
+	cerrar_todos_clientes();
 	return 1;
 }
 
@@ -146,8 +148,10 @@ int levantar_servidor_memoria(void)
 	if(socket == -1){
 		imprimirError(log_memoria,"[LEVANTANDO SERVIDOR] Error al levantar el servidor. Por favor, reintente");
 	}
-	else
+	else{
 		imprimirMensaje(log_memoria,"[LEVANTANDO SERVIDOR] Servidor conectado");
+		clientes_activos = list_create();
+	}
 	return socket;
 }
 
@@ -271,6 +275,74 @@ void* hilo_consola(int * socket_p){
 	return NULL;
 }
 
+void cliente_dar_de_alta(int socket)
+{
+	int *copy = malloc(sizeof(int)); //NO HACER UN FREE ACÁ SINO VA A ROMPER, LO HAGO MÁS ADELANTE
+	log_info(log_memoria,"[CLIENTE] Dando de alta cliente en socket %d",socket);
+	memcpy(copy,&socket,sizeof(int));
+	pthread_mutex_lock(&mutex_clientes_activos);
+	list_add(clientes_activos,copy);
+	int activos = list_size(clientes_activos);
+	pthread_mutex_unlock(&mutex_clientes_activos);
+	log_info(log_memoria,"[CLIENTE] Socket cliente %d agregado a la lista de activos",socket);
+	log_info(log_memoria,"[CLIENTE] Hay %d clientes activos",activos);
+}
+
+void cliente_dar_de_baja(int socket)
+{
+	int *aux;
+	bool encontrado = false;
+	log_info(log_memoria,"[CLIENTE] Voy a dar de baja socket %d",socket);
+	pthread_mutex_lock(&mutex_clientes_activos);
+	for(int i=0;i<list_size(clientes_activos);i++){
+		aux = list_get(clientes_activos,i);
+		if(*aux == socket){
+			list_remove(clientes_activos,i);
+			free(aux);
+			log_info(log_memoria,"[CLIENTE] Socket cliente %d sacado de la lista de activos",socket);
+			encontrado = true;
+			break;
+		}
+	}
+	int activos = list_size(clientes_activos);
+	pthread_mutex_unlock(&mutex_clientes_activos);
+	if(encontrado == false)
+		log_info(log_memoria,"[CLIENTE] Socket cliente %d no se dió de baja porque no se encontró en la lista");
+	log_info(log_memoria,"[CLIENTE] Hay %d clientes activos",activos);
+}
+
+void cerrar_todos_clientes(void)
+{
+	pthread_mutex_lock(&mutex_clientes_activos);
+	log_info(log_memoria,"[CLIENTE] Cerrando sockets de clientes activos. Hay %d",list_size(clientes_activos));
+	int *aux;
+	for(int i=0;i<list_size(clientes_activos);i++){
+		aux = list_get(clientes_activos, i);
+		if(*aux != -1){
+			log_info(log_memoria,"[CLIENTE] Cerrando socket %d",*aux);
+			close(aux);
+		}
+		free(aux);
+	}
+	list_destroy(clientes_activos);
+	pthread_mutex_unlock(&mutex_clientes_activos);
+	log_info(log_memoria,"[CLIENTE] Todos los sockets de clientes fueron cerrados");
+}
+
+void  INThandler(int sig)
+{
+	signal(sig, SIG_IGN);
+	log_info(log_memoria,"[CATCHING SIGNAL] Cierro sockets clientes antes de salir");
+	cerrar_todos_clientes();
+
+	log_info(log_memoria,"[CATCHING SIGNAL] Libero memoria");
+//	liberar_todo_por_cierre_de_modulo();
+	liberar_memoria_gossiping();
+
+	log_info(log_memoria,"[CATCHING SIGNAL] Saliendo");
+	exit(0);
+}
+
 void* hilo_servidor(int * socket_p){
 	int socket = *socket_p;
 	cliente_com_t cliente;
@@ -286,6 +358,7 @@ void* hilo_servidor(int * socket_p){
 				args.socket_cliente = cliente.socket;
 				args.requiere_lfs = false;
 				dar_bienvenida_cliente(cliente.socket, MEMORIA, "Bienvenido!");
+				cliente_dar_de_alta(cliente.socket);
 				pthread_create(&thread,NULL,(void *)hilo_cliente, &args );
 				pthread_detach(thread);
 				break;
@@ -293,6 +366,7 @@ void* hilo_servidor(int * socket_p){
 				args.socket_cliente = cliente.socket;
 				args.requiere_lfs = true;
 				dar_bienvenida_cliente(cliente.socket, MEMORIA, "Bienvenido!");
+				cliente_dar_de_alta(cliente.socket);
 				pthread_create(&thread,NULL,(void *)hilo_cliente, &args );
 				pthread_detach(thread);
 				break;
@@ -367,6 +441,7 @@ void * hilo_cliente(hilo_cliente_args_t *args)
 				if(socket_lfs != -1)
 					close(socket_lfs);
 				fin = true;
+				cliente_dar_de_baja(socket_cliente);
 				if(socket_cliente != -1)
 					close(socket_cliente);
 				break;
@@ -382,7 +457,6 @@ void * hilo_cliente(hilo_cliente_args_t *args)
 
 int responder_gossiping(gos_com_t recibido,id_com_t id_proceso,int socket)
 {
-#ifdef EJECUTAR_GOSSIPING
 	gos_com_t conocidas = armar_vector_seeds(id_proceso);
 	incorporar_seeds_gossiping(recibido);
 	if(enviar_gossiping(socket,conocidas) == -1){
@@ -390,7 +464,6 @@ int responder_gossiping(gos_com_t recibido,id_com_t id_proceso,int socket)
 		return -1;
 	}
 	borrar_gossiping(conocidas);
-#endif
 	return 1;
 }
 
