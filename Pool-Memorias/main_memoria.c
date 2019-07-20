@@ -162,7 +162,7 @@ int conectar_a_lfs(bool inicializando, int *tam_valor)
 	snprintf(puerto_fs,19,"%d",arc_config->puerto_fs);
 	imprimirMensaje2(log_memoria,"[CONECTANDO A LFS] Me voy a intentar conectar a ip: <%s> puerto: <%s>", arc_config->ip_fs, puerto_fs);
 	int socket = conectar_a_servidor(arc_config->ip_fs,puerto_fs,memoria);
-	printf("\nOBTUVE RESPUESTA\n\n\n");
+//	printf("\nOBTUVE RESPUESTA\n\n\n");
 	if(socket == -1){
 		imprimirError(log_memoria,"[CONECTANDO A LFS] No fue posible conectarse con lissandra. TERMINANDO\n");
 		return -1;
@@ -897,7 +897,7 @@ char *armar_insert(char *respuesta_select, char *tab, int key)
 		return NULL;
 	}
 	retval = malloc(MAX_LONG_INSERT);
-	snprintf(retval,MAX_LONG_INSERT-1,"INSERT %s %d %s %s", tab,key, aux[0], aux[1]);
+	snprintf(retval,MAX_LONG_INSERT-1,"INSERT %s %d \"%s\" %s", tab,key, aux[0], aux[1]);
 	for(int j=0; j<cant ; j++){
 		free(aux[j]);
 	}
