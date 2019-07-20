@@ -123,17 +123,17 @@ typedef struct{
 
 
 enum comandos{
-	SELECT = 0,
-	INSERT,
-	CREATE,
-	DESCRIBE,
-	DROP,
-	JOURNAL,
-	ADD,
-	RUN,
-	METRICS,
-	SALIR
-	
+	Select = 0,
+	insert,
+	create,
+	describe,
+	drop,
+	journal,
+	add,
+	run,
+	metrics,
+	salir
+
 };
 
 typedef uint64_t timestamp_t;

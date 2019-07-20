@@ -118,6 +118,19 @@ const char* comandosPermitidos[] = { "SELECT", "INSERT", "CREATE", "DESCRIBE",
 
 };
 
+enum comandos{
+	SELECT = 0,
+	INSERT,
+	CREATE,
+	DESCRIBE,
+	DROP,
+	JOURNAL,
+	ADD,
+	RUN,
+	METRICS,
+	SALIR
+
+};
 
 /*
  * Planificador
