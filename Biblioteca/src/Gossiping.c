@@ -168,6 +168,14 @@ int conozco_memoria(seed_com_t memoria)
 	return retval;
 }
 
+t_list* lista_seeds(void){
+	t_list* aux;
+	pthread_mutex_lock(&gossip_table_mutex);
+	aux = list_duplicate(g_lista_seeds);
+	pthread_mutex_unlock(&gossip_table_mutex);
+	return aux;
+}
+
 void borrar_seed(seed_com_t *memoria)
 {
 	seed_com_t *aux;

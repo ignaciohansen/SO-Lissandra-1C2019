@@ -133,7 +133,7 @@ enum comandos{
 	run,
 	metrics,
 	salir
-	
+
 };
 
 typedef uint64_t timestamp_t;
