@@ -466,11 +466,11 @@ void cargarBitmap() {
 
 int abrirBitmap() {
 
-	char* fs_path = string_new();
+	/*char* fs_path = string_new();
 
-	string_append(&fs_path, bitmapPath);
+	string_append(&fs_path, bitmapPath);*/
 
-	int bitmap = open(fs_path, O_RDWR);
+	int bitmap = open(bitmapPath, O_RDWR);
 	struct stat mystat;
 
 	if (fstat(bitmap, &mystat) < 0) {
@@ -487,32 +487,38 @@ int abrirBitmap() {
 	if (bmap == MAP_FAILED) {
 		log_error(logger, "algo fallo en el mmap");
 	}
+
+	int bytesAEscribirAux = metadataLFS->blocks / 8;
+
+	if (metadataLFS->blocks % 8 != 0)
+		bytesAEscribirAux++;
 //	log_info(logger,"Liberaron la metadata y voy a romper");
 //	log_info(logger,"voy a crear bitarray para %d bloques",metadataLFS->blocks);
-	bitarray = bitarray_create_with_mode(bmap, metadataLFS->blocks / 8,
+	bitarray = bitarray_create_with_mode(bmap, bytesAEscribirAux,
 			MSB_FIRST);
 
 	imprimirMensajeProceso(
 			"[BITMAP ABIERTO] ya se puede operar con los bloques");
 
-	free(fs_path);
+	//free(fs_path);
 	return 0;
 }
 
 void crearBitarray() {
 
-	bytesAEscribir = metadataLFS->blocks / 8;
+	int bytesAEscribirAux = metadataLFS->blocks / 8;
 
 	if (metadataLFS->blocks % 8 != 0)
-		bytesAEscribir++;
+		bytesAEscribirAux++;
 
+	log_info(logger, "bytes a escribir: %d", bytesAEscribirAux);
 	/*if (fopen(bitmapPath, "rb") != NULL) {
 
 	 return NULL;
 	 }*/
 
-	char* bitarrayAux = malloc(bytesAEscribir);
-	bzero(bitarrayAux, bytesAEscribir);
+	char* bitarrayAux = malloc(bytesAEscribirAux);
+	bzero(bitarrayAux, bytesAEscribirAux);
 
 	archivoBitmap = fopen(bitmapPath, "wb");
 
@@ -522,7 +528,7 @@ void crearBitarray() {
 		exit(-1);
 	}
 
-	fwrite(bitarrayAux, bytesAEscribir, 1, archivoBitmap);
+	fwrite(bitarrayAux, bytesAEscribirAux, 1, archivoBitmap);
 
 	imprimirMensajeProceso(
 			"[BITMAP CREADO] ya se puede operar con los bloques");
@@ -544,7 +550,13 @@ void persistirCambioBitmap() {
 	 log_error(logger, "error al abrir el archivo Bitmap");
 	 }*/
 
-	fwrite(bitarray->bitarray, bytesAEscribir, 1, archivoBitmap);
+	int bytesAEscribirAux = metadataLFS->blocks / 8;
+
+	if (metadataLFS->blocks % 8 != 0)
+		bytesAEscribirAux++;
+
+
+	fwrite(bitarray->bitarray, bytesAEscribirAux, 1, archivoBitmap);
 
 	//fclose(archivoBitmap);
 
@@ -570,7 +582,7 @@ int estadoBloqueBitmap(int bloque) {
 int ocuparBloqueLibreBitmap(int bloque) {
 
 	bitarray_set_bit(bitarray, bloque);
-	persistirCambioBitmap();
+	//persistirCambioBitmap();
 
 	return 0;
 }
@@ -578,7 +590,7 @@ int ocuparBloqueLibreBitmap(int bloque) {
 int liberarBloqueBitmap(int bloque) {
 
 	bitarray_clean_bit(bitarray, bloque);
-	persistirCambioBitmap();
+	//persistirCambioBitmap();
 
 	return 0;
 }

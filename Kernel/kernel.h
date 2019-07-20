@@ -118,7 +118,7 @@ const char* comandosPermitidos[] = { "SELECT", "INSERT", "CREATE", "DESCRIBE",
 
 };
 
-enum comandos{
+enum comandos2{
 	SELECT = 0,
 	INSERT,
 	CREATE,
