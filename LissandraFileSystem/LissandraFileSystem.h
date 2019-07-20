@@ -19,7 +19,7 @@
 #include <errno.h>
 #include <time.h>
 
-//#define MARTIN
+#define MARTIN
 #ifdef MARTIN
 	#define LOG_PATH "/home/martin/Documentos/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Log/LOG_LFS.txt"
 	#define PATH_LFILESYSTEM_CONFIG "/home/martin/Documentos/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Config/LFS_CONFIG.txt"

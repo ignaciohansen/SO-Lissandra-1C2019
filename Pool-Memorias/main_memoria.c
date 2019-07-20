@@ -79,7 +79,6 @@ int main(int argc, char **argv)
 	socket_lfs = -1;
 
 	printf("\n*Conectado a LFS");
-	max_valor_key++;
 	arc_config->max_value_key = max_valor_key; //agrego +1 para contemplar el '/0'
 	imprimirMensaje1(log_memoria,"[MAIN] Iniciando con tamaño máximo de valor %d",arc_config->max_value_key);
 
