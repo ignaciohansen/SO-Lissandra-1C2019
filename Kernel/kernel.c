@@ -25,6 +25,15 @@ int main() {
 			arc_config->multiprocesamiento);
 	semaforoIniciar(&multiprocesamiento, arc_config->multiprocesamiento);
 
+	mutexIniciar(&mutex_retardos_kernel);
+	char* path_de_kernel = malloc(strlen(PATH_KERNEL_CONFIG) + 1);
+	strcpy(path_de_kernel, PATH_KERNEL_CONFIG);
+	pthread_t inotify_c;
+	pthread_create(&inotify_c, NULL, (void *) inotifyAutomatico,path_de_kernel);
+	pthread_detach(inotify_c);
+	printf("\n*Hilo de actualización de retardos y Quantum corriendo");
+	log_info(log_kernel,"Hilo de actualización de retardos y Quantum corriendo");
+
 	inicializarListasPlanificador();
 	lista_memorias = list_create();
 
@@ -260,8 +269,6 @@ void consola() {
 
 		//free(linea);
 
-
-
 	}
 }
 
@@ -311,496 +318,7 @@ void validarLinea(char** lineaIngresada, t_log* logger) {
 	}
 
 	log_info(log_kernel, "El tamanio del vector de comandos es: %d", tamanio);
-	/*
-	 validarComando(lineaIngresada, tamanio, log_kernel);*/
 
-}
-
-int conexionAMemoria(char ip[LARGO_IP], char puerto[LARGO_PUERTO]) { // Retorn socket por el cual se envían los mensajes.
-
-	socket_CMemoria = nuevoSocket(log_kernel);
-
-	if (socket_CMemoria == ERROR) {
-
-		log_error(log_kernel,
-				"Hubo un problema al querer crear el socket desde Kernel. Salimos del Proceso");
-
-		return ERROR;
-	}
-
-	log_info(log_kernel, "El Socket creado es: %d .", socket_CMemoria);
-
-	log_info(log_kernel,
-			"por llamar a la funcion connectarSocket() para conectarnos con Memoria");
-
-	log_info(log_kernel, "PRUEBA: %s ", ip);
-
-	int aux_puerto = atoi(puerto);
-	resultado_Conectar = conectarSocket(socket_CMemoria, ip, aux_puerto,
-			log_kernel);
-
-	if (resultado_Conectar == ERROR) {
-		log_error(log_kernel,
-				"Hubo un problema al querer Conectarnos con Memoria. Salimos del proceso");
-		return -1;
-	} else {
-		log_info(log_kernel, "Nos conectamos con exito, el resultado fue %d",
-				resultado_Conectar);
-		return socket_CMemoria;
-	}
-}
-
-int conexionKernel() { // Retorn socket por el cual se envían los mensajes.
-
-	socket_CMemoria = nuevoSocket(log_kernel);
-
-	if (socket_CMemoria == ERROR) {
-
-		log_error(log_kernel,
-				"Hubo un problema al querer crear el socket desde Kernel. Salimos del Proceso");
-
-		return ERROR;
-	}
-
-	log_info(log_kernel, "El Socket creado es: %d .", socket_CMemoria);
-
-	log_info(log_kernel,
-			"por llamar a la funcion connectarSocket() para conectarnos con Memoria");
-
-	log_info(log_kernel, "PRUEBA: %d ", arc_config->puerto_memoria);
-
-	resultado_Conectar = conectarSocket(socket_CMemoria, arc_config->ip_memoria,
-			arc_config->puerto_memoria, log_kernel);
-
-	if (resultado_Conectar == ERROR) {
-		log_error(log_kernel,
-				"Hubo un problema al querer Conectarnos con Memoria. Salimos del proceso");
-		return -1;
-	} else {
-		log_info(log_kernel, "Nos conectamos con exito, el resultado fue %d",
-				resultado_Conectar);
-		return socket_CMemoria;
-	}
-} // int conexionKernel()
-/*
- void validarComando(char** comando, int tamanio, t_log* logger) {
-
- int resultadoComando = buscarComando(comando[0], logger);
-
- int tamanioCadena = 0;
-
- switch (resultadoComando) {
-
- case Select: {
- printf("Se selecciono Select\n");
-
- log_info(log_kernel, "Se selecciono select");
-
- if (tamanio == 3) {
-
- log_info(log_kernel,
- "Cantidad de parametros correctos ingresados para el comando select");
-
- //	t_pcb* procesoNuevo = crearEstructurasAdministrativas();
-
- //agregarAListo(procesoNuevo);
-
- mensaje = malloc(
- string_length(comando[1]) + string_length(comando[2]) + 1);
-
- log_info(log_kernel, "El tamanio de la cadena a guardar es: %d",
- tamanioCadena);
-
- strcpy(mensaje, comando[1]);
- strcpy(mensaje, comando[2]);
-
- log_info(log_kernel, "En mensaje ya tengo: %s", mensaje);
-
- armarMensajeBody(tamanio, mensaje, comando);
-
- log_info(log_kernel, "Por llamar a enviarMensaje");
- int resultadoEnviarComando = enviarMensaje(Select, tamanio, mensaje,
- log_kernel);
- }
-
- }
- break;
-
- case insert: {
- printf("Insert seleccionado\n");
-
- log_info(log_kernel, "Se selecciono insert");
-
- if (tamanio == 4 || tamanio == 5) {
-
- log_info(log_kernel,
- "Cantidad de parametros correctos ingresados para el comando insert");
-
- log_info(log_kernel, "Por llamar a enviarMensaje");
-
- if (tamanio == 4) {
-
- mensaje = malloc(
- string_length(comando[1]) + string_length(comando[2])
- + string_length(comando[3]) + 2);
- log_info(log_kernel, "Por guardar memoria para 3 argumentos");
- } else {
- mensaje = malloc(
- string_length(comando[1]) + string_length(comando[2])
- + string_length(comando[3])
- + string_length(comando[4]) + 3);
- log_info(log_kernel, "Por guardar memoria para 4 argumentos");
- }
-
- log_info(log_kernel, "Por copiar el primer parametro del comando");
-
- strcpy(mensaje, comando[1]);
-
- log_info(log_kernel, "En mensaje ya tengo: %s", mensaje);
-
- armarMensajeBody(tamanio, mensaje, comando);
- }
-
- int resultadoEnviarComando = enviarMensaje(insert, tamanio, mensaje,
- log_kernel);
- }
- break;
-
- case create: {
- printf("Create seleccionado\n");
- log_info(log_kernel, "Se selecciono Create");
-
- if (tamanio == 5) {
-
- log_info(log_kernel,
- "Cantidad de parametros correctos ingresados para el comando create");
-
- mensaje = malloc(
- string_length(comando[1]) + string_length(comando[2])
- + string_length(comando[3])
- + string_length(comando[4]) + 3);
-
- strcpy(mensaje, comando[1]);
-
- armarMensajeBody(tamanio, mensaje, comando);
-
- log_info(log_kernel, "Por llamar a enviarResultado");
-
- int resultadoEnviarComando = enviarMensaje(create, tamanio, mensaje,
- log_kernel);
- }
-
- }
- break;
-
- case describe: {
- printf("Describe seleccionado\n");
- log_info(log_kernel, "Se selecciono Describe");
-
- if (tamanio == 1) {
-
- log_info(log_kernel,
- "Cantidad de parametros correctos ingresados para el comando Describe");
-
- mensaje = malloc(string_length(comando[0]));
-
- strcpy(mensaje, comando[0]);
-
- log_info(log_kernel, "En mensaje ya tengo: %s y es de tamanio: %d",
- mensaje, string_length(mensaje));
-
- log_info(log_kernel, "Por llamar a enviarMensaje");
-
- int resultadoEnviarComando = enviarMensaje(describe, tamanio,
- mensaje, log_kernel);
-
- }
- if (tamanio == 2) {
-
- log_info(log_kernel,
- "Cantidad de parametros correctos ingresados para el comando Describe");
-
- mensaje = malloc(string_length(comando[1]));
-
- strcpy(mensaje, comando[1]);
-
- log_info(log_kernel, "En mensaje ya tengo: %s y es de tamanio: %d",
- mensaje, string_length(mensaje));
-
- log_info(log_kernel, "Por llamar a enviarMensaje");
-
- int resultadoEnviarComando = enviarMensaje(describe, tamanio,
- mensaje, log_kernel);
-
- }
-
- }
- break;
-
- case drop: {
- printf("Drop seleccionado\n");
- log_info(log_kernel, "Se selecciono Drop");
-
- if (tamanio == 2) {
-
- log_info(log_kernel,
- "Cantidad de parametros correctos ingresados para el comando Drop");
-
- mensaje = malloc(string_length(comando[1]));
-
- strcpy(mensaje, comando[1]);
-
- log_info(log_kernel, "Queriamos mandar esto: %s", comando[1]);
- log_info(log_kernel, "Y se mando esto: %s", mensaje);
-
- int resultadoEnviarComando = enviarMensaje(drop, tamanio, mensaje,
- log_kernel);
- }
-
- }
- break;
-
- case add: {
- printf("Add seleccionado\n");
- log_info(log_kernel, "Se selecciono Add");
-
- if (tamanio == 5) {
-
- log_info(log_kernel,
- "Cantidad de parametros correctos ingresados para el comando add");
-
- printf(
- "Cantidad de parametros correctos ingresados para el comando add \n");
-
- }
-
- }
- break;
-
- case run: {
- printf("Run seleccionado\n");
- log_info(log_kernel, "Se selecciono Run");
-
- if (tamanio == 2) {
-
- log_info(log_kernel,
- "Cantidad de parametros correctos ingresados para el comando run");
-
- printf(
- "Cantidad de parametros correctos ingresados para el comando run \n");
-
- comandoRun(comando[1], logger);
-
- }
-
- }
- break;
-
- case journal: {
-
- printf("Journal seleccionado\n");
- log_info(log_kernel, "Se selecciono Journal");
-
- if (tamanio == 1) {
-
- log_info(log_kernel,
- "Cantidad de parametros correctos ingresados para el comando Journal");
-
- printf(
- "Cantidad de parametros correctos ingresados para el comando Journal \n");
-
- }
-
- }
- break;
-
- case metrics: {
-
- printf("Metrics seleccionado\n");
- log_info(log_kernel, "Se selecciono Metrics");
-
- if (tamanio == 1) {
-
- log_info(log_kernel,
- "Cantidad de parametros correctos ingresados para el comando Metrics");
-
- printf(
- "Cantidad de parametros correctos ingresados para el comando Metrics \n");
-
- }
-
- }
- break;
-
- default: {
- printf("Comando mal ingresado. \n");
- log_error(log_kernel, "Opcion mal ingresada por teclado en la consola");
- }
- break;
-
- }
- }
- /*
- int buscarComando(char* comando, t_log* logger) {
-
- log_info(logger, "Recibimos el comando: %s", comando);
-
- int i = 0;
-
- for (i; i <= salir && strcmp(comandosPermitidos[i], comando); i++) {
-
- }
-
- log_info(logger, "Se devuelve el valor %d", i);
-
- return i;
-
- }*/
-
-int enviarMensaje(int comando, int tamanio, char* mensaje, t_log* logger) {
-
-	log_info(logger, "En funcion enviarMensaje.");
-
-	t_header* headerParaEnviar = malloc(sizeof(t_header));
-
-	log_info(logger, "Por guardar en la estructura del Header, el comando: %d",
-			comando);
-	headerParaEnviar->comando = comando;
-
-	log_info(logger,
-			"Por guardar en la estructura del Header, la cantidad de argumentos: %d",
-			tamanio);
-	headerParaEnviar->cantArgumentos = tamanio - 1; //Le restamos uno ya esta suma tiene en cuenta el comando
-
-	log_info(logger, "Conectamos por socket con la memoria.");
-	socket_CMemoria = conexionKernel();
-
-	log_info(logger, "El tamanio del mensaje que se va a mandar es de: %d",
-			string_length(mensaje));
-	headerParaEnviar->tamanio = string_length(mensaje);
-
-	log_info(logger, "tamanio del header a enviar: %d", sizeof(t_header));
-
-	resultado_sendMsj = socketEnviar(socket_CMemoria, headerParaEnviar,
-			sizeof(t_header), log_kernel);
-
-	free(headerParaEnviar); //AGREGADO PARA LIMPIAR LEAK
-
-	if (resultado_sendMsj == ERROR) {
-
-		log_error(log_kernel, "Error al enviar mensaje a memoria. Salimos");
-
-		return ERROR;
-	}
-
-	log_info(log_kernel, "El mensaje se envio correctamente");
-
-	log_info(log_kernel, "Preparados para recibir %d",
-			sizeof(confirmacionRecibida));
-	int recibiendoMensaje = socketRecibir(socket_CMemoria,
-			&confirmacionRecibida, sizeof(confirmacionRecibida), log_kernel);
-
-	log_info(logger, "Lo que llego fue: %d", confirmacionRecibida);
-
-	if (confirmacionRecibida == sizeof(t_header)) {
-
-		log_info(logger,
-				"La confirmacion que llego fue correcta, se procedera a enviar el body: %s con tamanio: %d",
-				mensaje, strlen(mensaje));
-		printf(
-				"La confirmacion que llego fue correcta, se procedera a enviar el body: %s\n",
-				mensaje);
-
-		resultado_sendMsj = socketEnviar(socket_CMemoria, mensaje,
-				strlen(mensaje), log_kernel);
-
-		if (resultado_sendMsj == strlen(mensaje)) {
-
-			log_info(logger, "Se envio el body correctamente");
-			printf("Se envio el body Correctamente. \n");
-		} else {
-
-			log_error(logger, "El body se envio Incorrectamente");
-			printf("El body se envio InCorrectamente. \n");
-		}
-	} else {
-		log_error(logger,
-				"La confirmacion que llego no es correcta, no se enviar el body");
-		printf(
-				"La confirmacion que llego no es correcta, no se envia el body. \n");
-
-	}
-
-	return 0;
-
-}
-
-void armarMensajeBody(int tamanio, char* mensaje, char** comando) {
-
-	log_info(log_kernel, "En funcion armarMensajeBody");
-
-	for (int i = 2; tamanio > i; i++) {
-
-		string_append(&mensaje, &SEPARADOR);
-
-		string_append(&mensaje, comando[i]);
-
-		log_info(log_kernel, "Armando mensaje..: %s", mensaje);
-
-	}
-
-	log_info(log_kernel, "Finalizo el armado con el mensaje Final: %s",
-			mensaje);
-}
-
-void comandoRun(char* path, t_log* logger) {
-
-	fd = fopen(path, "r");
-
-	if (fd == NULL) {
-
-		log_info(log_kernel, "El archivo pasado por path no se encontró");
-		printf("El archivo %s No existe\n", path);
-
-		free(path);
-		return;
-	} else {
-
-		log_info(log_kernel,
-				"El archivo se encontró con exito. Vamos a leerlo");
-		printf("El archivo buscado en la dirección %s existe. Vamos a leerlo\n",
-				path);
-
-		while (!feof(fd)) {
-
-			log_info(log_kernel, "Dentro del while.");
-
-			char bufferPath[MAXSIZE_COMANDO];
-
-			fgets(bufferPath, MAXSIZE_COMANDO, fd);
-
-			strtok(bufferPath, "\n");
-
-			printf("Se leyo del archivo: %s\n", bufferPath);
-
-			log_info(log_kernel, "El tamanio de la cadena es: %d",
-					string_length(bufferPath));
-
-			log_info(log_kernel, "Se leyo del archivo: %s", bufferPath);
-
-			lineaSeparada = string_split(bufferPath, separator);
-
-			validarLinea(lineaSeparada, logger);
-
-		}
-
-		log_info(log_kernel, "Fuera del while principal");
-
-		fclose(fd);
-		free(path);
-
-		return;
-	}
 }
 
 void inicializarListasPlanificador() {
@@ -1130,7 +648,7 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 					pcbParaAgregar->estado = ejecucion;
 
 					mutexBloquear(&mutexColaEjecucion);
-					socket_CMemoria = conexionKernel();
+					//socket_CMemoria = conexionKernel();
 					list_add(colaEjecucion, pcbParaAgregar);
 					enviar_request(socket_CMemoria, req);
 					mutexDesbloquear(&mutexColaEjecucion);
@@ -1233,23 +751,29 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 					int respuesta = enviar_request(socket_CMemoria, req);
 
 					if (respuesta != 0) {
-						log_info(log_kernel,"Hubo un error al enviar la request a memoria");
+						log_info(log_kernel,
+								"Hubo un error al enviar la request a memoria");
 						return;
 					}
-					log_info(log_kernel,"No Hubo error al enviar la request a memoria");
+					log_info(log_kernel,
+							"No Hubo error al enviar la request a memoria");
 
 					msg_com_t msg = recibir_mensaje(socket_CMemoria);
-					if(msg.tipo == RESPUESTA){
+					if (msg.tipo == RESPUESTA) {
 
-						log_info(log_kernel,"Llego un mensaje de tipo RESPUESTA");
+						log_info(log_kernel,
+								"Llego un mensaje de tipo RESPUESTA");
 
 						resp_com_t respuesta = procesar_respuesta(msg);
-						if(respuesta.tipo == RESP_OK){
-							printf("La respuesta fue correcta %d: ",respuesta.tipo);
-							log_info(log_kernel,"La respuesta fue correcta luego de procesarla");
-						}else{
+						if (respuesta.tipo == RESP_OK) {
+							printf("La respuesta fue correcta %d: ",
+									respuesta.tipo);
+							log_info(log_kernel,
+									"La respuesta fue correcta luego de procesarla");
+						} else {
 
-							log_info(log_kernel,"La respuesta no fue correcta luego de procesarla");
+							log_info(log_kernel,
+									"La respuesta no fue correcta luego de procesarla");
 						}
 
 						borrar_respuesta(respuesta);
@@ -1257,18 +781,21 @@ void agregarAEjecutar(t_pcb* pcbParaAgregar) {
 					}
 
 					if (msg.tipo != RESPUESTA) {
-						imprimirError(log_kernel,"[CREATE] Memoria no responde como se espera");
+						imprimirError(log_kernel,
+								"[CREATE] Memoria no responde como se espera");
 						borrar_mensaje(msg);
 
 					}
 
 					mutexDesbloquear(&mutexColaEjecucion);
 
-					log_info(log_kernel,"Desbloqueamos el Mutex de Ejecucion y el PCB fue encolado a la cola de Ejecucion.");
+					log_info(log_kernel,
+							"Desbloqueamos el Mutex de Ejecucion y el PCB fue encolado a la cola de Ejecucion.");
 
 					free(req.str);
 
-					pcbParaAgregar->progamCounter =	pcbParaAgregar->progamCounter + i;
+					pcbParaAgregar->progamCounter =
+							pcbParaAgregar->progamCounter + i;
 
 					log_info(log_kernel, "Ultima instruccion del FOR");
 
@@ -1358,46 +885,7 @@ void actualizarMemoriasDisponibles() {
 
 }
 
-int buscarMemoria(char** pruebaPath) {
-
-	seed_com_t *aux;
-
-	int retval = -1;
-
-	int aux_num = atoi(pruebaPath[2]);
-	//pthread_mutex_lock(&gossip_table_mutex);
-
-	log_info(log_kernel, "El numero de la memoria a buscar es: %s",
-			pruebaPath[2]);
-
-	for (int i = 0; i < list_size(g_lista_seeds); i++) {
-
-		aux = list_get(g_lista_seeds, i);
-
-		if (aux->numMemoria == aux_num) {
-
-			log_info(log_kernel,
-					"Se encontró la memoria: %s en a lista de seeds. Por devolver",
-					pruebaPath[2]);
-			retval = aux_num;
-
-			//break;
-		}
-	}
-
-	//pthread_mutex_unlock(&gossip_table_mutex);
-
-	if (retval >= 0) {
-		log_info(log_kernel, "La memoria se encontró,devolviendo");
-		return retval;
-	} else {
-		log_info(log_kernel, "La memoria no se encontró");
-		return retval;
-	}
-
-}
-
-seed_com_t* buscarMemoria2(char** pruebaPath) {
+seed_com_t* buscarMemoria(char** pruebaPath) {
 
 	seed_com_t *aux = malloc(sizeof(seed_com_t));
 
@@ -1440,7 +928,7 @@ void comandoAdd(char** comandoSeparado) {
 
 	log_info(log_kernel, "Llego el comando ADD.");
 
-	seed_com_t* resultado = buscarMemoria2(comandoSeparado);
+	seed_com_t* resultado = buscarMemoria(comandoSeparado);
 
 	if (resultado != NULL) {
 
@@ -1508,14 +996,40 @@ void comandoJournal(char** comandoSeparado) {
 
 		aux = list_get(g_lista_seeds, i);
 
-		socket_CMemoria = conexionAMemoria(aux->ip, aux->puerto);
+		socket_CMemoria = conectar_a_memoria(aux->ip, aux->puerto);
 
-		enviar_request(socket_CMemoria, req);
+		int respuesta = enviar_request(socket_CMemoria, req);
+
+		if (respuesta != 0) {
+			log_info(log_kernel,
+					"Hubo un error al enviar la request a memoria");
+			return;
+		}
+
+		log_info(log_kernel, "No Hubo error al enviar la request a memoria");
+
+		msg_com_t msg = recibir_mensaje(socket_CMemoria);
+
+		if (msg.tipo == RESPUESTA) {
+
+			log_info(log_kernel, "Llego un mensaje de tipo RESPUESTA");
+
+			resp_com_t respuesta = procesar_respuesta(msg);
+			if (respuesta.tipo == RESP_OK) {
+				printf("La respuesta fue correcta %d: ", respuesta.tipo);
+				log_info(log_kernel,
+						"La respuesta fue correcta luego de procesarla");
+			} else {
+				log_info(log_kernel,
+						"La respuesta no fue correcta luego de procesarla");
+			}
+
+			borrar_respuesta(respuesta);
+
+		}
 
 		free(req.str);
-
 	}
-
 }
 
 void comandoMetrics() {
@@ -1571,3 +1085,95 @@ int conectar_a_memoria(char ip[LARGO_IP], char puerto[LARGO_PUERTO]) {
 	return socket;
 }
 
+void inotifyAutomatico(char* pathDelArchivoAEscuchar) {
+	int length, i = 0;
+	int fd;
+	int wd;
+	char buffer[BUF_LEN];
+	while (1) {
+
+		fd = inotify_init();
+
+		if (fd < 0) {
+			perror("inotify_init");
+		}
+
+		wd = inotify_add_watch(fd, pathDelArchivoAEscuchar,
+		IN_MODIFY | IN_CREATE | IN_DELETE);
+		length = read(fd, buffer, BUF_LEN);
+
+		if (length < 0) {
+			perror("read");
+		}
+
+		while (i < length) {
+			struct inotify_event *event = (struct inotify_event *) &buffer[i];
+			if (event->len) {
+				if (event->mask && IN_CREATE) {
+					printf("The file %s was created.\n", event->name);
+				} else if (event->mask && IN_DELETE) {
+					printf("The file %s was deleted.\n", event->name);
+				} else if (event->mask && IN_MODIFY) {
+					printf("The file %s was modified.\n", event->name);
+				}
+			}
+			i += EVENT_SIZE + event->len;
+		}
+		printf("\nSe han realizado cambios en %s\n", pathDelArchivoAEscuchar);
+		recargarConfiguracion(PATH_KERNEL_CONFIG);
+	}
+	(void) inotify_rm_watch(fd, wd);
+	(void) close(fd);
+
+	return;
+}
+
+void recargarConfiguracion(char* path_config){
+
+	log_info(log_kernel, "[ACTUALIZANDO RETARDOS y QUANTUM] Voy a actualizar");
+
+	mutexBloquear(&mutex_retardos_kernel);
+
+	t_config* auxConfigFile = config_create(path_config);
+
+		if (auxConfigFile != NULL) {
+
+			log_info(log_kernel, "[ACTUALIZANDO RETARDOS y QUANTUM] LEYENDO CONFIGURACION...");
+
+			if (config_has_property(auxConfigFile, "SLEEP_EJECUCION")) {
+
+				arc_config->sleep_ejecucion = config_get_int_value(auxConfigFile,"SLEEP_EJECUCION");
+				log_info(log_kernel, "[ACTUALIZANDO RETARDOS y QUANTUM] SLEEP_EJECUCION: %d",arc_config->sleep_ejecucion);
+
+			} else {
+				log_error(log_kernel, "[ACTUALIZANDO RETARDOS y QUANTUM] NO HAY SLEEP_EJECUCION CONFIGURADO");
+			} // SLEEP_EJECUCION
+
+			if (config_has_property(auxConfigFile, "METADATA_REFRESH")) {
+
+				arc_config->metadata_refresh = config_get_int_value(auxConfigFile, "METADATA_REFRESH");
+				log_info(log_kernel, "[ACTUALIZANDO RETARDOS y QUANTUM] METADATA_REFRESH es de: %d",arc_config->metadata_refresh);
+
+			} else {
+				log_error(log_kernel, "[ACTUALIZANDO RETARDOS y QUANTUM] NO HAY METADATA_REFRESH CONFIGURADO");
+			} // METADATA_REFRESH
+
+			if (config_has_property(auxConfigFile, "QUANTUM")) {
+
+				arc_config->quantum = config_get_int_value(auxConfigFile,"QUANTUM");
+				log_info(log_kernel,"[ACTUALIZANDO RETARDOS y QUANTUM] Valor DEL QUANTUM: %d",arc_config->quantum);
+
+			} else {
+				log_error(log_kernel,"[ACTUALIZANDO RETARDOS y QUANTUM] NO HAY QUANTUM CONFIGURADO");
+			} // QUANTUM
+
+		} else {
+			log_error(log_kernel,"[ACTUALIZANDO RETARDOS y QUANTUM] NO HAY ARCHIVO DE CONFIGURACION DE MODULO DEL KERNEL"); // ERROR: SIN ARCHIVO CONFIGURACION
+		}
+
+		config_destroy(auxConfigFile);
+
+		log_info(log_kernel, "[ACTUALIZANDO RETARDOS y QUANTUM] RETARDOS y QUANTUM ACTUALIZADOS CORRECTAMENTE");
+
+		mutexDesbloquear(&mutex_retardos_kernel);
+}
