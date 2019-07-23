@@ -12,10 +12,11 @@
 
 #include "parser.h"
 #include "LissandraFileSystem.h"
+#include "InotifyLFS.h"
 
 void inicializar_comunicacion(t_log *logger,int tam_valor);
 void* hilo_servidor(int * socket_p);
-void * hilo_cliente(int * socket_p);
+//void * hilo_cliente(int * socket_p);
 void finalizar_comunicacion(void);
 resp_com_t resolver_describe(request_t req);
 resp_com_t resolver_create(request_t req);
@@ -24,6 +25,19 @@ resp_com_t resolver_select(request_t req);
 resp_com_t resolver_insert(request_t req);
 resp_com_t resolver_pedido(request_t req);
 
+
+
+//@NACHO
+
+typedef struct{
+	int socket_cliente;
+	bool requiere_lfs;
+}hilo_cliente_args_t;
+
+void * hilo_cliente(hilo_cliente_args_t *args);
+void cerrar_todos_clientes(void);
+void cliente_dar_de_baja(int socket);
+void cliente_dar_de_alta(int socket);
 
 
 #endif /* LFSCOMUNICACION_H_ */

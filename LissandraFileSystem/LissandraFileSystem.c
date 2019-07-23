@@ -67,7 +67,7 @@ int main() {
 	pthread_create(&hiloDump, NULL, (void*) esperarTiempoDump, NULL);
 
 	//pthread_create(&hiloEjecutor , NULL,(void*) consola, NULL);
-
+	signal(SIGINT, INThandler);
 	//pthread_join(hiloDump, NULL);
 
 	pthread_detach(hiloInotifyLFS);
@@ -82,6 +82,8 @@ int main() {
 	if (socketLFS == -1) {
 		close(socketLFS);
 	}
+
+	cerrar_todos_clientes(); //@LFSCOMUNICACION
 	cerrarTodo();
 
 	// consola();
@@ -642,7 +644,6 @@ void consola() {
 
 	menu();
 
-	//char bufferComando[MAXSIZE_COMANDO];-> Implementacion anterior
 	char* linea;
 
 	while (1) {
@@ -667,21 +668,6 @@ void consola() {
 		}
 
 		if (linea && strcmp(linea, "\n") && strcmp(linea, "")) { //Así no rompe cuando se apreta enter
-		//fgets(bufferComando, MAXSIZE_COMANDO, stdin); -> Implementacion anterior
-
-			/*
-			 comandoSeparado = string_split(linea, separator);
-
-			 if(comandoSeparado != NULL){
-			 validarLinea(comandoSeparado);
-			 int i;
-			 log_info(logger, "Liberando comando alocado: %s", linea);
-			 for (i = 0; comandoSeparado[i] != NULL; i++) {
-			 free(comandoSeparado[i]);
-			 }
-			 free(comandoSeparado);
-			 }
-			 */
 			log_info(logger, "Llego aca");
 			atenderRequest(linea);
 		}
@@ -1511,7 +1497,11 @@ void INThandler(int sig) {
 	//char  c;
 
 	signal(sig, SIG_IGN);
-	printf("OUCH, did you hit Ctrl-C?\n");
+	printf("\n");
+	log_info(logger,"[CATCHING SIGNAL] Cierro sockets clientes antes de salir");
+	cerrar_todos_clientes();
+	exit(0);
+
 	//"Do you really want to quit? [y/n] ");
 	/*c = getchar();
 	 if (c == 'y' || c == 'Y')
@@ -3053,7 +3043,7 @@ t_registroMemtable* registroMayorTemporal(char* tabla, u_int16_t key,
 		registro = armarRegistroNulo();
 	}
 	log_info(logger, "Salgo de la función");
-	list_destroy_and_destroy_elements(temporalesTabla,free); //@VALGRIND
+	//list_destroy_and_destroy_elements(temporalesTabla,free); //@VALGRIND - PRUEBA DOBLE FREE
 	return registro;
 }
 
@@ -3952,15 +3942,29 @@ t_registroMemtable *leerBloquesConsecutivosUnaKey(t_list *nroBloques,
 }
 
 void cerrarTodo() {
+	//rwLockEscribir();
 	liberarTodosLosRecursosGlobalesQueNoSeCerraron();
 	sem_destroy(&semaforoQueries);
-	vaciarMemtable();
+	if(dictionary_size(memtable)>0){vaciarMemtable();}
 	dictionary_destroy(memtable);
 	free(metadataLFS->magic_number);
 	free(metadataLFS);
 	list_destroy_and_destroy_elements(listaTablasInsertadas,free);
 	dictionary_destroy_and_destroy_elements(dicSemTablas,free);
 	dictionary_destroy_and_destroy_elements(dicHilosCompactacion,(void*)matarYBorrarHilos);
+	//rwLockDesbloquear();
+
+	/*for(int i=0; i<dictionary_size(dicSemTablas); i++) {
+			semsTabla = dictionary_get(dicSemTablas, i);
+			//rwLockLeer(semsTabla->rwLockTabla);
+		}
+
+		*///@gian por aqui
+
+		/*for(int i=0; i<dictionary_size(dicSemTablas); i++) {
+			t_sems_tabla* semsTabla = dictionary_get(i);
+			//rwLockDesbloquear(semsTabla->rwLockTabla);
+		}*/
 }
 
 void matarYBorrarHilos(pthread_t *thread)
