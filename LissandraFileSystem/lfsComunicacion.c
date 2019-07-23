@@ -301,6 +301,7 @@ resp_com_t resolver_drop(request_t req) {
 
 resp_com_t resolver_select(request_t req) {
 	t_registroMemtable* ret_val;
+	resp_com_t respuesta;
 	imprimirMensaje(logger, "[RESOLVIENDO SELECT] Entro a función");
 
 	if (req.cant_args == 2) {
@@ -313,13 +314,17 @@ resp_com_t resolver_select(request_t req) {
 			borrarRegistro(ret_val);
 			return armar_respuesta(RESP_ERROR_TABLA_NO_EXISTE, NULL);
 		} else if (ret_val->tam_registro == -2) {
-			free(ret_val);
+			borrarRegistro(ret_val);
 			return armar_respuesta(RESP_ERROR_METADATA, NULL);
 		}
+
 		int tamanio = strlen(ret_val->value)+40;
-		char* valueRetorno = malloc(tamanio);
+		char* valueRetorno = malloc(tamanio); //@VALGRIND ESTO NO SE BORRA CON BORRAR RESPUESTA?
 		snprintf(valueRetorno,tamanio, "%s|%llu", ret_val->value,ret_val->timestamp); // value|timestamp
-		return armar_respuesta(RESP_OK, valueRetorno);
+		borrarRegistro(ret_val);
+		respuesta = armar_respuesta(RESP_OK, valueRetorno);
+		free(valueRetorno);
+		return respuesta;
 
 	}
 

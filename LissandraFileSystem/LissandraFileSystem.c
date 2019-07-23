@@ -27,7 +27,7 @@ int dumps_a_dividir = 1;
 //char* registroPorAgregar;
 //int primerVoidEsRegistro = 1;
 
-pthread_mutex_t mutex_dump = PTHREAD_MUTEX_INITIALIZER; //@martin, @gian, @nacho lo puse cuando hice el dump pero habría que revisarlo al hacer la sincro
+//pthread_mutex_t mutex_dump = PTHREAD_MUTEX_INITIALIZER; //@martin, @gian, @nacho lo puse cuando hice el dump pero habría que revisarlo al hacer la sincro
 
 int main() {
 
@@ -44,7 +44,7 @@ int main() {
 
 	cargarBitmap();
 
-	char* puertoString = malloc(LARGO_PUERTO);
+	char puertoString[LARGO_PUERTO];
 	snprintf(puertoString, LARGO_PUERTO, "%d", configFile->puerto_escucha);
 	int socketLFS = iniciar_servidor(configFile->ip, puertoString); // AGREGAR IP A ARCHIV CONFIG @martin
 	if (socketLFS == -1) {
@@ -72,6 +72,7 @@ int main() {
 
 	pthread_detach(hiloInotifyLFS);
 	pthread_detach(hiloDump);
+	pthread_detach(hiloServidor);
 	pthread_join(hiloConsola, NULL);
 	//pthread_kill(hiloDump, SIGKILL);
 	pthread_kill(hiloDump, SIGKILL);
@@ -692,6 +693,7 @@ void atenderRequest(char* linea) {
 	request_t req;
 	req = parser(linea);
 	resp_com_t respuesta;
+	respuesta.msg.tam = 0;
 
 	switch (req.command) {
 
@@ -1344,9 +1346,10 @@ int obtenerMetadata() {
 		if (config_has_property(metadataFile, "MAGIC_NUMBER")) {
 
 			log_info(logger, "Almacenando magic number");
-
-			metadataLFS->magic_number = config_get_string_value(metadataFile,
+			char* aux = config_get_string_value(metadataFile,
 					"MAGIC_NUMBER");
+			metadataLFS->magic_number = malloc(strlen(aux)+1);
+			strcpy(metadataLFS->magic_number,aux);
 
 			log_info(logger, "el magic number es: %s",
 					metadataLFS->magic_number);
@@ -1370,11 +1373,12 @@ int obtenerMetadata() {
 	log_info(logger,
 			"[FREE] variable metadataFile utlizada para navegar el metadata.");
 
-	free(metadataFile->properties->elements);
-	free(metadataFile->properties);
-	free(metadataFile->path);
-	free(metadataFile);
-	free(metadataPath);	//AGREGADOS PARA LIMPIEZA DE LEAKS
+//	free(metadataFile->properties->elements);
+//	free(metadataFile->properties);
+//	free(metadataFile->path);
+//	free(metadataFile);
+	free(metadataPath);
+	config_destroy(metadataFile);
 
 	log_info(logger, "result: %d", result);
 
@@ -1531,12 +1535,12 @@ void esperarTiempoDump() {
 		mutexDesbloquear(&listaTablasInsertadas_mx);
 		if (tam > 0) {
 			//signal(SIGINT, INThandler);
-			pthread_mutex_lock(&mutex_dump);
+			//pthread_mutex_lock(&mutex_dump);
 			log_info(logger, "Se encontraron cosas, se hace el dump");
 //			log_info(logger, "[DEBUG] IGNORANDO DUMP!!!!!");
 			realizarDump();
 			printf("\n****Se realizó un DUMP****\n>");
-			pthread_mutex_unlock(&mutex_dump);
+			//pthread_mutex_unlock(&mutex_dump);
 			cantidad_de_dumps++;
 			//pause();
 		} else {
@@ -1559,7 +1563,10 @@ void realizarDump() {
 		indiceTablaParaTamanio = i;
 		log_info(logger, "la tabla insertada en la memtable es %s", tabla);
 		char* path = armarPathTablaParaDump(tabla, cantidad_de_dumps);
+		log_info(logger, "[DEBUG] VOY A CREAR EL TMP");
 		crearArchivoTemporal(path, tabla);
+		//free(path)   @VALGRIND
+
 		//tamanioRegistros[i] = 0;
 	}
 	log_info(logger, "Se limpia diccionario y la listaTablasInsertadas");
@@ -1650,13 +1657,17 @@ char* armarPathTablaParaDump(char* tabla, int dumps) {
 int crearArchivoTemporal(char* path, char* tabla) {
 
 	// path objetivo: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA/cantidad_de_dumps.tmp
-
+	log_info(logger, "[DEBUG] POR ENTRAR AL MUTEX REGISTROS TABLA");
 	mutexBloquear(&memtable_mx);
 	t_list* listaRegistrosTabla = dictionary_get(memtable, tabla);
 	mutexDesbloquear(&memtable_mx);
+	log_info(logger, "[DEBUG] PASE EL MUTEX REGISTROS TABLA");
 
+	log_info(logger, "[DEBUG] HICE EL GET DE SEM TABLA");
 	t_sems_tabla* semsTabla = dictionary_get(dicSemTablas,tabla);
+	log_info(logger, "[DEBUG] POR ENTRAR AL LECTURA ESCRITURA");
 	rwLockEscribir(&(semsTabla->rwLockTabla));
+	log_info(logger, "[DEBUG] PASE EL LECTURA ESCRITURA");
 //	printf("\nMandale\n");
 
 	t_list* bloquesUsados = list_create();
@@ -1686,8 +1697,8 @@ int crearArchivoTemporal(char* path, char* tabla) {
 				"[DUMP] no hay bloques disponibles para hacer el dump");
 	}
 
-	void* bufferRegistros = malloc(tam_total_registros);
-	bufferRegistros = armarBufferConRegistros(listaRegistrosTabla,
+	//void* bufferRegistros = malloc(tam_total_registros);
+	void* bufferRegistros = armarBufferConRegistros(listaRegistrosTabla,
 			tam_total_registros);
 	int resultadoEscritura = escribirVariosBloques(bloquesUsados,
 			tam_total_registros, bufferRegistros);
@@ -1742,6 +1753,7 @@ int crearArchivoTemporal(char* path, char* tabla) {
 
 	rwLockDesbloquear(&(semsTabla->rwLockTabla));
 
+	free(bufferRegistros);
 	list_destroy_and_destroy_elements(bloquesUsados, free);
 
 	return 0;
@@ -1760,8 +1772,7 @@ int tamTotalListaRegistros(t_list* listaRegistros) {
 	for (int i = 0; i < cantidad_registros; i++) {
 		registro = list_get(listaRegistros, i);
 
-		log_info(logger, "[DEBUG] tam registro (%d) = %d", i,
-				registro->tam_registro);
+		//log_info(logger, "[DEBUG] tam registro (%d) = %d", i,registro->tam_registro);
 
 		tam_total_registros += registro->tam_registro - 1; // El -1 porque no estoy escribiendo el \0 al archivo, si no al leer le sobran bytes
 	}
@@ -1857,7 +1868,9 @@ int escribirVariosBloques(t_list* bloques, int tam_total_registros,
 
 	log_info(logger, "[BLOQUE] Reviso que esté todo bien escrito");
 
-	leerBloquesConsecutivos(bloques, tam_total);
+	//@VALGRIND
+	//t_list* registrosLeidos = leerBloquesConsecutivos(bloques, tam_total);
+	//list_destroy_and_destroy_elements(registrosLeidos,(void*)borrarRegistro);
 	return resultado;
 }
 
@@ -2019,7 +2032,7 @@ int abrirArchivoBloque(FILE **fp, int nroBloque, char *modo) {
 }
 
 t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total) {
-	t_list *registros_leidos = list_create();
+	t_list *registros_leidos = list_create(); //@VALGRIND VER DONDE LIBERAR ESTO
 	FILE *bloque;
 
 	char *aux_value = malloc(configFile->tamanio_value + 1);
@@ -2779,10 +2792,17 @@ bool validarKey(char* key) {
 
 char* desenmascararValue(char* value) {
 
-	char* valueSinPimeraComilla = stringTomarDesdePosicion(value, 1);
-	char* valueDesenmascarado = strtok(valueSinPimeraComilla, "\"");
+	char* valueDesenmascarado = malloc(strlen(value)-1);
+
+	for(int i =1;i<strlen(value)-1;i++){
+		valueDesenmascarado[i-1] = value[i];
+
+	}
+	valueDesenmascarado[strlen(value)-2] = '\0';
+	//char* valueDesenmascarado = stringTomarCantidad(value,1,strlen(value)-2);
+
 	log_info(logger, "el value desenmascarado es %s", valueDesenmascarado);
-	//free(valueSinPimeraComilla); //@nacho agregado
+
 	return valueDesenmascarado;
 
 }
@@ -2797,7 +2817,7 @@ t_registroMemtable* armarEstructura(char* value, char* key, char* timestamp) {
 	registroMemtable->tam_registro = tam_registro;
 	registroMemtable->value = malloc(strlen(value) + 1);
 	strcpy(registroMemtable->value, value);
-	u_int64_t timestampRegistro = strtoul(timestamp, NULL, 10);
+	u_int64_t timestampRegistro = strtoull(timestamp, NULL, 10);
 	registroMemtable->timestamp = timestampRegistro;
 	u_int16_t keyRegistro = strtol(key, NULL, 10);
 	registroMemtable->key = keyRegistro;
@@ -2888,10 +2908,9 @@ t_registroMemtable* obtenerRegistroMayor(char* tabla, int key,
 		if (registro == NULL) {
 
 			registro = list_get(listaSegunLugar, i);
-			log_info(logger, "key del registro encontrado %d", registro->key);
+			//log_info(logger, "key del registro encontrado %d", registro->key);
 			if (registro->key != key) {
-				log_info(logger,
-						"Como es distinta, el registro vuelve a ser NULL");
+				//log_info(logger,"Como es distinta, el registro vuelve a ser NULL");
 				registro = NULL;
 			} else {
 				log_info(logger,
@@ -2946,7 +2965,7 @@ t_registroMemtable* obtenerRegistroMayor(char* tabla, int key,
 t_registroMemtable* registroMayorMemtable(char* tabla, u_int16_t key) {
 
 	t_registroMemtable* registro;
-	pthread_mutex_lock(&mutex_dump);
+	//pthread_mutex_lock(&mutex_dump);
 
 	if (dictionary_has_key(memtable, tabla)) {
 		t_list* tableRegisters = dictionary_get(memtable, tabla);
@@ -2963,7 +2982,7 @@ t_registroMemtable* registroMayorMemtable(char* tabla, u_int16_t key) {
 		log_info(logger, "Se armo registro nulo, su timestamp es %llu",
 				registro->timestamp);
 	}
-	pthread_mutex_unlock(&mutex_dump);
+	//pthread_mutex_unlock(&mutex_dump);
 	return registro;
 }
 
@@ -3014,16 +3033,15 @@ t_registroMemtable* registroMayorTemporal(char* tabla, u_int16_t key,
 								aux->timestamp, aux->key, aux->value);
 						if (aux->timestamp > registro->timestamp) {
 							borrarRegistro(registro);
-							//free(registro->value);
-							//free(registro);
-							//registro = aux;
 							registro = crearCopiaRegistro(aux); //@nacho agregado
-
+							//borrarRegistro(aux);
 							log_info(logger,
 									"Pisa al anterior por tener timestamp más grande");
 						}
 					}
+					borrarRegistro(aux);
 				}
+
 				list_destroy_and_destroy_elements(lecturaTMP->bloques,free);
 			}
 			free(lecturaTMP);
@@ -3035,6 +3053,7 @@ t_registroMemtable* registroMayorTemporal(char* tabla, u_int16_t key,
 		registro = armarRegistroNulo();
 	}
 	log_info(logger, "Salgo de la función");
+	list_destroy_and_destroy_elements(temporalesTabla,free); //@VALGRIND
 	return registro;
 }
 
@@ -3059,16 +3078,16 @@ t_registroMemtable* registroMayorParticion(char* tabla, u_int16_t key,
 }
 
 t_registroMemtable* tomarMayorRegistro(t_registroMemtable* reg1,
-		t_registroMemtable* reg2, t_registroMemtable* reg3,
-		t_registroMemtable* reg4) {
+	t_registroMemtable* reg2, t_registroMemtable* reg3,
+	t_registroMemtable* reg4) {
 	t_registroMemtable *auxMayorPuntero;
 	t_registroMemtable *retval;
-
+/*
 	log_info(logger, "timestamp reg1: %llu", reg1->timestamp);
 	log_info(logger, "timestamp reg2: %llu", reg2->timestamp);
 	log_info(logger, "timestamp reg3: %llu", reg3->timestamp);
 	log_info(logger, "timestamp reg4: %llu", reg4->timestamp);
-
+*/
 	if (reg1->timestamp > reg2->timestamp) {
 		auxMayorPuntero = reg1;
 	} else {
@@ -3084,14 +3103,14 @@ t_registroMemtable* tomarMayorRegistro(t_registroMemtable* reg1,
 			auxMayorPuntero = reg4;
 		}
 	}
-	log_info(logger, "verificandoFuncion");
-	log_info(logger, "timestamp reg1: %llu", reg1->timestamp);
-	log_info(logger, "timestamp reg2: %llu", reg2->timestamp);
-	log_info(logger, "timestamp reg3: %llu", reg3->timestamp);
-	log_info(logger, "timestamp reg4: %llu", reg4->timestamp);
-	log_info(logger, "el mayor timestamp  %llu", auxMayorPuntero->timestamp);
+//	log_info(logger, "verificandoFuncion");
+//	log_info(logger, "timestamp reg1: %llu", reg1->timestamp);
+//	log_info(logger, "timestamp reg2: %llu", reg2->timestamp);
+//	log_info(logger, "timestamp reg3: %llu", reg3->timestamp);
+//	log_info(logger, "timestamp reg4: %llu", reg4->timestamp);
+//	log_info(logger, "el mayor timestamp  %llu", auxMayorPuntero->timestamp);
 
-	retval = crearCopiaRegistro(auxMayorPuntero);
+	retval = crearCopiaRegistro(auxMayorPuntero); //@VALGRIND ESTE SE PUEDE LIBERAR? ES EL RETURN DEL SELECT
 
 	return retval;
 }
@@ -3131,7 +3150,7 @@ void iniciarSemaforosCompactacion(void)
 		pthread_create(&hilo,NULL,(void*)correrCompactacion,args);
 		pthread_t *hilo_copia = malloc(sizeof(pthread_t));
 		memcpy(hilo_copia,&hilo, sizeof(pthread_t));
-//		pthread_detach(hilo);
+		pthread_detach(hilo);
 		char *copia2 = malloc(strlen(nombre)+1);
 		strcpy(copia2,nombre);
 		dictionary_put(dicHilosCompactacion,copia2,hilo_copia);
@@ -3157,9 +3176,15 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 		if(semsTabla == NULL){
 			log_info(logger,"es null");
 		}
+
+		//LEER
 		rwLockLeer(&(semsTabla->rwLockTabla));
 
 		t_metadata_tabla *metadata = obtenerMetadataTabla(tabla);
+
+		//rwLockDesbloquear(&(semsTabla->rwLockTabla));
+
+		//@SCRIP -> SI PONGO EL DESBLOQUEAR ACA EN VEZ DE ABAJO, NO SE CUELGA MAS
 
 		if (metadata == NULL) {
 			registroMayor = armarRegistroNulo();
@@ -3178,24 +3203,22 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 		t_registroMemtable* registroMemtable = registroMayorMemtable(tabla,
 				valorKeyU);
 
-		log_info(logger, "Obtuve el registro de la memtable (1ero)");
+
 
 		t_registroMemtable* registroParticion;
 
 		registroParticion = registroMayorParticion(tabla, valorKeyU,
 				particiones);
 
-		log_info(logger, "Obtuve el registro de la particion (2do)");
+
 
 		t_registroMemtable* registroTemporal = registroMayorTemporal(tabla,
 				valorKeyU, ".tmp");
 
-		log_info(logger, "Obtuve el registro del temporal (3ero)");
+
 
 		t_registroMemtable* registroTemporalC = registroMayorTemporal(tabla,
 				valorKeyU, ".tmpc");
-
-		log_info(logger, "Obtuve el registro del temporalC (4to)");
 
 		registroMayor = tomarMayorRegistro(registroMemtable, registroParticion,
 				registroTemporal, registroTemporalC);
@@ -3225,6 +3248,7 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 
 //		free(metadata);
 
+		// NACHO
 		rwLockDesbloquear(&(semsTabla->rwLockTabla));
 
 
@@ -3423,13 +3447,13 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 			}
 			pthread_t hilo;// = malloc(sizeof(pthread_t));
 			args_compactacion_t *args = malloc(sizeof(args_compactacion_t));
-			args->retardo = strtoul(tiempoCompactacion,NULL,10);
+			args->retardo = strtoull(tiempoCompactacion,NULL,10);
 			args->tabla = malloc(strlen(tabla)+1);
 			strcpy(args->tabla,tabla);
 			pthread_create(&hilo,NULL,(void*)correrCompactacion,args);
 			pthread_t *hilo_copia = malloc(sizeof(pthread_t));
 			memcpy(hilo_copia,&hilo, sizeof(pthread_t));
-//			pthread_detach(*hilo);
+			pthread_detach(hilo);
 			char *copia2 = malloc(strlen(tabla)+1);
 			strcpy(copia2,tabla);
 			dictionary_put(dicHilosCompactacion,copia2,hilo_copia);
@@ -3451,9 +3475,8 @@ int comandoInsertSinTimestamp(char* tabla, char* key, char* value) {
 
 	u_int64_t aux = timestamp();
 
-	char timestamp_s[30];
-
-	sprintf(timestamp_s, "%ld", aux);
+	char timestamp_s[40];
+	sprintf(timestamp_s, "%llu", aux);
 
 	log_info(logger, "el timestamp a agregar es: %s", timestamp_s);
 
@@ -3478,7 +3501,7 @@ int comandoInsert(char* tabla, char* key, char* valueOriginal, char* timestamp) 
 			char* valueDesenmascarado = desenmascararValue(value);
 
 			t_registroMemtable* registroPorAgregarE = armarEstructura(valueDesenmascarado, key, timestamp);
-
+			free(valueDesenmascarado);
 			// Verifico que la key ya exista en el memtable, aca se hace el dump
 			mutexBloquear(&memtable_mx);
 			bool tablaRepetida = dictionary_has_key(memtable, tabla);
@@ -3497,10 +3520,10 @@ int comandoInsert(char* tabla, char* key, char* valueOriginal, char* timestamp) 
 				log_info(logger, "[DEBUG] esta tabla en la memtable tiene: ");
 				t_list* tableRegisters2 = dictionary_get(memtable, tabla);
 				log_info(logger, "[DEBUG] tamaño tabla registros %d : ", list_size(tableRegisters2));
-				for (int i = 0; i < list_size(tableRegisters2); i++) {
-					t_registroMemtable * regAux = list_get(tableRegisters2, i);
-					log_info(logger, "[DEBUG] %d <%llu;%d;%s>", i,regAux->timestamp, regAux->key, regAux->value);
-				}
+//				for (int i = 0; i < list_size(tableRegisters2); i++) {
+//					t_registroMemtable * regAux = list_get(tableRegisters2, i);
+//					//log_info(logger, "[DEBUG] %d <%llu;%d;%s>", i,regAux->timestamp, regAux->key, regAux->value);
+//				}
 
 				mutexDesbloquear(&memtable_mx);
 
@@ -3520,15 +3543,17 @@ int comandoInsert(char* tabla, char* key, char* valueOriginal, char* timestamp) 
 				mutexDesbloquear(&listaTablasInsertadas_mx);
 
 			}
-			free(value);
-			/*
-			 free(resultado);
-			 free(elementoDiccionario);*/
-		}
 
+
+			 //free(value);
+
+		}
+		//@VALGRIND
+		free(value);
 	} else {
 		retornoVerificar = -1;
 	}
+
 	return retornoVerificar;
 }
 
@@ -3931,8 +3956,9 @@ void cerrarTodo() {
 	sem_destroy(&semaforoQueries);
 	vaciarMemtable();
 	dictionary_destroy(memtable);
+	free(metadataLFS->magic_number);
+	free(metadataLFS);
 	list_destroy_and_destroy_elements(listaTablasInsertadas,free);
-	fclose(archivoBitmap);
 	dictionary_destroy_and_destroy_elements(dicSemTablas,free);
 	dictionary_destroy_and_destroy_elements(dicHilosCompactacion,(void*)matarYBorrarHilos);
 }
@@ -3952,7 +3978,7 @@ void vaciarMemtable(void)
 
 void borrarListaMemtable(t_list *lista)
 {
-	list_destroy_and_destroy_elements(lista,free);
+	list_destroy_and_destroy_elements(lista,(void *)borrarRegistro);
 }
 
 void liberarTodosLosRecursosGlobalesQueNoSeCerraron() {
@@ -4017,8 +4043,10 @@ t_datos_particion *obtenerDatosParticion(char *path_particion) {
 
 void *correrCompactacion(args_compactacion_t *args)
 {
-	char *tabla = malloc(strlen(args->tabla)+1);
-	strcpy(tabla,args->tabla);
+
+	//char *tabla = malloc(strlen(args->tabla)+1);
+	char* tabla = args->tabla;
+	//strcpy(tabla,args->tabla);
 	uint64_t retardo = args->retardo;
 	free(args);
 	log_info(logger,"[COMPACTACION] Iniciando hilo tabla %s. Retardo %llu milisegundos",tabla,retardo);
@@ -4131,14 +4159,14 @@ int compactarTabla(char *tabla) {
 			log_info(logger,
 					"[COMPACTACION] Voy a leer todo lo que hay en la partición");
 
-			t_list *registros_particion = leerBloquesConsecutivos(
-					datos_particion->bloques, datos_particion->size);
+			t_list *registros_particion = leerBloquesConsecutivos(datos_particion->bloques, datos_particion->size);
 			list_add(registros_tabla, registros_particion);
 			log_info(logger,
 					"[COMPACTACION] %d registros de la particion %d agregados a la lista",
 					list_size(registros_particion), i);
 			list_destroy_and_destroy_elements(datos_particion->bloques, free);
 			free(datos_particion);
+
 		} else {
 			log_info(logger,
 					"[COMPACTACION] Error al obtener los datos de la partición %d",
@@ -4182,6 +4210,7 @@ int compactarTabla(char *tabla) {
 
 			list_destroy_and_destroy_elements(registros_temporal,
 					(void*) borrarRegistro);
+			list_destroy_and_destroy_elements(datos_particion->bloques,free); //@VALGRIND
 			free(datos_particion);
 		} else {
 			log_info(logger,
@@ -4327,8 +4356,8 @@ int guardarRegistrosParticion(char *path_tabla, int particion,
 				"[COMPACTACION] no hay bloques disponibles para hacer la compactación");
 	}
 
-	void* bufferRegistros = malloc(tam_total_registros);
-	bufferRegistros = armarBufferConRegistros(registros_list,
+	//void* bufferRegistros = malloc(tam_total_registros);
+	void* bufferRegistros = armarBufferConRegistros(registros_list,
 			tam_total_registros);
 	int resultadoEscritura = escribirVariosBloques(bloquesUsados,
 			tam_total_registros, bufferRegistros);
@@ -4379,7 +4408,7 @@ int guardarRegistrosParticion(char *path_tabla, int particion,
 	}
 
 	free(path_particion);
-
+	free(bufferRegistros);
 	//list_clean_and_destroy_elements(bloquesUsados, free);
 	list_destroy_and_destroy_elements(bloquesUsados, free);
 
