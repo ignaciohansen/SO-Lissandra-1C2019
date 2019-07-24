@@ -28,7 +28,6 @@
 #include <commons/collections/queue.h>
 #include <commons/collections/list.h>
 // BICLIOTECA
-//#include "../Biblioteca/src/Biblioteca.c"
 #include "../Biblioteca/src/Biblioteca.h"
 // READLINE
 #include <readline/readline.h>
@@ -39,7 +38,7 @@
 
 //GOSSIPING
 #include "../Biblioteca/src/Gossiping.h"
-//#include "../Biblioteca/src/Gossiping.c"
+
 
 #define PATH_KERNEL_CONFIG "../Config/KERNEL.txt"
 #define LOG_PATH "../Log/LOG_KERNEL.txt"
@@ -57,7 +56,8 @@ int resultado_Conectar, resultado_sendMsj;
 //Semaforos
 int valorMultiprocesamiento;
 Mutex countProcess;
-sem_t multiprocesamiento;
+sem_t multiprocesamiento,sem_planificador;
+
 
 typedef struct{
 
@@ -142,14 +142,18 @@ typedef struct{
  * Planificador
  * */
 
-void inicializarListasPlanificador();
+void inicializarListasPlanificador(void);
 void planificar(char* linea);
+void planificadorLargoPlazo(char* linea);
 void agregarAListo(t_pcb* procesoNuevo);
 void agregarANuevo(char* linea);
 t_pcb* crearEstructurasAdministrativas(char* linea);
 void agregarAEjecutar(t_pcb* procesoAgregar);
-void agregarAExit();
+void agregarAExit(t_pcb* pcb);
 int rafagaComandoRun(char* path);
+t_pcb* obtenerColaListos(void);
+void iniciarSemaforos(void);
+void nivelMultiprogramacion(int este_nivel);
 
 pthread_mutex_t mutexColaNuevos;
 pthread_mutex_t mutexColaListos;
