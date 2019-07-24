@@ -11,6 +11,10 @@ t_log *logger_com_lfs = NULL;
 char *g_str_tam_valor = NULL;
 int inicializado = 0;
 
+//CLIENTES @Nacho
+t_list *clientes_activos;
+pthread_mutex_t mutex_clientes_activos = PTHREAD_MUTEX_INITIALIZER;
+
 void inicializar_comunicacion(t_log *logger, int tam_valor) {
 	char aux[100];
 	logger_com_lfs = logger;
@@ -24,28 +28,84 @@ void finalizar_comunicacion(void) {
 	free(g_str_tam_valor);
 }
 
+void cliente_dar_de_alta(int socket)
+{
+	int *copy = malloc(sizeof(int)); //NO HACER UN FREE ACÁ SINO VA A ROMPER, LO HAGO MÁS ADELANTE
+	log_info(logger,"[CLIENTE] Dando de alta cliente en socket %d",socket);
+	memcpy(copy,&socket,sizeof(int));
+	pthread_mutex_lock(&mutex_clientes_activos);
+	list_add(clientes_activos,copy);
+	int activos = list_size(clientes_activos);
+	pthread_mutex_unlock(&mutex_clientes_activos);
+	log_info(logger,"[CLIENTE] Socket cliente %d agregado a la lista de activos",socket);
+	log_info(logger,"[CLIENTE] Hay %d clientes activos",activos);
+}
+
+void cliente_dar_de_baja(int socket)
+{
+	int *aux;
+	bool encontrado = false;
+	log_info(logger,"[CLIENTE] Voy a dar de baja socket %d",socket);
+	pthread_mutex_lock(&mutex_clientes_activos);
+	for(int i=0;i<list_size(clientes_activos);i++){
+		aux = list_get(clientes_activos,i);
+		if(*aux == socket){
+			list_remove(clientes_activos,i);
+			free(aux);
+			log_info(logger,"[CLIENTE] Socket cliente %d sacado de la lista de activos",socket);
+			encontrado = true;
+			break;
+		}
+	}
+	int activos = list_size(clientes_activos);
+	pthread_mutex_unlock(&mutex_clientes_activos);
+	if(encontrado == false)
+		log_info(logger,"[CLIENTE] Socket cliente %d no se dió de baja porque no se encontró en la lista");
+	log_info(logger,"[CLIENTE] Hay %d clientes activos",activos);
+}
+
+void cerrar_todos_clientes(void)
+{
+	pthread_mutex_lock(&mutex_clientes_activos);
+	log_info(logger,"[CLIENTE] Cerrando sockets de clientes activos. Hay %d",list_size(clientes_activos));
+	int *aux;
+	for(int i=0;i<list_size(clientes_activos);i++){
+		aux = list_get(clientes_activos, i);
+		if(*aux != -1){
+			log_info(logger,"[CLIENTE] Cerrando socket %d",*aux);
+			close(aux);
+		}
+		free(aux);
+	}
+	list_destroy(clientes_activos);
+	pthread_mutex_unlock(&mutex_clientes_activos);
+	log_info(logger,"[CLIENTE] Todos los sockets de clientes fueron cerrados");
+}
+
+
 void* hilo_servidor(int * socket_p) {
 	if (!inicializado) {
-		printf(
-				"\nEn lfsComunicacion. Se debe inicializar el módulo antes de arrancar\n");
+		printf("\nEn lfsComunicacion. Se debe inicializar el módulo antes de arrancar\n");
 		return NULL;
 	}
 	int socket_servidor = *socket_p;
 	cliente_com_t cliente;
 	pthread_t thread;
-	imprimirMensaje(logger_com_lfs,
-			"[SERVIDOR] Entrando a hilo de escucha del servidor del LFS");
+	clientes_activos = list_create();
+	imprimirMensaje(logger_com_lfs,"[SERVIDOR] Entrando a hilo de escucha del servidor del LFS");
 	while (1) {
 		imprimirMensaje(logger_com_lfs,
 				"[SERVIDOR] Esperando recibir un cliente");
 		cliente = esperar_cliente(socket_servidor);
-		imprimirMensaje(logger_com_lfs,
-				"[SERVIDOR] Cliente intentando conectarse");
+		hilo_cliente_args_t args; //@NACHO
+		imprimirMensaje(logger_com_lfs,"[SERVIDOR] Cliente intentando conectarse");
 		switch (cliente.id) {
 		case MEMORIA:
+			args.socket_cliente = cliente.socket; //@NACHO
+			args.requiere_lfs = false; //@NACHO
 			dar_bienvenida_cliente(cliente.socket, LFS, g_str_tam_valor);
-			pthread_create(&thread, NULL, (void *) hilo_cliente,
-					&cliente.socket);
+			pthread_create(&thread, NULL, (void *) hilo_cliente,&cliente.socket);
+			cliente_dar_de_alta(cliente.socket); //@NACHO
 			pthread_detach(thread);
 			break;
 		default:
@@ -58,10 +118,10 @@ void* hilo_servidor(int * socket_p) {
 	return NULL;
 }
 
-void * hilo_cliente(int * socket_p) {
-	imprimirMensaje(logger_com_lfs,
-			"[CLIENTE] Entrando a hilo de atención a un cliente");
-	int socket_cliente = *socket_p;
+//void * hilo_cliente(int * socket_p) @NACHO
+void * hilo_cliente(hilo_cliente_args_t *args){
+	imprimirMensaje(logger_com_lfs,"[CLIENTE] Entrando a hilo de atención a un cliente");
+	int socket_cliente = args->socket_cliente;
 	imprimirMensaje(logger_com_lfs, "[CLIENTE] Empiezo a esperar mensajes");
 	msg_com_t msg;
 	bool fin = false;
@@ -116,9 +176,10 @@ void * hilo_cliente(int * socket_p) {
 			imprimirMensaje(logger_com_lfs,
 					"[CLIENTE] El cliente se desconectó");
 			borrar_mensaje(msg);
-			if (socket_cliente != -1)
-				close(socket_cliente);
 			fin = true;
+			cliente_dar_de_baja(socket_cliente);
+			if(socket_cliente != -1){close(socket_cliente);}
+
 			break;
 		default:
 			imprimirAviso(logger_com_lfs,
@@ -301,6 +362,7 @@ resp_com_t resolver_drop(request_t req) {
 
 resp_com_t resolver_select(request_t req) {
 	t_registroMemtable* ret_val;
+	resp_com_t respuesta;
 	imprimirMensaje(logger, "[RESOLVIENDO SELECT] Entro a función");
 
 	if (req.cant_args == 2) {
@@ -313,13 +375,19 @@ resp_com_t resolver_select(request_t req) {
 			borrarRegistro(ret_val);
 			return armar_respuesta(RESP_ERROR_TABLA_NO_EXISTE, NULL);
 		} else if (ret_val->tam_registro == -2) {
-			free(ret_val);
+			borrarRegistro(ret_val);
 			return armar_respuesta(RESP_ERROR_METADATA, NULL);
 		}
+
 		int tamanio = strlen(ret_val->value)+40;
-		char* valueRetorno = malloc(tamanio);
+		char* valueRetorno = malloc(tamanio); //@VALGRIND ESTO NO SE BORRA CON BORRAR RESPUESTA?
 		snprintf(valueRetorno,tamanio, "%s|%llu", ret_val->value,ret_val->timestamp); // value|timestamp
-		return armar_respuesta(RESP_OK, valueRetorno);
+		borrarRegistro(ret_val);
+		char* valueRta = malloc(strlen(valueRetorno) + 1); //Agrege esto
+		strcpy(valueRta, valueRetorno);	////Agrege esto
+		respuesta = armar_respuesta(RESP_OK, valueRta);
+		free(valueRetorno); // para descomentar este free
+		return respuesta;
 
 	}
 
