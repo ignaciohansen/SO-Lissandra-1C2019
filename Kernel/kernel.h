@@ -132,6 +132,12 @@ enum comandos2{
 
 };
 
+
+typedef struct{
+	int criterio;
+	char *tabla;
+};
+
 /*
  * Planificador
  * */
@@ -177,9 +183,17 @@ t_tablas tablaPrueba;
 
 typedef struct{
 	int criterio;
-	gos_com_t listMemoriaas;
+	//gos_com_t listMemoriaas;
+	t_list *listMemorias;
 }t_criterios;
 
+
+/*
+ * @martin: acá yo haría un cambio. se me ocurren 2 opciones:
+ *  1) que listMemorias sea una lista (de las de las commons, de tipo t_list)
+ *  2) que listMemorias sea de tipo gos_com_t
+ * Creo que estas son las formas más fáciles para trabajar con varias memorias por criterio
+ */
 typedef struct{
 	int criterio;
 	seed_com_t* listMemoriaas;
@@ -190,7 +204,7 @@ t_criterios criterioSC;
 t_criterios criterioSHC;
 t_criterios criterioEC;
 
-gos_com_t gossipingKernel;
+gos_com_t memoriasConocidasKernel;
 seed_com_t memorias;
 t_list *lista_memorias;
 
@@ -208,7 +222,8 @@ const char* criterios[] = { "SC", "SHC", "EC"};
 int buscarCriterio(char* criterio);
 void actualizarMemoriasDisponibles();
 void gossiping_Kernel();
-seed_com_t* buscarMemoria(char** pruebaPath);
+//seed_com_t* buscarMemoria(char** pruebaPath);//@martin
+seed_com_t* buscarMemoria(int numMemoria);
 
 //
 void  cargarConfiguracion();
@@ -251,5 +266,22 @@ void recargarConfiguracion(char* path_config);
 #define BUF_LEN     ( 1024 * EVENT_SIZE )
 
 void inotifyAutomatico(char* pathDelArchivoAEscuchar);
+
+
+
+//Agrega Martín
+seed_com_t *elegirMemoria(void);
+void *hilo_metadata_refresh(void *args);
+void borrarEntradaListaTablas(t_tablas *tabla);
+void agregarTablaCriterio(t_tablas *tabla);
+void actualizarTablasCriterios(t_list *nuevas);
+t_list *procesarDescribe(char *str);
+int actualizarMetadataTablas(void);
+seed_com_t *elegirMemoriaCriterio(int num_criterio);
+int agregarMemoriaCriterio(seed_com_t *memoria, int num_criterio);
+int agregarMemoriaAsociada(seed_com_t *memoria);
+int eliminarMemoriaCriterio(int numMemoria, t_list *lista_memorias);
+int eliminarMemoriaAsociada(int numMemoria);
+int buscarCriterioTabla(char *nombre_tabla);
 
 #endif /* KERNEL_H_ */
