@@ -29,6 +29,7 @@
 #include <commons/collections/list.h>
 // BICLIOTECA
 #include "../Biblioteca/src/Biblioteca.h"
+#include "parser.h"
 // READLINE
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -143,16 +144,25 @@ typedef struct{
  * */
 
 void inicializarListasPlanificador(void);
-void planificar(char* linea);
+void iniciarSemaforos(void);
+
 void planificadorLargoPlazo(char* linea);
-void agregarAListo(t_pcb* procesoNuevo);
+t_pcb* planificarCortoPlazo(void);
+
 void agregarANuevo(char* linea);
-t_pcb* crearEstructurasAdministrativas(char* linea);
+void agregarAListo(t_pcb* procesoNuevo);
+void agregarAEjecutando(t_pcb* pcb);
 void agregarAEjecutar(t_pcb* procesoAgregar);
 void agregarAExit(t_pcb* pcb);
+
+void ejecutar(t_pcb* pcb, int quantum);
+
+t_pcb* crearEstructurasAdministrativas(char* linea);
+
 int rafagaComandoRun(char* path);
+
 t_pcb* obtenerColaListos(void);
-void iniciarSemaforos(void);
+
 void nivelMultiprogramacion(int este_nivel);
 
 pthread_mutex_t mutexColaNuevos;
@@ -209,6 +219,8 @@ t_criterios criterioSHC;
 t_criterios criterioEC;
 
 gos_com_t memoriasConocidasKernel;
+
+
 seed_com_t memorias;
 t_list *lista_memorias;
 
@@ -281,11 +293,16 @@ void agregarTablaCriterio(t_tablas *tabla);
 void actualizarTablasCriterios(t_list *nuevas);
 t_list *procesarDescribe(char *str);
 int actualizarMetadataTablas(void);
-seed_com_t *elegirMemoriaCriterio(int num_criterio);
+seed_com_t *elegirMemoriaCriterio(int num_criterio, uint16_t key);
 int agregarMemoriaCriterio(seed_com_t *memoria, int num_criterio);
 int agregarMemoriaAsociada(seed_com_t *memoria);
 int eliminarMemoriaCriterio(int numMemoria, t_list *lista_memorias);
 int eliminarMemoriaAsociada(int numMemoria);
 int buscarCriterioTabla(char *nombre_tabla);
+
+resp_com_t enviar_recibir(int socket,char *req_str);
+resp_com_t resolverSelect(request_t request);
+resp_com_t resolverInsert(request_t request);
+resp_com_t resolverPedido(char *linea);
 
 #endif /* KERNEL_H_ */

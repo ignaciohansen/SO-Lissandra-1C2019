@@ -66,7 +66,7 @@ int main() {
 	pthread_t hiloPlanificador;
 	pthread_create(&hiloPlanificador, NULL, (void*) nivelMultiprogramacion, countPID);
 
-	pthread_join(hiloPlanificador, NULL);
+	pthread_detach(hiloPlanificador);
 
 	pthread_t hiloConsola;
 	pthread_create(&hiloConsola, NULL, (void*) consola, NULL);
@@ -489,6 +489,45 @@ int rafagaComandoRun(char* path) {
 	return 0;
 }
 
+void nivelMultiprogramacion(int este_nivel) {
+
+	while (1) {
+
+		t_pcb* pcb = planificarCortoPlazo();
+		ejecutar(pcb, arc_config->quantum);
+	}
+}
+
+void planificadorLargoPlazo(char* linea) {
+
+	agregarANuevo(linea);
+
+	t_pcb* pcbProceso = crearPcb(linea);
+
+	if (pcbProceso == NULL) {
+
+		printf("Hubo un error al crear las estructuras administrativas");
+
+		log_error(log_kernel,"Hubo un error al crear las estructuras administrativas");
+
+		return;
+	}
+
+	agregarAListo(pcbProceso);
+
+	sem_post(&sem_planificador);
+}
+
+t_pcb* planificarCortoPlazo() {
+
+	sem_wait(&sem_planificador);
+	t_pcb* pcb = obtenerColaListos();
+
+	agregarAEjecutando(pcb);
+
+	return pcb;
+}
+
 void agregarANuevo(char* linea) {
 
 	log_info(log_kernel, "Por bloquear Mutex de Cola Nuevos");
@@ -499,6 +538,50 @@ void agregarANuevo(char* linea) {
 	log_info(log_kernel,
 			"Se desbloqueo la cola de nuevos y se agrego la linea a la cola de nuevos");
 
+}
+
+
+
+void agregarAListo(t_pcb* pcbParaAgregar) {
+
+	log_info(log_kernel, "Verificamos si la cola de nuevos tiene un elemento");
+
+	if (list_size(colaNuevos) > 0) {
+		log_info(log_kernel, "Sacamos el elemento de la cola de nuevos");
+		mutexBloquear(&mutexColaNuevos);
+		list_remove(colaNuevos, 0);
+		mutexDesbloquear(&mutexColaNuevos);
+	}
+	log_info(log_kernel,
+			"Bloqueamos Mutex para poder insertar el elemento en la cola de listos");
+
+	mutexBloquear(&mutexColaListos);
+	list_add(colaListos, pcbParaAgregar);
+	pcbParaAgregar->estado = listo;
+	mutexDesbloquear(&mutexColaListos);
+
+	log_info(log_kernel,
+			"Desbloqueamos el mutex y agregamos el PCB a la cola de listos.");
+
+	log_info(log_kernel, "Salimos de la funcion AgregarAListo");
+
+}
+
+void agregarAEjecutando(t_pcb* pcb){
+
+	mutexBloquear(&mutexColaEjecucion);
+	list_add(colaEjecucion, pcb);
+	mutexDesbloquear(&mutexColaEjecucion);
+}
+
+t_pcb* obtenerColaListos(void){
+
+	t_pcb* pcb = malloc(sizeof(t_pcb));
+	mutexBloquear(&mutexColaListos);
+	pcb = list_remove(colaListos, 0);
+	mutexDesbloquear(&mutexColaListos);
+
+	return pcb;
 }
 
 t_pcb* crearEstructurasAdministrativas(char* linea) {
@@ -524,54 +607,8 @@ t_pcb* crearEstructurasAdministrativas(char* linea) {
 	return proceso;
 }
 
-t_pcb* planificarCortoPlazo() {
-
-	sem_wait(&sem_planificador);
-	t_pcb* pcb = obtenerColaListos();
-
-	agregarAEjecutando(pcb);
-
-	return pcb;
-
-}
-
-t_pcb* obtenerColaListos(void){
-
-	t_pcb* pcb = malloc(sizeof(t_pcb));
-	mutexBloquear(&mutexColaListos);
-	pcb = list_remove(colaListos, 0);
-	mutexDesbloquear(&mutexColaListos);
-
-	return pcb;
-}
-
-void agregarAEjecutando(t_pcb* pcb){
-
-	mutexBloquear(&mutexColaEjecucion);
-	list_add(colaEjecucion, pcb);
-	mutexDesbloquear(&mutexColaEjecucion);
-}
 
 
-void planificadorLargoPlazo(char* linea) {
-
-	agregarANuevo(linea);
-
-	t_pcb* pcbProceso = crearPcb(linea);
-
-	if (pcbProceso == NULL) {
-
-		printf("Hubo un error al crear las estructuras administrativas");
-
-		log_error(log_kernel,"Hubo un error al crear las estructuras administrativas");
-
-		return;
-	}
-
-	agregarAListo(pcbProceso);
-
-	sem_post(&sem_planificador);
-}
 
 void ejecutar(t_pcb* pcb, int quantum) {
 
@@ -648,54 +685,6 @@ void ejecutar(t_pcb* pcb, int quantum) {
 
 		agregarAExit(pcb);
 	}
-
-}
-
-void nivelMultiprogramacion(int este_nivel) {
-
-	while (1) {
-
-		t_pcb* pcb = planificarCortoPlazo();
-		ejecutar(pcb, arc_config->quantum);
-	}
-}
-
-void planificar(char* linea) {
-
-	log_info(log_kernel,
-			"En funcion planificar, por llamar a Planificador de largo plazo");
-
-	planificadorLargoPlazo(linea);
-
-}
-
-void agregarAListo(t_pcb* pcbParaAgregar) {
-
-	log_info(log_kernel, "Verificamos si la cola de nuevos tiene un elemento");
-
-	//Eliminar de la lista de new
-
-	pcbParaAgregar->estado = listo;
-
-	log_info(log_kernel, "Sacamos el elemento de la cola de nuevos");
-
-	if (list_size(colaNuevos) > 0) {
-
-		mutexBloquear(&mutexColaNuevos);
-		list_remove(colaNuevos, 0);
-		mutexDesbloquear(&mutexColaNuevos);
-	}
-	log_info(log_kernel,
-			"Bloqueamos Mutex para poder insertar el elemento en la cola de listos");
-
-	mutexBloquear(&mutexColaListos);
-	list_add(colaListos, pcbParaAgregar);
-	mutexDesbloquear(&mutexColaListos);
-
-	log_info(log_kernel,
-			"Desbloqueamos el mutex y agregamos el PCB a la cola de listos.");
-
-	log_info(log_kernel, "Salimos de la funcion AgregarAListo");
 
 }
 
@@ -1725,7 +1714,9 @@ seed_com_t *elegirMemoria(void) {
 	return retval;
 }
 
-seed_com_t *elegirMemoriaCriterio(int num_criterio) {
+seed_com_t *elegirMemoriaCriterio(int num_criterio, uint16_t key)
+{
+
 	//@todo @martin revisar sincro de esta función
 	seed_com_t *retval = NULL;
 
@@ -1815,15 +1806,26 @@ int eliminarMemoriaAsociada(int numMemoria) {
 		}
 	}
 	pthread_mutex_unlock(&lista_memorias_asociadas_mutex);
+	//Si estaba en algún criterio, también la saco
+	eliminarMemoriaCriterio(numMemoria, criterioEC.listMemorias);
+	eliminarMemoriaCriterio(numMemoria, criterioSC.listMemorias);
+	eliminarMemoriaCriterio(numMemoria, criterioSHC.listMemorias);
+	/*@martin: revisar si :
+	 * 1) estaba en el criterio SHC y hay que actualizar la logica (mandar journal, cambiar hash, etc)
+	 * 2) era la memoria de HC y hay que informarlo
+	 */
 	return cont;
 }
 
-int eliminarMemoriaCriterio(int numMemoria, t_list *lista_memorias) {
-	int cont = 0;
-	for (int i = 0; i < list_size(lista_memorias); i++) {
-		seed_com_t *aux = list_get(lista_memorias, i);
-		if (aux->numMemoria == numMemoria) {
-			list_remove(lista_memorias, i);
+
+int eliminarMemoriaCriterio(int numMemoria, t_list *lista_memorias)
+{
+	//@martin: falta sincro
+	int cont=0;
+	for(int i=0;i<list_size(lista_memorias);i++){
+		seed_com_t *aux = list_get(lista_memorias,i);
+		if(aux->numMemoria == numMemoria){
+			list_remove(lista_memorias,i);
 			i--; //Ahora la lista tiene un elemento menos
 			free(aux);
 			//No hago el break porque la memoria puede estar asociada a más de un criterio y aparecer duplicada en esta lista
@@ -1831,5 +1833,143 @@ int eliminarMemoriaCriterio(int numMemoria, t_list *lista_memorias) {
 		}
 	}
 	return cont;
+}
+
+//Uso este tipo de respuesta para poder especificar tipo de error, en el caso de que lo haya, y respuesta
+resp_com_t resolverPedido(char *linea)
+{
+	resp_com_t resp;
+	request_t request = parser(linea);
+	switch(request.command){
+		case SELECT_PARSER:
+			resp = resolverSelect(request);
+			break;
+		case INSERT_PARSER:
+			resp = resolverInsert(request);
+			break;
+		case DESCRIBE_PARSER:
+			break;
+		case CREATE_PARSER:
+			break;
+		case DROP_PARSER:
+			break;
+		case JOURNAL_PARSER:
+			break;
+		//Pienso la función para resolver los comandos planificables y desde la función ejecutar
+		/*case ADD:
+			break;
+		case RUN:
+			break;
+		case METRICS:
+			break;
+		case SALIR:
+			break;*/
+		default:
+			break;
+	}
+	borrar_request(request);
+	return resp;
+}
+
+resp_com_t resolverSelect(request_t request)
+{
+	//  SELECT  NOMBRE_TABLA    KEY
+	//<command>   args[0]     args[1]
+	if(request.cant_args != 2)
+		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS,NULL);
+	uint16_t key = atoi(request.args[1]);
+	int criterio = buscarCriterioTabla(request.args[0]);
+	if(criterio==-1){
+		log_error(log_kernel,"[SELECT] No tenemos metadata de la tabla %s, no podemos seguir",request.args[0]);
+		return armar_respuesta(RESP_ERROR_DESCONOZCO_CRITERIO_TABLA,NULL);
+	}
+	log_info(log_kernel,"[SELECT] La tabla es de criterio %s",criterios[criterio]);
+	seed_com_t *datos_memoria = elegirMemoriaCriterio(criterio,key);
+	if(datos_memoria == NULL){
+		log_error(log_kernel,"[SELECT] No se encontro una memoria a la que mandar el select");
+		return armar_respuesta(RESP_ERROR_SIN_MEMORIAS_CRITERIO,NULL);
+	}
+	log_info(log_kernel,"[SELECT] Memoria elegida: %d",datos_memoria->numMemoria);
+	int socket_memoria = conectar_a_memoria(datos_memoria->ip,datos_memoria->puerto);
+	if(socket_memoria == -1){
+		log_error(log_kernel,"[SELECT] No se pudo establecer conexion con la memoria %d", datos_memoria->numMemoria);
+		eliminarMemoriaAsociada(datos_memoria->numMemoria); //esta función también la saca de todos los criterios en los que estuviera
+		return armar_respuesta(RESP_ERROR_COMUNICACION,NULL);
+	}
+
+	resp_com_t resp = enviar_recibir(socket_memoria,request.request_str);
+
+	free(datos_memoria);
+	close(socket_memoria);
+	return resp;
+}
+
+resp_com_t resolverInsert(request_t request)
+{
+	//  INSERT  NOMBRE_TABLA   KEY     VALUE  [TIMESTAMP]
+	//<command>   args[0]    args[1]  args[2]   args[3]
+	if(request.cant_args != 3 && request.cant_args != 4)
+		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS,NULL);
+	uint16_t key = atoi(request.args[1]);
+	int criterio = buscarCriterioTabla(request.args[0]);
+	if(criterio==-1){
+		log_error(log_kernel,"[INSERT] No tenemos metadata de la tabla %s, no podemos seguir",request.args[0]);
+		return armar_respuesta(RESP_ERROR_DESCONOZCO_CRITERIO_TABLA,NULL);
+	}
+	log_info(log_kernel,"[INSERT] La tabla es de criterio %s",criterios[criterio]);
+	seed_com_t *datos_memoria = elegirMemoriaCriterio(criterio, key);
+	if(datos_memoria == NULL){
+		log_error(log_kernel,"[INSERT] No se encontro una memoria a la que mandar el insert");
+		return armar_respuesta(RESP_ERROR_SIN_MEMORIAS_CRITERIO,NULL);
+	}
+	log_info(log_kernel,"[INSERT] Memoria elegida: %d",datos_memoria->numMemoria);
+	int socket_memoria = conectar_a_memoria(datos_memoria->ip,datos_memoria->puerto);
+	if(socket_memoria == -1){
+		log_error(log_kernel,"[INSERT] No se pudo establecer conexion con la memoria %d", datos_memoria->numMemoria);
+		eliminarMemoriaAsociada(datos_memoria->numMemoria); //esta función también la saca de todos los criterios en los que estuviera
+		return armar_respuesta(RESP_ERROR_COMUNICACION,NULL);
+	}
+
+	resp_com_t resp = enviar_recibir(socket_memoria,request.request_str);
+
+	free(datos_memoria);
+	close(socket_memoria);
+	return resp;
+}
+
+resp_com_t enviar_recibir(int socket,char *req_str)
+{
+	req_com_t a_enviar;
+	a_enviar.tam = strlen(req_str)+1;
+	a_enviar.str = malloc(a_enviar.tam);
+	strcpy(a_enviar.str,req_str);
+	log_info(log_kernel,"[COMUNICACION] Voy a enviar request: %s",req_str);
+	if(enviar_request(socket,a_enviar)==-1){
+		log_error(log_kernel,"[COMUNICACION] Error al enviar request: %s",req_str);
+		borrar_request_com(a_enviar);
+		return armar_respuesta(RESP_ERROR_COMUNICACION,NULL);
+	}
+	borrar_request_com(a_enviar);
+
+	log_info(log_kernel,"[COMUNICACION] Request enviado: %s",req_str);
+
+	msg_com_t msg = recibir_mensaje(socket);
+	if(msg.tipo != RESPUESTA){
+		log_error(log_kernel,"[COMUNICACION] Error al recibir respuesta para el request: %s",req_str);
+		borrar_mensaje(msg);
+		return armar_respuesta(RESP_ERROR_COMUNICACION,NULL);
+	}
+	resp_com_t resp = procesar_respuesta(msg);
+	borrar_mensaje(msg);
+	if(resp.tipo == RESP_OK){
+		log_info(log_kernel,"[COMUNICACION] El request <%s> se realizó correctamente",req_str);
+		if(resp.msg.str != NULL && resp.msg.tam > 0){
+			log_info(log_kernel,"[COMUNICACION] La respuesta es <%s>",resp.msg.str);
+		}
+	}
+	else{
+		log_error(log_kernel,"[COMUNICACION] El request <%s> no pudo realizarse. Error <%d>",req_str,resp.tipo);
+	}
+	return resp;
 }
 
