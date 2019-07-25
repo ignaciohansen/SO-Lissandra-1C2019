@@ -1143,6 +1143,11 @@ int JOURNAL(int socket_lfs) {
 	log_info(log_memoria, "[JOURNAL] ENVIO EL MENSAJE A LISANDRA");
 
 	int cant_pasados = pasarValoresALisandra(journalAPasar,socket_lfs);
+
+	if(cant_pasados == 0){
+		log_error(log_memoria,"[JOURNAL] No se pudo enviar ningun registro. No se hace el journal");
+	//@gian @martin @nacho  Retornamos -1 aca?
+	}
 	log_info(log_memoria, "[JOURNAL] JOURNAL HECHO, LISANDRA HA RECIBIDO BIEN %d REGISTROS, LIMPIO TODO",cant_pasados);
 
 	liberarDatosJournal(journalAPasar);
@@ -1181,7 +1186,7 @@ int pasarValoresALisandra(datosJournal* datos,int socket_lfs)
 	int cont = 0;
 	bool conexion_caida = false;
 	while(enviar != NULL && !conexion_caida){
-		snprintf(aux,100,"INSERT %s %d %s %ld",enviar->nombreTabla,enviar->key,enviar->value, enviar->timestamp);
+		snprintf(aux,100,"INSERT %s %d %s %llu",enviar->nombreTabla,enviar->key,enviar->value, enviar->timestamp);
 		insert.tam = strlen(aux)+1;
 		insert.str = malloc(insert.tam);
 		strcpy(insert.str,aux);

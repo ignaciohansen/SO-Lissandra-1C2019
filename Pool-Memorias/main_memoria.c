@@ -751,35 +751,35 @@ char* select_memoria(char *nombre_tabla, uint16_t key)
 	int pag;
 	bool encontrada = false;
 	char* valorAux = malloc(max_valor_key);
-	void* informacion = malloc(sizeof(pagina)+max_valor_key);
+	//void* informacion = malloc(sizeof(pagina)+max_valor_key);
 	pagina->value = malloc(max_valor_key);
 
 	if(funcionSelect(nombre_tabla, key, &pagina, &valorAux)!=0){
-		pag =
-			buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(nombre_tabla, key, &seg);
+		pag = buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(nombre_tabla, key, &seg);
 		free(pagina->value);
 		free(pagina);
-		pagina = selectPaginaPorPosicion(pag,informacion);
+		//		imprimirMensaje(log_memoria,"[WRAPPER DE SELECT] POR AQUIIIIII NO");
+		pagina = selectPaginaPorPosicion(pag,true);
 		imprimirMensaje1(log_memoria,"[WRAPPER DE SELECT] Valor encontrado: %s",pagina->value);
-		//printf("\nSEGMENTO <%s>\nKEY<%d>: VALUE: %s\n", nombre_tabla, pagina->key,pagina->value);
 		encontrada = true;
-//		imprimirMensaje(log_memoria,"[WRAPPER DE SELECT] POR AQUIIIIII");
+
 	} else {
 		imprimirAviso(log_memoria,"[WRAPPER DE SELECT] Valor no encontrado");
-		//printf("\nERROR <%s><%d>\n", nombre_tabla, key);
+
 	}
-	free(informacion);
+
+	//free(informacion);
 	if(encontrada){
 
-		char* valorADevolver = malloc(strlen(pagina->value));
-		memcpy(valorADevolver, pagina->value, strlen(pagina->value)+1);
+		char* valorADevolver = malloc(strlen(pagina->value)+1);
+		strcpy(valorADevolver, pagina->value);
 		imprimirMensaje1(log_memoria, "[WRAPPER DE SELECT] Se encontro lo buscado %s", valorADevolver);
 		free(pagina->value);
 		free(pagina);
 		free(valorAux);
 		return valorADevolver;
 	}
-	imprimirAviso(log_memoria, "[WRAPPER DE SELECT] NO Se encontro lo buscado");
+	imprimirAviso(log_memoria, "[WRAPPER DE SELECT] NO se encontro lo buscado");
 	free(valorAux);
 	free(pagina->value);
 	free(pagina);
@@ -840,6 +840,7 @@ resp_com_t resolver_select(int socket_lfs,request_t req)
 			imprimirMensaje(log_memoria,"[RESOLVIENDO SELECT] Recibi respuesta del lfs");
 			if(msg.tipo == RESPUESTA){
 				resp = procesar_respuesta(msg);
+				borrar_mensaje(msg);
 				//EL MENSAJE DE RESPUESTA PARA UN SELECT DEBE SER VALOR|TIMESTAMP
 				imprimirMensaje(log_memoria,"[RESOLVIENDO SELECT] El lfs contesto");
 				if(resp.tipo == RESP_OK){

@@ -8,24 +8,9 @@
 #include "LissandraFileSystem.h"
 
 
-//int tamanioTotalTabla = 0;
-char *separador2 = "\n";
-char *separator = " ";
-const char* comandosPermitidos[] = { "select", "insert", "create", "describe",
-		"drop", "journal", "add", "run", "metrics", "salir"
-
-};
-
 int cantidad_de_dumps = 0;
 int dumps_a_dividir = 1;
 
-//char* tablaAverificar = NULL; // directorio de la tabla
-//char* path_tabla_metadata;
-
-//@martin, @gian, @nacho: me parece que no es buena idea que sea global, puede romper al tener varios hilos al mismo tiempo si la usa el create
-//char* archivoParticion;
-//char* registroPorAgregar;
-//int primerVoidEsRegistro = 1;
 
 //pthread_mutex_t mutex_dump = PTHREAD_MUTEX_INITIALIZER; //@martin, @gian, @nacho lo puse cuando hice el dump pero habría que revisarlo al hacer la sincro
 
@@ -54,10 +39,7 @@ int main() {
 
 	inicializar_comunicacion(logger, configFile->tamanio_value); //tamanio value config
 
-
-
-	pthread_t hiloConsola, hiloEjecutor, hiloDump, hiloServidor, hiloInotifyLFS;
-
+	pthread_t hiloConsola, hiloDump, hiloServidor, hiloInotifyLFS;
 
 	char* path_de_config_lfs = malloc(strlen(PATH_LFILESYSTEM_CONFIG)+1);
 	strcpy(path_de_config_lfs, PATH_LFILESYSTEM_CONFIG);
@@ -66,7 +48,7 @@ int main() {
 	pthread_create(&hiloServidor, NULL, (void*) hilo_servidor, &socketLFS);
 	pthread_create(&hiloDump, NULL, (void*) esperarTiempoDump, NULL);
 
-	//pthread_create(&hiloEjecutor , NULL,(void*) consola, NULL);
+
 	signal(SIGINT, INThandler);
 	//pthread_join(hiloDump, NULL);
 
@@ -78,7 +60,6 @@ int main() {
 	pthread_kill(hiloDump, SIGKILL);
 	pthread_kill(hiloServidor, SIGKILL);
 
-//	pthread_join(hiloDump, NULL);
 	if (socketLFS == -1) {
 		close(socketLFS);
 	}
@@ -86,7 +67,6 @@ int main() {
 	cerrar_todos_clientes(); //@LFSCOMUNICACION
 	cerrarTodo();
 
-	// consola();
 	return 0;
 }
 
@@ -146,37 +126,6 @@ bool existeDirectorio(char *path)
 	return false;
 }
 
-/*
- int abrirServidorLissandra() {
- return 1;
- socketEscuchaMemoria = nuevoSocket(logger);
-
- if (socketEscuchaMemoria == ERROR) {
- imprimirError(logger, "[ERROR] Fallo al crear Socket.");
- return -1;
- } else {
- imprimirVerde1(logger, "[  OK  ] Se ha creado el socket nro.: %d.",
- socketEscuchaMemoria);
-
- }
-
- int puerto_a_escuchar = configFile->puerto_escucha;
-
- imprimirMensaje1(logger, "[PUERTO] Asociando a puerto: %i.",
- puerto_a_escuchar);
-
- asociarSocket(socketEscuchaMemoria, puerto_a_escuchar, logger);
-
- imprimirMensaje(logger, "[  OK  ] Asociado.");
-
- socketEscuchar(socketEscuchaMemoria, 10, logger);
-
- return 1;
-
- } // int abrirServidorLissandra()
-
-
- */
 bool cargarConfiguracion() {
 
 	log_info(logger, "Por reservar memoria para variable de configuracion.");
@@ -227,16 +176,12 @@ bool cargarConfiguracion() {
 			char *aux = config_get_string_value(archivoCOnfig,"PUNTO_MONTAJE");
 			configFile->punto_montaje = malloc(strlen(aux)+1);
 			strcpy(configFile->punto_montaje,aux);
-			/*configFile->punto_montaje = config_get_string_value(archivoCOnfig,"PUNTO_MONTAJE");*/
 
 			log_info(logger, "El punto de montaje es: %s",configFile->punto_montaje);
 
 			int tamanio = strlen(configFile->punto_montaje) + strlen(TABLE_PATH)+ 30;
 
 			tabla_Path = malloc(tamanio);
-
-			//tabla_Path = string_duplicate(configFile->punto_montaje);
-//		ARRIBA COMENTADO PARA LIMPIAR LEAKS
 
 			snprintf(tabla_Path, tamanio, "%s%s", configFile->punto_montaje,TABLE_PATH);
 
@@ -310,7 +255,6 @@ bool cargarConfiguracion() {
 			configFile->ip = malloc(strlen(aux)+1);
 			strcpy(configFile->ip,aux);
 			//Por lo que dice el texto
-//			configFile->ip = config_get_string_value(archivoCOnfig, "IP");
 
 			log_info(logger, "La IP es: %s", configFile->ip);
 
@@ -322,47 +266,23 @@ bool cargarConfiguracion() {
 		}
 
 		if (ok > 0) {
-			/*//@nacho DESCOMENTE ACA
-			free(archivoCOnfig->properties->elements);	//AGREGADO PARA LIMPIAR LEAKS
-			free(archivoCOnfig->properties);			//AGREGADO PARA LIMPIAR LEAKS
-			free(archivoCOnfig->path); 					//AGREGADO PARA LIMPIAR LEAKS
-			free(archivoCOnfig); 						//AGREGADO PARA LIMPIAR LEAKS
-			imprimirVerde(logger,
-					"Se ha cargado todos los datos del archivo de configuracion");
-			//	log_info(logger, "Se ha cargado todos los datos del archivo de configuracion");*/
 			config_destroy(archivoCOnfig);
 			return true;
 
 		} else {
-			//@nacho DESCOMENTE ACA
-		/*	free(archivoCOnfig->properties->elements);	//AGREGADO PARA LIMPIAR LEAKS
-			free(archivoCOnfig->properties);			//AGREGADO PARA LIMPIAR LEAKS
-			free(archivoCOnfig->path); 					//AGREGADO PARA LIMPIAR LEAKS
-			free(archivoCOnfig); 						//AGREGADO PARA LIMPIAR LEAKS*/
+
 			config_destroy(archivoCOnfig);
 			imprimirError(logger,"ERROR: No se han cargado los datos del archivo de configuracion\n");
-			//		imprimirMensajeProceso("ERROR: No Se han cargado todos los datos del archivo de configuracion\n");
 			return false;
 		}
 
 	}
-	/*	archivoCOnfig es LOCAL por lo tanto se debe liberarse	*/
-//	config_destroy(archivoCOnfig);
-	/*
-	 free(archivoCOnfig->properties->elements);	//AGREGADO PARA LIMPIAR LEAKS
-	 free(archivoCOnfig->properties);			//AGREGADO PARA LIMPIAR LEAKS
-	 free(archivoCOnfig->path); 					//AGREGADO PARA LIMPIAR LEAKS
-	 free(archivoCOnfig); 						//AGREGADO PARA LIMPIAR LEAKS*/
-
 
 	return false;
 
 }
 
 void recargarConfiguracionLFS(char *path_config){
-
-
-	//mutexBloquear(&mutex_retardos_memoria);
 
 	t_config* auxConfigFile = config_create(path_config);
 
@@ -398,11 +318,9 @@ void recargarConfiguracionLFS(char *path_config){
 
 	config_destroy(auxConfigFile);
 
-	//actualizar_retardo_gossiping(arc_config->retardo_gossiping);
 
 	log_info(logger, "[ACTUALIZANDO RETARDOS] RETARDOS ACTUALIZADOS CORRECTAMENTE");
 
-	//mutexDesbloquear(&mutex_retardos_memoria);
 }
 
 
@@ -417,18 +335,11 @@ int existeArchivo(char* path) {
 void cargarBitmap() {
 	log_info(logger, "Voy a cargar bitmap");
 
-//	bitmapPath = malloc(sizeof(char) * 50);
-	int tamanio = strlen(configFile->punto_montaje)
-			+ strlen(PATH_LFILESYSTEM_BITMAP) + 1;
+	int tamanio = strlen(configFile->punto_montaje)+ strlen(PATH_LFILESYSTEM_BITMAP) + 1;
 	bitmapPath = malloc(tamanio);
 	snprintf(bitmapPath, tamanio, "%s%s", configFile->punto_montaje,
 	PATH_LFILESYSTEM_BITMAP);
-//	strcpy(bitmapPath, "");
-//	bitmapPath = string_new();	--COMENTADO PARA LIMPIAR LEAKS
 	log_info(logger, "Path del bitmap: %s", bitmapPath);
-	/*string_append(&bitmapPath, configFile->punto_montaje);
-
-	 string_append(&bitmapPath, PATH_LFILESYSTEM_BITMAP);*/
 
 	if (!existeArchivo(bitmapPath)) {
 		log_info(logger,
@@ -469,10 +380,6 @@ void cargarBitmap() {
 
 int abrirBitmap() {
 
-	/*char* fs_path = string_new();
-
-	string_append(&fs_path, bitmapPath);*/
-
 	int bitmap = open(bitmapPath, O_RDWR);
 	struct stat mystat;
 
@@ -495,8 +402,6 @@ int abrirBitmap() {
 
 	if (metadataLFS->blocks % 8 != 0)
 		bytesAEscribirAux++;
-//	log_info(logger,"Liberaron la metadata y voy a romper");
-//	log_info(logger,"voy a crear bitarray para %d bloques",metadataLFS->blocks);
 	bitarray = bitarray_create_with_mode(bmap, bytesAEscribirAux,
 			MSB_FIRST);
 
@@ -648,8 +553,6 @@ void consola() {
 
 	while (1) {
 
-		//printf(">");
-
 		linea = readline(">");
 
 		if (linea && strcmp(linea, "\n") && strcmp(linea, "")) {
@@ -787,274 +690,6 @@ void menu() {
 
 }
 
-void validarLinea(char** lineaIngresada) {
-
-	int tamanio = 0;
-	for (int i = 0; lineaIngresada[i] != NULL; i++) {
-
-		log_info(logger, "En la posicion %d del array esta el valor %s", i,
-				lineaIngresada[i]);
-
-		// log_info(logger,);
-
-		tamanio = i + 1;
-	}
-
-	log_info(logger, "El tamanio del vector de comandos es: %d", tamanio);
-
-	switch (tamanio) {
-
-	case 1: {
-		if (strcmp(lineaIngresada[0], "describe") == 0) {
-
-			printf("Describe seleccionado\n");
-			char* resultadoDeDESCRIBE;
-			resultadoDeDESCRIBE = comandoDescribe();
-			if (resultadoDeDESCRIBE != NULL)
-				free(resultadoDeDESCRIBE);
-
-		} else {
-			printf("Comando mal ingresado. \n");
-
-			log_error(logger, "Opcion mal ingresada por teclado en la consola");
-			break;
-		}
-		break;
-	}
-	case 2:
-		validarComando(lineaIngresada, tamanio);
-
-		break;
-
-	case 3:
-		validarComando(lineaIngresada, tamanio);
-
-		break;
-
-	case 4:
-		validarComando(lineaIngresada, tamanio);
-
-		break;
-
-	case 5:
-		validarComando(lineaIngresada, tamanio);
-
-		break;
-
-	default: {
-		printf("Comando mal ingresado. \n");
-
-		log_error(logger, "Opcion mal ingresada por teclado en la consola");
-	}
-
-		break;
-
-	}
-}
-
-void validarComando(char** comando, int tamanio) {
-
-	int resultadoComando = buscarComando(comando[0]);
-
-	switch (resultadoComando) {
-
-	case Select: {
-		printf("Se selecciono Select\n");
-
-		log_info(logger, "Se selecciono select");
-
-		if (tamanio == 3) {
-
-			log_info(logger,
-					"Cantidad de parametros correctos ingresados para el comando select");
-
-			t_registroMemtable* reg_aux;
-
-			reg_aux = comandoSelect(comando[1], comando[2]);
-
-			if (reg_aux->value != NULL)
-				free(reg_aux->value);
-			free(reg_aux);
-		}
-
-	}
-		break;
-
-	case insert: {
-		printf("Insert seleccionado\n");
-
-		log_info(logger, "Se selecciono insert");
-
-		if (tamanio == 4 || tamanio == 5) {
-
-			if (tamanio == 4) {
-				comandoInsertSinTimestamp(comando[1], comando[2], comando[3]);
-			} else {
-				comandoInsert(comando[1], comando[2], comando[3], comando[4]);
-			}
-
-		}
-
-	}
-		break;
-
-	case create: {
-		printf("Create seleccionado\n");
-		log_info(logger, "Se selecciono Create");
-
-		if (tamanio == 5) {
-
-			log_info(logger,
-					"Cantidad de parametros correctos ingresados para el comando Create");
-
-			comandoCreate(comando[1], comando[2], comando[3], comando[4]);
-
-		}
-
-	}
-		break;
-
-	case describe: {
-		printf("Describe seleccionado\n");
-		log_info(logger, "Se selecciono Describe");
-
-		if (tamanio == 2) {
-
-			log_info(logger,
-					"Cantidad de parametros correctos ingresados para el comando Describe");
-
-			mensaje = malloc(string_length(comando[1]));
-
-			strcpy(mensaje, comando[1]);
-
-			char* valorALiberar = comandoDescribeEspecifico(comando[1]);
-			free(mensaje);
-			free(valorALiberar);
-			//log_info(logger, "En mensaje ya tengo: %s y es de tamanio: %d",mensaje, string_length(mensaje));
-
-			//log_info(logger, "Por llamar a enviarMensaje");
-
-		}
-
-	}
-		break;
-
-	case drop: {
-		printf("Drop seleccionado\n");
-		log_info(logger, "Se selecciono Drop");
-
-		if (tamanio == 2) {
-
-			log_info(logger,
-					"Cantidad de parametros correctos ingresados para el comando Drop");
-
-			mensaje = malloc(string_length(comando[1]) + 1);
-
-			strcpy(mensaje, comando[1]);
-
-			log_info(logger, "Queriamos mandar esto: %s", comando[1]);
-			log_info(logger, "Y se mando esto: %s", mensaje);
-
-			comandoDrop(comando[1]);
-
-		}
-
-	}
-		break;
-
-	case salir: {
-		printf("Salir seleccionado\n");
-		log_info(logger, "Se selecciono Salir");
-
-		//cerrarTodo(); terminar
-
-	}
-		break;
-
-	default: {
-		printf("Comando mal ingresado. \n");
-		log_error(logger, "Opcion mal ingresada por teclado en la consola");
-	}
-		break;
-
-	}
-}
-
-int buscarComando(char* comando) {
-
-	if (comando == NULL) {
-		log_info(logger, "Recibimos el comando: NULL");
-		return -1;
-	}
-
-	log_info(logger, "Recibimos el comando: %s", comando);
-
-	int i = 0;
-
-	for (i; i <= salir && strcmp(comandosPermitidos[i], comando); i++) {
-	}
-
-	log_info(logger, "Se devuelve el valor %d", i);
-
-	return i;
-
-}
-
-// LOGGEA todo lo que escucha.
-void listenSomeLQL() {
-
-	//char bufferComando[MAXSIZE_COMANDO];-> Implementacion anterior
-	char **comandoSeparado;
-
-	while (1) {
-
-		imprimirMensaje(logger,
-				" \n ====== LFS Listener: waiting for client connections ====== \n ");
-
-		conexionEntrante = aceptarConexionSocket(socketEscuchaMemoria, logger);
-
-		//Puntero buffer = (void*)string_new(); // malloc(sizeof(char)*100);
-
-		Puntero buffer = malloc(sizeof(char) * 100);
-
-		recibiendoMensaje = socketRecibir(conexionEntrante, buffer, 50, logger);
-
-		//	char* msg = string_new();    <---------------CREO QUE ESTE ES REDUNDANTE TENIENDO
-		//	STRING DUPLICATE(BUFFER) debajo.
-
-		// char * msg = malloc(sizeof(char)*100);
-		char* msg = string_duplicate(buffer); // <-- Esto hace funcionar del string por red.
-
-		sem_wait(&semaforoQueries);
-		list_add(list_queries, msg);
-		sem_post(&semaforoQueries);
-
-		comandoSeparado = string_split(msg, separator);
-
-		validarLinea(comandoSeparado);
-
-		string_append(&msg, "Mensaje recibido: \"");
-		string_append(&msg, buffer);
-		string_append(&msg, "\".");
-
-		imprimirVerde(logger, msg);
-		// liberar msg?
-		//LIBERO EL ARRAY DE COMANDO, es lo que hace el for y luego el posterior free
-		int i;
-		for (i = 0; comandoSeparado[i] != NULL; i++) {
-			free(comandoSeparado[i]);
-		}
-		free(comandoSeparado);
-		free(buffer);
-
-		//BY DAMIAN: YO dir{ia que si, es un recurso que esta ocupando en memoria.
-		//			Pero diria que lo dejen para el final si lo tienen que retornar
-		//			a Memoria de alguna forma en el remoto caso de que sea necesario
-		free(msg);
-
-	}
-
-}
 
 char *armarPathTabla(char *nombre_tabla) {
 	log_info(logger, "[ARMAR PATH TABLA] tabla recibida %s", nombre_tabla);
@@ -1107,55 +742,6 @@ int verificarTabla(char *tabla) {
 	}
 }
 
-/*int verificarTabla(char* tabla) {
- // REVISAR LUEGO ESTA FUNCION, esta muy mal hecha
-
- char* tablaAverificar = NULL; // directorio de la tabla
- char* path_tabla_metadata = NULL;
- //	if(tablaAverificar!=NULL){
- //		free(tablaAverificar);
- //		tablaAverificar = NULL;
- //	}
- int tamanio = strlen(tabla_Path) + strlen(tabla) + 1;
- tablaAverificar = malloc(tamanio);
-
- log_info(logger,"Se reservo memoria para contatenar punto de montaje con la tabla");
- //	tablaAverificar = string_new();
-
- for (int i = 0; i < strlen(tabla); i++) {
- tabla[i] = toupper(tabla[i]);
- }
- snprintf(tablaAverificar, tamanio, "%s%s", tabla_Path, tabla);
- //	string_append(&tablaAverificar, tabla_Path);
- //	string_append(&tablaAverificar, tabla);
- log_info(logger, "Concatenamos: %s a tablaAVerificar", tabla);
- log_info(logger,"[VERIFICADO] La direccion de la tabla que se quiere verificar es: %s",tablaAverificar);
-
- //	path_tabla_metadata = string_duplicate(tablaAverificar);
- //	path_tabla_metadata = malloc(strlen(tablaAverificar)+strlen("/metadata")+1);
- //	sprintf(path_tabla_metadata, "%s%s", tablaAverificar, "/metadata");
-
- //	string_append(&path_tabla_metadata, "/metadata");
-
- FILE *file;
-
- file = fopen(tablaAverificar, "r");
-
- if (file == NULL) {
- //free(tablaAverificar);
- //tablaAverificar = NULL;
- log_error(logger, "[ERROR] No existe la tabla");
- return -1;
-
- } else {
- //free(tablaAverificar);
- //tablaAverificar = NULL;
- log_info(logger, "[ OK ] La tabla ya existe.");
- fclose(file);
- return 0;
- }
-
- }*/
 
 t_metadata_tabla* obtenerMetadataTabla(char* tabla) {
 
@@ -1236,27 +822,7 @@ t_metadata_tabla* obtenerMetadataTabla(char* tabla) {
 	if (metadataFile != NULL)
 		config_destroy(metadataFile);
 
-	//LA BIBLIOTECA DE LAS COMMONS YA PROVEE UNA FUNCIÓN PARA LIBERAR LA MEMORIA ALOCADA
-	/*
-	 free(metadataFile->path);
-	 int i = 0;
-	 t_hash_element* aux_element;
-	 while(i < metadataFile->properties->elements_amount){
-	 while(metadataFile->properties->elements[i]!=NULL){
-	 aux_element = metadataFile->properties->elements[i]->next;
-	 free(metadataFile->properties->elements[i]->data);
-	 free(metadataFile->properties->elements[i]->key);
-	 metadataFile->properties->elements[i] = aux_element;
-	 }
-	 //		free(metadataFile->properties->elements[i]);
-	 i++;
-	 }
-	 free(metadataFile->properties);
-	 free(metadataFile);
-	 */
-
 	free(path_tabla_metadata);
-	//log_info(logger, "[obtenerMetadata] (-) metadata a abrir : %s",tablaAverificar);
 
 	if (result == -1) {
 		free(metadataTabla);
@@ -1278,12 +844,7 @@ int obtenerMetadata() {
 	int tamanio = strlen(configFile->punto_montaje)
 			+ strlen(PATH_LFILESYSTEM_METADATA) + 1;
 	char* metadataPath = malloc(tamanio);
-//	strcpy(metadataPath, "");       //AGREGADO PARA LIMPIAR LEAKS
 
-	//	metadataPath = string_new();	--COMENTADO PARA LIMPIAR LEAKS
-
-//	string_append(&metadataPath, configFile->punto_montaje);
-//	string_append(&metadataPath, PATH_LFILESYSTEM_METADATA);
 	snprintf(metadataPath, tamanio, "%s%s", configFile->punto_montaje,
 	PATH_LFILESYSTEM_METADATA);
 
@@ -1359,10 +920,6 @@ int obtenerMetadata() {
 	log_info(logger,
 			"[FREE] variable metadataFile utlizada para navegar el metadata.");
 
-//	free(metadataFile->properties->elements);
-//	free(metadataFile->properties);
-//	free(metadataFile->path);
-//	free(metadataFile);
 	free(metadataPath);
 	config_destroy(metadataFile);
 
@@ -1373,12 +930,8 @@ int obtenerMetadata() {
 
 char* retornarValores(char* tabla, t_metadata_tabla* metadata) {
 
-	printf("\n");
-	printf("Valores de la %s \n", tabla);
-	printf("\n");
-	printf("CONSISTENCY=%s \n", metadata->consistency);
-	printf("PARTITIONS=%d \n", metadata->particiones);
-	printf("COMPACTION_TIME=%d \n", metadata->compaction_time);
+	printf("\nValores de la %s \n\n", tabla);
+	printf("CONSISTENCY=%s\nPARTITIONS=%d\nCOMPACTION_TIME=%d\n", metadata->consistency,metadata->particiones,metadata->compaction_time);
 
 	char* particiones = malloc(4);
 	char* tiempoCompactacion = malloc(7);
@@ -1410,13 +963,10 @@ char* retornarValoresDirectorio() {
 	char* resultado = NULL;
 	int memoriaParaMalloc = 0;
 	bool encontreAlgoEnDirectorio = false;
-//	pathTabla = string_new();
 	t_list* lista_describes;
 	lista_describes = list_create();
 
 	snprintf(pathTabla, tamanio, "%s%s", configFile->punto_montaje, TABLE_PATH);
-//	string_append(&pathTabla, configFile->punto_montaje);
-//	string_append(&pathTabla, TABLE_PATH);
 
 	dir = opendir(pathTabla);
 
@@ -1466,24 +1016,7 @@ char* retornarValoresDirectorio() {
 		//resultadoFinal = aux;
 
 	}
-	/*if (lista_describes->elements_count > 0) {
-		t_link_element * aux;
-		while (lista_describes->head != NULL) {
-			aux = lista_describes->head->next;
-			free(lista_describes->head);
-			lista_describes->head = aux;
-		}
-	}
-	free(lista_describes);*/
 
-//	list_destroy_and_destroy_elements(lista_describes,free);
-	/*t_link_element* elemento;
-	while (lista_describes->head != NULL) {
-		elemento = lista_describes->head->next;
-		free(lista_describes->head->data);
-		free(lista_describes->head);
-		lista_describes->head = elemento;
-	}*/
 	if (resultado != NULL)
 		free(resultado);
 
@@ -1502,13 +1035,6 @@ void INThandler(int sig) {
 	cerrar_todos_clientes();
 	exit(0);
 
-	//"Do you really want to quit? [y/n] ");
-	/*c = getchar();
-	 if (c == 'y' || c == 'Y')
-	 exit(0);
-	 else
-	 signal(SIGINT, INThandler);
-	 getchar(); // Get new line character*/
 }
 
 //DUMP
@@ -1524,15 +1050,11 @@ void esperarTiempoDump() {
 		int tam = list_size(listaTablasInsertadas);
 		mutexDesbloquear(&listaTablasInsertadas_mx);
 		if (tam > 0) {
-			//signal(SIGINT, INThandler);
-			//pthread_mutex_lock(&mutex_dump);
 			log_info(logger, "Se encontraron cosas, se hace el dump");
-//			log_info(logger, "[DEBUG] IGNORANDO DUMP!!!!!");
 			realizarDump();
 			printf("\n****Se realizó un DUMP****\n>");
-			//pthread_mutex_unlock(&mutex_dump);
+
 			cantidad_de_dumps++;
-			//pause();
 		} else {
 			log_info(logger, "La memtable esta vacia");
 		}
@@ -1576,73 +1098,10 @@ char* armarPathTablaParaDump(char* tabla, int dumps) {
 	log_info(logger, "la ruta es %s", pathTemp);
 	return pathTemp;
 
-	/*char *nombreArchivoTemporal = malloc(sizeof(char) * 3);
-	 char* path_archivo_temporal = malloc(
-	 string_length(TABLE_PATH) + string_length(configFile->punto_montaje)
-	 + string_length(tabla)
-	 + string_length(nombreArchivoTemporal)
-	 + string_length(PATH_TMP) + 2);
 
-	 path_archivo_temporal = string_new();
-
-	 string_append(&path_archivo_temporal, configFile->punto_montaje);
-
-	 string_append(&path_archivo_temporal, TABLE_PATH);
-
-	 string_append(&path_archivo_temporal, tabla);
-
-	 string_append(&path_archivo_temporal, "/");
-
-	 int cantidadDumps = cantidadDumpsTabla(path_archivo_temporal);
-
-	 log_info(logger, "[QQQQQ] la cantidad de dumps es: %d", cantidadDumps);
-
-	 sprintf(nombreArchivoTemporal, "%d", cantidadDumps);
-
-	 string_append(&path_archivo_temporal, nombreArchivoTemporal);
-
-	 string_append(&path_archivo_temporal, PATH_TMP);
-
-	 log_info(logger, "la ruta es %s", path_archivo_temporal);
-
-	 return path_archivo_temporal;*/
 
 }
-/*    REVISAR
 
-
- int cantidadDumpsTabla(char* pathTabla) {
-
- int size = strlen(pathTabla) + sizeof(int) + strlen(".tmp") + 1;
- char* auxPath = malloc(size);
- int cantidad = 0;
- bool final = false;
-
-
- FILE* tabla;
-
- while(!final) {
-
- snprintf(auxPath,strlen,"%s%d.tmp",pathTabla, cantidad); // @martin,@nacho,@gian ese strlen ahi
-
- log_info(logger, "[YYYYYY] ruta del tmp a verificar: %s", auxPath);
-
- tabla = fopen(auxPath, "r");
- if(tabla != NULL) {
- cantidad++;
- fclose(tabla);
- }
- else {
- final = true;
- }
- }
-
- free(auxPath);
-
- return cantidad;
- }
-
- */
 
 int crearArchivoTemporal(char* path, char* tabla) {
 
@@ -1658,7 +1117,6 @@ int crearArchivoTemporal(char* path, char* tabla) {
 	log_info(logger, "[DEBUG] POR ENTRAR AL LECTURA ESCRITURA");
 	rwLockEscribir(&(semsTabla->rwLockTabla));
 	log_info(logger, "[DEBUG] PASE EL LECTURA ESCRITURA");
-//	printf("\nMandale\n");
 
 	t_list* bloquesUsados = list_create();
 	int tam_total_registros = tamTotalListaRegistros(listaRegistrosTabla);
@@ -2444,29 +1902,6 @@ int pruebaLecturaBloquesConsecutivos(void) {
 	return 1;
 }
 
-t_registroMemtable* pruebaRegMayorTime() {
-
-	t_registroMemtable* reg1;
-	t_registroMemtable* reg2;
-	t_registroMemtable* reg3;
-	t_registroMemtable* reg4;
-	t_registroMemtable* regMayor;
-
-	reg1 = armarRegistroNulo();
-	reg2 = armarRegistroNulo();
-	reg3 = armarRegistroNulo();
-	reg4 = armarRegistroNulo();
-
-	reg1->timestamp = 10;
-	reg2->timestamp = 21;
-	reg3->timestamp = 244;
-	reg4->timestamp = 10;
-
-	regMayor = tomarMayorRegistro(reg1, reg2, reg3, reg4);
-
-	return regMayor;
-}
-
 //OPERACIONES CON BLOQUES
 
 //DUMP
@@ -2502,139 +1937,6 @@ char* rutaParticion(char* tabla, int particion) {
 	return archivoParticion;
 }
 
-/*void escanearParticion(int particion) {
-
- log_info(logger, "[escanearParticion] (+) ");
-
- log_info(logger, "[escanearParticion] (+) %s", tabla_Path);
-
- log_info(logger, "[escanearParticion] (+) %s", tablaAverificar);
-
- rutaParticion(particion);
- log_info(logger, "[escanearParticion] (+) Sobrevivi nro 1");
- particionTabla = malloc(sizeof(t_particion));
-
- t_config* particionFile;
-
- particionFile = config_create(archivoParticion);
- log_info(logger, "[escanearParticion] (+) Sobrevivi nro 2");
-
- FILE *file;
- file = fopen(archivoParticion, "r");
- if (file == NULL) {
- log_error(logger, "No existe la particion");
- perror("Error");
- } else {
- log_info(logger, "Abrimos particion %d", particion);
- fclose(file);
- }
-
- if (particion > -1) {
-
- log_info(logger, "LFS: Leyendo metadata de la particion...");
-
- if (config_has_property(particionFile, "SIZE")) {
-
- log_info(logger, "Almacenando el tamanio de la particion");
-
- particionTabla->size = config_get_int_value(particionFile, "SIZE");
-
- log_info(logger, "el tamanio de la particion  es: %d",
- particionTabla->size);
- } else {
- log_error(logger, "El metadata de la tabla no contiene el tamanio");
-
- }
- if (config_has_property(particionFile, "BLOCKS")) {
-
- log_info(logger, "Almacenando los bloques");
-
- particionTabla->bloques = config_get_array_value(particionFile,
- "BLOCKS");
-
- log_info(logger, "Las bloques son : %s",
- particionTabla->bloques[0]);
- } else {
- log_error(logger, "El metadata de la tabla no contiene bloques");
-
- }
-
- } else {
-
- log_error(logger,
- "No se encontro el metadata para cargar la estructura");
-
- }
-
- log_info(logger,
- "Cargamos todo lo que se encontro en el metadata. Liberamos la variable metadataFile que fue utlizada para navegar el metadata");
-
- free(particionFile);
-
- }*/
-
-/*
- char* buscarBloque(char* key) {
-
-
- char* bloqueObjetivo = malloc(
- string_length(configFile->punto_montaje)
- + string_length(PATH_BLOQUES) + 11);
-
- log_info(logger, "Se reservo memoria para concatenar ruta de blqoues");
-
- bloqueObjetivo = string_new();
-
- string_append(&bloqueObjetivo, configFile->punto_montaje);
-
- log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo); // 1er linea de direccion
-
- string_append(&bloqueObjetivo, PATH_BLOQUES);
-
- log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo); // 2da linea de direccion
-
- char* bloque = malloc(sizeof(particionTabla->bloques)); // 3er linea de direccion
- bloque = particionTabla->bloques[0];
-
- string_append(&bloqueObjetivo, "block");
- string_append(&bloqueObjetivo, bloque);
- string_append(&bloqueObjetivo, ".bin");
- log_info(logger, "BloqueObjetivo: %s", bloqueObjetivo);
-
- /*FILE *file;
- file = fopen(bloqueObjetivo, "r");
-
- if (file == NULL) {
- //log_error(logger, "No existe la particion");
- perror("Error");
- } else {
-
- log_info(logger, "Abrimos Bloque");
- //char lectura;
- //do {
- //	do {
- //		lectura = fgetc(file);
- //		printf("%c", lectura);
- //	} while (lectura != '\n');
- //	printf("fin de linea \n");
- //	lectura = fgetc(file);
- //} while (!feof(file));
-
- char linea[1024];
-
- while (fgets(linea, 1024, (FILE*) file)) {
- printf("LINEA: %s", linea);
- }
-
- fclose(file);
-
- }
-
- return bloqueObjetivo;
-
-
- }
- */
 void eliminarTablaCompleta(char* tabla) {
 
 	t_metadata_tabla *metadata = obtenerMetadataTabla(tabla);
@@ -2690,36 +1992,6 @@ void eliminarTablaCompleta(char* tabla) {
 	}
 	list_destroy_and_destroy_elements(lista_tmpc, free);
 
-	/*	for (int j = 0; j <= cantidad_de_dumps; j++) {
-
-	 char* archivoTemporal = armarPathTablaParaDump(tabla, j);
-	 char* archivoTemporalC = armarPathTablaParaDump(tabla, j);
-	 string_append(&archivoTemporalC, "c");
-
-	 log_info(logger,
-	 "Vamos a eliminar el archivo temporal  de la tabla: %s",
-	 archivoTemporal);
-
-	 log_info(logger,
-	 "Vamos a eliminar el archivo temporal a compactar de la tabla: %s",
-	 archivoTemporalC);
-
-	 int retTemporal = remove(archivoTemporal);
-	 int retTemporalC = remove(archivoTemporalC);
-
-	 if (retTemporal == 0) { // Eliminamos el archivo
-	 log_info(logger, "El archivo fue eliminado satisfactoriamente\n");
-	 } else {
-	 log_info(logger, "No se pudo eliminar el archivo\n");
-	 }
-
-	 if (retTemporalC == 0) { // Eliminamos el archivo
-	 log_info(logger, "El archivo fue eliminado satisfactoriamente\n");
-	 } else {
-	 log_info(logger, "No se pudo eliminar el archivo\n");
-	 }
-
-	 }*/
 
 	char *path_tabla_metadata = armarPathMetadataTabla(tabla);
 	log_info(logger, "Vamos a eliminar el metadata de la tabla: %s",
@@ -2903,37 +2175,21 @@ t_registroMemtable* obtenerRegistroMayor(char* tabla, int key,
 				//log_info(logger,"Como es distinta, el registro vuelve a ser NULL");
 				registro = NULL;
 			} else {
-				log_info(logger,
-						"[Primer registro obtenido]timestamp del registro obtenido %llu",
-						registro->timestamp);
-				log_info(logger,
-						"[Primer registro obtenido]value del registro obtenido %s",
-						registro->value);
-				log_info(logger,
-						"[Primer registro obtenido]key del registro obtenido %d",
-						registro->key);
+				log_info(logger,"[Primer registro obtenido]");
+				imprimirRegistro(registro);
 			}
 
 		} else {
 			t_registroMemtable* aux = list_get(listaSegunLugar, i);
 			if (aux->key == key) {
-
-				log_info(logger,
-						"[Ya hay mas de un registro obtenido] timestamp del registro obtenido %llu",
-						aux->timestamp);
-				log_info(logger,
-						"[Ya hay mas registro obtenido] value del registro obtenido %s",
-						aux->value);
-				log_info(logger,
-						"[Ya hay mas registro obtenido] key del registro obtenido %d",
-						aux->key);
+				log_info(logger,"[Ya hay mas de un registro obtenido]");
+							imprimirRegistro(aux);
 
 				if (aux->timestamp > registro->timestamp) {
 					registro = aux;
-					log_info(logger, "[fin] me quede con el de timestamp %llu",
-							registro->timestamp);
-					log_info(logger, "[fin] me quede con el de  value %s",
-							registro->value);
+					log_info(logger,"[FIN]");
+					imprimirRegistro(registro);
+
 				}
 			}
 		}
@@ -2963,14 +2219,8 @@ t_registroMemtable* registroMayorMemtable(char* tabla, u_int16_t key) {
 
 	} else {
 
-		log_info(logger, "voy a armar registro nulo");
-
 		registro = armarRegistroNulo();
 
-		log_info(logger, "arme registro nulo");
-
-		log_info(logger, "Se armo registro nulo, su timestamp es %llu",
-				registro->timestamp);
 	}
 	//pthread_mutex_unlock(&mutex_dump);
 	return registro;
@@ -3072,12 +2322,7 @@ t_registroMemtable* tomarMayorRegistro(t_registroMemtable* reg1,
 	t_registroMemtable* reg4) {
 	t_registroMemtable *auxMayorPuntero;
 	t_registroMemtable *retval;
-/*
-	log_info(logger, "timestamp reg1: %llu", reg1->timestamp);
-	log_info(logger, "timestamp reg2: %llu", reg2->timestamp);
-	log_info(logger, "timestamp reg3: %llu", reg3->timestamp);
-	log_info(logger, "timestamp reg4: %llu", reg4->timestamp);
-*/
+
 	if (reg1->timestamp > reg2->timestamp) {
 		auxMayorPuntero = reg1;
 	} else {
@@ -3093,12 +2338,6 @@ t_registroMemtable* tomarMayorRegistro(t_registroMemtable* reg1,
 			auxMayorPuntero = reg4;
 		}
 	}
-//	log_info(logger, "verificandoFuncion");
-//	log_info(logger, "timestamp reg1: %llu", reg1->timestamp);
-//	log_info(logger, "timestamp reg2: %llu", reg2->timestamp);
-//	log_info(logger, "timestamp reg3: %llu", reg3->timestamp);
-//	log_info(logger, "timestamp reg4: %llu", reg4->timestamp);
-//	log_info(logger, "el mayor timestamp  %llu", auxMayorPuntero->timestamp);
 
 	retval = crearCopiaRegistro(auxMayorPuntero); //@VALGRIND ESTE SE PUEDE LIBERAR? ES EL RETURN DEL SELECT
 
@@ -3223,9 +2462,7 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 				registroMayor->timestamp);
 
 		if (registroMayor->timestamp > 0) {
-			log_info(logger, "Registro obtenido: <%llu;%d;%s>",
-					registroMayor->timestamp, registroMayor->key,
-					registroMayor->value);
+			log_info(logger, "Registro obtenido: <%llu;%d;%s>",registroMayor->timestamp, registroMayor->key,registroMayor->value);
 			printf("Registro obtenido: <%llu;%d;%s>\n", registroMayor->timestamp,
 					registroMayor->key, registroMayor->value);
 		} else {
@@ -3233,8 +2470,6 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 					valorKey);
 			printf("No se encontró ningún registro con la key %d\n", valorKey);
 		}
-//		printf("Registro obtenido: <%d;%llu;%s>\n", registroMemtable->key, registroMemtable->timestamp, registroMemtable->value);
-
 
 //		free(metadata);
 
@@ -3301,8 +2536,6 @@ int comandoDrop(char* tabla) {
 		mutexDesbloquear(&listaTablasInsertadas_mx);
 
 		eliminarTablaCompleta(tabla);
-
-//		usleep(5000);
 
 		pthread_cancel(*hiloCompactacion);
 
