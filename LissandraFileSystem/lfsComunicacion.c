@@ -371,12 +371,15 @@ resp_com_t resolver_select(request_t req) {
 		//string_to_upper(nombre_tabla);
 		ret_val = comandoSelect(nombre_tabla,key);
 
-		if (ret_val->value == NULL) {
+		if (ret_val->tam_registro == -1) {
 			borrarRegistro(ret_val);
 			return armar_respuesta(RESP_ERROR_TABLA_NO_EXISTE, NULL);
 		} else if (ret_val->tam_registro == -2) {
 			borrarRegistro(ret_val);
 			return armar_respuesta(RESP_ERROR_METADATA, NULL);
+		}else if(ret_val->timestamp == 0){
+			borrarRegistro(ret_val);
+			return armar_respuesta(RESP_ERROR_KEY_NO_EXISTE, NULL);
 		}
 
 		int tamanio = strlen(ret_val->value)+40;

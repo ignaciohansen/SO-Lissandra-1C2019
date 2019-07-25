@@ -28,7 +28,6 @@
 #include <commons/collections/queue.h>
 #include <commons/collections/list.h>
 // BICLIOTECA
-//#include "../Biblioteca/src/Biblioteca.c"
 #include "../Biblioteca/src/Biblioteca.h"
 #include "parser.h"
 // READLINE
@@ -40,7 +39,7 @@
 
 //GOSSIPING
 #include "../Biblioteca/src/Gossiping.h"
-//#include "../Biblioteca/src/Gossiping.c"
+
 
 #define PATH_KERNEL_CONFIG "../Config/KERNEL.txt"
 #define LOG_PATH "../Log/LOG_KERNEL.txt"
@@ -58,7 +57,8 @@ int resultado_Conectar, resultado_sendMsj;
 //Semaforos
 int valorMultiprocesamiento;
 Mutex countProcess;
-sem_t multiprocesamiento;
+sem_t multiprocesamiento,sem_planificador;
+
 
 typedef struct{
 
@@ -110,6 +110,7 @@ typedef struct{
 	int comando;
 	int argumentos;
 	char* linea;
+	FILE* archivo;
 }t_pcb;
 
 t_pcb* crearPcb(char* comando);
@@ -143,14 +144,31 @@ typedef struct{
  * Planificador
  * */
 
-void inicializarListasPlanificador();
-void planificar(char* linea);
-void agregarAListo(t_pcb* procesoNuevo);
+pthread_t* iniciarHilosMultiprocesamiento(int nivel);
+
+void inicializarListasPlanificador(void);
+void iniciarSemaforos(void);
+
+void planificadorLargoPlazo(char* linea);
+t_pcb* planificarCortoPlazo(void);
+
 void agregarANuevo(char* linea);
+void agregarAListo(t_pcb* procesoNuevo);
+void agregarAEjecutando(t_pcb* pcb);
+void agregarAExit(t_pcb* pcb);
+
+void ejecutar(t_pcb* pcb, int quantum);
+
 t_pcb* crearEstructurasAdministrativas(char* linea);
-void agregarAEjecutar(t_pcb* procesoAgregar);
-void agregarAExit();
+
 int rafagaComandoRun(char* path);
+
+t_pcb* obtenerColaListos(void);
+
+void nivelMultiprogramacion(int* este_nivel);
+int sacarDeColaEjecucion(t_pcb* pcb);
+
+int buscarPcbEnColaEjecucion(t_pcb* pcb);
 
 pthread_mutex_t mutexColaNuevos;
 pthread_mutex_t mutexColaListos;
