@@ -63,10 +63,7 @@ int main() {
 	pthread_detach(hiloMetadataRefresh);
 
 	log_info(log_kernel, "Creamos hilo para Consola.");
-	pthread_t hiloPlanificador;
-	pthread_create(&hiloPlanificador, NULL, (void*) nivelMultiprogramacion, &countPID);
-
-	pthread_detach(hiloPlanificador);
+	pthread_t* hilosPlanificador = iniciarHilosMultiprocesamiento(arc_config->multiprocesamiento);
 
 	pthread_t hiloConsola;
 	pthread_create(&hiloConsola, NULL, (void*) consola, NULL);
@@ -79,9 +76,24 @@ int main() {
 
 }
 
+pthread_t* iniciarHilosMultiprocesamiento(int nivel){
+
+	pthread_t* hilosPlanificador = malloc(sizeof(pthread_t) * nivel);
+
+	for(int i = 0; i < nivel; i++){
+
+		pthread_create(&hilosPlanificador[i], NULL, (void*) nivelMultiprogramacion, &i);
+
+		pthread_detach(hilosPlanificador[i]);
+
+	}
+
+	return hilosPlanificador;
+
+}
+
 void iniciarSemaforos() {
 
-	semaforoIniciar(&multiprocesamiento, arc_config->multiprocesamiento);
 	semaforoIniciar(&sem_planificador, 0);
 }
 
@@ -260,8 +272,6 @@ void consola() {
 		log_info(log_kernel, "Viene el comando en la cadena: %s",
 				comandoSeparado[0]);
 
-		//TODO @Lorenzo ver: atenderRequest(linea);
-
 		int comando = buscarComando(comandoSeparado[0]);
 
 		log_info(log_kernel, "El enum correspondiente para el comando es: %d",
@@ -355,6 +365,7 @@ void inicializarListasPlanificador() {
 	colaListos = list_create();
 	colaExit = list_create();
 	colaEjecucion = list_create();
+	g_lista_tablas = list_create();
 }
 
 t_pcb* crearPcb(char* linea) {
@@ -416,6 +427,9 @@ t_pcb* crearPcb(char* linea) {
 		pcbProceso->argumentos = tamanio - 1;
 		pcbProceso->estado = 0; //Estado en la cola new porque recien se crea
 		pcbProceso->progamCounter = 0;
+		pcbProceso->archivo = fopen(comandoSeparado[1], "r");
+		log_info(log_kernel,"EN PCB: %s",comandoSeparado[1]);
+		log_info(log_kernel,"EN PCB: %p",pcbProceso->archivo);
 
 	}
 		break;
@@ -454,7 +468,7 @@ int rafagaComandoRun(char* path) {
 		log_info(log_kernel, "El archivo pasado por path no se encontró");
 		printf("El archivo %s No existe\n", path);
 
-		free(path);
+		//free(path);
 		return -1;
 	} else {
 
@@ -477,7 +491,7 @@ int rafagaComandoRun(char* path) {
 				contador);
 		rewind(fd);
 		fclose(fd);
-		free(path);
+		//free(path);
 
 		log_info(log_kernel, "Por retornar contador");
 		return contador;
@@ -486,10 +500,13 @@ int rafagaComandoRun(char* path) {
 	return 0;
 }
 
-void nivelMultiprogramacion(int este_nivel) {
+void nivelMultiprogramacion(int* este_nivel) {
+
+	int nivel = *este_nivel;
 
 	while (1) {
 
+		log_info(log_kernel,"Ejecutando el nivel: %d",nivel);
 		t_pcb* pcb = planificarCortoPlazo();
 		ejecutar(pcb, arc_config->quantum);
 	}
@@ -499,7 +516,7 @@ void planificadorLargoPlazo(char* linea) {
 
 	agregarANuevo(linea);
 
-	t_pcb* pcbProceso = crearPcb(linea);
+	t_pcb* pcbProceso = crearEstructurasAdministrativas(linea);
 
 	if (pcbProceso == NULL) {
 
@@ -512,7 +529,7 @@ void planificadorLargoPlazo(char* linea) {
 
 	agregarAListo(pcbProceso);
 
-	sem_post(&sem_planificador);
+	log_info(log_kernel,"Luego de hacer post al semaforo Planificador");
 }
 
 t_pcb* planificarCortoPlazo() {
@@ -534,6 +551,8 @@ void agregarANuevo(char* linea) {
 
 	log_info(log_kernel,
 			"Se desbloqueo la cola de nuevos y se agrego la linea a la cola de nuevos");
+
+	log_info(log_kernel,"[COLA NUEVOS] Size nuevo: %d",list_size(colaNuevos));
 
 }
 
@@ -563,6 +582,9 @@ void agregarAListo(t_pcb* pcbParaAgregar) {
 			"Desbloqueamos el mutex y agregamos el PCB a la cola de listos.");
 
 	log_info(log_kernel, "Salimos de la funcion AgregarAListo");
+	log_info(log_kernel,"[COLA LISTO] Size Listo: %d",list_size(colaListos));
+
+	sem_post(&sem_planificador);
 
 }
 
@@ -571,6 +593,7 @@ void agregarAEjecutando(t_pcb* pcb){
 	mutexBloquear(&mutexColaEjecucion);
 	list_add(colaEjecucion, pcb);
 	mutexDesbloquear(&mutexColaEjecucion);
+	log_info(log_kernel,"[COLA EJECUTAR] Size Ejecucion: %d",list_size(colaEjecucion));
 }
 
 t_pcb* obtenerColaListos(void){
@@ -615,12 +638,6 @@ void ejecutar(t_pcb* pcb, int quantum) {
 
 	if (pcb->comando == RUN) {
 
-		char** pathArchivo = string_split(pcb->linea, separator);
-		char** linea;
-		FILE* fd;
-
-		fd = fopen(pathArchivo[1], "r");
-
 		char* bufferRun = malloc(100);
 		char* bufferRun2 = malloc(100);
 
@@ -632,8 +649,10 @@ void ejecutar(t_pcb* pcb, int quantum) {
 				log_info(log_kernel, "Vuelta del FOR: %d", i);
 
 				log_info(log_kernel, "Reservé memoria para bufferRun");
+				log_info(log_kernel,"%d",pcb->comando);
+				log_info(log_kernel,"%p",pcb->archivo);
 
-				bufferRun2 = fgets(bufferRun, 100, fd);
+				bufferRun2 = fgets(bufferRun, 100, pcb->archivo);
 
 				log_info(log_kernel, "Linea para ejecutar: %s", bufferRun2);
 
@@ -643,9 +662,9 @@ void ejecutar(t_pcb* pcb, int quantum) {
 
 			}
 
-			int valor = sacarDeColaEjecucion(pcb);
-			if(valor >= 0){
+			if(pcb->rafaga > pcb->progamCounter){
 
+				sacarDeColaEjecucion(pcb);
 				agregarAListo(pcb);
 
 			}
@@ -663,7 +682,7 @@ void ejecutar(t_pcb* pcb, int quantum) {
 
 				log_info(log_kernel, "Vuelta del FOR: %d", i);
 
-				bufferRun2 = fgets(bufferRun, 100, fd);
+				bufferRun2 = fgets(bufferRun, 100, pcb->archivo);
 
 				log_info(log_kernel, "Linea para ejecutar: %s", bufferRun2);
 
@@ -672,7 +691,7 @@ void ejecutar(t_pcb* pcb, int quantum) {
 				pcb->progamCounter++;
 			}
 
-			agregarAExit(pcb);
+
 		}
 
 	}//Hasta aca si el comando es RUN
@@ -680,13 +699,13 @@ void ejecutar(t_pcb* pcb, int quantum) {
 	//Si es otro:
 	else{
 
-		//Switch por pcb->comando
-
+		resolverPedido(pcb->linea);
 
 	}
 
 	if (pcb->progamCounter == pcb->rafaga) {
 
+		log_info(log_kernel,"Entro para exit");
 		agregarAExit(pcb);
 	}
 
@@ -694,27 +713,25 @@ void ejecutar(t_pcb* pcb, int quantum) {
 
 void agregarAExit(t_pcb* pcb) {
 
-	semaforoValor(&multiprocesamiento, &valorMultiprocesamiento);
-
-	log_info(log_kernel,
-			"El valor del semaforo contador multiprocesamiento, antes de colocar un proceso en exit es: %d",
-			valorMultiprocesamiento);
-
-	semaforoSignal(&multiprocesamiento);
-
-	semaforoValor(&multiprocesamiento, &valorMultiprocesamiento);
-
-	log_info(log_kernel,
-			"El valor del semaforo contador multiprocesamiento, despues de agregar un proceso a la cola exit es: %d",
-			valorMultiprocesamiento);
-
+	log_info(log_kernel,"[COLA EXIT] Size Exit antes: %d",list_size(colaExit));
 	int resultado = sacarDeColaEjecucion(pcb);
 
+	if(pcb->comando == RUN){
+
+		log_info(log_kernel,"Antes de cerrar archivo");
+		log_info(log_kernel,"%p",pcb->archivo);
+
+		fclose(pcb->archivo);
+
+	}
+
+	log_info(log_kernel,"Resultado de sacar comando de ejecucion: %d",resultado);
 	if(resultado >= 0){
 
 		mutexBloquear(&mutexColaExit);
 		list_add(colaExit, pcb);
 		mutexDesbloquear(&mutexColaExit);
+		log_info(log_kernel,"[COLA EXIT]Size Exit despues: %d",list_size(colaExit));
 	}
 }
 
@@ -725,11 +742,13 @@ int sacarDeColaEjecucion(t_pcb* pcb){
 	if(posicion >= 0){
 
 		mutexBloquear(&mutexColaEjecucion);
-
+		log_info(log_kernel,"Por sacar de ejecucion");
 		list_remove(colaEjecucion,posicion);
 
 		mutexDesbloquear(&mutexColaEjecucion);
 	}
+
+	log_info(log_kernel,"[COLA EJECUCION]Size Ejecucion (s): %d",list_size(colaEjecucion));
 
 	return posicion;
 }

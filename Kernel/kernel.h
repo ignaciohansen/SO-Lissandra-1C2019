@@ -110,6 +110,7 @@ typedef struct{
 	int comando;
 	int argumentos;
 	char* linea;
+	FILE* archivo;
 }t_pcb;
 
 t_pcb* crearPcb(char* comando);
@@ -143,6 +144,8 @@ typedef struct{
  * Planificador
  * */
 
+pthread_t* iniciarHilosMultiprocesamiento(int nivel);
+
 void inicializarListasPlanificador(void);
 void iniciarSemaforos(void);
 
@@ -162,7 +165,8 @@ int rafagaComandoRun(char* path);
 
 t_pcb* obtenerColaListos(void);
 
-void nivelMultiprogramacion(int este_nivel);
+void nivelMultiprogramacion(int* este_nivel);
+int sacarDeColaEjecucion(t_pcb* pcb);
 
 int buscarPcbEnColaEjecucion(t_pcb* pcb);
 
