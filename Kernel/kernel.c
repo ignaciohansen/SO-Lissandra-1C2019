@@ -64,7 +64,7 @@ int main() {
 
 	log_info(log_kernel, "Creamos hilo para Consola.");
 	pthread_t hiloPlanificador;
-	pthread_create(&hiloPlanificador, NULL, (void*) nivelMultiprogramacion, countPID);
+	pthread_create(&hiloPlanificador, NULL, (void*) nivelMultiprogramacion, &countPID);
 
 	pthread_detach(hiloPlanificador);
 
@@ -375,7 +375,7 @@ t_pcb* crearPcb(char* linea) {
 		tamanio = i + 1;
 	}
 
-	int auxComandoInt;
+	int auxComandoInt = -1;
 
 	if (strcmp(comandoSeparado[0], "RUN") == 0) {
 
@@ -400,9 +400,6 @@ t_pcb* crearPcb(char* linea) {
 
 		auxComandoInt = DESCRIBE;
 	}
-
-	log_info(log_kernel, "El valor del comando para el ENUM es: %d",
-			auxComandoInt);
 
 	switch (auxComandoInt) {
 
@@ -544,16 +541,18 @@ void agregarANuevo(char* linea) {
 
 void agregarAListo(t_pcb* pcbParaAgregar) {
 
-	log_info(log_kernel, "Verificamos si la cola de nuevos tiene un elemento");
-
-	if (list_size(colaNuevos) > 0) {
+	if(pcbParaAgregar->estado == nuevo){
 		log_info(log_kernel, "Sacamos el elemento de la cola de nuevos");
+
 		mutexBloquear(&mutexColaNuevos);
+
 		list_remove(colaNuevos, 0);
+
 		mutexDesbloquear(&mutexColaNuevos);
+
 	}
-	log_info(log_kernel,
-			"Bloqueamos Mutex para poder insertar el elemento en la cola de listos");
+
+	log_info(log_kernel,"Bloqueamos Mutex para poder insertar el elemento en la cola de listos");
 
 	mutexBloquear(&mutexColaListos);
 	list_add(colaListos, pcbParaAgregar);
@@ -626,9 +625,9 @@ void ejecutar(t_pcb* pcb, int quantum) {
 		char* bufferRun2 = malloc(100);
 
 		//Rafaga restante del PCB sea mayor o igual que el Quantum
-		if ((pcb->rafaga - pcb->progamCounter)>= arc_config->quantum) {
+		if ((pcb->rafaga - pcb->progamCounter) >= quantum) {
 
-			for (int i = 1; arc_config->quantum >= i; i++) {
+			for (int i = 1; quantum >= i; i++) {
 
 				log_info(log_kernel, "Vuelta del FOR: %d", i);
 
@@ -638,11 +637,16 @@ void ejecutar(t_pcb* pcb, int quantum) {
 
 				log_info(log_kernel, "Linea para ejecutar: %s", bufferRun2);
 
-				linea = string_split(bufferRun2, separator);
-				log_info(log_kernel, "El comando es: %s", linea[0]);
-				int aux_comando = buscarComando(linea[0]);
+				resolverPedido(bufferRun2);
 
 				pcb->progamCounter++;
+
+			}
+
+			int valor = sacarDeColaEjecucion(pcb);
+			if(valor >= 0){
+
+				agregarAListo(pcb);
 
 			}
 
@@ -663,12 +667,12 @@ void ejecutar(t_pcb* pcb, int quantum) {
 
 				log_info(log_kernel, "Linea para ejecutar: %s", bufferRun2);
 
-				linea = string_split(bufferRun2, separator);
-				log_info(log_kernel, "El comando es: %s", linea[0]);
-				int aux_comando = buscarComando(linea[0]);
+				resolverPedido(bufferRun2);
 
 				pcb->progamCounter++;
 			}
+
+			agregarAExit(pcb);
 		}
 
 	}//Hasta aca si el comando es RUN
@@ -688,432 +692,6 @@ void ejecutar(t_pcb* pcb, int quantum) {
 
 }
 
-void agregarAEjecutar(t_pcb* pcbParaAgregar) { //Implementacion anterior
-
-	req_com_t req;
-
-	log_info(log_kernel, "En funcion agregarAEjecutar");
-
-	log_info(log_kernel, "En cola de listos tenemos: %d elementos",
-			listaCantidadElementos(colaListos));
-
-	char** pruebaPath = string_split(pcbParaAgregar->linea, separator);
-
-	semaforoWait(&multiprocesamiento);
-	FILE* fd;
-	fd = fopen(pruebaPath[1], "r");
-
-	while (listaCantidadElementos(colaListos) > 0) {
-
-		int count = 0;
-		log_info(log_kernel, "Entrando While == colaListos > 0");
-		if (pcbParaAgregar->comando == RUN) {
-
-			//FILE* fd;
-
-			//fd = fopen(pruebaPath[1], "r");
-
-			log_info(log_kernel, "Valor de Rafaga es %d",
-					pcbParaAgregar->rafaga);
-			log_info(log_kernel, "Valor de programCounter es %d",
-					pcbParaAgregar->progamCounter);
-			log_info(log_kernel, "Le queda por ejecutar %d",
-					pcbParaAgregar->rafaga - pcbParaAgregar->progamCounter);
-
-			log_info(log_kernel, "Valor de Quantum es %d", arc_config->quantum);
-
-			mutexBloquear(&mutexColaListos);
-			list_remove(colaListos, 0);
-			mutexDesbloquear(&mutexColaListos);
-			//char* bufferRun = malloc(1024);
-			char* bufferRun = malloc(100);
-			char* bufferRun2 = malloc(100);
-
-			//Rafaga restante del PCB sea mayor o igual que el Quantum
-			if ((pcbParaAgregar->rafaga - pcbParaAgregar->progamCounter)
-					>= arc_config->quantum) {
-
-				for (int i = 1; arc_config->quantum >= i; i++) {
-
-					count++;
-					log_info(log_kernel, "Vuelta del FOR: %d", i);
-
-					log_info(log_kernel, "Reservé memoria para bufferRun");
-
-					bufferRun2 = fgets(bufferRun, 100, fd);
-
-					log_info(log_kernel, "1");
-					log_info(log_kernel, "Linea para ejecutar: %s", bufferRun2);
-
-					pruebaPath = string_split(bufferRun2, separator);
-					log_info(log_kernel, "El comando es: %s", pruebaPath[0]);
-					int aux_comando = buscarComando(pruebaPath[0]);
-
-					if (aux_comando == CREATE) {
-
-						//@martin: si ya conozco la tabla, hace falta mandar el create o puedo informar el error sin hacer nada?
-						//puedo saberlo haciendo:
-						//if(buscarCriterioTabla(pruebaPath[2])!=-1) //Ya conozco la memoria
-
-						//@martin: Tendría que mandar el request y si no falla, recién agregar la tabla a la estructura administrativa haciendo:
-						/*t_tablas *nueva = malloc(sizeof(t_tablas));
-						 nueva->criterio = buscarCriterio(pruebaPath[2]);
-						 nueva->nombreTabla = malloc(strlen(pruebaPath[1]));
-						 strcpy(nueva->nombreTabla, pruebaPath[1]);
-						 agregarTablaCriterio(nueva);//NO HACER FREE PORQUE LA FUNCION NO ALOCA MEMORIA
-						 */
-
-						/*tablaPrueba.criterio = buscarCriterio(pruebaPath[2]);
-						 tablaPrueba.nombreTabla = malloc(
-						 strlen(pruebaPath[1]) + 1);
-						 strcpy(tablaPrueba.nombreTabla, pruebaPath[1]);
-						 log_info(log_kernel,
-						 "En la tabla/criterios se guardo el criterio: %d",
-						 tablaPrueba.criterio);
-						 log_info(log_kernel,
-						 "En la tabla/criterios se guardo el nombre %s",
-						 tablaPrueba.nombreTabla);*/
-					}
-
-					req.tam = strlen(bufferRun2) + 1;
-
-					log_info(log_kernel, "Tamanio cadena grabada en req:%d",
-							req.tam);
-
-					req.str = malloc(req.tam);
-
-					strcpy(req.str, bufferRun2);
-
-					semaforoValor(&multiprocesamiento,
-							&valorMultiprocesamiento);
-
-					log_info(log_kernel,
-							"El valor del semaforo contador multiprocesamiento, despues de agregar a ejecutar un proceso es: %d",
-							valorMultiprocesamiento);
-
-					log_info(log_kernel, "Cadena grabada en req:%s", req.str);
-
-					pcbParaAgregar->estado = ejecucion;
-
-					socket_CMemoria = conectar_a_memoria(
-							criterio_memoria.listMemoriaas->ip,
-							criterio_memoria.listMemoriaas->puerto);
-
-					list_add(colaEjecucion, pcbParaAgregar);
-
-					int respuesta = enviar_request(socket_CMemoria, req);
-
-					if (respuesta != 0) {
-						log_info(log_kernel,
-								"Hubo un error al enviar la request a memoria");
-						return;
-					}
-					log_info(log_kernel,
-							"No Hubo error al enviar la request a memoria");
-
-					msg_com_t msg = recibir_mensaje(socket_CMemoria);
-					if (msg.tipo == RESPUESTA) {
-
-						log_info(log_kernel,
-								"Llego un mensaje de tipo RESPUESTA");
-
-						resp_com_t respuesta = procesar_respuesta(msg);
-						borrar_mensaje(msg);
-						if (respuesta.tipo == RESP_OK) {
-							printf("La respuesta fue correcta %d \n",
-									respuesta.tipo);
-							if (respuesta.msg.str != NULL)
-								printf("Respuesta recibida %s\n",
-										respuesta.msg.str);
-							log_info(log_kernel,
-									"La respuesta fue correcta luego de procesarla");
-						} else {
-
-							log_info(log_kernel,
-									"La respuesta no fue correcta luego de procesarla");
-						}
-
-						borrar_respuesta(respuesta);
-
-					}
-
-					mutexBloquear(&mutexColaEjecucion);
-
-					list_add(colaEjecucion, pcbParaAgregar);
-
-					mutexDesbloquear(&mutexColaEjecucion);
-
-					log_info(log_kernel,
-							"Desbloqueamos el Mutex de Ejecucion y el PCB fue encolado a la cola de Ejecucion.");
-
-					free(req.str);
-
-					pcbParaAgregar->progamCounter++;
-
-					log_info(log_kernel,
-							"El valor del ProgramCounter para el proceso es: %d",
-							pcbParaAgregar->progamCounter);
-
-					log_info(log_kernel, "Ultima instruccion del FOR");
-
-					//AGREGADO PARA LIMPIAR LEAKSs
-
-					//free(bufferRun);
-
-				}
-
-				mutexBloquear(&mutexColaEjecucion);
-				list_remove(colaEjecucion, 0);
-				mutexDesbloquear(&mutexColaEjecucion);
-
-				agregarAListo(pcbParaAgregar);
-
-			} else {
-
-				log_info(log_kernel,
-						"===>Seccion de Quantum mayor que rafaga restante del proceso");
-
-				int rafagaRestante = pcbParaAgregar->rafaga
-						- pcbParaAgregar->progamCounter;
-
-				log_info(log_kernel, "===>Rafaga restante: %d", rafagaRestante);
-
-				for (int i = 1; rafagaRestante >= i; i++) {
-					count++;
-					char* bufferRun = malloc(1024);
-
-					log_info(log_kernel, "Vuelta del FOR: %d", i);
-
-					char* lineaRun = malloc(1024);
-
-					lineaRun = fgets(bufferRun, 1024, fd);
-
-					strtok(lineaRun, "\n");
-					log_info(log_kernel, "Linea para ejecutar: %s", lineaRun);
-
-					pruebaPath = string_split(lineaRun, separator);
-					log_info(log_kernel, "El comando es: %s", pruebaPath[0]);
-					int aux_comando = buscarComando(pruebaPath[0]);
-
-					if (aux_comando == CREATE) {
-
-						tablaPrueba.criterio = buscarCriterio(pruebaPath[2]);
-						tablaPrueba.nombreTabla = malloc(
-								strlen(pruebaPath[1]) + 1);
-						strcpy(tablaPrueba.nombreTabla, pruebaPath[1]);
-						log_info(log_kernel,
-								"En la tabla/criterios se guardo el criterio: %d",
-								tablaPrueba.criterio);
-						log_info(log_kernel,
-								"En la tabla/criterios se guardo el nombre %s",
-								tablaPrueba.nombreTabla);
-					}
-
-					//strtok(lineaRun, "\n");
-					req.tam = strlen(lineaRun) + 1;
-
-					log_info(log_kernel, "Tamanio cadena grabada en req:%d",
-							req.tam);
-
-					req.str = malloc(req.tam);
-
-					strcpy(req.str, lineaRun);
-
-					log_info(log_kernel, "Cadena grabada en req:%s", req.str);
-
-					semaforoValor(&multiprocesamiento,
-							&valorMultiprocesamiento);
-
-					log_info(log_kernel,
-							"El valor del semaforo contador multiprocesamiento, despues de agregar a ejecutar un proceso es: %d",
-							valorMultiprocesamiento);
-
-					pcbParaAgregar->estado = ejecucion;
-
-					mutexBloquear(&mutexColaEjecucion);
-
-					socket_CMemoria = conectar_a_memoria(
-							criterio_memoria.listMemoriaas->ip,
-							criterio_memoria.listMemoriaas->puerto);
-
-					list_add(colaEjecucion, pcbParaAgregar);
-
-					int respuesta = enviar_request(socket_CMemoria, req);
-
-					if (respuesta != 0) {
-						log_info(log_kernel,
-								"Hubo un error al enviar la request a memoria");
-						return;
-					}
-					log_info(log_kernel,
-							"No Hubo error al enviar la request a memoria");
-
-					msg_com_t msg = recibir_mensaje(socket_CMemoria);
-					if (msg.tipo == RESPUESTA) {
-
-						log_info(log_kernel,
-								"Llego un mensaje de tipo RESPUESTA");
-
-						resp_com_t respuesta = procesar_respuesta(msg);
-						if (respuesta.tipo == RESP_OK) {
-							printf("La respuesta fue correcta %d: \n",
-									respuesta.tipo);
-							if (respuesta.msg.tam > 0)
-								printf("Respuesta recibida %s: \n",
-										respuesta.msg.str);
-							log_info(log_kernel,
-									"La respuesta fue correcta luego de procesarla");
-						} else {
-
-							log_info(log_kernel,
-									"La respuesta no fue correcta luego de procesarla");
-						}
-
-						borrar_respuesta(respuesta);
-
-					}
-
-					if (msg.tipo != RESPUESTA) {
-						imprimirError(log_kernel,
-								"[CREATE] Memoria no responde como se espera");
-						borrar_mensaje(msg);
-
-					}
-
-					mutexDesbloquear(&mutexColaEjecucion);
-
-					log_info(log_kernel,
-							"Desbloqueamos el Mutex de Ejecucion y el PCB fue encolado a la cola de Ejecucion.");
-
-					free(req.str);
-
-					pcbParaAgregar->progamCounter =
-							pcbParaAgregar->progamCounter + i;
-
-					log_info(log_kernel, "Ultima instruccion del FOR");
-
-					free(lineaRun);	//AGREGADO PARA LIMPIAR LEAKSs
-					//free(bufferRun);
-
-				}
-			}
-
-		} else {
-			log_info(log_kernel,
-					"Entro por ELSE. Ya que el comando vino por consola y no por RUN.");
-			count++;
-			mutexBloquear(&mutexColaListos);
-			list_remove(colaListos, 0);
-			mutexDesbloquear(&mutexColaListos);
-
-			if (pcbParaAgregar->comando == CREATE) {
-
-				tablaPrueba.criterio = buscarCriterio(pruebaPath[2]);
-				tablaPrueba.nombreTabla = malloc(strlen(pruebaPath[1]) + 1);
-				strcpy(tablaPrueba.nombreTabla, pruebaPath[1]);
-				log_info(log_kernel,
-						"En la tabla/criterios se guardo el criterio: %d",
-						tablaPrueba.criterio);
-				log_info(log_kernel,
-						"En la tabla/criterios se guardo el nombre %s",
-						tablaPrueba.nombreTabla);
-			}
-
-			req.tam = strlen(pcbParaAgregar->linea) + 1;
-
-			log_info(log_kernel, "Tamanio cadena grabada en req:%d", req.tam);
-
-			req.str = malloc(req.tam);
-
-			strcpy(req.str, pcbParaAgregar->linea);
-
-			log_info(log_kernel, "Cadena grabada en req:%s", req.str);
-
-			semaforoValor(&multiprocesamiento, &valorMultiprocesamiento);
-
-			log_info(log_kernel,
-					"El valor del semaforo contador multiprocesamiento, despues de agregar a ejecutar un proceso es: %d",
-					valorMultiprocesamiento);
-
-			pcbParaAgregar->estado = ejecucion;
-
-			//mutexBloquear(&mutexColaEjecucion);
-
-			log_info(log_kernel, "Conectando con la memoria numero: %d",
-					criterio_memoria.listMemoriaas->numMemoria);
-			socket_CMemoria = conectar_a_memoria(
-					criterio_memoria.listMemoriaas->ip,
-					criterio_memoria.listMemoriaas->puerto);
-
-			list_add(colaEjecucion, pcbParaAgregar);
-
-			log_info(log_kernel, "Por enviar request a memoria");
-			int respuesta = enviar_request(socket_CMemoria, req);
-
-			if (respuesta != 0) {
-				log_info(log_kernel,
-						"Hubo un error al enviar la request a memoria");
-				return;
-			}
-
-			log_info(log_kernel,
-					"No Hubo error al enviar la request a memoria");
-
-			msg_com_t msg = recibir_mensaje(socket_CMemoria);
-			if (msg.tipo == RESPUESTA) {
-
-				log_info(log_kernel, "Llego un mensaje de tipo RESPUESTA");
-
-				resp_com_t respuesta = procesar_respuesta(msg);
-
-				if (respuesta.tipo == RESP_OK) {
-					printf("La respuesta fue correcta: %d \n", respuesta.tipo);
-					log_info(log_kernel,
-							"La respuesta fue correcta luego de procesarla");
-					if (respuesta.msg.tam > 0)
-						printf("Respuesta recibida %s: \n", respuesta.msg.str);
-				} else {
-					printf("La respuesta no fue correcta, Llegó: %d\n",
-							respuesta.tipo);
-					log_info(log_kernel,
-							"La respuesta no fue correcta luego de procesarla, llegó: %d",
-							respuesta.tipo);
-				}
-
-				borrar_respuesta(respuesta);
-
-			}
-
-			if (msg.tipo != RESPUESTA) {
-				imprimirError(log_kernel,
-						"[CREATE] Memoria no responde como se espera");
-				borrar_mensaje(msg);
-
-			}/*
-			 mutexBloquear(&mutexColaEjecucion);
-			 list_remove(colaEjecucion, 0);
-			 mutexDesbloquear(&mutexColaEjecucion);		*/
-
-			//DAM: NO se que sentido tiene que este req este aqui si no lo usa nadie y ademas es local
-			free(req.str);	//LO AGREGO POR LAS DUDAS
-
-		}
-
-		log_info(log_kernel, "El total es: %d", count);
-
-		log_info(log_kernel,
-				"Al finalizar el while tenemos en cola de listos tenemos: %d elementos",
-				listaCantidadElementos(colaListos));
-
-	}
-	//AGREGADO PARA LIMPIAR LEAKSs
-	int indice = 0;
-	while (pruebaPath[indice] != NULL) {
-		free(pruebaPath[indice]);
-		indice++;
-	}
-}
-
 void agregarAExit(t_pcb* pcb) {
 
 	semaforoValor(&multiprocesamiento, &valorMultiprocesamiento);
@@ -1130,9 +708,47 @@ void agregarAExit(t_pcb* pcb) {
 			"El valor del semaforo contador multiprocesamiento, despues de agregar un proceso a la cola exit es: %d",
 			valorMultiprocesamiento);
 
-	mutexBloquear(&mutexColaExit);
-	list_add(colaExit, pcb);
-	mutexDesbloquear(&mutexColaExit);
+	int resultado = sacarDeColaEjecucion(pcb);
+
+	if(resultado >= 0){
+
+		mutexBloquear(&mutexColaExit);
+		list_add(colaExit, pcb);
+		mutexDesbloquear(&mutexColaExit);
+	}
+}
+
+int sacarDeColaEjecucion(t_pcb* pcb){
+
+	int posicion = buscarPcbEnColaEjecucion(pcb);
+
+	if(posicion >= 0){
+
+		mutexBloquear(&mutexColaEjecucion);
+
+		list_remove(colaEjecucion,posicion);
+
+		mutexDesbloquear(&mutexColaEjecucion);
+	}
+
+	return posicion;
+}
+
+int buscarPcbEnColaEjecucion(t_pcb* pcb){
+
+	int pos = -1;
+
+	int tamanio = list_size(colaEjecucion);
+	for(int i = 0; i <= tamanio ;i++){
+
+		if(list_get(colaEjecucion,i) == pcb){
+
+			pos = i;
+		}
+	}
+
+	return pos;
+
 }
 
 void gossiping_Kernel() {

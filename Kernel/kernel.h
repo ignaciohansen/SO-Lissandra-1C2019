@@ -152,7 +152,6 @@ t_pcb* planificarCortoPlazo(void);
 void agregarANuevo(char* linea);
 void agregarAListo(t_pcb* procesoNuevo);
 void agregarAEjecutando(t_pcb* pcb);
-void agregarAEjecutar(t_pcb* procesoAgregar);
 void agregarAExit(t_pcb* pcb);
 
 void ejecutar(t_pcb* pcb, int quantum);
@@ -164,6 +163,8 @@ int rafagaComandoRun(char* path);
 t_pcb* obtenerColaListos(void);
 
 void nivelMultiprogramacion(int este_nivel);
+
+int buscarPcbEnColaEjecucion(t_pcb* pcb);
 
 pthread_mutex_t mutexColaNuevos;
 pthread_mutex_t mutexColaListos;
