@@ -175,6 +175,8 @@ int sacarDeColaEjecucion(t_pcb* pcb);
 
 int buscarPcbEnColaEjecucion(t_pcb* pcb);
 
+void aplicarRetardo(void);
+
 pthread_mutex_t mutexColaNuevos;
 pthread_mutex_t mutexColaListos;
 pthread_mutex_t mutexColaExit;

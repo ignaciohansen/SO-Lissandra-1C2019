@@ -365,7 +365,7 @@ void validarLinea(char** lineaIngresada, t_log* logger) {
 
 }
 
-void inicializarListasPlanificador() {
+void inicializarListasPlanificador(void) {
 
 	colaNuevos = list_create();
 	colaListos = list_create();
@@ -674,7 +674,11 @@ void ejecutar(t_pcb* pcb, int quantum) {
 
 				resp_com_t respuesta = resolverPedido(bufferRun2);
 				//@martin @lorenzo aca habria que revisar si se produjo un error grave y abortar la ejecucion del script
+
 				borrar_respuesta(respuesta);
+
+				log_info(log_kernel,"Por llamar a aplicar Retardo");
+				aplicarRetardo();
 
 				pcb->progamCounter++;
 
@@ -709,6 +713,9 @@ void ejecutar(t_pcb* pcb, int quantum) {
 				//@martin @lorenzo aca habria que revisar si se produjo un error grave y abortar la ejecucion del script
 				borrar_respuesta(respuesta);
 
+				log_info(log_kernel,"Por llamar a aplicar Retardo");
+				aplicarRetardo();
+
 				pcb->progamCounter++;
 			}
 
@@ -722,6 +729,10 @@ void ejecutar(t_pcb* pcb, int quantum) {
 		resp_com_t respuesta = resolverPedido(pcb->linea);
 		//@martin @lorenzo aca habria que revisar si se produjo un error grave y abortar la ejecucion del script
 		borrar_respuesta(respuesta);
+
+		log_info(log_kernel,"Por llamar a aplicar Retardo");
+		aplicarRetardo();
+
 		pcb->progamCounter++;
 	}
 
@@ -752,6 +763,9 @@ void agregarAExit(t_pcb* pcb) {
 
 		mutexBloquear(&mutexColaExit);
 		list_add(colaExit, pcb);
+		printf("El comando: %s ",pcb->linea);
+		puts("termino con exito.");
+		log_info(log_kernel,"El comando: %s termino con exito. ",pcb->linea);
 		mutexDesbloquear(&mutexColaExit);
 		log_info(log_kernel,"[COLA EXIT]Size Exit despues: %d",list_size(colaExit));
 	}
@@ -798,6 +812,13 @@ int buscarPcbEnColaEjecucion(t_pcb* pcb){
 	}*/
 
 	return pos;
+}
+
+void aplicarRetardo(void){
+
+	log_info(log_kernel,"[KERNEL | aplicarRetardo] Por ejecutar instruccion sleep de: %d",arc_config->sleep_ejecucion);
+	sleep(arc_config->sleep_ejecucion);
+	log_info(log_kernel,"[KERNEL | aplicarRetardo] Luego de instruccion sleep");
 }
 
 void gossiping_Kernel() {
