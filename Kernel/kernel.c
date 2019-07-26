@@ -660,8 +660,6 @@ void ejecutar(t_pcb* pcb, int quantum) {
 
 			for (int i = 1; quantum >= i; i++) {
 
-				usleep(1000);
-
 				log_info(log_kernel, "Vuelta del FOR: %d", i);
 
 				log_info(log_kernel, "Reservé memoria para bufferRun");
@@ -817,7 +815,7 @@ int buscarPcbEnColaEjecucion(t_pcb* pcb){
 void aplicarRetardo(void){
 
 	log_info(log_kernel,"[KERNEL | aplicarRetardo] Por ejecutar instruccion sleep de: %d",arc_config->sleep_ejecucion);
-	sleep(arc_config->sleep_ejecucion);
+	usleep(arc_config->sleep_ejecucion);
 	log_info(log_kernel,"[KERNEL | aplicarRetardo] Luego de instruccion sleep");
 }
 
