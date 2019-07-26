@@ -73,7 +73,7 @@ void cerrar_todos_clientes(void)
 		aux = list_get(clientes_activos, i);
 		if(*aux != -1){
 			log_info(logger,"[CLIENTE] Cerrando socket %d",*aux);
-			close(aux);
+			close(*aux);
 		}
 		free(aux);
 	}

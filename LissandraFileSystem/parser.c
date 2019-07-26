@@ -99,11 +99,7 @@ request_t parser(char* req)
 	request.command_str=command;
 	cant_args=contar_espacios(temp);
 //	command=strtok(req," ");
-	if(!strcmp(command,"ADD"))
-		request.command=ADD;
-	else if(!strcmp(command,"RUN"))
-			request.command=RUN;
-	else if(!strcmp(command,"SELECT"))
+	if(!strcmp(command,"SELECT"))
 		request.command=SELECT;
 	else if(!strcmp(command,"INSERT"))
 		request.command=INSERT;
@@ -115,18 +111,6 @@ request_t parser(char* req)
 		request.command=DROP;
 	else if(!strcmp(command,"JOURNAL"))
 		request.command=JOURNALCOMANDO;
-	else if(!strcmp(command,"RETARDO_MEMORIA")) {
-		request.command=RETARDO_MEMORIA;
-	}
-	else if(!strcmp(command,"RETARDO_FS")) {
-			request.command=RETARDO_FS;
-		}
-	else if(!strcmp(command,"RETARDO_JOURNAL")) {
-			request.command=RETARDO_JOURNAL;
-		}
-	else if(!strcmp(command,"RETARDO_GOSSIPING")) {
-			request.command=RETARDO_GOSSIPING;
-		}
 	else if(!strcmp(command,"SALIR")) {
 			request.command=SALIR;
 		}

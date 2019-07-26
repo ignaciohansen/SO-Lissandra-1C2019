@@ -6,10 +6,18 @@
 #include <stdlib.h>
 #include <readline/readline.h>
 
-typedef enum{ADD,RUN,SELECT,INSERT,CREATE,DESCRIBE,DROP,
+typedef enum{
+	//ADD,
+	//RUN,
+	SELECT,
+	INSERT,
+	CREATE,
+	DESCRIBE,
+	DROP,
 	JOURNALCOMANDO,
-	RETARDO_MEMORIA,RETARDO_FS, RETARDO_JOURNAL, RETARDO_GOSSIPING,
-	INVALID_COMMAND, SALIR}command_t;
+	INVALID_COMMAND,
+	SALIR
+}command_t;
 
 
 typedef struct{
