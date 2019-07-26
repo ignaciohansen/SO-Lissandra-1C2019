@@ -405,7 +405,7 @@ int funcionDescribe(char* nombreTablaAIr){
 
 void liberar_todo_por_cierre_de_modulo() {
 
-	config_destroy(arc_config);
+
 	// ESTE TIENE 1 ERROR el de abajo comentado
 	//	cerrarTodosLosHilosPendientes();
 	log_info(log_memoria,
@@ -463,11 +463,15 @@ void liberar_todo_por_cierre_de_modulo() {
 		log_destroy(log_memoria);
 		log_memoria = NULL;
 	}
+
+
 	if (tablas_fp != NULL){
 		fprintf(tablas_fp,"\n\n\n********FINALIZANDO********");
 		fprintf(tablas_fp,"\n\n\n");
 		fclose(tablas_fp);
 	}
+
+
 }
 
 void liberar_config(void)

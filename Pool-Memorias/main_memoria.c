@@ -104,15 +104,19 @@ int main(int argc, char **argv)
 	inicializar_gossiping_memoria();
 	iniciar_hilo_gossiping(&mi_id,&gossiping_h,actualizarMemoriasDisponibles);
 	printf("\n*Gossiping corriendo");
+	pthread_attr_t attr;
+				pthread_attr_init(&attr);
+				pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
-	pthread_create(&servidor_h,NULL,(void *)hilo_servidor,&socket_servidor);
-	pthread_detach(servidor_h);
+	pthread_create(&servidor_h, &attr,(void *)hilo_servidor,&socket_servidor);
+	pthread_join(servidor_h, NULL);
 	printf("\n*Servidor corriendo");
 
 	char* path_de_memoria = malloc(strlen(PATH_MEMORIA_CONFIG)+1);
 	strcpy(path_de_memoria, PATH_MEMORIA_CONFIG);
-	pthread_create(&inotify_c,NULL, (void *)inotifyAutomatico,path_de_memoria);
-	pthread_detach(inotify_c);
+
+	pthread_create(&inotify_c,&attr, (void *)inotifyAutomatico,path_de_memoria);
+	pthread_join(inotify_c, NULL);
 	printf("\n*Hilo de actualización de retardos corriendo");
 
 	printf("\n\n***PROCESO MEMORIA CARGADO COMPLETAMENTE***\n\n");
@@ -121,19 +125,26 @@ int main(int argc, char **argv)
 
 //pthread_detach(journalHilo);
 	pthread_join(consola_h,NULL);
-	pthread_kill(servidor_h,SIGKILL);
+	pthread_cancel(consola_h);
+	pthread_cancel(inotify_c);
+	pthread_cancel(servidor_h);
+
+	free(path_de_memoria);
 
 	printf("\n\n***FINALIZANDO PROCESO MEMORIA***\n\n");
 
 	//ESTO ESTA MAL, PERO QUIERO VER SI FUNCA LO MIO
 //	pthread_cancel(servidor_h, SIGKILL);
 //	pthread_cancel(gossiping_h, SIGKILL);
-
+	log_info(log_memoria, "[Liberando] Liberando memoria Gossiping");
+	liberar_memoria_gossiping();
+	printf("\nSe libero la memoria gossiping");
+	log_info(log_memoria, "[Liberando] Cerrando clientes");
+	cerrar_todos_clientes();
+	printf("\nSe liberaron los clientes\n\n");
 	liberar_todo_por_cierre_de_modulo();
 
-	liberar_memoria_gossiping();
 
-	cerrar_todos_clientes();
 	return 1;
 }
 
@@ -354,6 +365,12 @@ void* hilo_servidor(int * socket_p){
 		imprimirMensaje(log_memoria,"[SERVIDOR] Esperando recibir un cliente");
 		cliente = esperar_cliente(socket);
 		imprimirMensaje(log_memoria,"[SERVIDOR] Cliente intentando conectarse");
+		pthread_attr_t attr;
+		pthread_attr_init(&attr);
+		//EL PTHREAD_CREATE_DETACHED LO HACE ACTUAR COMO SI FUERA UN DETACH PERO AL FINALIZAR SE LIBERA
+		//DETACH POR OTRA PARTE SOLO TIENE EL PROBLEMA QUE NO SE LIBERAL AL FINAL Y SE VAN ACUMULANDO
+		//EN POSSYBLE LOST.
+		pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 		switch(cliente.id){
 			hilo_cliente_args_t args;
 			case MEMORIA:
@@ -361,16 +378,16 @@ void* hilo_servidor(int * socket_p){
 				args.requiere_lfs = false;
 				dar_bienvenida_cliente(cliente.socket, MEMORIA, "Bienvenido!");
 				cliente_dar_de_alta(cliente.socket);
-				pthread_create(&thread,NULL,(void *)hilo_cliente, &args );
-				pthread_detach(thread);
+				pthread_create(&thread, &attr,(void *)hilo_cliente, &args );
+				pthread_join(thread, NULL);
 				break;
 			case KERNEL:
 				args.socket_cliente = cliente.socket;
 				args.requiere_lfs = true;
 				dar_bienvenida_cliente(cliente.socket, MEMORIA, "Bienvenido!");
 				cliente_dar_de_alta(cliente.socket);
-				pthread_create(&thread,NULL,(void *)hilo_cliente, &args );
-				pthread_detach(thread);
+				pthread_create(&thread, &attr,(void *)hilo_cliente, &args );
+				pthread_join(thread, NULL);
 				break;
 			default:
 				rechazar_cliente(cliente.socket,NULL);
@@ -414,6 +431,7 @@ void * hilo_cliente(hilo_cliente_args_t *args)
 				req_parseado = parser(request.str);
 				borrar_request_com(request);
 				respuesta = resolver_pedido(req_parseado,socket_lfs);
+
 				if(respuesta.tipo == RESP_OK)
 					imprimirMensaje1(log_memoria,"[CLIENTE] Pedido resuelto OK. "
 							"La resupuesta obtenida para el pedido es %s",respuesta.msg.str);
@@ -427,6 +445,7 @@ void * hilo_cliente(hilo_cliente_args_t *args)
 				else {
 					imprimirError(log_memoria,"[CLIENTE] La resupuesta no pudo ser enviada al cliente");
 				}
+				borrar_request(req_parseado);
 				borrar_respuesta(respuesta);
 				break;
 			case GOSSIPING:

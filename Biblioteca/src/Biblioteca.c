@@ -1537,7 +1537,16 @@ int conectar_a_servidor(char *ip,char *puerto, id_com_t id)
 		//printf("\n**No se pudo establecer conexion con el servidor**\n");
 		return -1;
     }
-
+/*
+	AddrInfo* infoaux;
+	while(server_info!=NULL){
+		infoaux = server_info->ai_next;
+		free(server_info->ai_canonname);
+			free(server_info->ai_addr);
+			free(server_info);
+			server_info= infoaux;
+	}
+*/
 	freeaddrinfo(server_info);
 
 //	printf("\nMe conecté!");
