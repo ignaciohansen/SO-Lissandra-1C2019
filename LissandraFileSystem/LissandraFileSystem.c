@@ -1473,8 +1473,7 @@ int abrirArchivoBloque(FILE **fp, int nroBloque, char *modo) {
 	fseek(*fp, 0, SEEK_END);
 	tam_bloque = ftell(*fp);
 	rewind(*fp);
-	log_info(logger, "[abrirArchivoBloque] Archivo %s abierto correctamente",
-			pathBloque);
+//	log_info(logger, "[abrirArchivoBloque] Archivo %s abierto correctamente",pathBloque);
 	free(pathBloque);
 	return tam_bloque;
 }
@@ -1513,25 +1512,18 @@ t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total) {
 			}
 			offset_bloque = 0;
 			int *nBloque = list_get(nroBloques, bloques_leidos);
-			log_info(logger,
-					"[OBTENIENDO TODO BLOQUES] Leyendo el bloque nro %d, que es el bloque %d",
-					bloques_leidos, *nBloque);
+//			log_info(logger,"[OBTENIENDO TODO BLOQUES] Leyendo el bloque nro %d, que es el bloque %d",bloques_leidos, *nBloque);
 			tam_bloque = abrirArchivoBloque(&bloque, *nBloque, "rb");
-			log_info(logger,
-					"[OBTENIENDO TODO BLOQUES] El tamaño del bloque es: %d",
-					tam_bloque);
+//			log_info(logger,"[OBTENIENDO TODO BLOQUES] El tamaño del bloque es: %d",tam_bloque);
 			if (registros_bloque != NULL)
 				free(registros_bloque);
 			registros_bloque = malloc(tam_bloque);
 			if (fread(registros_bloque, tam_bloque, 1, bloque) == 0) {
-				log_info(logger,
-						"[OBTENIENDO TODO BLOQUES] Error al leer el bloque %d",
-						*nBloque);
+				log_info(logger,"[OBTENIENDO TODO BLOQUES] Error al leer el bloque %d",	*nBloque);
 				return NULL;
 			}
 			fclose(bloque);
-			log_info(logger,
-					"[OBTENIENDO TODO BLOQUES] Bloque leído correctamente");
+//			log_info(logger,"[OBTENIENDO TODO BLOQUES] Bloque leído correctamente");
 			bloques_leidos++;
 			estado = anterior;
 			break;
@@ -1688,14 +1680,11 @@ t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total) {
 				registro->tam_registro = sizeof(u_int64_t) + sizeof(uint16_t)
 						+ strlen(registro->value) + 1;
 
-				log_info(logger, "[DEBUG] Tamaño de registro %d",
-						registro->tam_registro);
+//				log_info(logger, "[DEBUG] Tamaño de registro %d",	registro->tam_registro);
 
 				//Agrego el nuevo registro a la lista que voy a retornar
 				list_add(registros_leidos, registro);
-				log_info(logger,
-						"[OBTENIENDO TODO BLOQUES] Registro <%llu;%d;%s> agregado",
-						registro->timestamp, registro->key, registro->value);
+//				log_info(logger,"[OBTENIENDO TODO BLOQUES] Registro <%llu;%d;%s> agregado",	registro->timestamp, registro->key, registro->value);
 
 				//Avanzo al siguiente estado que es buscar un separador
 				anterior = estado;
@@ -2914,25 +2903,18 @@ t_registroMemtable *leerBloquesConsecutivosUnaKey(t_list *nroBloques,
 			}
 			offset_bloque = 0;
 			int *nBloque = list_get(nroBloques, bloques_leidos);
-			log_info(logger,
-					"[OBTENIENDO KEY BLOQUES] Leyendo el bloque nro %d, que es el bloque %d",
-					bloques_leidos, *nBloque);
+//			log_info(logger,"[OBTENIENDO KEY BLOQUES] Leyendo el bloque nro %d, que es el bloque %d",	bloques_leidos, *nBloque);
 			tam_bloque = abrirArchivoBloque(&bloque, *nBloque, "rb");
-			log_info(logger,
-					"[OBTENIENDO KEY BLOQUES] El tamaño del bloque es: %d",
-					tam_bloque);
+//			log_info(logger,"[OBTENIENDO KEY BLOQUES] El tamaño del bloque es: %d",	tam_bloque);
 			if (registros_bloque != NULL)
 				free(registros_bloque);
 			registros_bloque = malloc(tam_bloque);
 			if (fread(registros_bloque, tam_bloque, 1, bloque) == 0) {
-				log_info(logger,
-						"[OBTENIENDO KEY BLOQUES] Error al leer el bloque %d",
-						*nBloque);
+				log_info(logger,"[OBTENIENDO KEY BLOQUES] Error al leer el bloque %d",*nBloque);
 				return NULL;
 			}
 			fclose(bloque);
-			log_info(logger,
-					"[OBTENIENDO KEY BLOQUES] Bloque leído correctamente");
+//			log_info(logger,"[OBTENIENDO KEY BLOQUES] Bloque leído correctamente");
 			bloques_leidos++;
 			estado = anterior;
 			break;
@@ -3168,8 +3150,7 @@ t_registroMemtable *leerBloquesConsecutivosUnaKey(t_list *nroBloques,
 
 		log_info(logger,"[OBTENIENDO KEY BLOQUES] El registro con mayor timestamp es <%llu;%d;%s>",retval->timestamp, retval->key, "retval->value");
 	} else {
-		log_info(logger,
-				"[OBTENIENDO KEY BLOQUES] No encontré un registro con la key indicada");
+		log_info(logger,"[OBTENIENDO KEY BLOQUES] No encontré un registro con la key indicada");
 	}
 	return retval;
 }

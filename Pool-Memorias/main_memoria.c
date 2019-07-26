@@ -322,7 +322,7 @@ void cerrar_todos_clientes(void)
 		aux = list_get(clientes_activos, i);
 		if(*aux != -1){
 			log_info(log_memoria,"[CLIENTE] Cerrando socket %d",*aux);
-			close(*aux);
+			close(*aux);//@martin : va con *?
 		}
 		free(aux);
 	}
@@ -612,6 +612,8 @@ resp_com_t resolver_drop(int socket_lfs,request_t req)
 		borrar_mensaje(msg);
 		return armar_respuesta(RESP_ERROR_COMUNICACION,NULL);
 	}
+	if(socket_lfs != -1)
+		close(socket_lfs);
 	return respuesta;
 }
 
@@ -678,6 +680,8 @@ resp_com_t resolver_create(int socket_lfs,request_t req)
 //		borrar_respuesta(resp);
 //		return NULL;
 	}
+	if(socket_lfs != -1)
+		close(socket_lfs);
 	return resp;
 }
 
@@ -714,7 +718,8 @@ resp_com_t resolver_journal(int socket_lfs,request_t req)
 		resp = armar_respuesta(RESP_ERROR_COMUNICACION, msg_resp);
 	}
 	free(msg_resp);
-
+	if(socket_lfs != -1)
+		close(socket_lfs);
 	return resp;
 }
 
@@ -725,7 +730,7 @@ resp_com_t resolver_insert(request_t req, int modif)
 	if(req.cant_args == 3)
 		 timestamp_val = 0;
 	else if(req.cant_args == 4)
-		timestamp_val = atoi(req.args[3]);
+		timestamp_val = strtoull(req.args[3],NULL,10);
 	else{
 		imprimirError(log_memoria,"[RESOLVIENDO INSERT] Cantidad incorrecta de parámetros");
 		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS,NULL);
@@ -885,6 +890,8 @@ resp_com_t resolver_select(int socket_lfs,request_t req)
 		else{ //Si no tengo socket para comunicarme
 			retval = armar_respuesta(RESP_ERROR_COMUNICACION,NULL);
 		}
+		if(socket_lfs != -1)
+			close(socket_lfs);
 	}
 	else{//Resolví en memoria, sin LFS
 		retval = armar_respuesta(RESP_OK, valor);
@@ -973,6 +980,8 @@ resp_com_t resolver_describe(int socket_lfs, request_t req)
 		snprintf(tipo_error,9,"%d",resp.tipo);
 		imprimirError1(log_memoria, "[RESOLVIENDO DESCRIBE] El lfs NO pudo completar el pedido. Error: %s",tipo_error);
 	}
+	if(socket_lfs != -1)
+		close(socket_lfs);
 	return resp;
 }
 

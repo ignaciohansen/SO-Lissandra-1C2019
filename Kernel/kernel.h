@@ -40,9 +40,14 @@
 //GOSSIPING
 #include "../Biblioteca/src/Gossiping.h"
 
-
-#define PATH_KERNEL_CONFIG "../Config/KERNEL.txt"
-#define LOG_PATH "../Log/LOG_KERNEL.txt"
+//#define DEBUGGER_ECLIPSE
+#ifdef DEBUGGER_ECLIPSE
+	#define PATH_KERNEL_CONFIG "Config/KERNEL.txt"
+	#define LOG_PATH "Log/LOG_KERNEL.txt"
+#else
+	#define PATH_KERNEL_CONFIG "../Config/KERNEL.txt"
+	#define LOG_PATH "../Log/LOG_KERNEL.txt"
+#endif
 
 id_com_t soy = KERNEL;
 int socket_CMemoria,tamanio,countPID,multiProcesamiento;
@@ -304,10 +309,15 @@ int agregarMemoriaAsociada(seed_com_t *memoria);
 int eliminarMemoriaCriterio(int numMemoria, t_list *lista_memorias);
 int eliminarMemoriaAsociada(int numMemoria);
 int buscarCriterioTabla(char *nombre_tabla);
+bool estaMemoriaAsociada(int numMemoria);
 
 resp_com_t enviar_recibir(int socket,char *req_str);
 resp_com_t resolverSelect(request_t request);
 resp_com_t resolverInsert(request_t request);
+resp_com_t resolverDescribe(request_t request);
+resp_com_t resolverCreate(request_t request);
+resp_com_t resolverDrop(request_t request);
+resp_com_t resolverJournal(request_t request);
 resp_com_t resolverPedido(char *linea);
 
 #endif /* KERNEL_H_ */

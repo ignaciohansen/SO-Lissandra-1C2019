@@ -245,7 +245,7 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 			int i = 0;
 			while(ref2!=NULL){
 				i++;
-				log_info(log_memoria, "\n[INSERT HECHO] Iteracion '%d'\nNro pagina: '%d'", i, ref2->nropagina);
+//				log_info(log_memoria, "\n[INSERT HECHO] Iteracion '%d'\nNro pagina: '%d'", i, ref2->nropagina);
 				ref2 = ref2->sig;
 			}
 	//		free(ref);
@@ -539,14 +539,13 @@ void asignarNuevaPaginaALaPosicion(
 	memcpy(bloque_memoria+posLibre*desplazamieto, pagina_nueva, sizeof(pagina));
 	log_info(log_memoria, "[asignarNuevaTablaAPosicionLibre] Pagina guardada");
 
-	memcpy(bloque_memoria+
-			posLibre*desplazamieto+sizeof(pagina)-1,
-			valorAPoner, max_valor_key);
+	//memcpy(bloque_memoria+posLibre*desplazamieto+sizeof(pagina)-1,valorAPoner, max_valor_key);
+	memcpy(bloque_memoria+posLibre*desplazamieto+sizeof(pagina)-1,valorAPoner, strlen(valorAPoner)+1);//@martin revisar
 	log_info(log_memoria, "[asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada, actualizo el BITMAP ocupando la posicion '%d'", posLibre);
 //	free(stringValor);
 	bitmapOcuparBit(bitmap, posLibre);
 
-	log_info(log_memoria, "[asignarNuevaTablaAPosicionLibre] Se han guardado exitosamente los datos\nAhora mismo hay '%d' espacios libres", cantPaginasDisponibles);
+	log_info(log_memoria, "[asignarNuevaTablaAPosicionLibre] Se han guardado exitosamente los datos. Ahora mismo hay '%d' espacios libres", cantPaginasDisponibles);
 	pagina* pagNew = malloc(sizeof(pagina));
 	char valorString[max_valor_key];
 
@@ -712,30 +711,27 @@ int buscarPaginaDisponible(u_int16_t key, bool existiaTabla,
 		pagina_referenciada = segmetnoApuntado->paginasAsocida;
 		while(pagina_referenciada!=NULL){
 			pag = selectObtenerDatos(pagina_referenciada->nropagina, false);
-			log_info(log_memoria, "[BITMAP] Obtuve la pagina de la posicion '%d' y tiene key '%d' y busco la key '%d'",
-					pagina_referenciada->nropagina, pag->key, key);
+//			log_info(log_memoria, "[BITMAP] Obtuve la pagina de la posicion '%d' y tiene key '%d' y busco la key '%d'",	pagina_referenciada->nropagina, pag->key, key);
 			if(pag->key == key){
-				log_info(log_memoria, "\n[BITMAP] La posicion LIBRE: '%d'\n",
-						pagina_referenciada->nropagina, key);
+//				log_info(log_memoria, "[BITMAP] La posicion LIBRE: '%d'",pagina_referenciada->nropagina, key);
 				free(pag);
 				mutexDesbloquear(&mutex_bitmap);
 				return pagina_referenciada->nropagina;
 			}
-			log_info(log_memoria, "[BITMAP] La posicion '%d' NO esta  libre,\n paso al siguiente BITMAP",
-				pagina_referenciada->nropagina, key);
+//			log_info(log_memoria, "[BITMAP] La posicion '%d' NO esta  libre, paso al siguiente BITMAP",pagina_referenciada->nropagina, key);
 			free(pag);
 			pagina_referenciada = pagina_referenciada->sig;
 		}
-		log_info(log_memoria, "[BITMAP]\n No se encontro en el segmento  '%s' la key '%d' buscad\nPaso a crearla!",
+		log_info(log_memoria, "[BITMAP] No se encontro en el segmento  '%s' la key '%d' buscad. Paso a crearla!",
 				segmetnoApuntado->path_tabla, key);
 //		mutexDesbloquear(&mutex_bitmap);
 	//	return -1;
 	}
 	for(i=0;i<cantPaginasTotales;i++){
-		log_info(log_memoria, "[BITMAP] Busco la siguiente posicion libre para la key [%d]", i);
+//		log_info(log_memoria, "[BITMAP] Busco la siguiente posicion libre para la key [%d]", i);
 		if(!bitmapBitOcupado(bitmap, i)){
 			//esta libre la posicion
-			log_info(log_memoria, "[BITMAP] La posicion '%d' esta libre", i);
+//			log_info(log_memoria, "[BITMAP] La posicion '%d' esta libre", i);
 			mutexDesbloquear(&mutex_bitmap);
 			return i;
 		}
@@ -748,9 +744,9 @@ int buscarPaginaDisponible(u_int16_t key, bool existiaTabla,
 int buscarEnBloqueLRUElProximoAQuitar(char** nombreTablaCorrespondienteASacarTablaDePagina) {
 	nodoLRU* nodo = malloc(sizeof(nodoLRU));
 	int i, potencialCandidato = -1;
-	double menortimestamp = timestamp();
+	timestamp_t menortimestamp = timestamp();
 	int desplazamiento = sizeof(nodoLRU)+tamanioPredefinidoParaNombreTabla;
-	log_info(log_memoria, "[ALGORITMO LRU]\nENTRO A LRU, comienzo a buscar candidato");
+	log_info(log_memoria, "[ALGORITMO LRU] ENTRO A LRU, comienzo a buscar candidato");
 	for(i=0; i<cantPaginasTotales;i++){
 		memcpy(nodo, bloque_LRU+i*desplazamiento, sizeof(nodoLRU));
 		if(nodo->estado == false){
@@ -766,7 +762,7 @@ int buscarEnBloqueLRUElProximoAQuitar(char** nombreTablaCorrespondienteASacarTab
 		}
 	}
 	//printf("[ALGORITMO LRU]\nLRU FINALIZADO\nCandidato a quitar elegido fue: <%d>",potencialCandidato);
-	log_info(log_memoria, "[ALGORITMO LRU]\nLRU FINALIZADO\nCandidato a quitar elegido fue: <%d>",
+	log_info(log_memoria, "[ALGORITMO LRU] LRU FINALIZADO. Candidato a quitar elegido fue: <%d>",
 			potencialCandidato);
 	if(potencialCandidato<0){
 //		*nombreTablaCorrespondienteASacarTablaDePagina=NULL;
@@ -788,7 +784,7 @@ void borrarSegmentoPasadoPorParametro(segmento* unSegmento){
 		aux_aux_segmento = aux_segmentos;
 		aux_segmentos = aux_segmentos->siguienteSegmento;
 		if(aux_segmentos==NULL){
-			log_info(log_memoria, "[BORRANDO 1 SEGMENTO]\n Segmento ya fue BORRADO por un DROP o JOURNAL");
+			log_info(log_memoria, "[BORRANDO 1 SEGMENTO] Segmento ya fue BORRADO por un DROP o JOURNAL");
 
 			return;
 		}
@@ -830,11 +826,11 @@ void actualizarTiempoUltimoAcceso(int pos, bool estadoAPoner, bool vieneDeInsert
 
 //ESTE, CADA VEZ QUE SE LO INVOCA SE DEBE PONER UN SEMAFORO
 void obtenerInfoDePagina(int i, void** informacion){
-	log_info(log_memoria, "[OBTENIENDO DATOS] Empiezo a obtener datos de pagina '%d'", i);
+//	log_info(log_memoria, "[OBTENIENDO DATOS] Empiezo a obtener datos de pagina '%d'", i);
 
 	mutexBloquear(&mutex_memoria);
 	memcpy(*informacion, bloque_memoria+i*(sizeof(pagina)+max_valor_key), sizeof(pagina)+max_valor_key);
-	log_info(log_memoria, "[OBTENIENDO DATOS] Obtuve datos de pagina '%d'", i);
+//	log_info(log_memoria, "[OBTENIENDO DATOS] Obtuve datos de pagina '%d'", i);
 	return;
 }
 
@@ -1026,7 +1022,7 @@ pagina_a_devolver* selectObtenerDatos(int nroDePaginaAIr, bool necesitoValue){
 }
 
 pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteValor){
-	log_info(log_memoria, "[SELECT] Por acceder a la memoria a la posicion '%d'", posicion);
+//	log_info(log_memoria, "[SELECT] Por acceder a la memoria a la posicion '%d'", posicion);
 	mutexBloquear(&mutex_tabla_pagina_en_modificacion);
 
 	void* info = malloc(sizeof(pagina)+max_valor_key);
@@ -1037,14 +1033,13 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteVa
 
 
 	memcpy(pag, info, sizeof(pagina));
-	log_info(log_memoria, "[OBTENIENDO DATOS] Actualizando el tiempo del último acceso para la pagina con key '%d'", pag->key);
+//	log_info(log_memoria, "[OBTENIENDO DATOS] Actualizando el tiempo del último acceso para la pagina con key '%d'", pag->key);
 	if(deboDevolverEsteValor){
 		actualizarTiempoUltimoAcceso(pag->nroPosicion, false, false);
+		log_info(log_memoria, "[asignarNuevaTablaAPosicionLibre] Último acceso de la pagina NRO '%d' de la key '%d' ACTUALIZADA",
+				posicion, pag->key);
 	}
 	memcpy(bloque_memoria+posicion*(sizeof(pagina)+max_valor_key), pag, sizeof(pagina));
-	log_info(log_memoria, "[asignarNuevaTablaAPosicionLibre] Último acceso de la pagina NRO '%d' de la key '%d' ACTUALIZADA",
-			posicion, pag->key);
-
 //	memcpy(bloque_memoria+posicion*(sizeof(pagina)+max_valor_key)+sizeof(pagina)-1,valorAPoner, max_valor_key);
 	pagina_a_devolver* devolver = malloc(sizeof(pagina_a_devolver));
 	devolver->value=malloc(max_valor_key);
@@ -1053,7 +1048,7 @@ pagina_a_devolver* selectPaginaPorPosicion(int posicion, bool deboDevolverEsteVa
 	devolver->timestamp=pag->timestamp;
 	memcpy(devolver->value, info+sizeof(pagina)-1, max_valor_key);
 //	printf("DATO QUE OBTUVE DE INFO: <%s>\n", devolver->value);
-	log_info(log_memoria, "[SELECT] Datos obtenidos de la posicion '%d'", posicion);
+//	log_info(log_memoria, "[SELECT] Datos obtenidos de la posicion '%d'", posicion);
 	free(info);
 	free(pag);
 	mutexDesbloquear(&mutex_memoria);
@@ -1217,8 +1212,7 @@ void liberarPosicionLRU(int posicionAIr) {
 	memcpy(bloque_LRU+posicionAIr*desplazamiento, info, sizeof(nodoLRU));
 	free(info);
 	bitmapLiberarBit(bitmap, posicionAIr);
-	log_info(log_memoria, "[LIBERAR SEGMENTO EN LRU]"
-			"BLOQUE DE LA LRU EN LA POSICION NRO '%d' LIBERADA", posicionAIr);
+	log_info(log_memoria, "[LIBERAR SEGMENTO EN LRU] BLOQUE DE LA LRU EN LA POSICION NRO '%d' LIBERADA", posicionAIr);
 
 }
 
