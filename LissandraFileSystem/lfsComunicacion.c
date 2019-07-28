@@ -371,17 +371,17 @@ resp_com_t resolver_select(request_t req) {
 		char* valueRetorno = malloc(tamanio); //@VALGRIND ESTO NO SE BORRA CON BORRAR RESPUESTA?
 		snprintf(valueRetorno,tamanio, "%s|%llu", ret_val->value,ret_val->timestamp); // value|timestamp
 		borrarRegistro(ret_val);
-		char* valueRta = malloc(strlen(valueRetorno) + 1); //Agrege esto
-		strcpy(valueRta, valueRetorno);	////Agrege esto
-		respuesta = armar_respuesta(RESP_OK, valueRta);
+//		char* valueRta = malloc(strlen(valueRetorno) + 1); //Agrege esto
+//		strcpy(valueRta, valueRetorno);	////Agrege esto
+//		respuesta = armar_respuesta(RESP_OK, valueRta);
+		respuesta = armar_respuesta(RESP_OK, valueRetorno);
 		free(valueRetorno); // para descomentar este free
 		return respuesta;
 
 	}
 
 	else {
-		imprimirError(logger,
-				"[RESOLVIENDO SELECT] Cantidad incorrecta de parámetros");
+		imprimirError(logger,"[RESOLVIENDO SELECT] Cantidad incorrecta de parámetros");
 		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS, NULL);
 	}
 
