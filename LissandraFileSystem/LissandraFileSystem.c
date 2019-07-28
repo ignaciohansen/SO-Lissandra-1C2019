@@ -573,7 +573,7 @@ void consola() {
 		}
 
 		if (linea && strcmp(linea, "\n") && strcmp(linea, "")) { //Así no rompe cuando se apreta enter
-			log_info(logger, "Llego aca");
+			//log_info(logger, "Llego aca");
 			atenderRequest(linea);
 		}
 		free(linea);
@@ -639,7 +639,7 @@ void atenderRequest(char* linea) {
 		if (respuesta.tipo == RESP_OK) {
 			imprimirMensaje(logger,
 					"[RESOLVIENDO PEDIDO] DROP hecho correctamente");
-			printf("[DROP] La %s se borro correctamente\n",req.args[0]);
+			printf("[DROP] La tabla %s se borro correctamente\n",req.args[0]);
 		} else {
 			imprimirError(logger,
 					"[RESOLVIENDO PEDIDO] El DROP no pudo realizarse");
@@ -654,7 +654,7 @@ void atenderRequest(char* linea) {
 		respuesta = resolver_create(req);
 		if (respuesta.tipo == RESP_OK) {
 			imprimirMensaje(logger,"[RESOLVIENDO PEDIDO] CREATE hecho correctamente");
-			printf("[CREATE] La %s se creo correctamente\n",req.args[0]);
+			printf("[CREATE] La tabla %s se creo correctamente\n",req.args[0]);
 		} else {
 			if(respuesta.tipo == RESP_ERROR_TABLA_NO_EXISTE){printf("[CREATE] La %s ya existe\n",req.args[0]);}
 			else if(respuesta.tipo == RESP_ERROR_METADATA){printf("[CREATE] No se pudo crear el metadata\n");}
@@ -727,7 +727,6 @@ int verificarTabla(char *tabla) {
 			"[VERIFICADO] La direccion de la tabla que se quiere verificar es: %s",
 			path);
 	file = fopen(path, "r");
-	log_info(logger,"Hizo open");
 	free(path);
 
 	if (file == NULL) {
@@ -756,9 +755,9 @@ t_metadata_tabla* obtenerMetadataTabla(char* tabla) {
 	int result = 0;
 	metadataTabla = malloc(sizeof(t_metadata_tabla)); // Vatiable global.--->la hago local para soportar varios procesos concurrentes
 	t_config* metadataFile;
-	log_info(logger, "antes de config create...");
+	//log_info(logger, "antes de config create...");
 	metadataFile = config_create(path_tabla_metadata);
-	log_info(logger, "despues de config create...");
+	//log_info(logger, "despues de config create...");
 
 	if (metadataFile != NULL) {
 
@@ -928,7 +927,7 @@ int obtenerMetadata() {
 	free(metadataPath);
 	config_destroy(metadataFile);
 
-	log_info(logger, "result: %d", result);
+	//log_info(logger, "result: %d", result);
 
 	return result;
 }
@@ -1756,8 +1755,7 @@ t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total) {
 }
 
 void *imprimirRegistro(t_registroMemtable *reg) {
-	log_info(logger, "Registro: <%llu;%d;%s>", reg->timestamp, reg->key,
-			reg->value);
+	log_info(logger, "Registro: <%llu;%d;%s>", reg->timestamp, reg->key,reg->value);
 	return reg;
 }
 
@@ -1907,11 +1905,10 @@ int pruebaLecturaBloquesConsecutivos(void) {
 //DUMP
 int determinarParticion(int key, int particiones) {
 
-	log_info(logger, "KEY: %d ", key);
 
 	int retornar = key % particiones;
 
-	log_info(logger, "PARTICION: %d ", retornar);
+	log_info(logger, "La key %d debe almacenarse en la particion %d",key,retornar);
 
 	return retornar;
 
@@ -2063,7 +2060,7 @@ char* desenmascararValue(char* value) {
 	valueDesenmascarado[strlen(value)-2] = '\0';
 	//char* valueDesenmascarado = stringTomarCantidad(value,1,strlen(value)-2);
 
-	log_info(logger, "el value desenmascarado es %s", valueDesenmascarado);
+//	log_info(logger, "el value desenmascarado es %s", valueDesenmascarado);
 
 	return valueDesenmascarado;
 
@@ -2083,11 +2080,10 @@ t_registroMemtable* armarEstructura(char* value, char* key, char* timestamp) {
 	u_int16_t keyRegistro = strtol(key, NULL, 10);
 	registroMemtable->key = keyRegistro;
 
-	log_info(logger, "[DEBUG] tamaño de registro agregado = %d",
-			registroMemtable->tam_registro);
+	log_info(logger, "Tamaño de registro agregado = %d",registroMemtable->tam_registro);
 	//log_info(logger,"El registro quedo conformado por: \n");
 	//log_info(logger,"Value = %s ",registroMemtable->value);
-	log_info(logger, "Timestamp = %llu ", registroMemtable->timestamp);
+	//log_info(logger, "Timestamp = %llu ", registroMemtable->timestamp);
 	//log_info(logger,"Key = %x ",registroMemtable->key);
 	//log_info(logger,"Se procede a agregar el registro a la memtable");
 
@@ -2120,7 +2116,7 @@ t_bloquesUsados* leerTemporaloParticion(char* path) {
 
 	else {
 		retVal = malloc(sizeof(t_bloquesUsados));
-		log_info(logger, "Se ha encontrado el archivo de configuracion\n");
+		log_info(logger, "Se ha encontrado el archivo de configuracion");
 
 		int size = config_get_int_value(tempFile, "SIZE");
 
@@ -2133,7 +2129,7 @@ t_bloquesUsados* leerTemporaloParticion(char* path) {
 		t_list* NroBloques = list_create();
 		int* auxNroBloque;
 
-		log_info(logger, "llego al while");
+		//log_info(logger, "llego al while");
 
 
 		while (aux != NULL) {
@@ -2146,7 +2142,7 @@ t_bloquesUsados* leerTemporaloParticion(char* path) {
 			aux = bloques[i];
 		}
 
-		log_info(logger, "salgo de	l while");
+		//log_info(logger, "salgo de	l while");
 
 		retVal->bloques = NroBloques;
 		retVal->size = size;
@@ -2173,20 +2169,22 @@ t_registroMemtable* obtenerRegistroMayor(char* tabla, int key,	t_list* listaSegu
 				//log_info(logger,"Como es distinta, el registro vuelve a ser NULL");
 				registro = NULL;
 			} else {
-				log_info(logger,"[Primer registro obtenido]");
-				imprimirRegistro(registro);
+				log_info(logger, "[Primer registro obtenido] <%llu;%d;%s>", registro->timestamp, registro->key,registro->value);
+
+				//imprimirRegistro(registro);
 			}
 
 		} else {
 			t_registroMemtable* aux = list_get(listaSegunLugar, i);
 			if (aux->key == key) {
-				log_info(logger,"[Ya hay mas de un registro obtenido]");
-				imprimirRegistro(aux);
+				log_info(logger, "[Ya habia un registro] <%llu;%d;%s>", registro->timestamp, registro->key,registro->value);
+				//imprimirRegistro(aux);
 
 				if (aux->timestamp > registro->timestamp) {
 					registro = aux;
-					log_info(logger,"[FIN]");
-					imprimirRegistro(registro);
+					log_info(logger, "[Registro mas reciente] <%llu;%d;%s>", registro->timestamp, registro->key,registro->value);
+					//log_info(logger,"[FIN]");
+					//imprimirRegistro(registro);
 
 				}
 			}
@@ -2293,7 +2291,7 @@ t_registroMemtable* registroMayorTemporal(char* tabla, u_int16_t key,
 	if (registro == NULL) { //Va a entrar acá si no encuentra la key en ningún temporal
 		registro = armarRegistroNulo();
 	}
-	log_info(logger, "Salgo de la función");
+	//log_info(logger, "Salgo de la función");
 	list_destroy_and_destroy_elements(temporalesTabla,free); //@VALGRIND - PRUEBA DOBLE FREE
 	return registro;
 }
@@ -2304,7 +2302,7 @@ t_registroMemtable* registroMayorParticion(char* tabla, u_int16_t key,
 	t_registroMemtable* registro = malloc(sizeof(t_registroMemtable));
 	char* pathParticion = rutaParticion(tabla, particiones);
 
-	log_info(logger, "ruta %s", pathParticion);
+	//log_info(logger, "ruta %s", pathParticion);
 	t_bloquesUsados* ListaBloques = leerTemporaloParticion(pathParticion);
 	if (ListaBloques->bloques == NULL) {
 		registro = armarRegistroNulo();
@@ -2458,8 +2456,7 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 		borrarRegistro(registroTemporal);
 		borrarRegistro(registroTemporalC);
 
-		log_info(logger, "el timestamp mas grande es %llu",
-				registroMayor->timestamp);
+		log_info(logger, "el timestamp mas grande es %llu",registroMayor->timestamp);
 
 		if (registroMayor->timestamp > 0) {
 			log_info(logger, "Registro obtenido: <%llu;%d;%s>",registroMayor->timestamp, registroMayor->key,registroMayor->value);
@@ -2567,7 +2564,6 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 
 		log_info(logger, "Se crea la tabla y su direccion es %s ", path);
 
-		log_info(logger, "Por crear archivo metadata");
 
 		free(path);
 
@@ -2599,7 +2595,7 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 			char *copia = malloc(strlen(tabla)+1);
 			strcpy(copia,tabla);
 
-			log_info(logger,"create tabla %s",copia);
+			//log_info(logger,"create tabla %s",copia);
 			dictionary_put(dicSemTablas, copia, sems_tabla);
 
 			int tamanioConsistencia = strlen(consistencia)
@@ -2609,7 +2605,7 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 			snprintf(lineaConsistencia, tamanioConsistencia, "CONSISTENCY=%s\n",
 					consistencia);
 
-			log_info(logger, "Se agrego la consistencia %s", lineaConsistencia);
+			//log_info(logger, "Se agrego la consistencia %s", lineaConsistencia);
 
 			int tamanioParticiones = strlen(particiones) + sizeof("PARTITIONS=")
 					+ 4;
@@ -2618,18 +2614,17 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 			snprintf(lineaParticiones, tamanioParticiones, "PARTITIONS=%s\n",
 					particiones);
 
-			log_info(logger, "Se agregaron las particiones %s",
-					lineaParticiones);
+			//log_info(logger, "Se agregaron las particiones %s",lineaParticiones);
 
 			int tamanioTiempoC = strlen(tiempoCompactacion)
 					+ strlen("COMPACTION_TIME=") + 1;
 			char *lineaTiempoCompactacion = malloc(tamanioTiempoC);
 
-			snprintf(lineaTiempoCompactacion, tamanioTiempoC,
-					"COMPACTION_TIME=%s", tiempoCompactacion);
+			snprintf(lineaTiempoCompactacion, tamanioTiempoC,"COMPACTION_TIME=%s", tiempoCompactacion);
 
-			log_info(logger, "Se agrego el tiempo de compactacion %s",
-					lineaTiempoCompactacion);
+			//log_info(logger, "Se agrego el tiempo de compactacion %s",lineaTiempoCompactacion);
+
+			log_info(logger, "Metadata de la tabla creada \n%s%s%s",lineaConsistencia,lineaParticiones,lineaTiempoCompactacion);
 
 			fputs(lineaConsistencia, archivoMetadata);
 			fputs(lineaParticiones, archivoMetadata);
@@ -2641,11 +2636,12 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 			free(lineaParticiones);
 			free(lineaTiempoCompactacion);
 
-			log_info(logger, "Por crear particiones");
+
 
 			int aux = atoi(particiones);
 
-			log_info(logger, "aux=%d", aux);
+			//log_info(logger, "aux=%d", aux);
+			log_info(logger, "Por crear particiones, cantidad %d ", aux-1);
 			for (int i = 0; i < aux; i++) {
 				char* archivoParticion = rutaParticion(tabla, i);
 				FILE* particion;
@@ -2663,7 +2659,7 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 
 				fputs(lineaParticion, particion);
 				free(lineaParticion);
-				log_info(logger, "Particion creada: %s", archivoParticion);
+				//log_info(logger, "Particion creada: %s", archivoParticion);
 				free(archivoParticion);
 				fclose(particion);
 
@@ -2682,12 +2678,12 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 			dictionary_put(dicHilosCompactacion,copia2,hilo_copia);
 			return 0;
 		} else {
-			log_info(logger, "No se pudo crear el archivo metadata \n");
+			log_info(logger, "No se pudo crear el archivo metadata");
 			fclose(archivoMetadata);
 			return -1;
 		}
 	} else {
-		log_info(logger, "La tabla ya existe \n");
+		log_info(logger, "La tabla ya existe");
 		return -2;
 
 	}
@@ -2701,7 +2697,7 @@ int comandoInsertSinTimestamp(char* tabla, char* key, char* value) {
 	char timestamp_s[40];
 	sprintf(timestamp_s, "%llu", aux);
 
-	log_info(logger, "el timestamp a agregar es: %s", timestamp_s);
+	//log_info(logger, "el timestamp a agregar es: %s", timestamp_s);
 
 	return comandoInsert(tabla, key, value, timestamp_s);
 
@@ -2729,7 +2725,7 @@ int comandoInsert(char* tabla, char* key, char* valueOriginal, char* timestamp) 
 			mutexBloquear(&memtable_mx);
 			bool tablaRepetida = dictionary_has_key(memtable, tabla);
 			mutexDesbloquear(&memtable_mx);
-			log_info(logger, "valor tablaRepetida %d", tablaRepetida);
+		//	log_info(logger, "valor tablaRepetida %d", tablaRepetida);
 
 			if (tablaRepetida) {
 				log_info(logger, "Encontre una tabla repetida");
@@ -2738,10 +2734,10 @@ int comandoInsert(char* tabla, char* key, char* valueOriginal, char* timestamp) 
 				t_list* tableRegisters = dictionary_get(memtable, tabla);
 				list_add(tableRegisters, registroPorAgregarE);
 
-				log_info(logger,"[DEBUG] agregué registro a la memtable <%d;%s>",registroPorAgregarE->key, registroPorAgregarE->value);
-				log_info(logger, "[DEBUG] esta tabla en la memtable tiene: ");
+				log_info(logger,"Agregué registro a la memtable <%llu,%d;%s>",registroPorAgregarE->timestamp,registroPorAgregarE->key, registroPorAgregarE->value);
+				//log_info(logger, "[DEBUG] esta tabla en la memtable tiene: ");
 				t_list* tableRegisters2 = dictionary_get(memtable, tabla);
-				log_info(logger, "[DEBUG] tamaño tabla registros %d : ", list_size(tableRegisters2));
+			//	log_info(logger, "[DEBUG] tamaño tabla registros %d : ", list_size(tableRegisters2));
 //				for (int i = 0; i < list_size(tableRegisters2); i++) {
 //					t_registroMemtable * regAux = list_get(tableRegisters2, i);
 //					//log_info(logger, "[DEBUG] %d <%llu;%d;%s>", i,regAux->timestamp, regAux->key, regAux->value);
@@ -2751,7 +2747,7 @@ int comandoInsert(char* tabla, char* key, char* valueOriginal, char* timestamp) 
 
 			}
 			else {
-
+				log_info(logger, "La tabla no esta repetida");
 				t_list* listaAux = list_create();
 				list_add(listaAux, registroPorAgregarE);
 				char* aux = malloc(strlen(tabla) + 1);
@@ -3145,14 +3141,14 @@ t_registroMemtable *leerBloquesConsecutivosUnaKey(t_list *nroBloques,
 	free(aux_value);
 	free(aux_campo_leyendo);
 
-	log_info(logger, "libere bloque no nulo");
+	//log_info(logger, "libere bloque no nulo");
 
 	if (registro != NULL) {
 		if (registro->value != NULL)
 			free(registro->value);
 		free(registro);
 	}
-	log_info(logger, "por imprimir el retval");
+//	log_info(logger, "por imprimir el retval");
 	if (retval->timestamp != 0) {
 
 		log_info(logger,"[OBTENIENDO KEY BLOQUES] El registro con mayor timestamp es <%llu;%d;%s>",retval->timestamp, retval->key, "retval->value");
@@ -3521,13 +3517,13 @@ void actualizarListaRegistros(t_list *listas_registros, t_list *nuevos) {
 }
 
 void incorporarRegistro(t_list *registros, t_registroMemtable *nuevo) {
-	log_debug(logger, "[INCORPORANDO REGISTRO]");
-	log_debug(logger, "[INCORPORANDO REGISTRO] El que quiero agregar es");
-	imprimirRegistro(nuevo);
+	//log_debug(logger, "[INCORPORANDO REGISTRO]");
+	log_debug(logger, "[INCORPORANDO REGISTRO] El que quiero agregar es: <%llu;%d;%s>", nuevo->timestamp, nuevo->key,nuevo->value);
+	//mprimirRegistro(nuevo);
 	for (int i = 0; i < list_size(registros); i++) {
 		t_registroMemtable *aux = list_get(registros, i);
 		if (aux->key == nuevo->key) {
-//			log_info(logger, "[INCORPORANDO REGISTRO] Había");
+			log_debug(logger, "[INCORPORANDO REGISTRO] El registro que habia antes es: <%llu;%d;%s>", aux->timestamp, aux->key,aux->value);
 			imprimirRegistro(aux);
 			if (aux->timestamp < nuevo->timestamp) {
 				free(aux->value);

@@ -368,13 +368,13 @@ void inicioLogYConfig(char* path_config, bool loggearEnConsola) {
 	archivoLogValidar(LOG_PATH);
 	log_memoria = log_create(LOG_PATH, "Proceso Memoria", loggearEnConsola, LOG_LEVEL_DEBUG);
 	log_info(log_memoria,
-			" \n ========== Iniciación de Pool de Memoria ========== \n \n ");
+			" ========== Iniciación de Pool de Memoria ========== ");
 
-	log_info(log_memoria, "[LOGYCONFIG](1) LOG CREADO. ");
+
 
 	tablas_fp = fopen(LOG_TABLAS_PATH, "w");
 	if(tablas_fp == NULL){
-		log_info(log_memoria, "[LOGYCONFIG](1) No se pudo crear el archivo de seguimiento de tablas\n");;
+		log_info(log_memoria, "[LOGYCONFIG] No se pudo crear el archivo de seguimiento de tablas");;
 	}
 	else{
 		fprintf(tablas_fp,"ARCHIVO PARA SEGUIMIENTO DE TABLAS\n\n\n");

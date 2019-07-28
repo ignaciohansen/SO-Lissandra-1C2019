@@ -135,8 +135,7 @@ void * hilo_cliente(hilo_cliente_args_t *args){
 		switch (msg.tipo) {
 		case REQUEST:
 
-			imprimirMensaje(logger_com_lfs,
-					"[CLIENTE] El mensaje recibido es un request");
+			imprimirMensaje(logger_com_lfs,"[CLIENTE] El mensaje recibido es un request");
 			request = procesar_request(msg);
 			borrar_mensaje(msg);
 			request_t requestParser = parser(request.str);
@@ -165,7 +164,7 @@ void * hilo_cliente(hilo_cliente_args_t *args){
 			//En cualquiera de los casos, deberían consultar el valor de retorno de la función, para validar que el mensaje se haya mandado ok
 			if (aux_enviado_ok != -1) {
 				imprimirMensaje(logger_com_lfs,
-						"[CLIENTE] La resupuesta fue enviada con éxito al cliente");
+						"[CLIENTE] La respuesta fue enviada con éxito al cliente");
 			} else {
 				imprimirError(logger_com_lfs,
 						"[CLIENTE] La respuesta no pudo ser enviada al cliente");

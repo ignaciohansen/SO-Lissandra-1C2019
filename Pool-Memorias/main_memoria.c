@@ -252,15 +252,15 @@ void* hilo_consola(int * socket_p){
 				respuesta = resolver_pedido(req,socket_lfs);
 				if(respuesta.tipo == RESP_OK){
 					if(respuesta.msg.tam > 0 && respuesta.msg.str != NULL)
-						imprimirMensaje1(log_memoria,"\n[CONSOLA] Resuelto OK. Respuesta obtenida: %s",respuesta.msg.str);
+						imprimirMensaje1(log_memoria,"[CONSOLA] Resuelto OK. Respuesta obtenida: %s",respuesta.msg.str);
 					else
-						imprimirMensaje(log_memoria,"\n[CONSOLA] Resuelto OK. No se especifica respuesta");
+						imprimirMensaje(log_memoria,"[CONSOLA] Resuelto OK. No se especifica respuesta");
 				}
 				else{
 					if(respuesta.msg.tam > 0 && respuesta.msg.str != NULL)
-						imprimirAviso1(log_memoria,"\n[CONSOLA] Error al resolver pedido. Respuesta %s",respuesta.msg.str);
+						imprimirAviso1(log_memoria,"[CONSOLA] Error al resolver pedido. Respuesta %s",respuesta.msg.str);
 					else
-						imprimirAviso(log_memoria,"\n[CONSOLA] Error al resolver pedido. No hay mensaje de error");
+						imprimirAviso(log_memoria,"[CONSOLA] Error al resolver pedido. No hay mensaje de error");
 				}
 //				borrar_respuesta(respuesta);
 				break;
@@ -500,7 +500,7 @@ resp_com_t resolver_pedido(request_t req, int socket_lfs)
 //	strcpy(ret_ok_generico,"OK");
 	switch(req.command){
 		case INSERT:
-			imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver INSERT");
+			//imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver INSERT");
 			respuesta = resolver_insert(req,true);
 			if( respuesta.tipo == RESP_OK){
 				imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] INSERT hecho correctamente");
@@ -510,7 +510,7 @@ resp_com_t resolver_pedido(request_t req, int socket_lfs)
 			}
 			break;
 		case SELECT:
-			imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver SELECT");
+			//imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver SELECT");
 			respuesta = resolver_select(socket_lfs,req);
 			if(respuesta.tipo == RESP_OK && respuesta.msg.tam > 0){
 				imprimirMensaje1(log_memoria,"[RESOLVIENDO PEDIDO] SELECT hecho correctamente. Valor %s obtenido",respuesta.msg.str);
@@ -520,7 +520,7 @@ resp_com_t resolver_pedido(request_t req, int socket_lfs)
 			}
 			break;
 		case DESCRIBE:
-			imprimirAviso(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver DESCRIBE");
+			//imprimirAviso(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver DESCRIBE");
 			respuesta = resolver_describe(socket_lfs,req);
 			if(respuesta.tipo == RESP_OK && respuesta.msg.tam > 0){
 				imprimirMensaje1(log_memoria,"[RESOLVIENDO PEDIDO] DESCRIBE hecho correctamente. Valor %s obtenido",respuesta.msg.str);
@@ -530,7 +530,7 @@ resp_com_t resolver_pedido(request_t req, int socket_lfs)
 			}
 			break;
 		case DROP:
-			imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver DROP");
+			//imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver DROP");
 			respuesta = resolver_drop(socket_lfs,req);
 			if(respuesta.tipo == RESP_OK){
 				imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] DROP hecho correctamente");
@@ -540,7 +540,7 @@ resp_com_t resolver_pedido(request_t req, int socket_lfs)
 			}
 			break;
 		case CREATE:
-			imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver CREATE");
+			//imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver CREATE");
 			respuesta = resolver_create(socket_lfs,req);
 			if(respuesta.tipo == RESP_OK){
 				imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] CREATE hecho correctamente");
@@ -550,7 +550,7 @@ resp_com_t resolver_pedido(request_t req, int socket_lfs)
 			}
 			break;
 		case JOURNALCOMANDO:
-			imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver JOURNAL");
+			//imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver JOURNAL");
 			respuesta = resolver_journal(socket_lfs,req);
 			if(respuesta.tipo == RESP_OK ){
 				imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] JOURNAL hecho correctamente");
@@ -706,7 +706,7 @@ resp_com_t resolver_create(int socket_lfs,request_t req)
 
 resp_com_t resolver_journal(int socket_lfs,request_t req)
 {
-
+	imprimirMensaje(log_memoria,"[RESOLVIENDO JOURNAL] Voy a resolver JOURNAL");
 //	//Consigo toda la info modificada de memoria
 //	datosJournal *datos_modificados = obtener_todos_journal();
 //	datosJournal *aux = datos_modificados;
@@ -843,9 +843,9 @@ resp_com_t resolver_select(int socket_lfs,request_t req)
 			enviar.str = malloc(enviar.tam);
 			strcpy(enviar.str,req.request_str);
 			retardo_fs();
-			imprimirMensaje(log_memoria,"[RESOLVIENDO SELECT] Voy a mandar select al lfs\n");
+			imprimirMensaje(log_memoria,"[RESOLVIENDO SELECT] Voy a mandar select al lfs");
 			if(enviar_request(socket_lfs,enviar) == -1){
-				imprimirError(log_memoria,"[RESOLVIENDO SELECT] ERROR al conectarse con lfs para enviar select\n");
+				imprimirError(log_memoria,"[RESOLVIENDO SELECT] ERROR al conectarse con lfs para enviar select");
 				return armar_respuesta(RESP_ERROR_COMUNICACION,NULL);
 			}
 			borrar_request_com(enviar);
@@ -943,6 +943,7 @@ char *armar_insert(char *respuesta_select, char *tab, int key)
 
 resp_com_t resolver_describe(int socket_lfs, request_t req)
 {
+	imprimirMensaje(log_memoria,"[RESOLVIENDO DESCRIBE] Voy a resolver DESCRIBE");
 	char *ret_val;
 	req_com_t a_enviar;
 
