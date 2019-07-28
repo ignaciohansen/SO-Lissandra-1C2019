@@ -15,8 +15,11 @@ pthread_mutex_t lista_memorias_asociadas_mutex = PTHREAD_MUTEX_INITIALIZER;
 t_list *g_lista_memorias_asociadas = NULL;
 
 pthread_mutex_t memorias_conocidas_mutex = PTHREAD_MUTEX_INITIALIZER;
+FILE *fp_trace_ejecucion;
 
 int main() {
+
+	fp_trace_ejecucion = fopen("../Log/traceEjecucion.txt","w"); //Para revisar si estamos haciendo bien la planificacion
 
 	log_kernel = archivoLogCrear(LOG_PATH, "Proceso Kernel");
 
@@ -69,6 +72,8 @@ int main() {
 	pthread_create(&hiloConsola, NULL, (void*) consola, NULL);
 
 	pthread_join(hiloConsola, NULL);
+
+	fclose(fp_trace_ejecucion);
 
 	log_info(log_kernel, "Salimoooos, fin del main.");
 
@@ -217,6 +222,21 @@ void cargarConfiguracion() {
 			log_error(log_kernel,
 					"El archivo de configuracion no tiene el valor del Sleep Ejecucion");
 
+		}
+		if (config_has_property(configFile, "RETARDO_GOSSIPING")) {
+
+			log_info(log_kernel,"Almacenando el valor del Retardo de Gossiping para el Kernel");
+
+			arc_config->retardo_gossiping = config_get_int_value(configFile,
+					"RETARDO_GOSSIPING");
+
+			log_info(log_kernel, "El valor del Retardo de Gossiping es: %d",
+					arc_config->retardo_gossiping);
+		} else {
+
+			log_error(log_kernel,
+					"El archivo de configuracion no tiene el valor del Retardo de Gossiping. Se utiliza 20000 milisegundos");
+			arc_config->retardo_gossiping = 20000;
 		}
 
 	} else {
@@ -515,7 +535,7 @@ void nivelMultiprogramacion(int* este_nivel) {
 	while (1) {
 		t_pcb* pcb = planificarCortoPlazo();
 		log_info(log_kernel,"Ejecutando el nivel: %d",nivel);
-		ejecutar(pcb, arc_config->quantum);
+		ejecutar(pcb, arc_config->quantum,nivel);
 	}
 }
 
@@ -645,7 +665,7 @@ t_pcb* crearEstructurasAdministrativas(char* linea) {
 
 
 
-void ejecutar(t_pcb* pcb, int quantum) {
+void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 
 	//semaforoWait(&multiprocesamiento);
 	log_info(log_kernel,"[EJECUTAR] Entrando a ejecutar rafaga de PID: %d",pcb->pid);
@@ -671,6 +691,7 @@ void ejecutar(t_pcb* pcb, int quantum) {
 				log_info(log_kernel, "Linea para ejecutar: %s", bufferRun2);
 
 				resp_com_t respuesta = resolverPedido(bufferRun2);
+				loggearEjecucion(nivel, pcb->pid, bufferRun2);
 				//@martin @lorenzo aca habria que revisar si se produjo un error grave y abortar la ejecucion del script
 
 				borrar_respuesta(respuesta);
@@ -708,6 +729,7 @@ void ejecutar(t_pcb* pcb, int quantum) {
 				log_info(log_kernel, "Linea para ejecutar: %s", bufferRun2);
 
 				resp_com_t respuesta = resolverPedido(bufferRun2);
+				loggearEjecucion(nivel, pcb->pid, bufferRun2);
 				//@martin @lorenzo aca habria que revisar si se produjo un error grave y abortar la ejecucion del script
 				borrar_respuesta(respuesta);
 
@@ -725,6 +747,7 @@ void ejecutar(t_pcb* pcb, int quantum) {
 	//Si es otro:
 	else{
 		resp_com_t respuesta = resolverPedido(pcb->linea);
+		loggearEjecucion(nivel, pcb->pid, pcb->linea);
 		//@martin @lorenzo aca habria que revisar si se produjo un error grave y abortar la ejecucion del script
 		borrar_respuesta(respuesta);
 
@@ -815,14 +838,14 @@ int buscarPcbEnColaEjecucion(t_pcb* pcb){
 void aplicarRetardo(void){
 
 	log_info(log_kernel,"[KERNEL | aplicarRetardo] Por ejecutar instruccion sleep de: %d",arc_config->sleep_ejecucion);
-	usleep(arc_config->sleep_ejecucion);
+	usleep(arc_config->sleep_ejecucion*1000); //usleep recibe microsegundos
 	log_info(log_kernel,"[KERNEL | aplicarRetardo] Luego de instruccion sleep");
 }
 
 void gossiping_Kernel() {
 
 
-	inicializar_estructuras_gossiping(log_kernel, 6000000);
+	inicializar_estructuras_gossiping(log_kernel, arc_config->retardo_gossiping);
 
 	char auxPuerto[LARGO_PUERTO];
 
@@ -1860,3 +1883,7 @@ resp_com_t enviar_recibir(int socket,char *req_str)
 	return resp;
 }
 
+void loggearEjecucion(int nivel, int pid, char* linea)
+{
+	fprintf(fp_trace_ejecucion,"\n<NIVEL %d><PID: %d>: %s",nivel,pid,linea);
+}

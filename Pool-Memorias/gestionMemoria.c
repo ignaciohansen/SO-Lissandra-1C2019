@@ -511,11 +511,11 @@ void liberar_config(void)
 }
 
 void* accederYObtenerInfoDePaginaEnPosicion(int posicion, void* info){
-	log_info(log_memoria, "[ACCEDIENDO A DATOS] Por acceder a la memoria a la posicion '%d'", posicion);
+//	log_info(log_memoria, "[ACCEDIENDO A DATOS] Por acceder a la memoria a la posicion '%d'", posicion);
 //	mutexBloquear(&mutex_tabla_pagina_en_modificacion);
 	obtenerInfoDePagina(posicion, &info);
 //	mutexDesbloquear(&mutex_memoria);
-	log_info(log_memoria, "[ACCEDIENDO A DATOS] Datos obtenidos de la posicion '%d'", posicion);
+//	log_info(log_memoria, "[ACCEDIENDO A DATOS] Datos obtenidos de la posicion '%d'", posicion);
 //	mutexDesbloquear(&mutex_tabla_pagina_en_modificacion);
 
 
@@ -531,7 +531,6 @@ pagina* actualizarPosicionAPagina(pagina* unaPagina, int nuevaPos){
 void asignarNuevaPaginaALaPosicion(
 		int posLibre, pagina* pagina_nueva, char* valorAPoner,
 		bool estadoAsignado, char* nombreTabla){
-	log_info(log_memoria, "[asignarNuevaTablaAPosicionLibre] Por guardar los datos de el valor y la nueva pagina en memoria");
 //	char stringValor[max_valor_key];
 //	strcpy(stringValor, valorAPoner);
 
@@ -541,11 +540,11 @@ void asignarNuevaPaginaALaPosicion(
 	int desplazamieto = sizeof(pagina)+max_valor_key;
 	//AQUI SE GUARDA   LA PAGINA
 	memcpy(bloque_memoria+posLibre*desplazamieto, pagina_nueva, sizeof(pagina));
-	log_info(log_memoria, "[asignarNuevaTablaAPosicionLibre] Pagina guardada");
+//	log_info(log_memoria, "[asignarNuevaTablaAPosicionLibre] Pagina guardada");
 
 	//memcpy(bloque_memoria+posLibre*desplazamieto+sizeof(pagina)-1,valorAPoner, max_valor_key);
 	memcpy(bloque_memoria+posLibre*desplazamieto+sizeof(pagina)-1,valorAPoner, strlen(valorAPoner)+1);//@martin revisar
-	log_info(log_memoria, "[asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada, actualizo el BITMAP ocupando la posicion '%d'", posLibre);
+//	log_info(log_memoria, "[asignarNuevaTablaAPosicionLibre] El valor de la pagina fue guardada, actualizo el BITMAP ocupando la posicion '%d'", posLibre);
 //	free(stringValor);
 	bitmapOcuparBit(bitmap, posLibre);
 
@@ -572,8 +571,7 @@ void asignarNuevaPaginaALaPosicion(
 			pagNew->nroPosicion, pagNew->key, valorString, pagNew->timestamp,
 			pagina_nueva->key, valorAPoner,pagina_nueva->timestamp);
 			*/
-	log_info(log_memoria,"[asignarNuevaTablaAPosicionLibre]POSICION %d\n"
-				"VALORES PUESTOS en bl: KEY|VALUE|TIMESTAMP %d|%s|%llu\n",
+	log_info(log_memoria,"[asignarNuevaTablaAPosicionLibre]POSICION %d. VALORES PUESTOS en bl: KEY|VALUE|TIMESTAMP %d|%s|%llu",
 				pagNew->nroPosicion, pagNew->key, valorString, pagNew->timestamp);
 	free(pagNew);
 	free(pagina_nueva);
@@ -922,17 +920,15 @@ void segmento_eliminar_nro_pagina(segmento* unSegmento, int nroAQuitar){
 	tablaPaginaAux = NULL;
 	tablaPaginaAnterior = NULL;
 //	printf("\nPASO A COMPARAR NUMEROS\n\n");
-	log_info(log_memoria, "Antes del while");
 	while(tablaPaginaBuscador->nropagina != nroAQuitar){
 	//	printf("\nNRO DEL SEGMENTO vs NROAQUITAR\n%d                ==      %d\n\n", tablaPaginaBuscador->nropagina, nroAQuitar);
-		log_info(log_memoria, "nro pag %d",tablaPaginaBuscador->nropagina);
+//		log_info(log_memoria, "nro pag %d",tablaPaginaBuscador->nropagina);
 		tablaPaginaAux = tablaPaginaBuscador;
 		tablaPaginaAnterior = tablaPaginaBuscador;
 		tablaPaginaBuscador = tablaPaginaBuscador->sig;
 	}
-	log_info(log_memoria, "Despues del while");
 //	printf("\nENCONTRADO\n%d == %d\n\n", tablaPaginaBuscador->nropagina, nroAQuitar);
-	log_info(log_memoria, "\n[ELIMINANDO PAGIAN A SEGMENTO] Procedo a eliminar la tabla de pagina encontrada de: [%d]",
+	log_info(log_memoria, "[ELIMINANDO PAGIAN A SEGMENTO] Procedo a eliminar la tabla de pagina encontrada de: [%d]",
 			tablaPaginaBuscador->nropagina);
 	//tablaPaginaAux = tablaPaginaBuscador->sig;
 	if(tablaPaginaAnterior == NULL){
@@ -949,7 +945,7 @@ void segmento_eliminar_nro_pagina(segmento* unSegmento, int nroAQuitar){
 	//if(tablaPaginaAux==NULL){
 	if(unSegmento->paginasAsocida == NULL){
 		log_info(log_memoria,
-				"[ELIMINANDO PAGINA A SEGMETNO] \nEliminando Segmento <%s> porque se quedo sin tabla de pagina",unSegmento->path_tabla);
+				"[ELIMINANDO PAGINA A SEGMETNO] Eliminando Segmento <%s> porque se quedo sin tabla de pagina",unSegmento->path_tabla);
 		borrarSegmentoPasadoPorParametro(unSegmento);
 		// REVISAR POR AQUI @NACHO @MARTIN
 
@@ -972,13 +968,11 @@ pagina_a_devolver* segmentoBuscarInfoEnTablaDePagina(char* nombreTabla,
 	//	if(strcmp(nombreTabla, obtenerNombreTablaDePath(aux->path_tabla))){
 			if(strcmp(nombreTabla, aux->path_tabla)){
 			int nroDePagina;
-			log_info(log_memoria, "[SEGMENTO BUSCAR TABLA Y KEY] SEGMENTO ENCONTRADO de '%s', voy a buscar la key",
-					nombreTabla);
+//			log_info(log_memoria, "[SEGMENTO BUSCAR TABLA Y KEY] SEGMENTO ENCONTRADO de '%s', voy a buscar la key",	nombreTabla);
 			nroDePagina = buscarEntreTodasLasTablaPaginasLaKey(aux->paginasAsocida, key);
 		//	mutexDesbloquear(&mutex_pagina_referenciada_aux2);
 			if(nroDePagina>-1){
-				log_info(log_memoria, "[SEGMENTO BUSCAR TABLA Y KEY] SEGMENTO ENCONTRADO de '%s', KEY encontrada '%d'",
-						nombreTabla, key);
+//				log_info(log_memoria, "[SEGMENTO BUSCAR TABLA Y KEY] SEGMENTO ENCONTRADO de '%s', KEY encontrada '%d'",	nombreTabla, key);
 				if(comandoInsert){
 					//SE DEBE REALIZAR MODIFICACIONES
 		//			funcionInsert(nombreTabla, 0, key, valorAPoner);
@@ -996,12 +990,12 @@ pagina_a_devolver* segmentoBuscarInfoEnTablaDePagina(char* nombreTabla,
 }
 
 pagina_a_devolver* selectObtenerDatos(int nroDePaginaAIr, bool necesitoValue){
-	log_info(log_memoria, "[Obtener Datos] Entrando a obtener datos");
+//	log_info(log_memoria, "[Obtener Datos] Entrando a obtener datos");
 	pagina_a_devolver* pag = malloc(sizeof(pagina_a_devolver));
 	pagina* pag_con_datos = malloc(sizeof(pagina));
 
 	void* informacion = malloc(sizeof(pagina)+max_valor_key);
-	log_info(log_memoria, "[Obtener Datos] Me pongo a buscar la pagina requerida");
+//	log_info(log_memoria, "[Obtener Datos] Me pongo a buscar la pagina requerida");
 	informacion = accederYObtenerInfoDePaginaEnPosicion(nroDePaginaAIr, informacion);
 	mutexDesbloquear(&mutex_memoria);
 //	mutexBloquear(&mutex_pagina_auxiliar);
@@ -1016,12 +1010,12 @@ pagina_a_devolver* selectObtenerDatos(int nroDePaginaAIr, bool necesitoValue){
 
 	pag->key=pag_con_datos->key;
 	pag->timestamp=pag_con_datos->timestamp;
-	log_info(log_memoria, "[Obtener Datos] KEY PAGINA OBTENIDA '%d'", pag->key);
+//	log_info(log_memoria, "[Obtener Datos] KEY PAGINA OBTENIDA '%d'", pag->key);
 //	log_info(log_memoria, "[Obtener Datos] VALUE OBTENIDO '%s'", pag->value);
 //	mutexDesbloquear(&mutex_pagina_auxiliar);
 	free(pag_con_datos);
 	free(informacion);
-	log_info(log_memoria, "[Obtener Datos] Saliendo de obtener datos");
+//	log_info(log_memoria, "[Obtener Datos] Saliendo de obtener datos");
 	return pag;
 }
 
@@ -1340,8 +1334,7 @@ void modificarValoresDeTablaYMemoriaAsociadasAKEY(int posAIr, char* valorNuevo, 
 
 	memcpy(bloque_memoria+posAIr*(sizeof(pagina)+max_valor_key), aux, sizeof(pagina));
 
-	memcpy(bloque_memoria+posAIr*(sizeof(pagina)+max_valor_key)+sizeof(pagina)-1, valorNuevo,
-			max_valor_key);
+	memcpy(bloque_memoria+posAIr*(sizeof(pagina)+max_valor_key)+sizeof(pagina)-1, valorNuevo,strlen(valorNuevo)+1);
 	log_info(log_memoria,
 			"[MOdificar valor pagina] key: '%d', VALOR NUEVO: %s",
 			aux->key, valorNuevo);
@@ -1375,7 +1368,7 @@ void modificar_bloque_LRU(char* nombreTabla, timestamp_mem_t timestamp, int nroP
 		bool vieneDeFuncionInsert)
 {
 //	mutexBloquear(&LRUMutex);
-	log_info(log_memoria, "[MODIFICAR BLOQUE LRU]\nActualizar bloque LRU");
+//	log_info(log_memoria, "[MODIFICAR BLOQUE LRU]\nActualizar bloque LRU");
 	nodoLRU* nuevoNodo = malloc(sizeof(nodoLRU));
 	int desplazamiento = sizeof(nodoLRU)+tamanioPredefinidoParaNombreTabla;
 	char* nombreDeTabla = malloc(tamanioPredefinidoParaNombreTabla);
@@ -1413,8 +1406,7 @@ void modificar_bloque_LRU(char* nombreTabla, timestamp_mem_t timestamp, int nroP
 		*/
 		/*printf("[MODIFICAR BLOQUE LRU] DATOS INGRESADOS: NOMBRE TABLA <%s>. NUMERO PAGINA: <%d>. TIMESTAMP: <%llu>. ESTADO PAGINA: <%d>.",
 				nombreDeTabla, nroPosicion, timestamp, estado);*/
-		log_info(log_memoria, "[MODIFICAR BLOQUE LRU] DATOS INGRESADOS: NOMBRE TABLA <%s>. "
-				"NUMERO PAGINA: <%d>. TIMESTAMP: <%llu> ESTADO PAGINA: <%d>",
+		log_info(log_memoria, "[MODIFICAR BLOQUE LRU] DATOS INGRESADOS: NOMBRE TABLA <%s>. NUMERO PAGINA: <%d>. TIMESTAMP: <%llu> ESTADO PAGINA: <%d>",
 				nombreDeTabla, nroPosicion, timestamp, estado);
 	//	free(nuevoNodo->nombreTabla);
 	} else {

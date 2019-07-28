@@ -74,6 +74,7 @@ typedef struct{
 	int multiprocesamiento;
 	int metadata_refresh;
 	int sleep_ejecucion;
+	int retardo_gossiping;
 }t_kernel_config;
 
 t_kernel_config* arc_config;
@@ -162,7 +163,7 @@ void agregarAListo(t_pcb* procesoNuevo);
 void agregarAEjecutando(t_pcb* pcb);
 void agregarAExit(t_pcb* pcb);
 
-void ejecutar(t_pcb* pcb, int quantum);
+void ejecutar(t_pcb* pcb, int quantum, int nivel);
 
 t_pcb* crearEstructurasAdministrativas(char* linea);
 
@@ -321,5 +322,7 @@ resp_com_t resolverCreate(request_t request);
 resp_com_t resolverDrop(request_t request);
 resp_com_t resolverJournal(request_t request);
 resp_com_t resolverPedido(char *linea);
+
+void loggearEjecucion(int nivel, int pid, char* linea);
 
 #endif /* KERNEL_H_ */

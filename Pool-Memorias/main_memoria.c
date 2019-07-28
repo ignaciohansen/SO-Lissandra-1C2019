@@ -105,8 +105,8 @@ int main(int argc, char **argv)
 	iniciar_hilo_gossiping(&mi_id,&gossiping_h,actualizarMemoriasDisponibles);
 	printf("\n*Gossiping corriendo");
 	pthread_attr_t attr;
-				pthread_attr_init(&attr);
-				pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
 	pthread_create(&servidor_h, &attr,(void *)hilo_servidor,&socket_servidor);
 	pthread_join(servidor_h, NULL);
@@ -540,7 +540,7 @@ resp_com_t resolver_pedido(request_t req, int socket_lfs)
 			}
 			break;
 		case CREATE:
-			imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver CREATE\n\n");
+			imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] Voy a resolver CREATE");
 			respuesta = resolver_create(socket_lfs,req);
 			if(respuesta.tipo == RESP_OK){
 				imprimirMensaje(log_memoria,"[RESOLVIENDO PEDIDO] CREATE hecho correctamente");
@@ -944,7 +944,6 @@ char *armar_insert(char *respuesta_select, char *tab, int key)
 resp_com_t resolver_describe(int socket_lfs, request_t req)
 {
 	char *ret_val;
-	imprimirMensaje(log_memoria, "[RESOLVIENDO DESCRIBE] Entro a función");
 	req_com_t a_enviar;
 
 	socket_lfs = -1;

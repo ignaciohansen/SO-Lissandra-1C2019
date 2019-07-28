@@ -2570,7 +2570,7 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 
 		if (archivoMetadata != NULL) {
 			log_info(logger,
-					"El archivo metadata se creo satisfactoriamente\n");
+					"El archivo metadata se creo satisfactoriamente");
 
 			log_info(logger, "Se crean los semaforos de la tabla");
 

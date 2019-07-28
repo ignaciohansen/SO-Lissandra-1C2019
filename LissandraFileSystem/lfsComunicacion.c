@@ -198,20 +198,14 @@ resp_com_t resolver_pedido(request_t req) {
 
 		switch (req.command) {
 		case INSERT:
-			imprimirMensaje(logger,
-					"[RESOLVIENDO PEDIDO] Voy a resolver INSERT");
 			respuesta = resolver_insert(req);
 			if (respuesta.tipo == RESP_OK) {
-				imprimirMensaje(logger,
-						"[RESOLVIENDO PEDIDO] INSERT hecho correctamente");
+				imprimirMensaje(logger,	"[RESOLVIENDO PEDIDO] INSERT hecho correctamente");
 			} else {
-				imprimirError(logger,
-						"[RESOLVIENDO PEDIDO] El INSERT no pudo realizarse");
+				imprimirError(logger,"[RESOLVIENDO PEDIDO] El INSERT no pudo realizarse");
 			}
 			break;
 		case SELECT:
-			imprimirMensaje(logger,
-					"[RESOLVIENDO PEDIDO] Voy a resolver SELECT");
 			respuesta = resolver_select(req);
 			if (respuesta.tipo == RESP_OK && respuesta.msg.tam > 0) {
 				imprimirMensaje1(logger,
@@ -223,8 +217,6 @@ resp_com_t resolver_pedido(request_t req) {
 			}
 			break;
 		case DESCRIBE:
-			imprimirAviso(logger,
-					"[RESOLVIENDO PEDIDO] Voy a resolver DESCRIBE");
 			respuesta = resolver_describe(req);
 			if (respuesta.tipo == RESP_OK && respuesta.msg.tam > 0) {
 				imprimirMensaje1(logger,
@@ -236,7 +228,6 @@ resp_com_t resolver_pedido(request_t req) {
 			}
 			break;
 		case DROP:
-			imprimirMensaje(logger, "[RESOLVIENDO PEDIDO] Voy a resolver DROP");
 			respuesta = resolver_drop(req);
 			if (respuesta.tipo == RESP_OK) {
 				imprimirMensaje(logger,
@@ -247,8 +238,6 @@ resp_com_t resolver_pedido(request_t req) {
 			}
 			break;
 		case CREATE:
-			imprimirMensaje(logger,
-					"[RESOLVIENDO PEDIDO] Voy a resolver CREATE\n\n");
 			respuesta = resolver_create(req);
 			if (respuesta.tipo == RESP_OK) {
 				imprimirMensaje(logger,
@@ -273,7 +262,6 @@ resp_com_t resolver_pedido(request_t req) {
 resp_com_t resolver_describe(request_t req) {
 	char *ret_val;
 	resp_com_t respuesta;
-	imprimirMensaje(logger, "[RESOLVIENDO DESCRIBE] Entro a función");
 
 	if (req.cant_args == 1) {
 		char *nombre_tabla = req.args[0];
@@ -310,7 +298,6 @@ resp_com_t resolver_describe(request_t req) {
 
 resp_com_t resolver_create(request_t req) {
 	int ret_val;
-	imprimirMensaje(logger, "[RESOLVIENDO CREATE] Entro a función");
 
 	if (req.cant_args == 4) {
 		char *nombre_tabla = req.args[0];
@@ -330,8 +317,7 @@ resp_com_t resolver_create(request_t req) {
 	}
 
 	else {
-		imprimirError(logger,
-				"[RESOLVIENDO CREATE] Cantidad incorrecta de parámetros");
+		imprimirError(logger,"[RESOLVIENDO CREATE] Cantidad incorrecta de parámetros");
 		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS, NULL);
 	}
 
@@ -339,7 +325,6 @@ resp_com_t resolver_create(request_t req) {
 
 resp_com_t resolver_drop(request_t req) {
 	int ret_val;
-	imprimirMensaje(logger, "[RESOLVIENDO DROP] Entro a función");
 
 	if (req.cant_args == 1) {
 		char *nombre_tabla = req.args[0];
