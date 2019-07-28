@@ -23,7 +23,7 @@ int main() {
 	mutexIniciar(&listaTablasInsertadas_mx);
 	//mutexIniciar(&semaforo); MERGE
 
-	list_queries = list_create();
+//	list_queries = list_create();
 
 	LisandraSetUP(); // CONFIGURACION Y SETEO SOCKET
 
@@ -47,18 +47,21 @@ int main() {
 	pthread_create(&hiloConsola, NULL, (void*) consola, NULL);
 	pthread_create(&hiloServidor, NULL, (void*) hilo_servidor, &socketLFS);
 	pthread_create(&hiloDump, NULL, (void*) esperarTiempoDump, NULL);
-
+	pthread_detach(hiloInotifyLFS);
+	pthread_detach(hiloDump);
+	pthread_detach(hiloServidor);
 
 	signal(SIGINT, INThandler);
 	//pthread_join(hiloDump, NULL);
 
-	pthread_detach(hiloInotifyLFS);
-	pthread_detach(hiloDump);
-	pthread_detach(hiloServidor);
 	pthread_join(hiloConsola, NULL);
+
 	//pthread_kill(hiloDump, SIGKILL);
-	pthread_kill(hiloDump, SIGKILL);
-	pthread_kill(hiloServidor, SIGKILL);
+	//pthread_kill(hiloServidor, SIGKILL);
+	pthread_cancel(hiloInotifyLFS);
+	pthread_cancel(hiloDump);
+	pthread_cancel(hiloServidor);
+
 
 	if (socketLFS == -1) {
 		close(socketLFS);
@@ -557,10 +560,9 @@ void consola() {
 
 		if (linea && strcmp(linea, "\n") && strcmp(linea, "")) {
 			add_history(linea);
-
-			sem_wait(&semaforoQueries);
+		/*	sem_wait(&semaforoQueries);
 			list_add(list_queries, linea);
-			sem_post(&semaforoQueries);
+			sem_post(&semaforoQueries);*/
 		}
 
 		if (!strncmp(linea, "SALIR", 5)) {
@@ -576,6 +578,7 @@ void consola() {
 		}
 		free(linea);
 	}
+
 }
 
 void atenderRequest(char* linea) {
@@ -753,7 +756,9 @@ t_metadata_tabla* obtenerMetadataTabla(char* tabla) {
 	int result = 0;
 	metadataTabla = malloc(sizeof(t_metadata_tabla)); // Vatiable global.--->la hago local para soportar varios procesos concurrentes
 	t_config* metadataFile;
+	log_info(logger, "antes de config create...");
 	metadataFile = config_create(path_tabla_metadata);
+	log_info(logger, "despues de config create...");
 
 	if (metadataFile != NULL) {
 
@@ -1067,7 +1072,7 @@ void realizarDump() {
 	mutexBloquear(&listaTablasInsertadas_mx);
 	int tam = list_size(listaTablasInsertadas);
 	mutexDesbloquear(&listaTablasInsertadas_mx);
-	//mutexBloquear(&memtable_mx);
+	mutexBloquear(&memtable_mx); //@martin @sincro lo descomento
 	for (int i = 0; i < tam; i++) {
 		mutexBloquear(&listaTablasInsertadas_mx);
 		char* tabla = list_get(listaTablasInsertadas, i);
@@ -1077,15 +1082,17 @@ void realizarDump() {
 		char* path = armarPathTablaParaDump(tabla, cantidad_de_dumps);
 		log_info(logger, "[DEBUG] VOY A CREAR EL TMP");
 		crearArchivoTemporal(path, tabla);
-		//free(path)   @VALGRIND
+		free(path); //  @VALGRIND @MARTIN
 
 		//tamanioRegistros[i] = 0;
 	}
 	log_info(logger, "Se limpia diccionario y la listaTablasInsertadas");
-	vaciarMemtable(); //
-	//mutexDesbloquear(&memtable_mx);
+	vaciarMemtable();
+	log_info(logger, "Se vacio la memtable");
+	mutexDesbloquear(&memtable_mx); //@martin @sincro lo descomento
 	mutexBloquear(&listaTablasInsertadas_mx);
-	list_clean(listaTablasInsertadas);
+	list_clean_and_destroy_elements(listaTablasInsertadas,free);//@martin @revisar
+	log_info(logger, "Se vacio la lista de tablas insertadas");
 	mutexDesbloquear(&listaTablasInsertadas_mx);
 }
 
@@ -1107,9 +1114,10 @@ int crearArchivoTemporal(char* path, char* tabla) {
 
 	// path objetivo: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA/cantidad_de_dumps.tmp
 	log_info(logger, "[DEBUG] POR ENTRAR AL MUTEX REGISTROS TABLA");
-	mutexBloquear(&memtable_mx);
+	//mutexBloquear(&memtable_mx); @martin @sincro comentado
 	t_list* listaRegistrosTabla = dictionary_get(memtable, tabla);
-	mutexDesbloquear(&memtable_mx);
+//	t_list *listaRegistrosTabla = list_duplicate(dictionary_get(memtable, tabla)); //@martin @debug
+	// mutexDesbloquear(&memtable_mx); @martin @sincro comentado
 	log_info(logger, "[DEBUG] PASE EL MUTEX REGISTROS TABLA");
 
 	log_info(logger, "[DEBUG] HICE EL GET DE SEM TABLA");
@@ -1146,10 +1154,8 @@ int crearArchivoTemporal(char* path, char* tabla) {
 	}
 
 	//void* bufferRegistros = malloc(tam_total_registros);
-	void* bufferRegistros = armarBufferConRegistros(listaRegistrosTabla,
-			tam_total_registros);
-	int resultadoEscritura = escribirVariosBloques(bloquesUsados,
-			tam_total_registros, bufferRegistros);
+	void* bufferRegistros = armarBufferConRegistros(listaRegistrosTabla,tam_total_registros);
+	int resultadoEscritura = escribirVariosBloques(bloquesUsados,tam_total_registros, bufferRegistros);
 
 	if (resultadoEscritura != -1) {
 		FILE* temporal;
@@ -1179,14 +1185,17 @@ int crearArchivoTemporal(char* path, char* tabla) {
 				int* nroBloque = list_get(bloquesUsados, i);
 				sprintf(bloque, "%d", *nroBloque);
 				string_append(&contenido, bloque);
-				string_append(&contenido, ",");
+				if(i != list_size(bloquesUsados)-1) //@martin
+					string_append(&contenido, ",");
 			}
-			contenido = stringTomarDesdeInicio(contenido,
-					strlen(contenido) - 1);
+//			contenido = stringTomarDesdeInicio(contenido,strlen(contenido) - 1);
 			string_append(&contenido, "]");
 			fputs(contenido, temporal);
 			log_info(logger, "[DUMP] Temporal completado con: %s", contenido);
 			free(contenido);
+			log_info(logger, "[DUMP] hice free de contenido");
+			free(bloque); //@martin
+			free(size);//@martin
 			fclose(temporal);
 		} else {
 			//liberar bloques de la lista de bloquesUsados
@@ -1198,17 +1207,19 @@ int crearArchivoTemporal(char* path, char* tabla) {
 		log_error(logger,
 				"[DUMP] hubo un error al escribir los datos en los bloques");
 	}
-
-	rwLockDesbloquear(&(semsTabla->rwLockTabla));
-
 	free(bufferRegistros);
+	log_info(logger, "[DEBUG] hice free de buffer");
 	list_destroy_and_destroy_elements(bloquesUsados, free);
-
+	log_info(logger, "[DEBUG] hice destroy");
+	log_info(logger, "[DEBUG] Voy a desbloquear semaforo tabla %s",tabla);
+	rwLockDesbloquear(&(semsTabla->rwLockTabla));
+	log_info(logger, "[DEBUG] desbloquie semaforo tabla %s",tabla);
 	return 0;
 }
 
 //OPERACIONES CON BLOQUES
 
+//<value>;<key>;<timestamp>\n
 int tamTotalListaRegistros(t_list* listaRegistros) {
 	int cantidad_registros = list_size(listaRegistros);
 	log_info(logger, "cantidad de registros de la lista: %d",
@@ -1254,13 +1265,12 @@ void* armarBufferConRegistros(t_list* listaRegistros, int tam_total_registros) {
 	int cantidad_registros = list_size(listaRegistros);
 	t_registroMemtable* registro;
 
-	void* bufferConRegistros = malloc(tam_total_registros);
+	void* bufferConRegistros = malloc(tam_total_registros+20);//@martin @nacho probando
 
 	for (int i = 0; i < cantidad_registros; i++) {
 
 		registro = list_get(listaRegistros, i);
-		memcpy(bufferConRegistros + offset, &registro->timestamp,
-				sizeof(u_int64_t));
+		memcpy(bufferConRegistros + offset, &registro->timestamp,sizeof(u_int64_t));
 		offset += sizeof(u_int64_t);
 		memcpy(bufferConRegistros + offset, &punto_y_coma, sizeof(char));
 		offset += sizeof(char);
@@ -1268,13 +1278,12 @@ void* armarBufferConRegistros(t_list* listaRegistros, int tam_total_registros) {
 		offset += sizeof(u_int16_t);
 		memcpy(bufferConRegistros + offset, &punto_y_coma, sizeof(char));
 		offset += sizeof(char);
-		memcpy(bufferConRegistros + offset, registro->value,
-				strlen(registro->value));
+		memcpy(bufferConRegistros + offset, registro->value,strlen(registro->value));
 		offset += strlen(registro->value);
 		memcpy(bufferConRegistros + offset, &barra_n, sizeof(char));
 		offset += sizeof(char);
 	}
-
+	log_info(logger,"[DEBUG555] Tamanio total escrito %d. Tamanio total del buffer %d",offset,tam_total_registros);
 	return bufferConRegistros;
 }
 
@@ -1283,7 +1292,6 @@ int escribirVariosBloques(t_list* bloques, int tam_total_registros,
 
 	int resultado = 1;
 	int offset = 0;
-	int tam_total = tam_total_registros;
 
 	for (int i = 0; i < list_size(bloques); i++) {
 
@@ -1314,8 +1322,6 @@ int escribirVariosBloques(t_list* bloques, int tam_total_registros,
 
 	log_info(logger, "[BLOQUE] Se terminaron de escribir los bloques");
 
-	log_info(logger, "[BLOQUE] Reviso que esté todo bien escrito");
-
 	//@VALGRIND
 	//t_list* registrosLeidos = leerBloquesConsecutivos(bloques, tam_total);
 	//list_destroy_and_destroy_elements(registrosLeidos,(void*)borrarRegistro);
@@ -1325,19 +1331,19 @@ int escribirVariosBloques(t_list* bloques, int tam_total_registros,
 int escribirBloque(int bloque, int size, int offset, void* buffer) {
 
 	char* path = crearPathBloque(bloque);
-	log_info(logger, "path de bloque a escribir %s", path);
+//	log_info(logger, "path de bloque a escribir %s", path);
 	FILE* bloqueFile = fopen(path, "wb");
 
 	if (bloqueFile != NULL) {
 
-		log_info(logger, "entre al if");
+//		log_info(logger, "entre al if");
 		fwrite(buffer + offset, size, 1, bloqueFile);
 		fclose(bloqueFile);
 		free(path);
 		return 0;
 	}
 
-	log_info(logger, "[BLOQUE] bloque %d escrito con exito", bloque);
+//	log_info(logger, "[BLOQUE] bloque %d escrito con exito", bloque);
 	free(path);
 	return -1;
 }
@@ -1479,8 +1485,13 @@ int abrirArchivoBloque(FILE **fp, int nroBloque, char *modo) {
 }
 
 t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total) {
+
 	t_list *registros_leidos = list_create(); //@VALGRIND VER DONDE LIBERAR ESTO
 	FILE *bloque;
+
+	if(tam_total == 0){
+		return registros_leidos;
+	}
 
 	char *aux_value = malloc(configFile->tamanio_value + 1);
 
@@ -1596,7 +1607,7 @@ t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total) {
 			else {
 				memcpy(aux_campo_leyendo + offset_campo,
 						registros_bloque + offset_bloque,
-						sizeof(uint16_t) - offset_campo);
+						tam_bloque - offset_bloque); //@martin @valgrind invalid read of size
 
 				//Avanzo los offset los bytes que acabo de leer
 				offset_campo += tam_bloque - offset_bloque;
@@ -1949,7 +1960,7 @@ void eliminarTablaCompleta(char* tabla) {
 				log_info(logger, "No se pudo eliminar el archivo\n");
 
 			}
-//			free(archivoParticion);
+			free(archivoParticion); //@martin
 		}
 //		free(metadata->consistency);
 		free(metadata);
@@ -2063,8 +2074,7 @@ t_registroMemtable* armarEstructura(char* value, char* key, char* timestamp) {
 	t_registroMemtable* registroMemtable;
 	registroMemtable = malloc(sizeof(t_registroMemtable));
 
-	int tam_registro = strlen(value) + 1 + sizeof(u_int16_t)
-			+ sizeof(u_int64_t); //es un long no un u_int64_t
+	int tam_registro = strlen(value) + 1 + sizeof(u_int16_t) + sizeof(u_int64_t); //es un long no un u_int64_t
 	registroMemtable->tam_registro = tam_registro;
 	registroMemtable->value = malloc(strlen(value) + 1);
 	strcpy(registroMemtable->value, value);
@@ -2142,7 +2152,7 @@ t_bloquesUsados* leerTemporaloParticion(char* path) {
 		retVal->size = size;
 
 		free(bloques);
-		free(path);//@nacho agregado
+//		free(path);//@nacho agregado
 		config_destroy(tempFile);  //@nacho agregado
 
 
@@ -2150,8 +2160,7 @@ t_bloquesUsados* leerTemporaloParticion(char* path) {
 	return retVal;
 }
 
-t_registroMemtable* obtenerRegistroMayor(char* tabla, int key,
-		t_list* listaSegunLugar) {
+t_registroMemtable* obtenerRegistroMayor(char* tabla, int key,	t_list* listaSegunLugar) {
 	log_info(logger, "la key que mande del select %d", key);
 	t_registroMemtable* registro = NULL;
 	t_registroMemtable* retval = malloc(sizeof(t_registroMemtable));
@@ -2172,7 +2181,7 @@ t_registroMemtable* obtenerRegistroMayor(char* tabla, int key,
 			t_registroMemtable* aux = list_get(listaSegunLugar, i);
 			if (aux->key == key) {
 				log_info(logger,"[Ya hay mas de un registro obtenido]");
-							imprimirRegistro(aux);
+				imprimirRegistro(aux);
 
 				if (aux->timestamp > registro->timestamp) {
 					registro = aux;
@@ -2204,7 +2213,10 @@ t_registroMemtable* registroMayorMemtable(char* tabla, u_int16_t key) {
 
 	if (dictionary_has_key(memtable, tabla)) {
 		t_list* tableRegisters = dictionary_get(memtable, tabla);
-		registro = obtenerRegistroMayor(tabla, key, tableRegisters);
+		//t_list* aux = list_duplicate(tableRegisters);
+		//registro = obtenerRegistroMayor(tabla, key, aux);
+		registro = obtenerRegistroMayor(tabla, key, tableRegisters);//@martin @nacho
+
 
 	} else {
 
@@ -2282,7 +2294,7 @@ t_registroMemtable* registroMayorTemporal(char* tabla, u_int16_t key,
 		registro = armarRegistroNulo();
 	}
 	log_info(logger, "Salgo de la función");
-	//list_destroy_and_destroy_elements(temporalesTabla,free); //@VALGRIND - PRUEBA DOBLE FREE
+	list_destroy_and_destroy_elements(temporalesTabla,free); //@VALGRIND - PRUEBA DOBLE FREE
 	return registro;
 }
 
@@ -2301,7 +2313,7 @@ t_registroMemtable* registroMayorParticion(char* tabla, u_int16_t key,
 		list_destroy_and_destroy_elements(ListaBloques->bloques,free);
 	}
 	free(ListaBloques);
-
+	free(pathParticion);
 	return registro;
 
 }
@@ -2407,6 +2419,7 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 		if (metadata == NULL) {
 			registroMayor = armarRegistroNulo();
 			registroMayor->tam_registro = -2;
+			rwLockDesbloquear(&(semsTabla->rwLockTabla)); //@martin si voy a retornar tengo que desbloquear no?
 			return registroMayor;
 		}; // 0: OK. -1: ERROR. // frenar en caso de error
 
@@ -2432,8 +2445,6 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 
 		t_registroMemtable* registroTemporal = registroMayorTemporal(tabla,
 				valorKeyU, ".tmp");
-
-
 
 		t_registroMemtable* registroTemporalC = registroMayorTemporal(tabla,
 				valorKeyU, ".tmpc");
@@ -2723,12 +2734,11 @@ int comandoInsert(char* tabla, char* key, char* valueOriginal, char* timestamp) 
 			if (tablaRepetida) {
 				log_info(logger, "Encontre una tabla repetida");
 				mutexBloquear(&memtable_mx);
+
 				t_list* tableRegisters = dictionary_get(memtable, tabla);
 				list_add(tableRegisters, registroPorAgregarE);
 
-				log_info(logger,
-						"[DEBUG] agregué registro a la memtable <%d;%s>",
-						registroPorAgregarE->key, registroPorAgregarE->value);
+				log_info(logger,"[DEBUG] agregué registro a la memtable <%d;%s>",registroPorAgregarE->key, registroPorAgregarE->value);
 				log_info(logger, "[DEBUG] esta tabla en la memtable tiene: ");
 				t_list* tableRegisters2 = dictionary_get(memtable, tabla);
 				log_info(logger, "[DEBUG] tamaño tabla registros %d : ", list_size(tableRegisters2));
@@ -2745,8 +2755,9 @@ int comandoInsert(char* tabla, char* key, char* valueOriginal, char* timestamp) 
 				t_list* listaAux = list_create();
 				list_add(listaAux, registroPorAgregarE);
 				char* aux = malloc(strlen(tabla) + 1);
+//				char* aux2 = malloc(strlen(tabla) + 1); //@martin @revisar
 				strcpy(aux, tabla);
-
+//				strcpy(aux2, tabla);//@MARTIN
 				mutexBloquear(&memtable_mx);
 				dictionary_put(memtable, aux, listaAux);
 				mutexDesbloquear(&memtable_mx);
@@ -2924,13 +2935,11 @@ t_registroMemtable *leerBloquesConsecutivosUnaKey(t_list *nroBloques,
 //				log_info(logger, "Al bloque le quedan %d bytes y yo necesito %d",tam_bloque-offset_bloque, sizeof(u_int64_t)-offset_campo);
 
 			//Si con los bytes que le quedan al bloque me alcanza para completar el campo, los copio y avanzo al siguiente estado
-			if (offset_bloque + sizeof(u_int64_t) - offset_campo
-					<= tam_bloque) {
+			if (offset_bloque + sizeof(u_int64_t) - offset_campo <= tam_bloque) {
 				memcpy(aux_campo_leyendo + offset_campo,
 						registros_bloque + offset_bloque,
 						sizeof(u_int64_t) - offset_campo);
-				memcpy(&(registro->timestamp), aux_campo_leyendo,
-						sizeof(u_int64_t));
+				memcpy(&(registro->timestamp), aux_campo_leyendo,sizeof(u_int64_t));
 //					log_info(logger, "Timestamp leido: %d",registro->timestamp);
 
 				//Avanzo los offset los bytes que acabo de leer
@@ -2983,7 +2992,7 @@ t_registroMemtable *leerBloquesConsecutivosUnaKey(t_list *nroBloques,
 			else {
 				memcpy(aux_campo_leyendo + offset_campo,
 						registros_bloque + offset_bloque,
-						sizeof(uint16_t) - offset_campo);
+						tam_bloque - offset_bloque);
 
 				//Avanzo los offset los bytes que acabo de leer
 				offset_campo += tam_bloque - offset_bloque;
@@ -3019,8 +3028,7 @@ t_registroMemtable *leerBloquesConsecutivosUnaKey(t_list *nroBloques,
 				memcpy(aux_campo_leyendo + offset_campo,
 						registros_bloque + offset_bloque,
 						tam_bloque - offset_bloque);
-				memcpy(aux_value, aux_campo_leyendo,
-						tam_bloque - offset_bloque);
+				memcpy(aux_value, aux_campo_leyendo, tam_bloque - offset_bloque);
 
 				//Como al escribir no se escribe el caracter nulo, al leer lo agrego
 				aux_value[offset_campo + tam_bloque - offset_bloque] = '\0';
@@ -3060,8 +3068,7 @@ t_registroMemtable *leerBloquesConsecutivosUnaKey(t_list *nroBloques,
 				offset_total += strlen(registro->value) - offset_campo;
 
 				//Calculo el tamaño
-				registro->tam_registro = sizeof(u_int64_t) + sizeof(uint16_t)
-						+ strlen(registro->value) + 1;
+				registro->tam_registro = sizeof(u_int64_t) + sizeof(uint16_t) + strlen(registro->value) + 1;
 
 				if (registro->key == key_buscada) {
 					//log_info(logger, "[OBTENIENDO KEY BLOQUES] Encontre un registro con la key %d: <%d;%d;%s>", key_buscada, registro->timestamp,registro->key,registro->value);
@@ -3159,7 +3166,11 @@ void cerrarTodo() {
 	//rwLockEscribir();
 	liberarTodosLosRecursosGlobalesQueNoSeCerraron();
 	sem_destroy(&semaforoQueries);
-	if(dictionary_size(memtable)>0){vaciarMemtable();}
+	if(dictionary_size(memtable)>0){
+		mutexBloquear(&memtable_mx); //@martin @sincro agrego
+		vaciarMemtable();
+		mutexDesbloquear(&memtable_mx); //@martin @sincro agrego
+	}
 	dictionary_destroy(memtable);
 	free(metadataLFS->magic_number);
 	free(metadataLFS);
@@ -3183,15 +3194,16 @@ void cerrarTodo() {
 
 void matarYBorrarHilos(pthread_t *thread)
 {
-	pthread_kill(*thread,SIGKILL);
+	//pthread_kill(*thread,SIGKILL);
+	pthread_cancel(*thread);
 	free(thread);
 }
 
 void vaciarMemtable(void)
 {
-	mutexBloquear(&memtable_mx);
+	//mutexBloquear(&memtable_mx); @martin @sincro comento
 	dictionary_clean_and_destroy_elements(memtable,(void *)borrarListaMemtable);
-	mutexDesbloquear(&memtable_mx);
+	//mutexDesbloquear(&memtable_mx); @martin @sincro comento
 }
 
 void borrarListaMemtable(t_list *lista)
@@ -3252,10 +3264,24 @@ t_datos_particion *obtenerDatosParticion(char *path_particion) {
 		list_add(retval->bloques, num);
 	}
 	config_destroy(config_particion);
-
+	borrar_array_config(bloques);
 	log_info(logger, "[OBTENER DATOS PARTICION] Datos obtenidos");
 	return retval;
 }
+
+void borrar_array_config(char **array)
+{
+	if(array != NULL){
+		int i = 0;
+		while(array[i]!=NULL){
+			free(array[i]);
+			i++;
+		}
+		free(array);
+	}
+	array = NULL;
+}
+
 
 /* COMPACTACIÓN */
 
@@ -3290,10 +3316,9 @@ int compactarTabla(char *tabla) {
 	t_list * temporales_list = obtenerArchivosDirectorio(path_tabla, ".tmp");
 
 	if (list_size(temporales_list) == 0) {
-		log_info(logger,
-				"[COMPACTACION] No se encontraron temporales de la tabla %s. No se hace compactación",
-				tabla);
+		log_info(logger,"[COMPACTACION] No se encontraron temporales de la tabla %s. No se hace compactación",	tabla);
 		list_destroy_and_destroy_elements(temporales_list, free);
+		free(path_tabla);
 		return 0;
 	}
 
@@ -3347,6 +3372,8 @@ int compactarTabla(char *tabla) {
 		sprintf(aux_path_particion, "%s/%d.bin", path_tabla, i);
 		list_add(particiones_list, aux_path_particion);
 	}
+	free(metadataTabla->consistency); //@martin
+	free(metadataTabla); //@martin
 
 	if (list_size(particiones_list) == 0) {
 		log_error(logger,
@@ -3494,13 +3521,13 @@ void actualizarListaRegistros(t_list *listas_registros, t_list *nuevos) {
 }
 
 void incorporarRegistro(t_list *registros, t_registroMemtable *nuevo) {
-	log_info(logger, "[INCORPORANDO REGISTRO]");
-	log_info(logger, "[INCORPORANDO REGISTRO] El que quiero agregar es");
+	log_debug(logger, "[INCORPORANDO REGISTRO]");
+	log_debug(logger, "[INCORPORANDO REGISTRO] El que quiero agregar es");
 	imprimirRegistro(nuevo);
 	for (int i = 0; i < list_size(registros); i++) {
 		t_registroMemtable *aux = list_get(registros, i);
 		if (aux->key == nuevo->key) {
-			log_info(logger, "[INCORPORANDO REGISTRO] Había");
+//			log_info(logger, "[INCORPORANDO REGISTRO] Había");
 			imprimirRegistro(aux);
 			if (aux->timestamp < nuevo->timestamp) {
 				free(aux->value);
@@ -3509,11 +3536,9 @@ void incorporarRegistro(t_list *registros, t_registroMemtable *nuevo) {
 				aux->timestamp = nuevo->timestamp;
 				aux->tam_registro = sizeof(uint16_t) + sizeof(uint64_t)
 						+ strlen(aux->value) + 1; //@martin, @gian: se calcula así?
-				log_info(logger,
-						"[INCORPORANDO REGISTRO] Actualicé el registro anterior");
+				log_debug(logger,"[INCORPORANDO REGISTRO] Actualicé el registro anterior");
 			} else {
-				log_info(logger,
-						"[INCORPORANDO REGISTRO] El registro anterior era más reciente");
+				log_debug(logger,"[INCORPORANDO REGISTRO] El registro anterior era más reciente");
 			}
 			return;
 		}
@@ -3521,7 +3546,7 @@ void incorporarRegistro(t_list *registros, t_registroMemtable *nuevo) {
 	//Si llego hastá acá, no teníamos la key
 	t_registroMemtable *copia = crearCopiaRegistro(nuevo);
 	list_add(registros, copia);
-	log_info(logger,
+	log_debug(logger,
 			"[INCORPORANDO REGISTRO] No estaba esta key. Registro agregado");
 }
 
@@ -3534,9 +3559,10 @@ void liberarBloquesDeArchivo(char *path_tabla, char *extension) {
 		for (int j = 0; j < list_size(datos_tmpc->bloques); j++) {
 			int *bloque = list_get(datos_tmpc->bloques, j);
 			liberarBloqueBitmap(*bloque);
-			log_info(logger, "[COMPACTACION] Bloque %d liberado", *bloque);
+//			log_info(logger, "[COMPACTACION] Bloque %d liberado", *bloque);
 		}
 		list_destroy_and_destroy_elements(datos_tmpc->bloques, free);
+		free(datos_tmpc); //@martin
 		remove(path);
 	}
 	list_destroy_and_destroy_elements(tmpc_list, free);
@@ -3604,15 +3630,18 @@ int guardarRegistrosParticion(char *path_tabla, int particion,
 				int* nroBloque = list_get(bloquesUsados, i);
 				sprintf(bloque, "%d", *nroBloque);
 				string_append(&contenido, bloque);
-				string_append(&contenido, ",");
+				if(i!= list_size(bloquesUsados)-1) //@martin
+					string_append(&contenido, ",");
 			}
-			contenido = stringTomarDesdeInicio(contenido,
-					strlen(contenido) - 1);
+			/*contenido = stringTomarDesdeInicio(contenido,
+					strlen(contenido) - 1);*/
 			string_append(&contenido, "]");
 			fputs(contenido, fp);
 			log_info(logger, "[COMPACTACION] Temporal completado con: %s",
 					contenido);
 			free(contenido);
+			free(size); //@martin
+			free(bloque); //@martin
 			fclose(fp);
 		} else {
 			//liberar bloques de la lista de bloquesUsados

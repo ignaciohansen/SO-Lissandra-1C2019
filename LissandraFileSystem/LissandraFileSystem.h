@@ -345,4 +345,6 @@ void borrarListaMemtable(t_list *lista);
 
 bool existeDirectorio(char *path);
 
+void borrar_array_config(char **array);
+
 #endif /* LFILESSYSTEM_H_ */
