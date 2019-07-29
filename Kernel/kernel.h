@@ -314,6 +314,10 @@ int eliminarMemoriaCriterio(int numMemoria, t_list *lista_memorias);
 int eliminarMemoriaAsociada(int numMemoria);
 int buscarCriterioTabla(char *nombre_tabla);
 bool estaMemoriaAsociada(int numMemoria);
+bool estaMemoriaEnCriterio(int numMemoria, t_list *lista);
+int numMemoriaRandom(int cantidadMemorias);
+int numMemoriaHash(uint16_t key);
+int vaciarMemoriasSHC(void);
 
 resp_com_t enviar_recibir(int socket,char *req_str);
 resp_com_t resolverSelect(request_t request);
@@ -321,9 +325,48 @@ resp_com_t resolverInsert(request_t request);
 resp_com_t resolverDescribe(request_t request);
 resp_com_t resolverCreate(request_t request);
 resp_com_t resolverDrop(request_t request);
-resp_com_t resolverJournal(request_t request);
+resp_com_t resolverJournalGlobal(request_t request);
+resp_com_t resolverJournal(request_t request, t_list *lista_memorias);
 resp_com_t resolverPedido(char *linea);
 
 void loggearEjecucion(int nivel, int pid, char* linea);
+
+
+
+/* METRICAS */
+//Por cada solicitud a una memoria se debe mantener una estadística interna de cada criterio que indique:
+//Read Latency / 30s: El tiempo promedio que tarda un SELECT en ejecutarse en los últimos 30 segundos.
+//Write Latency / 30s: El tiempo promedio que tarda un INSERT en ejecutarse en los últimos 30 segundos.
+//Reads / 30s: Cantidad de SELECT ejecutados en los últimos 30 segundos.
+//Writes / 30s: Cantidad de INSERT ejecutados en los últimos 30 segundos.
+//Memory Load (por cada memoria):  Cantidad de INSERT / SELECT que se ejecutaron en esa memoria respecto de las operaciones totales.
+
+typedef struct{
+	uint64_t tiempo_select;
+	int cant_select;
+	uint64_t tiempo_insert;
+	int cant_insert;
+}t_metricas_criterio;
+
+typedef struct{
+	int num_memoria;
+	int operaciones;
+}t_metricas_memoria;
+
+typedef struct{
+	t_metricas_criterio criterio[3];
+	t_list *operaciones_memorias;
+	int operaciones_totales;
+	uint64_t ultima_actualiz;
+}t_metricas;
+
+t_metricas g_metricas;
+pthread_mutex_t mutex_metricas = PTHREAD_MUTEX_INITIALIZER;
+
+void inicializarMetricas(void);
+void *correrHiloMetricas(void *args);
+void reiniciarMetricas(void);
+void agregarMemoriaMetricas(int num_memoria);
+void imprimirMetricas(bool enConsola);
 
 #endif /* KERNEL_H_ */

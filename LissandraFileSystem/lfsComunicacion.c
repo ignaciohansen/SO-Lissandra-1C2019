@@ -305,11 +305,9 @@ resp_com_t resolver_create(request_t req) {
 		char *tiempoCompactacion = req.args[3];
 		ret_val = comandoCreate(nombre_tabla, consistencia, particiones,tiempoCompactacion);
 		if (ret_val == -2) {
-			return armar_respuesta(RESP_ERROR_TABLA_NO_EXISTE, NULL);
+			return armar_respuesta(RESP_ERROR_TABLA_YA_EXISTE, NULL);
 		} else if (ret_val == -1) {
-
 			return armar_respuesta(RESP_ERROR_METADATA, NULL);
-
 		}
 		return armar_respuesta(RESP_OK, NULL);
 
