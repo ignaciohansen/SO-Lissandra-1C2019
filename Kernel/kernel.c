@@ -34,6 +34,7 @@ int main() {
 	inicializarListasPlanificador();
 	lista_memorias = list_create();
 
+	srand(timestamp()); //Para elegir aleatoriamente las memorias
 	g_lista_memorias_asociadas = list_create();
 	criterioSC.listMemorias = list_create();
 	criterioSHC.listMemorias = list_create();
@@ -311,7 +312,8 @@ void consola() {
 			//comandoJournal(comandoSeparado);
 			request_t request = parser(linea);
 			free(linea);
-			resolverJournal(request);
+			resp_com_t resp = resolverJournalGlobal(request);
+			borrar_respuesta(resp);
 			borrar_request(request);
 			break;
 		case METRICS:
@@ -971,13 +973,21 @@ void comandoAdd(char** comandoSeparado) {
 				"El criterio para asociar es el: %s,corresponde al valor: %d",
 				comandoSeparado[4], criterioInt);
 
-		if (agregarMemoriaCriterio(resultado, criterioInt) > 0) {
-			printf("La memoria %s fue asociada al criterio %s con exito.\n",
-					comandoSeparado[2], comandoSeparado[4]);
-			agregarMemoriaAsociada(resultado);
-		} else {
-			printf("La memoria %s no pudo ser asociada al criterio %s.\n",
-					comandoSeparado[2], comandoSeparado[4]);
+		int resultado_agregar = agregarMemoriaCriterio(resultado, criterioInt);
+		switch(resultado_agregar){
+			case 1:
+				printf("La memoria %s fue asociada al criterio %s con exito.\n",comandoSeparado[2], comandoSeparado[4]);
+				agregarMemoriaAsociada(resultado);
+				break;
+			case 0:
+				printf("La memoria %s ya estaba asociada al criterio %s .\n",comandoSeparado[2], comandoSeparado[4]);
+				break;
+			case -1:
+				printf("La memoria %s no pudo ser asociada al criterio %s.\n",	comandoSeparado[2], comandoSeparado[4]);
+				break;
+			case -2:
+				printf("No se agrega la memoria %s al criterio %s porque ya hay una memoria en el.\n",comandoSeparado[2],comandoSeparado[4]);
+				break;
 		}
 		free(resultado);
 
@@ -1253,15 +1263,14 @@ int actualizarMetadataTablas(void) {
 
 	seed_com_t *memoria = elegirMemoria();
 	if (memoria == NULL) {
-		log_error(log_kernel,
-				"[METADATA REFRESH] No tengo memorias para mandar el describe");
+		log_error(log_kernel,"[METADATA REFRESH] No tengo memorias para mandar el describe");
 		return -1;
 	}
 
 	int socket_memoria = conectar_a_memoria(memoria->ip, memoria->puerto);
 	if (socket_memoria == -1) {
-		log_error(log_kernel,
-				"[METADATA REFRESH] Error al conectarse a la memoria para hacer el describe");
+		log_error(log_kernel,"[METADATA REFRESH] Error al conectarse a la memoria para hacer el describe");
+		eliminarMemoriaAsociada(memoria->numMemoria); //esta función también la saca de todos los criterios en los que estuviera
 		return -1;
 	}
 
@@ -1407,7 +1416,7 @@ seed_com_t *elegirMemoria(void) {
 		pthread_mutex_unlock(&lista_memorias_asociadas_mutex);
 		return NULL;
 	}
-	int elegida = 0; //@todo @martin: ver como se elige la memoria
+	int elegida = numMemoriaRandom(list_size(g_lista_memorias_asociadas));//0; //@todo @martin: ver como se elige la memoria
 
 	seed_com_t *aux = list_get(g_lista_memorias_asociadas, elegida);
 	retval = malloc(sizeof(seed_com_t));
@@ -1426,21 +1435,24 @@ seed_com_t *elegirMemoriaCriterio(int num_criterio, uint16_t key)
 	//@todo @martin revisar sincro de esta función
 	seed_com_t *retval = NULL;
 
+	int elegida;
+
 	t_criterios criterio;
 	if (num_criterio == SC) {
 		criterio = criterioSC;
+		elegida = 0;
 	} else if (num_criterio == SHC) {
 		criterio = criterioSHC;
+		elegida = numMemoriaHash(key);
 	} else {
 		criterio = criterioEC;
+		elegida = numMemoriaRandom(list_size(criterio.listMemorias));
 	}
 
 	t_list *memorias_criterio = criterio.listMemorias;
 
 	if (list_size(memorias_criterio) == 0)
 		return NULL;
-
-	int elegida = 0; //@todo @martin: ver como se elige la memoria
 
 	seed_com_t *aux = list_get(memorias_criterio, elegida);
 
@@ -1449,7 +1461,51 @@ seed_com_t *elegirMemoriaCriterio(int num_criterio, uint16_t key)
 	strcpy(retval->puerto, aux->puerto);
 	retval->numMemoria = aux->numMemoria;
 
+	log_info(log_kernel, "[ELIGIENDO MEMORIA] La memoria elegida es la %d",retval->numMemoria);
+
 	return retval;
+}
+
+int numMemoriaRandom(int cantidadMemorias)
+{
+	return (int) random()%cantidadMemorias;
+}
+
+int numMemoriaHash(uint16_t key)
+{
+	//@todo @martin revisar sincro
+	if(list_size(criterioSHC.listMemorias)==0){
+		return -1;
+	}
+	log_info(log_kernel,"[SHC] KEY %d, cantidad memorias %d",key,list_size(criterioSHC.listMemorias));
+	return (key % list_size(criterioSHC.listMemorias));
+}
+
+int vaciarMemoriasSHC(void)
+{
+	//@todo @martin revisar sincro
+	log_info(log_kernel, "[SHC] Se va a mandar Journal a todas las memorias asociadas al criterio");
+	t_list *copiaSHC = list_duplicate(criterioSHC.listMemorias);
+	request_t request = parser("JOURNAL");
+	resp_com_t resp = resolverJournal(request,copiaSHC);
+	borrar_respuesta(resp);
+	list_destroy(copiaSHC); //@martin @revisar tengo que destruir los elementos?
+	log_info(log_kernel, "[SHC] Se mando Journal a todas las memorias asociadas al criterio");
+	return 1;
+}
+
+bool estaMemoriaEnCriterio(int numMemoria, t_list *lista)
+{
+	//@todo @martin revisar sincro de esta función
+	bool encontrada = false;
+	for(int i=0; i<list_size(lista); i++){
+		seed_com_t *aux = list_get(lista, i);
+		if(aux->numMemoria == numMemoria){
+			encontrada = true;
+			break;
+		}
+	}
+	return encontrada;
 }
 
 int agregarMemoriaCriterio(seed_com_t *memoria, int num_criterio) {
@@ -1457,6 +1513,10 @@ int agregarMemoriaCriterio(seed_com_t *memoria, int num_criterio) {
 
 	t_criterios criterio;
 	if (num_criterio == SC) {
+		if(list_size(criterioSC.listMemorias)>0){
+			log_warning(log_kernel, "[ADD] No se puede asociar mas de una memoria al criterio SC");
+			return -2;
+		}
 		criterio = criterioSC;
 	} else if (num_criterio == SHC) {
 		criterio = criterioSHC;
@@ -1469,6 +1529,15 @@ int agregarMemoriaCriterio(seed_com_t *memoria, int num_criterio) {
 	}
 
 	t_list *memorias_criterio = criterio.listMemorias;
+	if(estaMemoriaEnCriterio(memoria->numMemoria,memorias_criterio))
+	{
+		log_info(log_kernel, "La memoria %d ya estaba asociada al criterio %s",memoria->numMemoria,criterios[num_criterio]);
+		return 0;
+	}
+	if(num_criterio == SHC){
+		log_info(log_kernel, "[ADD] Se manda journal a todas las memorias asociadas a este criterio");
+		vaciarMemoriasSHC();
+	}
 
 	seed_com_t *copia = malloc(sizeof(seed_com_t));
 	strcpy(copia->ip, memoria->ip);
@@ -1478,8 +1547,7 @@ int agregarMemoriaCriterio(seed_com_t *memoria, int num_criterio) {
 	list_add(memorias_criterio, copia);
 	//NO HACER UN FREE DE 'copia' EN ESTA FUNCIÓN, SINO ROMPE
 
-	log_info(log_kernel, "[ADD] Memoria %d agregada al criterio %d",
-			copia->numMemoria, num_criterio);
+	log_info(log_kernel, "[ADD] Memoria %d agregada al criterio %d",copia->numMemoria, num_criterio);
 
 	return 1;
 }
@@ -1535,13 +1603,24 @@ int eliminarMemoriaAsociada(int numMemoria) {
 		}
 	}
 	pthread_mutex_unlock(&lista_memorias_asociadas_mutex);
+	log_info(log_kernel, "[BAJA MEMORIA] Memoria %d eliminada de las memorias asociadas",numMemoria);
 	//Si estaba en algún criterio, también la saco
-	eliminarMemoriaCriterio(numMemoria, criterioEC.listMemorias);
-	eliminarMemoriaCriterio(numMemoria, criterioSC.listMemorias);
-	eliminarMemoriaCriterio(numMemoria, criterioSHC.listMemorias);
-	/*@martin: revisar si :
+	if(eliminarMemoriaCriterio(numMemoria, criterioEC.listMemorias) > 0){
+		log_info(log_kernel,"[BAJA MEMORIA] Memoria %d eliminada del criterio EC",numMemoria);
+		log_info(log_kernel,"[BAJA MEMORIA] El criterio EC ahora tiene %d memorias",list_size(criterioEC.listMemorias));
+	}
+	if(eliminarMemoriaCriterio(numMemoria, criterioSC.listMemorias) > 0){
+		log_info(log_kernel,"[BAJA MEMORIA] Memoria %d eliminada del criterio SC",numMemoria);
+		log_info(log_kernel,"[BAJA MEMORIA] No se podran resolver pedidos SC hasta agregar otra memoria a este criterio",numMemoria);
+	}
+	if(eliminarMemoriaCriterio(numMemoria, criterioSHC.listMemorias) > 0){
+		log_info(log_kernel,"[BAJA MEMORIA] Memoria %d eliminada del criterio SHC",numMemoria);
+		vaciarMemoriasSHC();
+		log_info(log_kernel,"[BAJA MEMORIA] Se mendo journal a todas las memorias que quedan en el criterio",numMemoria);
+	}
+	/*@martin: revisar si : @hecho
 	 * 1) estaba en el criterio SHC y hay que actualizar la logica (mandar journal, cambiar hash, etc)
-	 * 2) era la memoria de HC y hay que informarlo
+	 * 2) era la memoria de SC y hay que informarlo
 	 */
 	return cont;
 }
@@ -1555,12 +1634,15 @@ int eliminarMemoriaCriterio(int numMemoria, t_list *lista_memorias)
 		seed_com_t *aux = list_get(lista_memorias,i);
 		if(aux->numMemoria == numMemoria){
 			list_remove(lista_memorias,i);
-			i--; //Ahora la lista tiene un elemento menos
 			free(aux);
-			//No hago el break porque la memoria puede estar asociada a más de un criterio y aparecer duplicada en esta lista
 			cont++; //Para saber si estaba asociada o no
+			break;
+			//Cambié la función de agregar para que la memoria no esté duplicada nunca
+//			i--; //Ahora la lista tiene un elemento menos
+			//No hago el break porque la memoria puede estar asociada a más de un criterio y aparecer duplicada en esta lista
 		}
 	}
+//	log_info(log_kernel, "[BAJA MEMORIA] La memoria %d estaba en el criterio %d veces",numMemoria,cont);
 	return cont;
 }
 
@@ -1590,7 +1672,7 @@ resp_com_t resolverPedido(char *linea)
 			resp = resolverDrop(request);
 			break;
 		case JOURNAL_PARSER:
-			resp = resolverJournal(request);
+			resp = resolverJournalGlobal(request);
 			break;
 		//Pienso la función para resolver los comandos planificables y desde la función ejecutar
 		/*case ADD:
@@ -1801,7 +1883,17 @@ resp_com_t resolverDrop(request_t request)
 	return resp;
 }
 
-resp_com_t resolverJournal(request_t request)
+resp_com_t resolverJournalGlobal(request_t request)
+{
+	pthread_mutex_lock(&lista_memorias_asociadas_mutex);
+	t_list *copia = list_duplicate(g_lista_memorias_asociadas);
+	pthread_mutex_unlock(&lista_memorias_asociadas_mutex);
+	resp_com_t resp = resolverJournal(request, copia);
+	list_destroy(copia); //@martin @revisar tengo que destruir los elementos?
+	return resp;
+}
+
+resp_com_t resolverJournal(request_t request, t_list *lista_memorias)
 {
 	//@martin: siempre se manda a todas las memorias asociadas?
 	// JOURNAL
@@ -1812,14 +1904,14 @@ resp_com_t resolverJournal(request_t request)
 	seed_com_t *datos_memoria;
 	int cont = 0;
 
-	pthread_mutex_lock(&lista_memorias_asociadas_mutex);
+//	pthread_mutex_lock(&lista_memorias_asociadas_mutex);
+//
+//	t_list *copia_memorias = list_duplicate(g_lista_memorias_asociadas);
+//
+//	pthread_mutex_unlock(&lista_memorias_asociadas_mutex);
 
-	t_list *copia_memorias = list_duplicate(g_lista_memorias_asociadas);
-
-	pthread_mutex_unlock(&lista_memorias_asociadas_mutex);
-
-	for(int i = 0; i<list_size(copia_memorias);i++){
-		datos_memoria = list_get(copia_memorias,i);
+	for(int i = 0; i<list_size(lista_memorias);i++){
+		datos_memoria = list_get(lista_memorias,i);
 		log_info(log_kernel,"[JOURNAL] Enviando journal a memoria %d",datos_memoria->numMemoria);
 		int socket_memoria = conectar_a_memoria(datos_memoria->ip,datos_memoria->puerto);
 		if(socket_memoria == -1){
@@ -1840,15 +1932,14 @@ resp_com_t resolverJournal(request_t request)
 		close(socket_memoria);
 	}
 
-	log_info(log_kernel, "[JOURNAL] Journal resuelto correctamente por %d memorias del total de %d", cont, list_size(copia_memorias));
-
-	list_destroy_and_destroy_elements(copia_memorias,free);
+	log_info(log_kernel, "[JOURNAL] Journal resuelto correctamente por %d memorias del total de %d", cont, list_size(lista_memorias));
 
 	return armar_respuesta(RESP_OK, NULL);
 }
 
 resp_com_t enviar_recibir(int socket,char *req_str)
 {
+
 	req_com_t a_enviar;
 	a_enviar.tam = strlen(req_str)+1;
 	a_enviar.str = malloc(a_enviar.tam);
@@ -1886,4 +1977,89 @@ resp_com_t enviar_recibir(int socket,char *req_str)
 void loggearEjecucion(int nivel, int pid, char* linea)
 {
 	fprintf(fp_trace_ejecucion,"\n<NIVEL %d><PID: %d>: %s",nivel,pid,linea);
+}
+
+/* METRICAS */
+
+void inicializarMetricas(void)
+{
+	g_metricas.operaciones_memorias = list_create();
+	g_metricas.operaciones_totales = 0;
+	g_metricas.ultima_actualiz = timestamp();
+	for(int i=0; i<3; i++){
+		g_metricas.criterio[i].cant_insert = 0;
+		g_metricas.criterio[i].cant_select = 0;
+		g_metricas.criterio[i].tiempo_insert = 0;
+		g_metricas.criterio[i].tiempo_select = 0;
+	}
+}
+
+void *correrHiloMetricas(void *args)
+{
+	inicializarMetricas();
+	while(1){
+		usleep(30000);
+		reiniciarMetricas();
+		imprimirMetricas(false);
+	}
+}
+
+void reiniciarMetricas(void)
+{
+	pthread_mutex_lock(&mutex_metricas);
+	g_metricas.ultima_actualiz = timestamp();
+	for(int i=0; i<3; i++){
+		g_metricas.criterio[i].cant_insert = 0;
+		g_metricas.criterio[i].cant_select = 0;
+		g_metricas.criterio[i].tiempo_insert = 0;
+		g_metricas.criterio[i].tiempo_select = 0;
+	}
+	t_metricas_memoria *aux;
+	for(int i=0;i<list_size(g_metricas.operaciones_memorias);i++){
+		aux = list_get(g_metricas.operaciones_memorias,i);
+		aux->operaciones = 0;
+	}
+	g_metricas.operaciones_totales = 0;
+	pthread_mutex_unlock(&mutex_metricas);
+}
+
+void agregarMemoriaMetricas(int num_memoria)
+{
+	t_metricas_memoria *nueva = malloc(sizeof(t_metricas_memoria));
+	nueva->num_memoria = num_memoria;
+	nueva->operaciones = 0;
+	pthread_mutex_lock(&mutex_metricas);
+	list_add(g_metricas.operaciones_memorias,nueva);
+	pthread_mutex_unlock(&mutex_metricas);
+}
+
+void sacarMemoriaMetricas(int num_memoria)
+{
+	t_metricas_memoria *aux;
+	pthread_mutex_lock(&mutex_metricas);
+	for(int i=0; i<list_size(g_metricas.operaciones_memorias);i++){
+		aux = list_get(g_metricas.operaciones_memorias,i);
+		if(aux->num_memoria == num_memoria){
+			list_remove(g_metricas.operaciones_memorias,i);
+			free(aux);
+			break;
+		}
+	}
+	pthread_mutex_unlock(&mutex_metricas);
+}
+
+void contar_insert(int num_memoria, int criterio, uint64_t duracion)
+{
+
+}
+
+void contar_select(int num_memoria, int criterio, uint64_t duracion)
+{
+
+}
+
+
+void imprimirMetricas(bool enConsola)
+{
+
 }
