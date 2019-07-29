@@ -19,11 +19,12 @@ FILE *fp_trace_ejecucion;
 
 int main() {
 
-	fp_trace_ejecucion = fopen("../Log/traceEjecucion.txt","w"); //Para revisar si estamos haciendo bien la planificacion
+	fp_trace_ejecucion = fopen("../Log/traceEjecucion.txt", "w"); //Para revisar si estamos haciendo bien la planificacion
 
 	log_kernel = archivoLogCrear(LOG_PATH, "Proceso Kernel");
 
-	log_info(log_kernel,"Ya creado el Log, continuamos cargando la estructura de configuracion, llamando a la funcion.");
+	log_info(log_kernel,
+			"Ya creado el Log, continuamos cargando la estructura de configuracion, llamando a la funcion.");
 
 	cargarConfiguracion();
 
@@ -59,14 +60,16 @@ int main() {
 
 	gossiping_Kernel();
 
-	log_info(log_kernel,"Creamos hilo para actualizar la metadata de las tablas");
+	log_info(log_kernel,
+			"Creamos hilo para actualizar la metadata de las tablas");
 	pthread_t hiloMetadataRefresh;
 	pthread_create(&hiloMetadataRefresh, NULL, (void*) hilo_metadata_refresh,
 	NULL);
 	pthread_detach(hiloMetadataRefresh);
 
 	log_info(log_kernel, "Creamos hilo para Consola.");
-	pthread_t* hilosPlanificador = iniciarHilosMultiprocesamiento(arc_config->multiprocesamiento);
+	pthread_t* hilosPlanificador = iniciarHilosMultiprocesamiento(
+			arc_config->multiprocesamiento);
 
 	pthread_t hiloConsola;
 	pthread_create(&hiloConsola, NULL, (void*) consola, NULL);
@@ -81,15 +84,15 @@ int main() {
 
 }
 
-pthread_t* iniciarHilosMultiprocesamiento(int nivel){
+pthread_t* iniciarHilosMultiprocesamiento(int nivel) {
 
 	pthread_t* hilosPlanificador = malloc(sizeof(pthread_t) * nivel);
 
-	for(int i = 0; i < nivel; i++){
+	for (int i = 0; i < nivel; i++) {
 
 		int *aux_nivel = malloc(sizeof(int));
-		memcpy(aux_nivel,&i,sizeof(int));
-		pthread_create(&hilosPlanificador[i], NULL, (void*) nivelMultiprogramacion, aux_nivel);
+		memcpy(aux_nivel, &i, sizeof(int));
+		pthread_create(&hilosPlanificador[i], NULL,	(void*) nivelMultiprogramacion, aux_nivel);
 
 		pthread_detach(hilosPlanificador[i]);
 
@@ -225,7 +228,8 @@ void cargarConfiguracion() {
 		}
 		if (config_has_property(configFile, "RETARDO_GOSSIPING")) {
 
-			log_info(log_kernel,"Almacenando el valor del Retardo de Gossiping para el Kernel");
+			log_info(log_kernel,
+					"Almacenando el valor del Retardo de Gossiping para el Kernel");
 
 			arc_config->retardo_gossiping = config_get_int_value(configFile,
 					"RETARDO_GOSSIPING");
@@ -282,7 +286,7 @@ void consola() {
 			comandoSeparado = string_split(linea, separator);
 		}
 
-		if (!strncmp(linea, "SALIR", 4) && !strcmp(linea,"JOURNAL")) {
+		if (!strncmp(linea, "SALIR", 4) && !strcmp(linea, "JOURNAL")) {
 			log_info(log_kernel, "Viene el comando en la cadena: %s",
 					comandoSeparado[0]);
 			free(linea);
@@ -454,8 +458,8 @@ t_pcb* crearPcb(char* linea) {
 		pcbProceso->estado = 0; //Estado en la cola new porque recien se crea
 		pcbProceso->progamCounter = 0;
 		pcbProceso->archivo = fopen(comandoSeparado[1], "r");
-		log_info(log_kernel,"EN PCB: %s",comandoSeparado[1]);
-		log_info(log_kernel,"EN PCB: %p",pcbProceso->archivo);
+		log_info(log_kernel, "EN PCB: %s", comandoSeparado[1]);
+		log_info(log_kernel, "EN PCB: %p", pcbProceso->archivo);
 
 	}
 		break;
@@ -529,13 +533,14 @@ int rafagaComandoRun(char* path) {
 void nivelMultiprogramacion(int* este_nivel) {
 
 	int nivel = *este_nivel;
-	log_info(log_kernel,"Entrando a nivel %d de multiprogramacion",*este_nivel);
+	log_info(log_kernel, "Entrando a nivel %d de multiprogramacion",
+			*este_nivel);
 	free(este_nivel);
 
 	while (1) {
 		t_pcb* pcb = planificarCortoPlazo();
-		log_info(log_kernel,"Ejecutando el nivel: %d",nivel);
-		ejecutar(pcb, arc_config->quantum,nivel);
+		log_info(log_kernel, "Ejecutando el nivel: %d", nivel);
+		ejecutar(pcb, arc_config->quantum, nivel);
 	}
 }
 
@@ -549,14 +554,15 @@ void planificadorLargoPlazo(char* linea) {
 
 		printf("Hubo un error al crear las estructuras administrativas");
 
-		log_error(log_kernel,"Hubo un error al crear las estructuras administrativas");
+		log_error(log_kernel,
+				"Hubo un error al crear las estructuras administrativas");
 
 		return;
 	}
 
 	agregarAListo(pcbProceso);
 
-	log_info(log_kernel,"Luego de hacer post al semaforo Planificador");
+	log_info(log_kernel, "Luego de hacer post al semaforo Planificador");
 }
 
 t_pcb* planificarCortoPlazo() {
@@ -579,18 +585,17 @@ void agregarANuevo(char* linea) {
 	log_info(log_kernel,
 			"Se desbloqueo la cola de nuevos y se agrego la linea a la cola de nuevos");
 
-	log_info(log_kernel,"[COLA NUEVOS] Size nuevo: %d",list_size(colaNuevos));
+	log_info(log_kernel, "[COLA NUEVOS] Size nuevo: %d", list_size(colaNuevos));
 
 }
 
-
-
 void agregarAListo(t_pcb* pcbParaAgregar) {
 
-	if(pcbParaAgregar->estado == nuevo){
+	if (pcbParaAgregar->estado == nuevo) {
 		log_info(log_kernel, "Sacamos el elemento de la cola de nuevos");
 
 		mutexBloquear(&mutexColaNuevos);
+		pcbParaAgregar->estado = listo;
 
 		list_remove(colaNuevos, 0);
 
@@ -598,15 +603,18 @@ void agregarAListo(t_pcb* pcbParaAgregar) {
 
 	}
 
-	log_info(log_kernel,"Bloqueamos Mutex para poder insertar el elemento en la cola de listos");
+	log_info(log_kernel,
+			"Bloqueamos Mutex para poder insertar el elemento en la cola de listos");
 
 	mutexBloquear(&mutexColaListos);
 	pcbParaAgregar->estado = listo;
 	list_add(colaListos, pcbParaAgregar);
 
-	for(int i = 0;i<list_size(colaListos);i++){
-		t_pcb *aux = list_get(colaListos,i);
-		log_info(log_kernel, "[DEBUG2] En la posicion %d de la cola de listos esta el PID: %d",i,aux->pid);
+	for (int i = 0; i < list_size(colaListos); i++) {
+		t_pcb *aux = list_get(colaListos, i);
+		log_info(log_kernel,
+				"[DEBUG2] En la posicion %d de la cola de listos esta el PID: %d",
+				i, aux->pid);
 	}
 
 	mutexDesbloquear(&mutexColaListos);
@@ -615,27 +623,30 @@ void agregarAListo(t_pcb* pcbParaAgregar) {
 			"Desbloqueamos el mutex y agregamos el PCB a la cola de listos.");
 
 	log_info(log_kernel, "Salimos de la funcion AgregarAListo");
-	log_info(log_kernel,"[COLA LISTO] Size Listo: %d",list_size(colaListos));
+	log_info(log_kernel, "[COLA LISTO] Size Listo: %d", list_size(colaListos));
 
 	sem_post(&sem_planificador);
 
 }
 
-void agregarAEjecutando(t_pcb* pcb){
+void agregarAEjecutando(t_pcb* pcb) {
 
 	mutexBloquear(&mutexColaEjecucion);
 	list_add(colaEjecucion, pcb);
+	pcb->estado = ejecucion;
 	mutexDesbloquear(&mutexColaEjecucion);
-	log_info(log_kernel,"[COLA EJECUTAR] Size Ejecucion: %d",list_size(colaEjecucion));
+	log_info(log_kernel, "[COLA EJECUTAR] Size Ejecucion: %d",
+			list_size(colaEjecucion));
 }
 
-t_pcb* obtenerColaListos(void){
+t_pcb* obtenerColaListos(void) {
 
 	t_pcb* pcb = malloc(sizeof(t_pcb));
 	mutexBloquear(&mutexColaListos);
 	pcb = list_remove(colaListos, 0);
 	mutexDesbloquear(&mutexColaListos);
-	log_info(log_kernel,"[DEBUG] El que voy a ejecutar es el PID: %d",pcb->pid);
+	log_info(log_kernel, "[DEBUG] El que voy a ejecutar es el PID: %d",
+			pcb->pid);
 	return pcb;
 }
 
@@ -662,18 +673,18 @@ t_pcb* crearEstructurasAdministrativas(char* linea) {
 	return proceso;
 }
 
-
-
-
 void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 
 	//semaforoWait(&multiprocesamiento);
-	log_info(log_kernel,"[EJECUTAR] Entrando a ejecutar rafaga de PID: %d",pcb->pid);
+	log_info(log_kernel, "[EJECUTAR] Entrando a ejecutar rafaga de PID: %d",
+			pcb->pid);
 
-	if (pcb->comando == RUN) {
+	if (pcb->comando == RUN && pcb->estado == ejecucion) {
 
 		char* bufferRun = malloc(100);
 		char* bufferRun2 = malloc(100);
+
+		//KEY INexistente
 
 		//Rafaga restante del PCB sea mayor o igual que el Quantum
 		if ((pcb->rafaga - pcb->progamCounter) >= quantum) {
@@ -682,9 +693,8 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 
 				log_info(log_kernel, "Vuelta del FOR: %d", i);
 
-				log_info(log_kernel, "Reservé memoria para bufferRun");
-				log_info(log_kernel,"%d",pcb->comando);
-				log_info(log_kernel,"%p",pcb->archivo);
+				log_info(log_kernel, "%d", pcb->comando);
+				log_info(log_kernel, "%p", pcb->archivo);
 
 				bufferRun2 = fgets(bufferRun, 100, pcb->archivo);
 
@@ -692,26 +702,34 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 
 				resp_com_t respuesta = resolverPedido(bufferRun2);
 				loggearEjecucion(nivel, pcb->pid, bufferRun2);
-				//@martin @lorenzo aca habria que revisar si se produjo un error grave y abortar la ejecucion del script
 
-				borrar_respuesta(respuesta);
-
-				log_info(log_kernel,"Por llamar a aplicar Retardo");
-				aplicarRetardo();
-
+				pcb->tipoRespuesta = respuesta.tipo;
 				pcb->progamCounter++;
+				borrar_respuesta(respuesta);
+				if(pcb->tipoRespuesta != RESP_OK){
+
+					break;
+
+				}
+
+				log_info(log_kernel, "Por llamar a aplicar Retardo");
+				aplicarRetardo();
 
 			}
 
-			if(pcb->rafaga > pcb->progamCounter){
+			if (pcb->rafaga > pcb->progamCounter&& pcb->tipoRespuesta == RESP_OK) {
 
 				sacarDeColaEjecucion(pcb);
 				agregarAListo(pcb);
 
+			} else {
+
+				log_info(log_kernel,"Entro para exit porque ocurrio el error %d",pcb->tipoRespuesta);
+				agregarAExit(pcb);
 			}
 
-		}//Aca termina el si la rafaga restante del proceso (asociado al comando RUN) es mayor que el QUANTUM
-		else {
+		} //Aca termina el si la rafaga restante del proceso (asociado al comando RUN) es mayor que el QUANTUM
+		else if (pcb->estado == ejecucion) {
 
 			log_info(log_kernel,"===>Seccion de Quantum mayor que rafaga restante del proceso");
 
@@ -720,7 +738,6 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 			log_info(log_kernel, "===>Rafaga restante: %d", rafagaRestante);
 
 			for (int i = 1; rafagaRestante >= i; i++) {
-				usleep(1000);
 
 				log_info(log_kernel, "Vuelta del FOR: %d", i);
 
@@ -731,35 +748,52 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 				resp_com_t respuesta = resolverPedido(bufferRun2);
 				loggearEjecucion(nivel, pcb->pid, bufferRun2);
 				//@martin @lorenzo aca habria que revisar si se produjo un error grave y abortar la ejecucion del script
+				pcb->tipoRespuesta = respuesta.tipo;
+
 				borrar_respuesta(respuesta);
 
-				log_info(log_kernel,"Por llamar a aplicar Retardo");
-				aplicarRetardo();
+				log_info(log_kernel, "Por llamar a aplicar Retardo");
 
 				pcb->progamCounter++;
-			}
 
+				if (pcb->tipoRespuesta != RESP_OK) {
+
+					log_info(log_kernel,"Entro para exit porque ocurrio el error %d",pcb->tipoRespuesta);
+					agregarAExit(pcb);
+					break;
+
+				}
+
+			}
 
 		}
 
-	}//Hasta aca si el comando es RUN
+	} //Hasta aca si el comando es RUN
 
-	//Si es otro:
-	else{
+	//Si es otro comando:
+	else if (pcb->estado == ejecucion) {
 		resp_com_t respuesta = resolverPedido(pcb->linea);
 		loggearEjecucion(nivel, pcb->pid, pcb->linea);
 		//@martin @lorenzo aca habria que revisar si se produjo un error grave y abortar la ejecucion del script
+		pcb->tipoRespuesta = respuesta.tipo;
+
 		borrar_respuesta(respuesta);
 
-		log_info(log_kernel,"Por llamar a aplicar Retardo");
+		log_info(log_kernel, "Por llamar a aplicar Retardo");
 		aplicarRetardo();
 
 		pcb->progamCounter++;
+		if (pcb->tipoRespuesta != RESP_OK) {
+
+			log_info(log_kernel, "Entro para exit porque ocurrio el error %d", pcb->tipoRespuesta);
+			agregarAExit(pcb);
+
+		}
 	}
 
-	if (pcb->progamCounter == pcb->rafaga) {
+	if (pcb->progamCounter == pcb->rafaga && pcb->estado == ejecucion) {
 
-		log_info(log_kernel,"Entro para exit");
+		log_info(log_kernel, "Entro para exit");
 		agregarAExit(pcb);
 	}
 
@@ -767,58 +801,77 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 
 void agregarAExit(t_pcb* pcb) {
 
-	log_info(log_kernel,"[COLA EXIT] Size Exit antes: %d",list_size(colaExit));
+	log_info(log_kernel, "[COLA EXIT] Size Exit antes: %d",	list_size(colaExit));
+
 	int resultado = sacarDeColaEjecucion(pcb);
 
-	if(pcb->comando == RUN){
+	if (pcb->comando == RUN) {
 
-		log_info(log_kernel,"Antes de cerrar archivo");
-		log_info(log_kernel,"%p",pcb->archivo);
+		log_info(log_kernel, "Antes de cerrar archivo");
+		log_info(log_kernel, "%p", pcb->archivo);
 
 		fclose(pcb->archivo);
 
 	}
 
-	log_info(log_kernel,"Resultado de sacar comando de ejecucion: %d",resultado);
-	if(resultado >= 0){
+	log_info(log_kernel, "Resultado de sacar comando de ejecucion: %d",	resultado);
+
+	if (resultado >= 0) {
 
 		mutexBloquear(&mutexColaExit);
+		pcb->estado = exiT;
 		list_add(colaExit, pcb);
-		printf("El comando: %s ",pcb->linea);
-		puts("termino con exito.");
-		log_info(log_kernel,"El comando: %s termino con exito. ",pcb->linea);
+
 		mutexDesbloquear(&mutexColaExit);
-		log_info(log_kernel,"[COLA EXIT]Size Exit despues: %d",list_size(colaExit));
+
+		log_info(log_kernel, "[COLA EXIT]Size Exit despues: %d",list_size(colaExit));
+
+		if(pcb->tipoRespuesta == RESP_OK){
+
+			printf("El comando: %s ", pcb->linea);
+			puts("termino con exito.");
+			log_info(log_kernel, "El comando: %s termino con exito. ", pcb->linea);
+
+		}else{
+
+			printf("El comando: %s ", pcb->linea);
+			puts("finalizo antes por error en la linea ");
+			printf("%d",pcb->progamCounter);
+			puts("");
+			log_info(log_kernel, "El comando: %s termino con error, en la linea %d. Error de TIPO: %d", pcb->linea,pcb->progamCounter,pcb->tipoRespuesta);
+
+		}
 	}
 }
 
-int sacarDeColaEjecucion(t_pcb* pcb){
+int sacarDeColaEjecucion(t_pcb* pcb) {
 
 	int posicion = buscarPcbEnColaEjecucion(pcb);
 
-	if(posicion >= 0){
+	if (posicion >= 0) {
 
 		mutexBloquear(&mutexColaEjecucion);
-		log_info(log_kernel,"Por sacar de ejecucion");
-		list_remove(colaEjecucion,posicion);
+		log_info(log_kernel, "Por sacar de ejecucion");
+		list_remove(colaEjecucion, posicion);
 
 		mutexDesbloquear(&mutexColaEjecucion);
 	}
 
-	log_info(log_kernel,"[COLA EJECUCION]Size Ejecucion (s): %d",list_size(colaEjecucion));
+	log_info(log_kernel, "[COLA EJECUCION]Size Ejecucion (s): %d",
+			list_size(colaEjecucion));
 
 	return posicion;
 }
 
-int buscarPcbEnColaEjecucion(t_pcb* pcb){
+int buscarPcbEnColaEjecucion(t_pcb* pcb) {
 
 	//@martin @lorenzo no va un mutex aca?
 	int pos = -1;
 
 	int tamanio = list_size(colaEjecucion);
-	for(int i = 0; i <= tamanio ;i++){
-		t_pcb* aux = list_get(colaEjecucion,i);
-		if(aux->pid == pcb->pid){
+	for (int i = 0; i <= tamanio; i++) {
+		t_pcb* aux = list_get(colaEjecucion, i);
+		if (aux->pid == pcb->pid) {
 			pos = i;
 			break;
 		}
@@ -826,26 +879,28 @@ int buscarPcbEnColaEjecucion(t_pcb* pcb){
 
 	/*for(int i = 0; i <= tamanio ;i++){
 
-		if(list_get(colaEjecucion,i) == pcb){
+	 if(list_get(colaEjecucion,i) == pcb){
 
-			pos = i;
-		}
-	}*/
+	 pos = i;
+	 }
+	 }*/
 
 	return pos;
 }
 
-void aplicarRetardo(void){
+void aplicarRetardo(void) {
 
-	log_info(log_kernel,"[KERNEL | aplicarRetardo] Por ejecutar instruccion sleep de: %d",arc_config->sleep_ejecucion);
-	usleep(arc_config->sleep_ejecucion*1000); //usleep recibe microsegundos
+	log_info(log_kernel,"[KERNEL | aplicarRetardo] Por ejecutar instruccion sleep de: %d",	arc_config->sleep_ejecucion);
+
+	usleep(arc_config->sleep_ejecucion * 1000); //usleep recibe microsegundos
+
 	log_info(log_kernel,"[KERNEL | aplicarRetardo] Luego de instruccion sleep");
 }
 
 void gossiping_Kernel() {
 
-
-	inicializar_estructuras_gossiping(log_kernel, arc_config->retardo_gossiping);
+	inicializar_estructuras_gossiping(log_kernel,
+			arc_config->retardo_gossiping);
 
 	char auxPuerto[LARGO_PUERTO];
 
@@ -919,7 +974,8 @@ void actualizarMemoriasDisponibles() {
 seed_com_t* buscarMemoria(int numMemoria) {
 	seed_com_t *memoria_buscada = NULL;
 	int iMem = -1;
-	log_info(log_kernel, "[BUSCANDO MEMORIA] Voy a buscar memoria %d", numMemoria);
+	log_info(log_kernel, "[BUSCANDO MEMORIA] Voy a buscar memoria %d",
+			numMemoria);
 	pthread_mutex_lock(&memorias_conocidas_mutex);
 	for (int i = 0; i < memoriasConocidasKernel.cant; i++) {
 		if (memoriasConocidasKernel.seeds[i].numMemoria == numMemoria) {
@@ -989,7 +1045,6 @@ void comandoAdd(char** comandoSeparado) {
 		//log_info(log_kernel, "Llenamos la estructura de criterio/memoria.");
 //		printf("La memoria: %s fue asociada al criterio %s con exito.\n",
 //				comandoSeparado[2], comandoSeparado[4]);
-
 	} else {
 
 		printf("No se encontro la memoria.\n");
@@ -1018,60 +1073,60 @@ int buscarCriterio(char* criterio) {
 	return i;
 }
 /*
-void comandoJournal(char** comandoSeparado) {
+ void comandoJournal(char** comandoSeparado) {
 
-	seed_com_t *aux = malloc(sizeof(seed_com_t));
-	req_com_t req;
-	req.tam = strlen(comandoSeparado[0]);
-	req.str = malloc(req.tam);
+ seed_com_t *aux = malloc(sizeof(seed_com_t));
+ req_com_t req;
+ req.tam = strlen(comandoSeparado[0]);
+ req.str = malloc(req.tam);
 
-	log_info(log_kernel, "Tamanio cadena grabada en req:%d", req.tam);
+ log_info(log_kernel, "Tamanio cadena grabada en req:%d", req.tam);
 
-	strcpy(req.str, comandoSeparado[0]);
+ strcpy(req.str, comandoSeparado[0]);
 
-	log_info(log_kernel, "Cadena grabada en req:%s", req.str);
+ log_info(log_kernel, "Cadena grabada en req:%s", req.str);
 
-	for (int i = 0; i < list_size(lista_memorias); i++) {
+ for (int i = 0; i < list_size(lista_memorias); i++) {
 
-		aux = list_get(lista_memorias, i);
+ aux = list_get(lista_memorias, i);
 
-		socket_CMemoria = conectar_a_memoria(aux->ip, aux->puerto);
+ socket_CMemoria = conectar_a_memoria(aux->ip, aux->puerto);
 
-		int respuesta = enviar_request(socket_CMemoria, req);
+ int respuesta = enviar_request(socket_CMemoria, req);
 
-		if (respuesta != 0) {
-			log_info(log_kernel,
-					"Hubo un error al enviar la request a memoria");
-			return;
-		}
+ if (respuesta != 0) {
+ log_info(log_kernel,
+ "Hubo un error al enviar la request a memoria");
+ return;
+ }
 
-		log_info(log_kernel, "No Hubo error al enviar la request a memoria");
+ log_info(log_kernel, "No Hubo error al enviar la request a memoria");
 
-		msg_com_t msg = recibir_mensaje(socket_CMemoria);
+ msg_com_t msg = recibir_mensaje(socket_CMemoria);
 
-		if (msg.tipo == RESPUESTA) {
+ if (msg.tipo == RESPUESTA) {
 
-			log_info(log_kernel, "Llego un mensaje de tipo RESPUESTA");
+ log_info(log_kernel, "Llego un mensaje de tipo RESPUESTA");
 
-			resp_com_t respuesta = procesar_respuesta(msg);
-			if (respuesta.tipo == RESP_OK) {
-				printf("La respuesta fue correcta %d: ", respuesta.tipo);
-				if (respuesta.msg.tam > 0)
-					printf("Respuesta recibida %s: \n", respuesta.msg.str);
-				log_info(log_kernel,
-						"La respuesta fue correcta luego de procesarla");
-			} else {
-				log_info(log_kernel,
-						"La respuesta no fue correcta luego de procesarla");
-			}
+ resp_com_t respuesta = procesar_respuesta(msg);
+ if (respuesta.tipo == RESP_OK) {
+ printf("La respuesta fue correcta %d: ", respuesta.tipo);
+ if (respuesta.msg.tam > 0)
+ printf("Respuesta recibida %s: \n", respuesta.msg.str);
+ log_info(log_kernel,
+ "La respuesta fue correcta luego de procesarla");
+ } else {
+ log_info(log_kernel,
+ "La respuesta no fue correcta luego de procesarla");
+ }
 
-			borrar_respuesta(respuesta);
+ borrar_respuesta(respuesta);
 
-		}
+ }
 
-		free(req.str);
-	}
-}*/
+ free(req.str);
+ }
+ }*/
 
 void comandoMetrics() {
 
@@ -1296,7 +1351,8 @@ int actualizarMetadataTablas(void) {
 		t_list *nuevaListaTablas = procesarDescribe(resp.msg.str);
 		actualizarTablasCriterios(nuevaListaTablas);
 	} else {
-		log_warning(log_kernel,"[METADATA REFRESH] La memoria %d no pudo resolver el describe. Error <%d>",
+		log_warning(log_kernel,
+				"[METADATA REFRESH] La memoria %d no pudo resolver el describe. Error <%d>",
 				memoria->numMemoria, resp.tipo);
 		borrar_respuesta(resp);
 		return -1;
@@ -1367,7 +1423,9 @@ void agregarTablaCriterio(t_tablas *tabla) {
 		g_lista_tablas = list_create();
 	list_add(g_lista_tablas, tabla);
 	pthread_mutex_unlock(&lista_tablas_mutex);
-	log_info(log_kernel, "[TABLAS] Se agregó la tabla %s a la lista de tablas. Criterio: %s", tabla->nombreTabla, criterios[tabla->criterio]);
+	log_info(log_kernel,
+			"[TABLAS] Se agregó la tabla %s a la lista de tablas. Criterio: %s",
+			tabla->nombreTabla, criterios[tabla->criterio]);
 }
 
 int buscarCriterioTabla(char *nombre_tabla) {
@@ -1420,8 +1478,7 @@ seed_com_t *elegirMemoria(void) {
 	return retval;
 }
 
-seed_com_t *elegirMemoriaCriterio(int num_criterio, uint16_t key)
-{
+seed_com_t *elegirMemoriaCriterio(int num_criterio, uint16_t key) {
 
 	//@todo @martin revisar sincro de esta función
 	seed_com_t *retval = NULL;
@@ -1484,16 +1541,15 @@ int agregarMemoriaCriterio(seed_com_t *memoria, int num_criterio) {
 	return 1;
 }
 
-bool estaMemoriaAsociada(int numMemoria)
-{
+bool estaMemoriaAsociada(int numMemoria) {
 	bool encontrada = false;
 	pthread_mutex_lock(&lista_memorias_asociadas_mutex);
-	for(int i=0; i<list_size(g_lista_memorias_asociadas); i++){
-			seed_com_t *aux = list_get(g_lista_memorias_asociadas, i);
-			if(aux->numMemoria == numMemoria){
-				encontrada = true;
-				break;
-			}
+	for (int i = 0; i < list_size(g_lista_memorias_asociadas); i++) {
+		seed_com_t *aux = list_get(g_lista_memorias_asociadas, i);
+		if (aux->numMemoria == numMemoria) {
+			encontrada = true;
+			break;
+		}
 	}
 	pthread_mutex_unlock(&lista_memorias_asociadas_mutex);
 	return encontrada;
@@ -1502,7 +1558,7 @@ bool estaMemoriaAsociada(int numMemoria)
 int agregarMemoriaAsociada(seed_com_t *memoria) {
 	seed_com_t *copia;
 
-	if(!estaMemoriaAsociada(memoria->numMemoria)){
+	if (!estaMemoriaAsociada(memoria->numMemoria)) {
 		copia = malloc(sizeof(seed_com_t));
 		strcpy(copia->ip, memoria->ip);
 		strcpy(copia->puerto, memoria->puerto);
@@ -1510,10 +1566,13 @@ int agregarMemoriaAsociada(seed_com_t *memoria) {
 		pthread_mutex_lock(&lista_memorias_asociadas_mutex);
 		list_add(g_lista_memorias_asociadas, copia);
 		pthread_mutex_unlock(&lista_memorias_asociadas_mutex);
-		log_info(log_kernel,"[AGREGAR MEMORIA] La memoria %d fue agregada a la lista de memorias asociadas",memoria->numMemoria);
-	}
-	else{
-		log_info(log_kernel,"[AGREGAR MEMORIA] La memoria %d ya estaba asociada a algun criterio antes",memoria->numMemoria);
+		log_info(log_kernel,
+				"[AGREGAR MEMORIA] La memoria %d fue agregada a la lista de memorias asociadas",
+				memoria->numMemoria);
+	} else {
+		log_info(log_kernel,
+				"[AGREGAR MEMORIA] La memoria %d ya estaba asociada a algun criterio antes",
+				memoria->numMemoria);
 	}
 
 	return 1;
@@ -1546,15 +1605,13 @@ int eliminarMemoriaAsociada(int numMemoria) {
 	return cont;
 }
 
-
-int eliminarMemoriaCriterio(int numMemoria, t_list *lista_memorias)
-{
+int eliminarMemoriaCriterio(int numMemoria, t_list *lista_memorias) {
 	//@martin: falta sincro
-	int cont=0;
-	for(int i=0;i<list_size(lista_memorias);i++){
-		seed_com_t *aux = list_get(lista_memorias,i);
-		if(aux->numMemoria == numMemoria){
-			list_remove(lista_memorias,i);
+	int cont = 0;
+	for (int i = 0; i < list_size(lista_memorias); i++) {
+		seed_com_t *aux = list_get(lista_memorias, i);
+		if (aux->numMemoria == numMemoria) {
+			list_remove(lista_memorias, i);
 			i--; //Ahora la lista tiene un elemento menos
 			free(aux);
 			//No hago el break porque la memoria puede estar asociada a más de un criterio y aparecer duplicada en esta lista
@@ -1565,206 +1622,236 @@ int eliminarMemoriaCriterio(int numMemoria, t_list *lista_memorias)
 }
 
 //Uso este tipo de respuesta para poder especificar tipo de error, en el caso de que lo haya, y respuesta
-resp_com_t resolverPedido(char *linea)
-{
-	if(linea[strlen(linea)-1]=='\n'){
-		linea[strlen(linea)-1] = '\0';
+resp_com_t resolverPedido(char *linea) {
+	if (linea[strlen(linea) - 1] == '\n') {
+		linea[strlen(linea) - 1] = '\0';
 	}
 	resp_com_t resp;
 	request_t request = parser(linea);
-	log_info(log_kernel, "[REQUEST] Voy a resolver pedido %s",linea);
-	switch(request.command){
-		case SELECT_PARSER:
-			resp = resolverSelect(request);
-			break;
-		case INSERT_PARSER:
-			resp = resolverInsert(request);
-			break;
-		case DESCRIBE_PARSER:
-			resp = resolverDescribe(request);
-			break;
-		case CREATE_PARSER:
-			resp = resolverCreate(request);
-			break;
-		case DROP_PARSER:
-			resp = resolverDrop(request);
-			break;
-		case JOURNAL_PARSER:
-			resp = resolverJournal(request);
-			break;
+	log_info(log_kernel, "[REQUEST] Voy a resolver pedido %s", linea);
+	switch (request.command) {
+	case SELECT_PARSER:
+		resp = resolverSelect(request);
+		break;
+	case INSERT_PARSER:
+		resp = resolverInsert(request);
+		break;
+	case DESCRIBE_PARSER:
+		resp = resolverDescribe(request);
+		break;
+	case CREATE_PARSER:
+		resp = resolverCreate(request);
+		break;
+	case DROP_PARSER:
+		resp = resolverDrop(request);
+		break;
+	case JOURNAL_PARSER:
+		resp = resolverJournal(request);
+		break;
 		//Pienso la función para resolver los comandos planificables y desde la función ejecutar
 		/*case ADD:
-			break;
-		case RUN:
-			break;
-		case METRICS:
-			break;
-		case SALIR:
-			break;*/
-		default:
-			break;
+		 break;
+		 case RUN:
+		 break;
+		 case METRICS:
+		 break;
+		 case SALIR:
+		 break;*/
+	default:
+		break;
 	}
 	borrar_request(request);
-	if(resp.tipo == RESP_OK){
-		log_info(log_kernel, "[REQUEST] Pedido %s resuelto OK",linea);
-		if(resp.msg.str != NULL && resp.msg.tam >0)
-			log_info(log_kernel, "[REQUEST] Respuesta a pedido %s es %s",linea,resp.msg.str);
-	}
-	else{
-		log_error(log_kernel, "[REQUEST] El pedido %s no se pudo resolver. Error <%d>",linea,resp.tipo);
+	if (resp.tipo == RESP_OK) {
+		log_info(log_kernel, "[REQUEST] Pedido %s resuelto OK", linea);
+		if (resp.msg.str != NULL && resp.msg.tam > 0)
+			log_info(log_kernel, "[REQUEST] Respuesta a pedido %s es %s", linea,
+					resp.msg.str);
+	} else {
+		log_error(log_kernel,
+				"[REQUEST] El pedido %s no se pudo resolver. Error <%d>", linea,
+				resp.tipo);
 	}
 	return resp;
 }
 
-resp_com_t resolverSelect(request_t request)
-{
+resp_com_t resolverSelect(request_t request) {
 	//  SELECT  NOMBRE_TABLA    KEY
 	//<command>   args[0]     args[1]
-	if(request.cant_args != 2)
-		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS,NULL);
+	if (request.cant_args != 2)
+		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS, NULL);
 	uint16_t key = atoi(request.args[1]);
 	int criterio = buscarCriterioTabla(request.args[0]);
-	if(criterio==-1){
-		log_error(log_kernel,"[SELECT] No tenemos metadata de la tabla %s, no podemos seguir",request.args[0]);
-		return armar_respuesta(RESP_ERROR_DESCONOZCO_CRITERIO_TABLA,NULL);
+	if (criterio == -1) {
+		log_error(log_kernel,
+				"[SELECT] No tenemos metadata de la tabla %s, no podemos seguir",
+				request.args[0]);
+		return armar_respuesta(RESP_ERROR_DESCONOZCO_CRITERIO_TABLA, NULL);
 	}
-	log_info(log_kernel,"[SELECT] La tabla es de criterio %s",criterios[criterio]);
-	seed_com_t *datos_memoria = elegirMemoriaCriterio(criterio,key);
-	if(datos_memoria == NULL){
-		log_error(log_kernel,"[SELECT] No se encontro una memoria a la que mandar el select");
-		return armar_respuesta(RESP_ERROR_SIN_MEMORIAS_CRITERIO,NULL);
+	log_info(log_kernel, "[SELECT] La tabla es de criterio %s",
+			criterios[criterio]);
+	seed_com_t *datos_memoria = elegirMemoriaCriterio(criterio, key);
+	if (datos_memoria == NULL) {
+		log_error(log_kernel,
+				"[SELECT] No se encontro una memoria a la que mandar el select");
+		return armar_respuesta(RESP_ERROR_SIN_MEMORIAS_CRITERIO, NULL);
 	}
-	log_info(log_kernel,"[SELECT] Memoria elegida: %d",datos_memoria->numMemoria);
-	int socket_memoria = conectar_a_memoria(datos_memoria->ip,datos_memoria->puerto);
-	if(socket_memoria == -1){
-		log_error(log_kernel,"[SELECT] No se pudo establecer conexion con la memoria %d", datos_memoria->numMemoria);
+	log_info(log_kernel, "[SELECT] Memoria elegida: %d",
+			datos_memoria->numMemoria);
+	int socket_memoria = conectar_a_memoria(datos_memoria->ip,
+			datos_memoria->puerto);
+	if (socket_memoria == -1) {
+		log_error(log_kernel,
+				"[SELECT] No se pudo establecer conexion con la memoria %d",
+				datos_memoria->numMemoria);
 		eliminarMemoriaAsociada(datos_memoria->numMemoria); //esta función también la saca de todos los criterios en los que estuviera
-		return armar_respuesta(RESP_ERROR_COMUNICACION,NULL);
+		return armar_respuesta(RESP_ERROR_COMUNICACION, NULL);
 	}
 
-	resp_com_t resp = enviar_recibir(socket_memoria,request.request_str);
+	resp_com_t resp = enviar_recibir(socket_memoria, request.request_str);
 
 	free(datos_memoria);
 	close(socket_memoria);
 	return resp;
 }
 
-resp_com_t resolverInsert(request_t request)
-{
+resp_com_t resolverInsert(request_t request) {
 	//  INSERT  NOMBRE_TABLA   KEY     VALUE  [TIMESTAMP]
 	//<command>   args[0]    args[1]  args[2]   args[3]
-	if(request.cant_args != 3 && request.cant_args != 4)
-		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS,NULL);
+	if (request.cant_args != 3 && request.cant_args != 4)
+		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS, NULL);
 	uint16_t key = atoi(request.args[1]);
 	int criterio = buscarCriterioTabla(request.args[0]);
-	if(criterio==-1){
-		log_error(log_kernel,"[INSERT] No tenemos metadata de la tabla %s, no podemos seguir",request.args[0]);
-		return armar_respuesta(RESP_ERROR_DESCONOZCO_CRITERIO_TABLA,NULL);
+	if (criterio == -1) {
+		log_error(log_kernel,
+				"[INSERT] No tenemos metadata de la tabla %s, no podemos seguir",
+				request.args[0]);
+		return armar_respuesta(RESP_ERROR_DESCONOZCO_CRITERIO_TABLA, NULL);
 	}
-	log_info(log_kernel,"[INSERT] La tabla es de criterio %s",criterios[criterio]);
+	log_info(log_kernel, "[INSERT] La tabla es de criterio %s",
+			criterios[criterio]);
 	seed_com_t *datos_memoria = elegirMemoriaCriterio(criterio, key);
-	if(datos_memoria == NULL){
-		log_error(log_kernel,"[INSERT] No se encontro una memoria a la que mandar el insert");
-		return armar_respuesta(RESP_ERROR_SIN_MEMORIAS_CRITERIO,NULL);
+	if (datos_memoria == NULL) {
+		log_error(log_kernel,
+				"[INSERT] No se encontro una memoria a la que mandar el insert");
+		return armar_respuesta(RESP_ERROR_SIN_MEMORIAS_CRITERIO, NULL);
 	}
-	log_info(log_kernel,"[INSERT] Memoria elegida: %d",datos_memoria->numMemoria);
-	int socket_memoria = conectar_a_memoria(datos_memoria->ip,datos_memoria->puerto);
-	if(socket_memoria == -1){
-		log_error(log_kernel,"[INSERT] No se pudo establecer conexion con la memoria %d", datos_memoria->numMemoria);
+	log_info(log_kernel, "[INSERT] Memoria elegida: %d",
+			datos_memoria->numMemoria);
+	int socket_memoria = conectar_a_memoria(datos_memoria->ip,
+			datos_memoria->puerto);
+	if (socket_memoria == -1) {
+		log_error(log_kernel,
+				"[INSERT] No se pudo establecer conexion con la memoria %d",
+				datos_memoria->numMemoria);
 		eliminarMemoriaAsociada(datos_memoria->numMemoria); //esta función también la saca de todos los criterios en los que estuviera
-		return armar_respuesta(RESP_ERROR_COMUNICACION,NULL);
+		return armar_respuesta(RESP_ERROR_COMUNICACION, NULL);
 	}
 
-	resp_com_t resp = enviar_recibir(socket_memoria,request.request_str);
+	resp_com_t resp = enviar_recibir(socket_memoria, request.request_str);
 
 	free(datos_memoria);
 	close(socket_memoria);
 	return resp;
 }
 
-resp_com_t resolverCreate(request_t request)
-{
+resp_com_t resolverCreate(request_t request) {
 	// CREATE  NOMBRE_TABLA CONSISTENCIA  PARTICIONES  T_COMPACTACION
 	//<command>   args[0]      args[1]      args[2]       args[3]
-	if(request.cant_args != 4)
-		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS,NULL);
+	if (request.cant_args != 4)
+		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS, NULL);
 
 	seed_com_t *datos_memoria = elegirMemoria();
-	if(datos_memoria == NULL){
-		log_error(log_kernel,"[CREATE] No se encontro una memoria a la que mandar el create");
-		return armar_respuesta(RESP_ERROR_SIN_MEMORIAS_ASOCIADAS,NULL);
+	if (datos_memoria == NULL) {
+		log_error(log_kernel,
+				"[CREATE] No se encontro una memoria a la que mandar el create");
+		return armar_respuesta(RESP_ERROR_SIN_MEMORIAS_ASOCIADAS, NULL);
 	}
-	log_info(log_kernel,"[CREATE] Memoria elegida: %d",datos_memoria->numMemoria);
-	int socket_memoria = conectar_a_memoria(datos_memoria->ip,datos_memoria->puerto);
-	if(socket_memoria == -1){
-		log_error(log_kernel,"[CREATE] No se pudo establecer conexion con la memoria %d", datos_memoria->numMemoria);
+	log_info(log_kernel, "[CREATE] Memoria elegida: %d",
+			datos_memoria->numMemoria);
+	int socket_memoria = conectar_a_memoria(datos_memoria->ip,
+			datos_memoria->puerto);
+	if (socket_memoria == -1) {
+		log_error(log_kernel,
+				"[CREATE] No se pudo establecer conexion con la memoria %d",
+				datos_memoria->numMemoria);
 		eliminarMemoriaAsociada(datos_memoria->numMemoria); //esta función también la saca de todos los criterios en los que estuviera
-		return armar_respuesta(RESP_ERROR_COMUNICACION,NULL);
+		return armar_respuesta(RESP_ERROR_COMUNICACION, NULL);
 	}
-	resp_com_t resp = enviar_recibir(socket_memoria,request.request_str);
+	resp_com_t resp = enviar_recibir(socket_memoria, request.request_str);
 
-	if(resp.tipo == RESP_OK){
-		log_info(log_kernel,"[CREATE] El create de la tabla %s se realizo correctamente. Se agrega la metadata de la tabla", request.args[0]);
+	if (resp.tipo == RESP_OK) {
+		log_info(log_kernel,
+				"[CREATE] El create de la tabla %s se realizo correctamente. Se agrega la metadata de la tabla",
+				request.args[0]);
 		//La tabla se pudo crear y tengo que agregar su metadata a la estructura de tablas conocidas
 		t_tablas *nueva_tabla = malloc(sizeof(t_tablas)); //NO HACER FREE ACA, LO HAGO EN OTRA FUNCION
 		nueva_tabla->criterio = buscarCriterio(request.args[1]);
-		nueva_tabla->nombreTabla = malloc(strlen(request.args[0]+1));
+		nueva_tabla->nombreTabla = malloc(strlen(request.args[0] + 1));
 		strcpy(nueva_tabla->nombreTabla, request.args[0]);
 		agregarTablaCriterio(nueva_tabla);
-	}
-	else{
-		log_warning(log_kernel,"[CREATE] El create de la tabla %s no se pudo resolver. Error de tipo <%d>", request.args[0],resp.tipo);
+	} else {
+		log_warning(log_kernel,
+				"[CREATE] El create de la tabla %s no se pudo resolver. Error de tipo <%d>",
+				request.args[0], resp.tipo);
 	}
 	free(datos_memoria);
 	close(socket_memoria);
 	return resp;
 }
 
-resp_com_t resolverDescribe(request_t request)
-{
+resp_com_t resolverDescribe(request_t request) {
 	// DESCRIBE  [NOMBRE_TABLA]*
 	//<command>   	args[0]
 	seed_com_t *datos_memoria;
 	bool describeGlobal;
-	if(request.cant_args > 1){
-		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS,NULL);
-	}else if(request.cant_args == 0){
+	if (request.cant_args > 1) {
+		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS, NULL);
+	} else if (request.cant_args == 0) {
 		describeGlobal = true;
 		datos_memoria = elegirMemoria();
-	}else{
+	} else {
 		describeGlobal = false;
 		datos_memoria = elegirMemoria(); //@martin deberia mandar el describe a una memoria del criterio de la tabla?
 	}
 
-	if(datos_memoria == NULL){
-		log_error(log_kernel,"[DESCRIBE] No se encontro una memoria a la que mandar el pedido");
-		return armar_respuesta(RESP_ERROR_SIN_MEMORIAS_ASOCIADAS,NULL);
+	if (datos_memoria == NULL) {
+		log_error(log_kernel,
+				"[DESCRIBE] No se encontro una memoria a la que mandar el pedido");
+		return armar_respuesta(RESP_ERROR_SIN_MEMORIAS_ASOCIADAS, NULL);
 	}
-	log_info(log_kernel,"[DESCRIBE] Memoria elegida: %d",datos_memoria->numMemoria);
-	int socket_memoria = conectar_a_memoria(datos_memoria->ip,datos_memoria->puerto);
-	if(socket_memoria == -1){
-		log_error(log_kernel,"[DESCRIBE] No se pudo establecer conexion con la memoria %d", datos_memoria->numMemoria);
+	log_info(log_kernel, "[DESCRIBE] Memoria elegida: %d",
+			datos_memoria->numMemoria);
+	int socket_memoria = conectar_a_memoria(datos_memoria->ip,
+			datos_memoria->puerto);
+	if (socket_memoria == -1) {
+		log_error(log_kernel,
+				"[DESCRIBE] No se pudo establecer conexion con la memoria %d",
+				datos_memoria->numMemoria);
 		eliminarMemoriaAsociada(datos_memoria->numMemoria); //esta función también la saca de todos los criterios en los que estuviera
-		return armar_respuesta(RESP_ERROR_COMUNICACION,NULL);
+		return armar_respuesta(RESP_ERROR_COMUNICACION, NULL);
 	}
-	resp_com_t resp = enviar_recibir(socket_memoria,request.request_str);
+	resp_com_t resp = enviar_recibir(socket_memoria, request.request_str);
 
 	if (resp.tipo == RESP_OK && resp.msg.tam > 0) {
-		log_info(log_kernel,"[DESCRIBE] La memoria %d respondió con %s",datos_memoria->numMemoria, resp.msg.str);
+		log_info(log_kernel, "[DESCRIBE] La memoria %d respondió con %s",
+				datos_memoria->numMemoria, resp.msg.str);
 		t_list *nuevaListaTablas = procesarDescribe(resp.msg.str);
-		if(describeGlobal)
+		if (describeGlobal)
 			actualizarTablasCriterios(nuevaListaTablas);
-		else{
-			t_tablas *aux = list_get(nuevaListaTablas,0);
+		else {
+			t_tablas *aux = list_get(nuevaListaTablas, 0);
 			t_tablas *tabla = malloc(sizeof(t_tablas)); //NO HACER FREE
 			tabla->criterio = aux->criterio;
-			tabla->nombreTabla = malloc(strlen(aux->nombreTabla)+1);
-			strcpy(tabla->nombreTabla,aux->nombreTabla);
+			tabla->nombreTabla = malloc(strlen(aux->nombreTabla) + 1);
+			strcpy(tabla->nombreTabla, aux->nombreTabla);
 			agregarTablaCriterio(tabla);
-			list_destroy_and_destroy_elements(nuevaListaTablas,(void *)borrarEntradaListaTablas);
+			list_destroy_and_destroy_elements(nuevaListaTablas,
+					(void *) borrarEntradaListaTablas);
 		}
 	} else {
-		log_warning(log_kernel,"[DESCRIBE] La memoria %d no pudo resolver el describe. Error <%d>",	datos_memoria->numMemoria, resp.tipo);
+		log_warning(log_kernel,
+				"[DESCRIBE] La memoria %d no pudo resolver el describe. Error <%d>",
+				datos_memoria->numMemoria, resp.tipo);
 	}
 	free(datos_memoria);
 	close(socket_memoria);
@@ -1772,27 +1859,31 @@ resp_com_t resolverDescribe(request_t request)
 	return resp;
 }
 
-resp_com_t resolverDrop(request_t request)
-{
+resp_com_t resolverDrop(request_t request) {
 	//  DROP      NOMBRE_TABLA
 	//<command>   	args[0]
 	seed_com_t *datos_memoria;
-	if(request.cant_args != 1){
-		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS,NULL);
+	if (request.cant_args != 1) {
+		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS, NULL);
 	}
 	datos_memoria = elegirMemoria();
-	if(datos_memoria == NULL){
-		log_error(log_kernel,"[DROP] No se encontro una memoria a la que mandar el pedido");
-		return armar_respuesta(RESP_ERROR_SIN_MEMORIAS_ASOCIADAS,NULL);
+	if (datos_memoria == NULL) {
+		log_error(log_kernel,
+				"[DROP] No se encontro una memoria a la que mandar el pedido");
+		return armar_respuesta(RESP_ERROR_SIN_MEMORIAS_ASOCIADAS, NULL);
 	}
-	log_info(log_kernel,"[DROP] Memoria elegida: %d",datos_memoria->numMemoria);
-	int socket_memoria = conectar_a_memoria(datos_memoria->ip,datos_memoria->puerto);
-	if(socket_memoria == -1){
-		log_error(log_kernel,"[DROP] No se pudo establecer conexion con la memoria %d", datos_memoria->numMemoria);
+	log_info(log_kernel, "[DROP] Memoria elegida: %d",
+			datos_memoria->numMemoria);
+	int socket_memoria = conectar_a_memoria(datos_memoria->ip,
+			datos_memoria->puerto);
+	if (socket_memoria == -1) {
+		log_error(log_kernel,
+				"[DROP] No se pudo establecer conexion con la memoria %d",
+				datos_memoria->numMemoria);
 		eliminarMemoriaAsociada(datos_memoria->numMemoria); //esta función también la saca de todos los criterios en los que estuviera
-		return armar_respuesta(RESP_ERROR_COMUNICACION,NULL);
+		return armar_respuesta(RESP_ERROR_COMUNICACION, NULL);
 	}
-	resp_com_t resp = enviar_recibir(socket_memoria,request.request_str);
+	resp_com_t resp = enviar_recibir(socket_memoria, request.request_str);
 
 	//@martin: hace falta borrar la tabla de los criterios?
 	free(datos_memoria);
@@ -1801,13 +1892,12 @@ resp_com_t resolverDrop(request_t request)
 	return resp;
 }
 
-resp_com_t resolverJournal(request_t request)
-{
+resp_com_t resolverJournal(request_t request) {
 	//@martin: siempre se manda a todas las memorias asociadas?
 	// JOURNAL
 	//<command>
-	if(request.cant_args != 0){
-		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS,NULL);
+	if (request.cant_args != 0) {
+		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS, NULL);
 	}
 	seed_com_t *datos_memoria;
 	int cont = 0;
@@ -1818,72 +1908,86 @@ resp_com_t resolverJournal(request_t request)
 
 	pthread_mutex_unlock(&lista_memorias_asociadas_mutex);
 
-	for(int i = 0; i<list_size(copia_memorias);i++){
-		datos_memoria = list_get(copia_memorias,i);
-		log_info(log_kernel,"[JOURNAL] Enviando journal a memoria %d",datos_memoria->numMemoria);
-		int socket_memoria = conectar_a_memoria(datos_memoria->ip,datos_memoria->puerto);
-		if(socket_memoria == -1){
-			log_error(log_kernel,"[JOURNAL] No se pudo establecer conexion con la memoria %d", datos_memoria->numMemoria);
+	for (int i = 0; i < list_size(copia_memorias); i++) {
+		datos_memoria = list_get(copia_memorias, i);
+		log_info(log_kernel, "[JOURNAL] Enviando journal a memoria %d",
+				datos_memoria->numMemoria);
+		int socket_memoria = conectar_a_memoria(datos_memoria->ip,
+				datos_memoria->puerto);
+		if (socket_memoria == -1) {
+			log_error(log_kernel,
+					"[JOURNAL] No se pudo establecer conexion con la memoria %d",
+					datos_memoria->numMemoria);
 			eliminarMemoriaAsociada(datos_memoria->numMemoria); //esta función también la saca de todos los criterios en los que estuviera
 			break;
 		}
-		resp_com_t resp = enviar_recibir(socket_memoria,request.request_str);
+		resp_com_t resp = enviar_recibir(socket_memoria, request.request_str);
 
-		if(resp.tipo == RESP_OK){
-			log_info(log_kernel,"[JOURNAL] La memoria %d resolvio journal con exito",datos_memoria->numMemoria);
+		if (resp.tipo == RESP_OK) {
+			log_info(log_kernel,
+					"[JOURNAL] La memoria %d resolvio journal con exito",
+					datos_memoria->numMemoria);
 			cont++;
-		}
-		else{
-			log_error(log_kernel,"[JOURNAL] La memoria %d no pudo resolver el journal. Error <%d>",datos_memoria->numMemoria,resp.tipo);
+		} else {
+			log_error(log_kernel,
+					"[JOURNAL] La memoria %d no pudo resolver el journal. Error <%d>",
+					datos_memoria->numMemoria, resp.tipo);
 		}
 		borrar_respuesta(resp);
 		close(socket_memoria);
 	}
 
-	log_info(log_kernel, "[JOURNAL] Journal resuelto correctamente por %d memorias del total de %d", cont, list_size(copia_memorias));
+	log_info(log_kernel,
+			"[JOURNAL] Journal resuelto correctamente por %d memorias del total de %d",
+			cont, list_size(copia_memorias));
 
-	list_destroy_and_destroy_elements(copia_memorias,free);
+	list_destroy_and_destroy_elements(copia_memorias, free);
 
 	return armar_respuesta(RESP_OK, NULL);
 }
 
-resp_com_t enviar_recibir(int socket,char *req_str)
-{
+resp_com_t enviar_recibir(int socket, char *req_str) {
 	req_com_t a_enviar;
-	a_enviar.tam = strlen(req_str)+1;
+	a_enviar.tam = strlen(req_str) + 1;
 	a_enviar.str = malloc(a_enviar.tam);
-	strcpy(a_enviar.str,req_str);
-	log_info(log_kernel,"[COMUNICACION] Voy a enviar request: %s",req_str);
-	if(enviar_request(socket,a_enviar)==-1){
-		log_error(log_kernel,"[COMUNICACION] Error al enviar request: %s",req_str);
+	strcpy(a_enviar.str, req_str);
+	log_info(log_kernel, "[COMUNICACION] Voy a enviar request: %s", req_str);
+	if (enviar_request(socket, a_enviar) == -1) {
+		log_error(log_kernel, "[COMUNICACION] Error al enviar request: %s",
+				req_str);
 		borrar_request_com(a_enviar);
-		return armar_respuesta(RESP_ERROR_COMUNICACION,NULL);
+		return armar_respuesta(RESP_ERROR_COMUNICACION, NULL);
 	}
 	borrar_request_com(a_enviar);
 
-	log_info(log_kernel,"[COMUNICACION] Request enviado: %s",req_str);
+	log_info(log_kernel, "[COMUNICACION] Request enviado: %s", req_str);
 
 	msg_com_t msg = recibir_mensaje(socket);
-	if(msg.tipo != RESPUESTA){
-		log_error(log_kernel,"[COMUNICACION] Error al recibir respuesta para el request: %s",req_str);
+	if (msg.tipo != RESPUESTA) {
+		log_error(log_kernel,
+				"[COMUNICACION] Error al recibir respuesta para el request: %s",
+				req_str);
 		borrar_mensaje(msg);
-		return armar_respuesta(RESP_ERROR_COMUNICACION,NULL);
+		return armar_respuesta(RESP_ERROR_COMUNICACION, NULL);
 	}
 	resp_com_t resp = procesar_respuesta(msg);
 	borrar_mensaje(msg);
-	if(resp.tipo == RESP_OK){
-		log_info(log_kernel,"[COMUNICACION] El request <%s> se realizó correctamente",req_str);
-		if(resp.msg.str != NULL && resp.msg.tam > 0){
-			log_info(log_kernel,"[COMUNICACION] La respuesta es <%s>",resp.msg.str);
+	if (resp.tipo == RESP_OK) {
+		log_info(log_kernel,
+				"[COMUNICACION] El request <%s> se realizó correctamente",
+				req_str);
+		if (resp.msg.str != NULL && resp.msg.tam > 0) {
+			log_info(log_kernel, "[COMUNICACION] La respuesta es <%s>",
+					resp.msg.str);
 		}
-	}
-	else{
-		log_error(log_kernel,"[COMUNICACION] El request <%s> no pudo realizarse. Error <%d>",req_str,resp.tipo);
+	} else {
+		log_error(log_kernel,
+				"[COMUNICACION] El request <%s> no pudo realizarse. Error <%d>",
+				req_str, resp.tipo);
 	}
 	return resp;
 }
 
-void loggearEjecucion(int nivel, int pid, char* linea)
-{
-	fprintf(fp_trace_ejecucion,"\n<NIVEL %d><PID: %d>: %s",nivel,pid,linea);
+void loggearEjecucion(int nivel, int pid, char* linea) {
+	fprintf(fp_trace_ejecucion, "\n<NIVEL %d><PID: %d>: %s", nivel, pid, linea);
 }
