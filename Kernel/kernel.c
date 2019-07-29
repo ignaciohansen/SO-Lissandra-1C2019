@@ -51,14 +51,15 @@ int main() {
 	char* path_de_kernel = malloc(strlen(PATH_KERNEL_CONFIG) + 1);
 	strcpy(path_de_kernel, PATH_KERNEL_CONFIG);
 	pthread_t inotify_c;
-	pthread_create(&inotify_c, NULL, (void *) inotifyAutomatico,
-			path_de_kernel);
+	pthread_create(&inotify_c, NULL, (void *) inotifyAutomatico,path_de_kernel);
 	pthread_detach(inotify_c);
 	printf("\n*Hilo de actualización de retardos y Quantum corriendo.\n");
 	log_info(log_kernel,
 			"Hilo de actualización de retardos y Quantum corriendo");
 
-	gossiping_Kernel();
+	pthread_t hiloGossiping;
+	gossiping_Kernel(&hiloGossiping);
+	pthread_detach(hiloGossiping);
 
 	log_info(log_kernel,"Creamos hilo para actualizar la metadata de las tablas");
 	pthread_t hiloMetadataRefresh;
@@ -72,7 +73,20 @@ int main() {
 	pthread_t hiloConsola;
 	pthread_create(&hiloConsola, NULL, (void*) consola, NULL);
 
+	pthread_t hiloMetricas;
+	pthread_create(&hiloMetricas,NULL,correrHiloMetricas,NULL);
+	pthread_detach(hiloMetricas);
+
 	pthread_join(hiloConsola, NULL);
+
+	pthread_cancel(hiloMetricas);
+	pthread_cancel(hiloMetadataRefresh);
+	pthread_cancel(hiloGossiping);
+	pthread_cancel(inotify_c);
+	for(int i=0;i<arc_config->multiprocesamiento;i++){
+		pthread_cancel(hilosPlanificador[i]);
+	}
+	free(hilosPlanificador);
 
 	fclose(fp_trace_ejecucion);
 
@@ -276,7 +290,7 @@ void consola() {
 
 	while (1) {
 
-		linea = readline(">");
+		linea = readline("\n>");
 
 		if (linea) {
 			add_history(linea);
@@ -317,7 +331,7 @@ void consola() {
 			borrar_request(request);
 			break;
 		case METRICS:
-			printf("Vino meterics.\n");
+			printf("Vino metrics.\n");
 			log_info(log_kernel, "Metrics.");
 			comandoMetrics();
 			break;
@@ -844,7 +858,7 @@ void aplicarRetardo(void){
 	log_info(log_kernel,"[KERNEL | aplicarRetardo] Luego de instruccion sleep");
 }
 
-void gossiping_Kernel() {
+void gossiping_Kernel(pthread_t *hiloGossiping) {
 
 
 	inicializar_estructuras_gossiping(log_kernel, arc_config->retardo_gossiping);
@@ -855,15 +869,11 @@ void gossiping_Kernel() {
 
 	agregar_seed(-1, arc_config->ip_memoria, auxPuerto);
 
-	pthread_t hiloGossiping;
-	iniciar_hilo_gossiping(&soy, &hiloGossiping, actualizarMemoriasDisponibles);
-
-	pthread_detach(hiloGossiping);
+	iniciar_hilo_gossiping(&soy, hiloGossiping, actualizarMemoriasDisponibles);
 
 	/*	criterioSC;
 	 criterioSHC;
 	 criterioEC;*/
-
 }
 
 void actualizarMemoriasDisponibles() {
@@ -1084,7 +1094,7 @@ void comandoJournal(char** comandoSeparado) {
 }*/
 
 void comandoMetrics() {
-
+	imprimirMetricas(true);
 }
 
 int conectar_a_memoria(char ip[LARGO_IP], char puerto[LARGO_PUERTO]) {
@@ -1579,6 +1589,7 @@ int agregarMemoriaAsociada(seed_com_t *memoria) {
 		list_add(g_lista_memorias_asociadas, copia);
 		pthread_mutex_unlock(&lista_memorias_asociadas_mutex);
 		log_info(log_kernel,"[AGREGAR MEMORIA] La memoria %d fue agregada a la lista de memorias asociadas",memoria->numMemoria);
+		agregarMemoriaMetricas(memoria->numMemoria);
 	}
 	else{
 		log_info(log_kernel,"[AGREGAR MEMORIA] La memoria %d ya estaba asociada a algun criterio antes",memoria->numMemoria);
@@ -1618,6 +1629,9 @@ int eliminarMemoriaAsociada(int numMemoria) {
 		vaciarMemoriasSHC();
 		log_info(log_kernel,"[BAJA MEMORIA] Se mendo journal a todas las memorias que quedan en el criterio",numMemoria);
 	}
+	//Finalmente la saco de las metricas
+	sacarMemoriaMetricas(numMemoria);
+
 	/*@martin: revisar si : @hecho
 	 * 1) estaba en el criterio SHC y hay que actualizar la logica (mandar journal, cambiar hash, etc)
 	 * 2) era la memoria de SC y hay que informarlo
@@ -1724,7 +1738,9 @@ resp_com_t resolverSelect(request_t request)
 		return armar_respuesta(RESP_ERROR_COMUNICACION,NULL);
 	}
 
+	uint64_t t0 = timestamp();
 	resp_com_t resp = enviar_recibir(socket_memoria,request.request_str);
+	contar_select(datos_memoria->numMemoria,criterio,timestamp()-t0);
 
 	free(datos_memoria);
 	close(socket_memoria);
@@ -1757,7 +1773,9 @@ resp_com_t resolverInsert(request_t request)
 		return armar_respuesta(RESP_ERROR_COMUNICACION,NULL);
 	}
 
+	uint64_t t0 = timestamp();
 	resp_com_t resp = enviar_recibir(socket_memoria,request.request_str);
+	contar_insert(datos_memoria->numMemoria,criterio,timestamp()-t0);
 
 	free(datos_memoria);
 	close(socket_memoria);
@@ -1984,8 +2002,8 @@ void loggearEjecucion(int nivel, int pid, char* linea)
 void inicializarMetricas(void)
 {
 	g_metricas.operaciones_memorias = list_create();
-	g_metricas.operaciones_totales = 0;
 	g_metricas.ultima_actualiz = timestamp();
+	g_metricas.operaciones_totales = 0;
 	for(int i=0; i<3; i++){
 		g_metricas.criterio[i].cant_insert = 0;
 		g_metricas.criterio[i].cant_select = 0;
@@ -1998,9 +2016,9 @@ void *correrHiloMetricas(void *args)
 {
 	inicializarMetricas();
 	while(1){
-		usleep(30000);
-		reiniciarMetricas();
+		usleep(30000000);
 		imprimirMetricas(false);
+		reiniciarMetricas();
 	}
 }
 
@@ -2008,6 +2026,7 @@ void reiniciarMetricas(void)
 {
 	pthread_mutex_lock(&mutex_metricas);
 	g_metricas.ultima_actualiz = timestamp();
+	g_metricas.operaciones_totales = 0;
 	for(int i=0; i<3; i++){
 		g_metricas.criterio[i].cant_insert = 0;
 		g_metricas.criterio[i].cant_select = 0;
@@ -2019,7 +2038,6 @@ void reiniciarMetricas(void)
 		aux = list_get(g_metricas.operaciones_memorias,i);
 		aux->operaciones = 0;
 	}
-	g_metricas.operaciones_totales = 0;
 	pthread_mutex_unlock(&mutex_metricas);
 }
 
@@ -2028,6 +2046,7 @@ void agregarMemoriaMetricas(int num_memoria)
 	t_metricas_memoria *nueva = malloc(sizeof(t_metricas_memoria));
 	nueva->num_memoria = num_memoria;
 	nueva->operaciones = 0;
+	log_info(log_kernel, "[METRICAS] Inicializando estructuras para las metricas de la memoria %d",num_memoria);
 	pthread_mutex_lock(&mutex_metricas);
 	list_add(g_metricas.operaciones_memorias,nueva);
 	pthread_mutex_unlock(&mutex_metricas);
@@ -2036,6 +2055,7 @@ void agregarMemoriaMetricas(int num_memoria)
 void sacarMemoriaMetricas(int num_memoria)
 {
 	t_metricas_memoria *aux;
+	log_info(log_kernel, "[METRICAS] Sacando la memoria %d de las estructuras de las metricas",num_memoria);
 	pthread_mutex_lock(&mutex_metricas);
 	for(int i=0; i<list_size(g_metricas.operaciones_memorias);i++){
 		aux = list_get(g_metricas.operaciones_memorias,i);
@@ -2050,16 +2070,101 @@ void sacarMemoriaMetricas(int num_memoria)
 
 void contar_insert(int num_memoria, int criterio, uint64_t duracion)
 {
+	t_metricas_memoria *aux;
+	log_info(log_kernel, "[METRICAS] Agregando informacion de insert. Memoria: %d. Criterio: %s. Duracion: %llums",num_memoria,criterios[criterio],duracion);
+	pthread_mutex_lock(&mutex_metricas);
+	g_metricas.operaciones_totales++;
+	for(int i=0; i<list_size(g_metricas.operaciones_memorias);i++){
+		aux = list_get(g_metricas.operaciones_memorias,i);
+		if(aux->num_memoria == num_memoria){
+			aux->operaciones++;
+			break;
+		}
+	}
+	g_metricas.criterio[criterio].cant_insert++;
+	g_metricas.criterio[criterio].tiempo_insert += duracion;
+	pthread_mutex_unlock(&mutex_metricas);
 
 }
 
 void contar_select(int num_memoria, int criterio, uint64_t duracion)
 {
-
+	t_metricas_memoria *aux;
+	log_info(log_kernel, "[METRICAS] Agregando informacion de select. Memoria: %d. Criterio: %s. Duracion: %llums",num_memoria,criterios[criterio],duracion);
+	pthread_mutex_lock(&mutex_metricas);
+	g_metricas.operaciones_totales++;
+	for(int i=0; i<list_size(g_metricas.operaciones_memorias);i++){
+		aux = list_get(g_metricas.operaciones_memorias,i);
+		if(aux->num_memoria == num_memoria){
+			aux->operaciones++;
+			break;
+		}
+	}
+	g_metricas.criterio[criterio].cant_select++;
+	g_metricas.criterio[criterio].tiempo_select += duracion;
+	pthread_mutex_unlock(&mutex_metricas);
 }
 
 
 void imprimirMetricas(bool enConsola)
 {
+	t_metricas_memoria *aux;
+	pthread_mutex_lock(&mutex_metricas);
+	log_info(log_kernel, "[METRICAS] Ultima actualizacion hace %d segundos",(timestamp()-g_metricas.ultima_actualiz)/1000);
+	if(enConsola){
+		printf("\n[METRICAS] Ultima actualizacion hace %d segundos",(timestamp()-g_metricas.ultima_actualiz)/1000);
+	}
+	float read_latency, write_latency, memory_load;
+	for(int i=0;i<3;i++){
+		if( g_metricas.criterio[i].cant_select > 0 )
+			read_latency = (float)g_metricas.criterio[i].tiempo_select / g_metricas.criterio[i].cant_select;
+		else
+			read_latency = 0;
+		if( g_metricas.criterio[i].cant_insert > 0 )
+			write_latency = (float)g_metricas.criterio[i].tiempo_insert / g_metricas.criterio[i].cant_insert;
+		else
+			write_latency = 0;
+		imprimirStringFloat(enConsola,"[METRICAS] Criterio %s. Read latency: %.2fms",criterios[i],read_latency);
+		imprimirStringFloat(enConsola,"[METRICAS] Criterio %s. Write latency: %.2fms",criterios[i],write_latency);
+		imprimirStringInt(enConsola,"[METRICAS] Criterio %s. Reads: %d",criterios[i],g_metricas.criterio[i].cant_select);
+		imprimirStringInt(enConsola,"[METRICAS] Criterio %s. Writes: %d",criterios[i],g_metricas.criterio[i].cant_insert);
+	}
+	for(int i=0; i<list_size(g_metricas.operaciones_memorias);i++){
+		aux = list_get(g_metricas.operaciones_memorias,i);
+		if(g_metricas.operaciones_totales > 0)
+			memory_load = ((float)aux->operaciones/g_metricas.operaciones_totales)*100;
+		else
+			memory_load = 0;
+		imprimirIntFloat(enConsola,"[METRICAS] Memoria %d. Memory load %.1f%%",aux->num_memoria,memory_load);
+	}
+	if(enConsola)
+		printf("\n");
+	pthread_mutex_unlock(&mutex_metricas);
+}
 
+void imprimirStringFloat(bool consola, const char *format,const char *p1, float p2)
+{
+	log_info(log_kernel,format,p1,p2);
+	if(consola){
+		printf("\n");
+		printf(format,p1,p2);
+	}
+}
+
+void imprimirStringInt(bool consola, const char *format, const char *p1, int p2)
+{
+	log_info(log_kernel,format,p1,p2);
+	if(consola){
+		printf("\n");
+		printf(format,p1,p2);
+	}
+}
+
+void imprimirIntFloat(bool consola, const char *format, int p1, float p2)
+{
+	log_info(log_kernel,format,p1,p2);
+	if(consola){
+		printf("\n");
+		printf(format,p1,p2);
+	}
 }

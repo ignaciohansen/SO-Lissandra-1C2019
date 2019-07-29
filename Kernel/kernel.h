@@ -250,7 +250,7 @@ const char* criterios[] = { "SC", "SHC", "EC"};
 
 int buscarCriterio(char* criterio);
 void actualizarMemoriasDisponibles();
-void gossiping_Kernel();
+void gossiping_Kernel(pthread_t *hiloGossiping);
 //seed_com_t* buscarMemoria(char** pruebaPath);//@martin
 seed_com_t* buscarMemoria(int numMemoria);
 
@@ -366,6 +366,12 @@ void inicializarMetricas(void);
 void *correrHiloMetricas(void *args);
 void reiniciarMetricas(void);
 void agregarMemoriaMetricas(int num_memoria);
+void sacarMemoriaMetricas(int num_memoria);
 void imprimirMetricas(bool enConsola);
+void contar_insert(int num_memoria, int criterio, uint64_t duracion);
+void contar_select(int num_memoria, int criterio, uint64_t duracion);
+void imprimirStringFloat(bool consola, const char *format,const char *p1, float p2);
+void imprimirStringInt(bool consola, const char *format, const char *p1, int p2);
+void imprimirIntFloat(bool consola, const char *format, int p1, float p2);
 
 #endif /* KERNEL_H_ */
