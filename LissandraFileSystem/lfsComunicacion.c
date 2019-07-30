@@ -194,6 +194,7 @@ void * hilo_cliente(hilo_cliente_args_t *args){
 resp_com_t resolver_pedido(request_t req) {
 	{
 		resp_com_t respuesta;
+		log_info(logger,"[RESOLVIENDO PEDIDO] Llego %s",req.request_str);
 
 		switch (req.command) {
 		case INSERT:

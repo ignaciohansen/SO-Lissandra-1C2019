@@ -17,6 +17,7 @@
 
 
 
+
 void abortarProcesoPorUnErrorImportante(t_log* log, char* mensaje){
 	imprimirError1(log, "ERROR: %s", mensaje);
 	abort();

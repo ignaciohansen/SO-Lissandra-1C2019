@@ -116,6 +116,7 @@ typedef struct{
 	int comando;
 	int argumentos;
 	char* linea;
+	resp_tipo_com_t tipoRespuesta;
 	FILE* archivo;
 }t_pcb;
 
