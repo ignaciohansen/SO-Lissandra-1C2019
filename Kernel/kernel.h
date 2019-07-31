@@ -277,6 +277,8 @@ void comandoAdd(char** comandoSeparado);
 void comandoJournal(char** comandoSeparado);
 void comandoMetrics();
 void recargarConfiguracion(char* path_config);
+void vaciarColas(void);
+void borrarPCB(t_pcb *pcb);
 
 //Inotify para parametros de configuracion que cambian durante ejecucion
 #include <sys/inotify.h>

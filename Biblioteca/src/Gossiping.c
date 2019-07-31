@@ -58,7 +58,7 @@ time_gos_t proxima_ejecucion_gossiping(time_gos_t ultimo)
 
 void liberar_memoria_gossiping(void)
 {
-	list_clean_and_destroy_elements(g_lista_seeds,(void*)borrar_seed);
+	list_clean_and_destroy_elements(g_lista_seeds,(void*)free);
 	gossiping_inicializado = false;
 	list_clean_and_destroy_elements(g_memorias_caidas,(void*)free);
 }
@@ -195,9 +195,8 @@ void registrar_memoria_caida(int i_mem)
 	pthread_mutex_lock(&gossip_table_mutex);
 	seed_com_t *aux = list_get(g_lista_seeds,i_mem);
 
-	seed_com_t *caida = malloc(sizeof(seed_com_t));
-
 	if(aux->numMemoria != -1){
+		seed_com_t *caida = malloc(sizeof(seed_com_t));
 		memcpy(caida,aux,sizeof(seed_com_t));
 		pthread_mutex_lock(&gossip_caidas_mutex);
 		list_add(g_memorias_caidas,caida);
@@ -315,9 +314,11 @@ int iniciar_hilo_gossiping(id_com_t *id_proceso, pthread_t *thread, void (*funci
 	return 1;
 }
 
-void *hilo_gossiping(thread_gos_args_t *args)
+void *hilo_gossiping(thread_gos_args_t *args_p)
 {
-	id_com_t *id_proceso = &(args->id_proceso);
+	thread_gos_args_t args = *args_p;
+	id_com_t *id_proceso = &(args.id_proceso);
+	free(args_p);
 	imprimirMensaje(logger_gossiping,"[HILO GOSSIPING] Entrando a hilo");
 	log_info(logger_gossiping,"[HILO GOSSIPING] Soy proceso %d",*id_proceso);
 	//time_gos_t t0 = ahora(), t1 = 0;
@@ -330,7 +331,7 @@ void *hilo_gossiping(thread_gos_args_t *args)
 		imprimirMensaje(logger_gossiping,"[HILO GOSSIPING] Terminé de ejecutar gossiping.");
 
 		imprimirMensaje(logger_gossiping,"[HILO GOSSIPING] Voy a correr función de actualización");
-		args->funcion();
+		args.funcion();
 		imprimirMensaje(logger_gossiping,"[HILO GOSSIPING] Corrí función de actualización");
 		proximo = proxima_ejecucion_gossiping(ultimo);
 		do{

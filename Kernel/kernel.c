@@ -93,9 +93,11 @@ int main() {
 
 	fclose(fp_trace_ejecucion);
 
+	free(path_de_kernel);
+
 	liberarTodo();
 
-	log_info(log_kernel, "Salimoooos, fin del main.");
+//	log_info(log_kernel, "Salimoooos, fin del main.");
 
 	return 0;
 
@@ -103,6 +105,9 @@ int main() {
 
 void liberarTodo(void){
 	log_info(log_kernel, "[FINALIZANDO] Liberamos memoria");
+
+	log_info(log_kernel, "[FINALIZANDO] Vacio y borro colas");
+	vaciarColas();
 
 	log_info(log_kernel, "[FINALIZANDO] Borro memoria utilizada por el gossiping");
 	liberar_memoria_gossiping();
@@ -142,6 +147,20 @@ void liberarTodo(void){
 
 	log_info(log_kernel, "[FINALIZANDO] Borro log");
 	log_destroy(log_kernel);
+}
+
+void vaciarColas(void)
+{
+	list_destroy_and_destroy_elements(colaEjecucion, (void*)borrarPCB);
+	list_destroy_and_destroy_elements(colaExit, (void*)borrarPCB);
+	list_destroy_and_destroy_elements(colaListos, (void*)borrarPCB);
+	list_destroy_and_destroy_elements(colaNuevos, free);
+}
+
+void borrarPCB(t_pcb *pcb)
+{
+	free(pcb->linea);
+	free(pcb);
 }
 
 pthread_t* iniciarHilosMultiprocesamiento(int nivel) {
@@ -205,8 +224,10 @@ void cargarConfiguracion() {
 
 			log_info(log_kernel, "Almacenando la IP de la Memoria");
 
-			arc_config->ip_memoria = config_get_string_value(configFile,
-					"IP_MEMORIA");
+			char *aux = config_get_string_value(configFile,"IP_MEMORIA");
+
+			arc_config->ip_memoria = malloc(strlen(aux)+1);
+			strcpy(arc_config->ip_memoria, aux);
 
 			log_info(log_kernel, "La Ip de la memoria es: %s",
 					arc_config->ip_memoria);
@@ -313,7 +334,7 @@ void cargarConfiguracion() {
 	log_info(log_kernel,
 			"Cargamos todo lo que se encontro en el archivo de configuracion. Liberamos la variable config que fue utlizada para navegar el archivo de configuracion");
 
-	free(configFile->path);
+	/*free(configFile->path);
 	int i;
 	t_hash_element* nextHash;
 	for (i = 0; i < configFile->properties->elements_amount; i++) {
@@ -327,7 +348,8 @@ void cargarConfiguracion() {
 		free(configFile->properties->elements[i]);
 	}
 	free(configFile->properties);
-	free(configFile);
+	free(configFile);*/
+	config_destroy(configFile);
 
 }
 
@@ -349,6 +371,12 @@ void consola() {
 		if (!strncmp(linea, "SALIR", 4)) {
 			log_info(log_kernel, "Viene el comando en la cadena: %s",	comandoSeparado[0]);
 			free(linea);
+			int i = 0;
+			while(comandoSeparado[i]!=NULL){
+				free(comandoSeparado[i]);
+				i++;
+			}
+			free(comandoSeparado);
 			break;
 		}
 
@@ -367,6 +395,7 @@ void consola() {
 			printf("Vino ADD.\n");
 			log_info(log_kernel, "ADD.");
 			comandoAdd(comandoSeparado);
+			free(linea);
 			break;
 		case JOURNAL:
 			printf("Vino journal.\n");
@@ -381,12 +410,19 @@ void consola() {
 		case METRICS:
 			printf("Vino metrics.\n");
 			log_info(log_kernel, "Metrics.");
+			free(linea);
 			comandoMetrics();
 			break;
 		case SALIR:
 			printf("Salimos de la consola y el proceso!.\n");
 			log_info(log_kernel, "Vino comando salir. Cerramos todo");
 			free(linea);
+			int i = 0;
+			while(comandoSeparado[i]!=NULL){
+				free(comandoSeparado[i]);
+				i++;
+			}
+			free(comandoSeparado);
 			return;
 		case INSERT:
 		case SELECT:
@@ -404,6 +440,12 @@ void consola() {
 			break;
 		}
 
+		int i=0;
+		while(comandoSeparado[i]!=NULL){
+			free(comandoSeparado[i]);
+			i++;
+		}
+		free(comandoSeparado);
 
 		//free(linea);
 
@@ -774,8 +816,6 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 				resp_com_t respuesta = resolverPedido(bufferRun);
 				loggearEjecucion(nivel, pcb->pid, bufferRun);
 
-				free(bufferRun);
-
 				pcb->tipoRespuesta = respuesta.tipo;
 				pcb->progamCounter++;
 				borrar_respuesta(respuesta);
@@ -835,7 +875,7 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 
 				resp_com_t respuesta = resolverPedido(bufferRun);
 				loggearEjecucion(nivel, pcb->pid, bufferRun);
-				free(bufferRun);
+
 				//@martin @lorenzo aca habria que revisar si se produjo un error grave y abortar la ejecucion del script
 				pcb->tipoRespuesta = respuesta.tipo;
 
@@ -856,6 +896,7 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 			}
 
 		}
+		free(bufferRun);
 
 	} //Hasta aca si el comando es RUN
 
@@ -933,6 +974,7 @@ void agregarAExit(t_pcb* pcb) {
 			log_info(log_kernel, "El comando: %s termino con error, en la linea %d. Error de TIPO: %d", pcb->linea,pcb->progamCounter,pcb->tipoRespuesta);
 
 		}
+//		free(pcb->linea);
 	}
 }
 
@@ -1406,6 +1448,7 @@ int actualizarMetadataTablas(void) {
 	seed_com_t *memoria = elegirMemoria();
 	if (memoria == NULL) {
 		log_error(log_kernel,"[METADATA REFRESH] No tengo memorias para mandar el describe");
+		borrar_request_com(request);
 		return -1;
 	}
 
@@ -1413,6 +1456,8 @@ int actualizarMetadataTablas(void) {
 	if (socket_memoria == -1) {
 		log_error(log_kernel,"[METADATA REFRESH] Error al conectarse a la memoria para hacer el describe");
 		eliminarMemoriaAsociada(memoria->numMemoria); //esta función también la saca de todos los criterios en los que estuviera
+		free(memoria);
+		borrar_request_com(request);
 		return -1;
 	}
 
@@ -1424,6 +1469,7 @@ int actualizarMetadataTablas(void) {
 				"[METADATA REFRESH] NO SE PUDO ENVIAR EL DESCRIBE A LA MEMORIA %d",
 				memoria->numMemoria);
 		borrar_request_com(request);
+		free(memoria);
 		return -1;
 	}
 	borrar_request_com(request);
@@ -1434,6 +1480,7 @@ int actualizarMetadataTablas(void) {
 				"[METADATA REFRESH] ERROR AL RECIBIR RESPUESTA DE MEMORIA %d",
 				memoria->numMemoria);
 		borrar_mensaje(msg);
+		free(memoria);
 		return -1;
 	}
 
@@ -1451,9 +1498,10 @@ int actualizarMetadataTablas(void) {
 				"[METADATA REFRESH] La memoria %d no pudo resolver el describe. Error <%d>",
 				memoria->numMemoria, resp.tipo);
 		borrar_respuesta(resp);
+		free(memoria);
 		return -1;
 	}
-
+	free(memoria);
 	borrar_respuesta(resp);
 
 	return 1;
@@ -1550,6 +1598,7 @@ int buscarCriterioTabla(char *nombre_tabla) {
 
 void borrarEntradaListaTablas(t_tablas *tabla) {
 	free(tabla->nombreTabla);
+	free(tabla);
 }
 
 seed_com_t *elegirMemoria(void) {
@@ -1632,6 +1681,7 @@ int vaciarMemoriasSHC(void)
 	request_t request = parser("JOURNAL");
 	resp_com_t resp = resolverJournal(request,copiaSHC);
 	borrar_respuesta(resp);
+	borrar_request(request);
 	list_destroy(copiaSHC); //@martin @revisar tengo que destruir los elementos?
 	log_info(log_kernel, "[SHC] Se mando Journal a todas las memorias asociadas al criterio");
 	return 1;
@@ -1893,6 +1943,7 @@ resp_com_t resolverInsert(request_t request) {
 	//<command>   args[0]    args[1]  args[2]   args[3]
 	if (request.cant_args != 3 && request.cant_args != 4)
 		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS, NULL);
+	log_info(log_kernel, "[DEBUG] Cant args = %d",request.cant_args);
 	uint16_t key = atoi(request.args[1]);
 	int criterio = buscarCriterioTabla(request.args[0]);
 	if (criterio == -1) {

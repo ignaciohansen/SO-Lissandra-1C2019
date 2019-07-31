@@ -1155,6 +1155,7 @@ void LRU(
 						nombreTablaQueDeboBuscar,
 						candidatoAQuitar);
 						*/
+				//@revisar @aqui @sincro @aqui
 				segmento_eliminar_nro_pagina(
 					buscarSegmentoPorNombreTabla(nombreTablaQueDeboBuscar),
 						candidatoAQuitar);
@@ -1172,7 +1173,7 @@ void LRU(
 }
 
 void limpiar_todos_los_elementos_de_1_segmento(segmento* segmentoABorrar){
-	//ESTO SE DEBE REVISAR, TIENE ERRORES
+	//ESTO SE DEBE REVISAR, TIENE ERRORES @revisar @aqui
 	log_info(log_memoria,
 			"[LIBERAR SEGMENTO] Liberando todas las tablas y paginas del segmento y a si mismo '%s'",
 			segmentoABorrar->path_tabla);

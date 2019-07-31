@@ -462,6 +462,7 @@ void * hilo_cliente(hilo_cliente_args_t *args)
 				else {
 					imprimirError(log_memoria,"[CLIENTE] La resupuesta no pudo ser enviada al cliente");
 				}
+				borrar_gossiping(gossip);
 				break;
 			case DESCONECTADO:
 				imprimirMensaje(log_memoria,"[CLIENTE] El cliente se desconectó");
@@ -482,6 +483,7 @@ void * hilo_cliente(hilo_cliente_args_t *args)
 	}
 	free(args);
 	imprimirMensaje(log_memoria,"[CLIENTE] Finalizando el hilo");
+	pthread_cancel(pthread_self());
 	return NULL;
 }
 
@@ -994,8 +996,6 @@ resp_com_t resolver_describe(int socket_lfs, request_t req)
 		}
 		else{
 			imprimirMensaje1(log_memoria, "[DESCRIBE] La respuesta del lfs fue: %s",resp.msg.str);
-			ret_val = malloc(resp.msg.tam);
-			strcpy(ret_val,resp.msg.str);
 		}
 	}
 	else{
