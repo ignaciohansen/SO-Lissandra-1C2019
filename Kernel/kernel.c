@@ -21,14 +21,13 @@ int main() {
 
 	fp_trace_ejecucion = fopen("../Log/traceEjecucion.txt", "w"); //Para revisar si estamos haciendo bien la planificacion
 
-	log_kernel = archivoLogCrear(LOG_PATH, "Proceso Kernel");
+	log_kernel = archivoLogCrear(LOG_PATH, "[MAIN]- Proceso Kernel.");
 
-	log_info(log_kernel,
-			"Ya creado el Log, continuamos cargando la estructura de configuracion, llamando a la funcion.");
+	log_info(log_kernel,"[MAIN]- Por cargar configuracion desde archivo.");
 
 	cargarConfiguracion();
 
-	log_info(log_kernel, "La carga de archivo de configuracion finalizo.");
+	log_info(log_kernel, "[MAIN]- La carga de archivo de configuracion finalizo.");
 
 	iniciarSemaforos();
 
@@ -49,33 +48,32 @@ int main() {
 	countPID = 0;
 
 	mutexIniciar(&mutex_retardos_kernel);
+
 	char* path_de_kernel = malloc(strlen(PATH_KERNEL_CONFIG) + 1);
 	strcpy(path_de_kernel, PATH_KERNEL_CONFIG);
 	pthread_t inotify_c;
 	pthread_create(&inotify_c, NULL, (void *) inotifyAutomatico,path_de_kernel);
 	pthread_detach(inotify_c);
 	printf("\n*Hilo de actualización de retardos y Quantum corriendo.\n");
-	log_info(log_kernel,
-			"Hilo de actualización de retardos y Quantum corriendo");
+	log_info(log_kernel,"[MAIN]- Hilo de actualización de retardos y Quantum corriendo");
 
 	pthread_t hiloGossiping;
 	gossiping_Kernel(&hiloGossiping);
 	pthread_detach(hiloGossiping);
 
-	log_info(log_kernel,
-			"Creamos hilo para actualizar la metadata de las tablas");
+	log_info(log_kernel,"[MAIN]- Creamos hilo para actualizar la metadata de las tablas");
 	pthread_t hiloMetadataRefresh;
 	pthread_create(&hiloMetadataRefresh, NULL, (void*) hilo_metadata_refresh,
 	NULL);
 	pthread_detach(hiloMetadataRefresh);
 
-	log_info(log_kernel, "Creamos hilo para Consola.");
-	pthread_t* hilosPlanificador = iniciarHilosMultiprocesamiento(
-			arc_config->multiprocesamiento);
+	log_info(log_kernel, "[MAIN]- Creamos hilo para Consola.");
+	pthread_t* hilosPlanificador = iniciarHilosMultiprocesamiento(arc_config->multiprocesamiento);
 
 	pthread_t hiloConsola;
 	pthread_create(&hiloConsola, NULL, (void*) consola, NULL);
 
+	log_info(log_kernel, "[MAIN]- Creamos hilo para Metricas.");
 	pthread_t hiloMetricas;
 	pthread_create(&hiloMetricas,NULL,correrHiloMetricas,NULL);
 	pthread_detach(hiloMetricas);
@@ -86,6 +84,7 @@ int main() {
 	pthread_cancel(hiloMetadataRefresh);
 	pthread_cancel(hiloGossiping);
 	pthread_cancel(inotify_c);
+
 	for(int i=0;i<arc_config->multiprocesamiento;i++){
 		pthread_cancel(hilosPlanificador[i]);
 	}
@@ -188,151 +187,128 @@ void iniciarSemaforos() {
 
 void cargarConfiguracion() {
 
-	log_info(log_kernel,
-			"Por reservar memoria para variable de configuracion.");
+	log_info(log_kernel,"[CARGAR CONFIGURACION]-Por reservar memoria para variable de configuracion.");
 
 	arc_config = malloc(sizeof(t_kernel_config));
 
 	t_config* configFile;
 
-	log_info(log_kernel,
-			"Por crear el archivo de config para levantar archivo con datos.");
+	log_info(log_kernel,"[CARGAR CONFIGURACION]-Por crear el archivo de config para levantar archivo con datos.");
 
 	configFile = config_create(PATH_KERNEL_CONFIG);
 
 	if (configFile != NULL) {
 
-		log_info(log_kernel, "Kernel: Leyendo Archivo de Configuracion...");
+		log_info(log_kernel, "[CARGAR CONFIGURACION]- Leyendo Archivo de Configuracion...");
 
 		if (config_has_property(configFile, "PUERTO_MEMORIA")) {
 
-			log_info(log_kernel, "Almacenando el puerto");
+			log_info(log_kernel, "[CARGAR CONFIGURACION]-Almacenando el puerto");
 
-			arc_config->puerto_memoria = config_get_int_value(configFile,
-					"PUERTO_MEMORIA");
+			arc_config->puerto_memoria = config_get_int_value(configFile,"PUERTO_MEMORIA");
 
-			log_info(log_kernel, "El puerto de la memoria es: %d",
-					arc_config->puerto_memoria);
+			log_info(log_kernel, "[CARGAR CONFIGURACION]- El puerto de la memoria es: %d",arc_config->puerto_memoria);
 
 		} else {
-			log_error(log_kernel,
-					"El archivo de configuracion no contiene el PUERTO de la Memoria");
 
+			log_error(log_kernel,"[CARGAR CONFIGURACION]- El archivo de configuracion no contiene el PUERTO de la Memoria");
 		}
 
 		if (config_has_property(configFile, "IP_MEMORIA")) {
 
-			log_info(log_kernel, "Almacenando la IP de la Memoria");
+			log_info(log_kernel, "[CARGAR CONFIGURACION]- Almacenando la IP de la Memoria");
 
 			char *aux = config_get_string_value(configFile,"IP_MEMORIA");
 
 			arc_config->ip_memoria = malloc(strlen(aux)+1);
 			strcpy(arc_config->ip_memoria, aux);
 
-			log_info(log_kernel, "La Ip de la memoria es: %s",
-					arc_config->ip_memoria);
+			log_info(log_kernel, "[CARGAR CONFIGURACION]- La Ip de la memoria es: %s",arc_config->ip_memoria);
 
 		} else {
 
-			log_error(log_kernel,
-					"El archivo de configuracion no contiene la IP de la Memoria");
+			log_error(log_kernel,"[CARGAR CONFIGURACION]- El archivo de configuracion no contiene la IP de la Memoria");
 
 		}
 
 		if (config_has_property(configFile, "QUANTUM")) {
 
-			log_info(log_kernel, "Almancenando el Quantum del planificador");
+			log_info(log_kernel, "[CARGAR CONFIGURACION]- Almancenando el Quantum del planificador");
 
 			arc_config->quantum = config_get_int_value(configFile, "QUANTUM");
 
-			log_info(log_kernel, "El Quantum del planificador es: %d",
-					arc_config->quantum);
+			log_info(log_kernel, "[CARGAR CONFIGURACION]- El Quantum del planificador es: %d", arc_config->quantum);
 
 		} else {
 
-			log_error(log_kernel,
-					"El archivo de configuracion no contiene el Quantum del planificador");
+			log_error(log_kernel,"[CARGAR CONFIGURACION]- El archivo de configuracion no contiene el Quantum del planificador");
 
 		}
 
 		if (config_has_property(configFile, "MULTIPROCESAMIENTO")) {
 
-			log_info(log_kernel,
-					"Almacenando el valor del Multiprocesamiento para el Planificador");
+			log_info(log_kernel,"[CARGAR CONFIGURACION]- Almacenando el valor del Multiprocesamiento para el Planificador");
 
-			arc_config->multiprocesamiento = config_get_int_value(configFile,
-					"MULTIPROCESAMIENTO");
+			arc_config->multiprocesamiento = config_get_int_value(configFile,"MULTIPROCESAMIENTO");
 
-			log_info(log_kernel,
-					"El grado de multiprocesamiento del planificador es: %d",
-					arc_config->multiprocesamiento);
+			log_info(log_kernel,"[CARGAR CONFIGURACION]- El grado de multiprocesamiento del planificador es: %d",arc_config->multiprocesamiento);
 
 		} else {
 
-			log_error(log_kernel,
-					"El archivo de configuracion no el grado de multiprocesamiento del planificador");
+			log_error(log_kernel,"[CARGAR CONFIGURACION]- El archivo de configuracion no el grado de multiprocesamiento del planificador");
 
 		}
 
 		if (config_has_property(configFile, "METADATA_REFRESH")) {
 
-			log_info(log_kernel,
-					"Almacenando el valor del Metadata Refresh para el Kernel");
+			log_info(log_kernel,"[CARGAR CONFIGURACION]- Almacenando el valor del Metadata Refresh para el Kernel");
 
-			arc_config->metadata_refresh = config_get_int_value(configFile,
-					"METADATA_REFRESH");
+			arc_config->metadata_refresh = config_get_int_value(configFile,"METADATA_REFRESH");
 
-			log_info(log_kernel, "El valor del Metadata Refresh es: %d",
-					arc_config->metadata_refresh);
+			log_info(log_kernel, "[CARGAR CONFIGURACION]- El valor del Metadata Refresh es: %d",arc_config->metadata_refresh);
+
 		} else {
 
-			log_error(log_kernel,
-					"El archivo de configuracion no tiene el valor del Metadata refresh");
+			log_error(log_kernel,"[CARGAR CONFIGURACION]- El archivo de configuracion no tiene el valor del Metadata refresh");
 
 		}
 
 		if (config_has_property(configFile, "SLEEP_EJECUCION")) {
 
-			log_info(log_kernel,
-					"Almacenando el valor del Sleep Ejecucion para el Kernel");
+			log_info(log_kernel,"[CARGAR CONFIGURACION]- Almacenando el valor del Sleep Ejecucion para el Kernel");
 
-			arc_config->sleep_ejecucion = config_get_int_value(configFile,
-					"SLEEP_EJECUCION");
+			arc_config->sleep_ejecucion = config_get_int_value(configFile,"SLEEP_EJECUCION");
 
-			log_info(log_kernel, "El valor del Sleep Ejecucion es: %d",
-					arc_config->sleep_ejecucion);
+			log_info(log_kernel, "[CARGAR CONFIGURACION]- El valor del Sleep Ejecucion es: %d",	arc_config->sleep_ejecucion);
+
 		} else {
 
-			log_error(log_kernel,
-					"El archivo de configuracion no tiene el valor del Sleep Ejecucion");
+			log_error(log_kernel,"[CARGAR CONFIGURACION]- El archivo de configuracion no tiene el valor del Sleep Ejecucion");
 
 		}
 		if (config_has_property(configFile, "RETARDO_GOSSIPING")) {
 
-			log_info(log_kernel,
-					"Almacenando el valor del Retardo de Gossiping para el Kernel");
+			log_info(log_kernel,"[CARGAR CONFIGURACION]- Almacenando el valor del Retardo de Gossiping para el Kernel");
 
-			arc_config->retardo_gossiping = config_get_int_value(configFile,
-					"RETARDO_GOSSIPING");
+			arc_config->retardo_gossiping = config_get_int_value(configFile,"RETARDO_GOSSIPING");
 
-			log_info(log_kernel, "El valor del Retardo de Gossiping es: %d",
-					arc_config->retardo_gossiping);
+			log_info(log_kernel, "[CARGAR CONFIGURACION]- El valor del Retardo de Gossiping es: %d",arc_config->retardo_gossiping);
+
 		} else {
 
-			log_error(log_kernel,
-					"El archivo de configuracion no tiene el valor del Retardo de Gossiping. Se utiliza 20000 milisegundos");
+			log_error(log_kernel,"[CARGAR CONFIGURACION]- El archivo de configuracion no tiene el valor del Retardo de Gossiping. Se utiliza 20000 milisegundos");
+
 			arc_config->retardo_gossiping = 20000;
+
 		}
 
 	} else {
 
-		log_error(log_kernel,
-				"No se encontro el archivo de configuracion para cargar la estructura de Kernel");
+		log_error(log_kernel,"[CARGAR CONFIGURACION]- No se encontro el archivo de configuracion para cargar la estructura de Kernel");
 
 	}
 
-	log_info(log_kernel,
-			"Cargamos todo lo que se encontro en el archivo de configuracion. Liberamos la variable config que fue utlizada para navegar el archivo de configuracion");
+	log_info(log_kernel,"[CARGAR CONFIGURACION]- Cargamos todo lo que se encontro en el archivo de configuracion. Liberamos la variable config que fue utlizada para navegar el archivo de configuracion");
 
 	/*free(configFile->path);
 	int i;
@@ -355,7 +331,7 @@ void cargarConfiguracion() {
 
 void consola() {
 
-	log_info(log_kernel, "En el hilo de consola.");
+	log_info(log_kernel, "[CONSOLA]- En el hilo de consola.");
 
 	menu();
 
@@ -369,7 +345,7 @@ void consola() {
 		}
 
 		if (!strncmp(linea, "SALIR", 4)) {
-			log_info(log_kernel, "Viene el comando en la cadena: %s",	comandoSeparado[0]);
+			log_info(log_kernel, "[CONSOLA]- Viene el comando en la cadena: %s",	comandoSeparado[0]);
 			free(linea);
 			int i = 0;
 			while(comandoSeparado[i]!=NULL){
@@ -382,24 +358,22 @@ void consola() {
 
 		strtok(linea, "\n");
 
-		log_info(log_kernel, "Viene el comando en la cadena: %s",
-				comandoSeparado[0]);
+		log_info(log_kernel, "[CONSOLA]- Viene el comando en la cadena: %s", comandoSeparado[0]);
 
 		int comando = buscarComando(comandoSeparado[0]);
 
-		log_info(log_kernel, "El enum correspondiente para el comando es: %d",
-				comando);
+		log_info(log_kernel, "[CONSOLA]- El Enum correspondiente para el comando es: %d",comando);
 
 		switch (comando) {
 		case ADD:
 			printf("Vino ADD.\n");
-			log_info(log_kernel, "ADD.");
+			log_info(log_kernel, "[CONSOLA]- ADD ingresado.");
 			comandoAdd(comandoSeparado);
 			free(linea);
 			break;
 		case JOURNAL:
 			printf("Vino journal.\n");
-			log_info(log_kernel, "Journal.");
+			log_info(log_kernel, "[CONSOLA]- Journal ingresado.");
 			//comandoJournal(comandoSeparado);
 			request_t request = parser(linea);
 			free(linea);
@@ -409,13 +383,13 @@ void consola() {
 			break;
 		case METRICS:
 			printf("Vino metrics.\n");
-			log_info(log_kernel, "Metrics.");
+			log_info(log_kernel, "[CONSOLA]- Metrics ingresado.");
 			free(linea);
 			comandoMetrics();
 			break;
 		case SALIR:
 			printf("Salimos de la consola y el proceso!.\n");
-			log_info(log_kernel, "Vino comando salir. Cerramos todo");
+			log_info(log_kernel, "[CONSOLA]- Salir ingresado. Cerramos todo");
 			free(linea);
 			int i = 0;
 			while(comandoSeparado[i]!=NULL){
@@ -430,12 +404,12 @@ void consola() {
 		case DROP:
 		case CREATE:
 		case RUN:
-			log_info(log_kernel, "Entramos por default, a Planificar");
+			log_info(log_kernel, "[CONSOLA]- Entramos por comandoPlanificable (insert,select,describe,drop,create,run), a Planificar");
 			strtok(linea, "\n");
 			planificadorLargoPlazo(linea);
 			break;
 		default:
-			printf("Comando mal ingresado.");
+			printf("[CONSOLA]- Comando mal ingresado.");
 			free(linea);
 			break;
 		}
@@ -470,34 +444,20 @@ void menu() {
 int buscarComando(char* comando) {
 
 	if (comando == NULL) {
-		log_info(log_kernel, "Recibimos el comando: NULL");
+		log_info(log_kernel, "[buscarComando]- Recibimos el comando: NULL");
 		return -1;
 	}
 
-	log_info(log_kernel, "Recibimos el comando: %s", comando);
+	log_info(log_kernel, "[buscarComando]- Recibimos el comando: %s", comando);
 
 	int i = 0;
 
 	for (i; i <= SALIR && strcmp(comandosPermitidos[i], comando); i++) {
 	}
 
-	log_info(log_kernel, "Se devuelve el valor %d", i);
+	log_info(log_kernel, "[buscarComando]- Se devuelve el valor %d", i);
 
 	return i;
-
-}
-
-void validarLinea(char** lineaIngresada, t_log* logger) {
-
-	for (int i = 0; lineaIngresada[i] != NULL; i++) {
-
-		log_info(log_kernel, "En la posicion %d del array esta el valor %s", i,
-				lineaIngresada[i]);
-
-		tamanio = i + 1;
-	}
-
-	log_info(log_kernel, "El tamanio del vector de comandos es: %d", tamanio);
 
 }
 
@@ -512,7 +472,7 @@ void inicializarListasPlanificador(void) {
 
 t_pcb* crearPcb(char* linea) {
 
-	log_info(log_kernel, "Creando PCB ==> PID: %d", countPID);
+	log_info(log_kernel, "[crearPcb]- Creando PCB ==> PID: %d", countPID);
 
 	t_pcb* pcbProceso = malloc(sizeof(t_pcb));
 
@@ -522,8 +482,7 @@ t_pcb* crearPcb(char* linea) {
 
 	for (int i = 0; comandoSeparado[i] != NULL; i++) {
 
-		log_info(log_kernel, "En la posicion %d del array esta el valor %s", i,
-				comandoSeparado[i]);
+		log_info(log_kernel, "[crearPcb]- En la posicion %d del array esta el valor %s", i, 	comandoSeparado[i]);
 
 		tamanio = i + 1;
 	}
@@ -558,11 +517,10 @@ t_pcb* crearPcb(char* linea) {
 
 	case RUN: {
 
-		log_info(log_kernel,
-				"Vino Run de comando, vamos a buscar cuantas lineas tiene el archivo");
+		log_info(log_kernel,"[crearPcb]- Vino Run de comando, calculamos cuantas lineas tiene el archivo para llenar PCB.");
 		int aux_rafaga = rafagaComandoRun(comandoSeparado[1]);
 
-		log_info(log_kernel, "La rafaga del run es: %d", aux_rafaga);
+		log_info(log_kernel, "[crearPcb]- La rafaga del run es: %d", aux_rafaga);
 		pcbProceso->pid = countPID;
 		pcbProceso->comando = auxComandoInt;
 		pcbProceso->rafaga = aux_rafaga;
@@ -570,33 +528,36 @@ t_pcb* crearPcb(char* linea) {
 		pcbProceso->estado = 0; //Estado en la cola new porque recien se crea
 		pcbProceso->progamCounter = 0;
 		pcbProceso->archivo = fopen(comandoSeparado[1], "r");
-		log_info(log_kernel, "EN PCB: %s", comandoSeparado[1]);
-		log_info(log_kernel, "EN PCB: %p", pcbProceso->archivo);
+		log_info(log_kernel, "[crearPcb]- EN PCB: %s", comandoSeparado[1]);
+		log_info(log_kernel, "[crearPcb]- EN PCB: %p", pcbProceso->archivo);
+		log_info(log_kernel, "[crearPcb]- Terminamos de completar PCB para RUN.");
 
 	}
 		break;
 	default: {
 
-		log_info(log_kernel, "En la condicion de que no es un comando RUN");
+		log_info(log_kernel, "[crearPcb]- En la condicion de que no es un comando RUN");
 		pcbProceso->pid = countPID;
 		pcbProceso->comando = auxComandoInt;
 		pcbProceso->rafaga = 1;
 		pcbProceso->argumentos = tamanio - 1;
 		pcbProceso->estado = 0; //Estado en la cola new porque recien se crea
 		pcbProceso->progamCounter = 0;
+		log_info(log_kernel, "[crearPcb]- Terminamos de completar PCB para comando que no es RUN.");
 
 	}
 		break;
 
 	}
 
+	log_info(log_kernel, "[crearPcb]- Retornamos direccion del PCB en:  %p.",pcbProceso);
+
 	return pcbProceso;
 }
 
 int rafagaComandoRun(char* path) {
 
-	log_info(log_kernel,
-			"Vamos a buscar la cantidad de lineas que tiene el archivo");
+	log_info(log_kernel,"[rafagaComandoRun]- Recorremos para calcular la cantidad de lineas que tiene el archivo.");
 	int caracter, contador;
 
 	contador = 0;
@@ -607,16 +568,15 @@ int rafagaComandoRun(char* path) {
 
 	if (fd == NULL) {
 
-		log_info(log_kernel, "El archivo pasado por path no se encontró");
-		printf("El archivo %s No existe\n", path);
+		log_info(log_kernel, "[rafagaComandoRun]- El archivo pasado por path no se encontró");
+		printf("El archivo %s No existe!\n", path);
 
 		//free(path);
 		return -1;
 	} else {
 
-		log_info(log_kernel,
-				"El archivo se encontró con exito. Vamos a leerlo para ver la cantidad de lineas");
-		printf("El archivo buscado en la dirección %s existe. Vamos a leerlo\n",
+		log_info(log_kernel,"[rafagaComandoRun]- El archivo se encontró con exito. Empezamos a leer para calcular la cantidad de lineas.");
+		printf("El archivo buscado en la dirección %s existe. Vamos a leerlo.\n",
 				path);
 
 		while ((caracter = fgetc(fd)) != EOF) {
@@ -628,14 +588,12 @@ int rafagaComandoRun(char* path) {
 
 		}
 
-		log_info(log_kernel,
-				"Fuera del while principal, la cantidad de lineas del archivo es: %d",
-				contador);
+		log_info(log_kernel,"[rafagaComandoRun]- Fuera del while principal, la cantidad de lineas del archivo es: %d",contador);
 		rewind(fd);
 		fclose(fd);
 		//free(path);
 
-		log_info(log_kernel, "Por retornar contador");
+		log_info(log_kernel, "[rafagaComandoRun]- Por retornar contador");
 		return contador;
 	}
 
@@ -645,13 +603,12 @@ int rafagaComandoRun(char* path) {
 void nivelMultiprogramacion(int* este_nivel) {
 
 	int nivel = *este_nivel;
-	log_info(log_kernel, "Entrando a nivel %d de multiprogramacion",
-			*este_nivel);
+	log_info(log_kernel, "[nivelMultiprogramacion]- Entrando a nivel %d de multiprogramacion",*este_nivel);
 	free(este_nivel);
 
 	while (1) {
 		t_pcb* pcb = planificarCortoPlazo();
-		log_info(log_kernel, "Ejecutando el nivel: %d", nivel);
+		log_info(log_kernel, "[nivelMultiprogramacion]- Ejecutando el nivel: %d", nivel);
 		ejecutar(pcb, arc_config->quantum, nivel);
 	}
 }
@@ -666,15 +623,14 @@ void planificadorLargoPlazo(char* linea) {
 
 		printf("Hubo un error al crear las estructuras administrativas");
 
-		log_error(log_kernel,
-				"Hubo un error al crear las estructuras administrativas");
+		log_error(log_kernel,"[planificadorLargoPlazo]- Hubo un error al crear las estructuras administrativas");
 
 		return;
 	}
 
-	agregarAListo(pcbProceso);
+	log_info(log_kernel,"[planificadorLargoPlazo]- Por llamar a agregarAListo para pasarle el PCB creado.");
 
-	log_info(log_kernel, "Luego de hacer post al semaforo Planificador");
+	agregarAListo(pcbProceso);
 }
 
 t_pcb* planificarCortoPlazo() {
@@ -689,25 +645,23 @@ t_pcb* planificarCortoPlazo() {
 
 void agregarANuevo(char* linea) {
 
-	log_info(log_kernel, "Por bloquear Mutex de Cola Nuevos");
+	log_info(log_kernel, "[agregarANuevo]- Por bloquear Mutex de Cola Nuevos.");
 	mutexBloquear(&mutexColaNuevos);
 	list_add(colaNuevos, linea);
 	mutexDesbloquear(&mutexColaNuevos);
 
-	log_info(log_kernel,
-			"Se desbloqueo la cola de nuevos y se agrego la linea a la cola de nuevos");
-
-	log_info(log_kernel, "[COLA NUEVOS] Size nuevo: %d", list_size(colaNuevos));
+	log_info(log_kernel,"[agregarANuevo]- Se desbloqueo la cola de nuevos.");
+	log_info(log_kernel,"[agregarANuevo]- Se agrego a la cola la linea %s: .",linea);
+	log_info(log_kernel, "[agregarANuevo]- Size colaNuevos: %d", list_size(colaNuevos));
 
 }
 
 void agregarAListo(t_pcb* pcbParaAgregar) {
 
 	if (pcbParaAgregar->estado == nuevo) {
-		log_info(log_kernel, "Sacamos el elemento de la cola de nuevos");
+		log_info(log_kernel, "[agregarAListo]- Por sacar el elemento de la cola de nuevos");
 
 		mutexBloquear(&mutexColaNuevos);
-		pcbParaAgregar->estado = listo;
 
 		list_remove(colaNuevos, 0);
 
@@ -715,29 +669,28 @@ void agregarAListo(t_pcb* pcbParaAgregar) {
 
 	}
 
-	log_info(log_kernel,
-			"Bloqueamos Mutex para poder insertar el elemento en la cola de listos");
+	log_info(log_kernel,"[agregarAListo]- Bloqueamos Mutex para poder insertar el elemento en la cola de listos.");
 
 	mutexBloquear(&mutexColaListos);
+
 	pcbParaAgregar->estado = listo;
 	list_add(colaListos, pcbParaAgregar);
 
 	for (int i = 0; i < list_size(colaListos); i++) {
 		t_pcb *aux = list_get(colaListos, i);
-		log_info(log_kernel,
-				"[DEBUG2] En la posicion %d de la cola de listos esta el PID: %d",
-				i, aux->pid);
+		log_info(log_kernel,"[agregarAListo]-[DEBUG2]- En la posicion %d de la cola de listos esta el PID: %d",i, aux->pid);
 	}
 
 	mutexDesbloquear(&mutexColaListos);
 
-	log_info(log_kernel,
-			"Desbloqueamos el mutex y agregamos el PCB a la cola de listos.");
+	log_info(log_kernel,"[agregarAListo]- Desbloqueamos el mutex y agregamos el PCB a la cola de listos.");
 
-	log_info(log_kernel, "Salimos de la funcion AgregarAListo");
-	log_info(log_kernel, "[COLA LISTO] Size Listo: %d", list_size(colaListos));
+	log_info(log_kernel, "[agregarAListo]-  Size colaListos: %d", list_size(colaListos));
 
+	log_info(log_kernel, "[agregarAListo]- Por hacer POST a sem_planificador");
 	sem_post(&sem_planificador);
+
+	log_info(log_kernel, "[agregarAListo]- Salimos de la funcion AgregarAListo");
 
 }
 
@@ -747,8 +700,7 @@ void agregarAEjecutando(t_pcb* pcb) {
 	list_add(colaEjecucion, pcb);
 	pcb->estado = ejecucion;
 	mutexDesbloquear(&mutexColaEjecucion);
-	log_info(log_kernel, "[COLA EJECUTAR] Size Ejecucion: %d",
-			list_size(colaEjecucion));
+	log_info(log_kernel, "[agregarAEjecutando]- Size colaEjecucion: %d", list_size(colaEjecucion));
 }
 
 t_pcb* obtenerColaListos(void) {
@@ -757,30 +709,27 @@ t_pcb* obtenerColaListos(void) {
 	mutexBloquear(&mutexColaListos);
 	pcb = list_remove(colaListos, 0);
 	mutexDesbloquear(&mutexColaListos);
-	log_info(log_kernel, "[DEBUG] El que voy a ejecutar es el PID: %d",
-			pcb->pid);
+	log_info(log_kernel, "[obtenerColaListos]- [DEBUG] El que voy a ejecutar es el PID: %d",pcb->pid);
 	return pcb;
 }
 
 t_pcb* crearEstructurasAdministrativas(char* linea) {
 
-	log_info(log_kernel, "Por llamar a mutexBloquear y aumentar countPID: %d",
-			countPID);
+	log_info(log_kernel, "[crearEstructurasAdministrativas]- Por llamar a mutexBloquear y aumentar countPID: %d",countPID);
 
 	mutexBloquear(&countProcess);
 	countPID++;
 	mutexDesbloquear(&countProcess);
 
-	log_info(log_kernel, "Ya desbloqueamos el mutex y countPID quedo en: %d",
-			countPID);
+	log_info(log_kernel, "[crearEstructurasAdministrativas]- CountPID quedo en: %d",countPID);
 
-	log_info(log_kernel, "Por crear el PCB");
+	log_info(log_kernel, "[crearEstructurasAdministrativas]- Por llamar a crearPCB");
 
 	t_pcb* proceso;
 
 	proceso = crearPcb(linea);
 
-	log_info(log_kernel, "PCB creado ==> PID: %d", proceso->pid);
+	log_info(log_kernel, "[crearEstructurasAdministrativas]- PCB creado ==> PID: %d", proceso->pid);
 
 	return proceso;
 }
@@ -788,8 +737,8 @@ t_pcb* crearEstructurasAdministrativas(char* linea) {
 void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 
 	//semaforoWait(&multiprocesamiento);
-	log_info(log_kernel, "[EJECUTAR] Entrando a ejecutar rafaga de PID: %d",
-			pcb->pid);
+
+	log_info(log_kernel, "[EJECUTAR]- Entrando a ejecutar rafaga de PID: %d", pcb->pid);
 
 	if (pcb->comando == RUN && pcb->estado == ejecucion) {
 
@@ -803,15 +752,15 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 
 			for (int i = 1; quantum >= i; i++) {
 
-				log_info(log_kernel, "Vuelta del FOR: %d", i);
+				log_info(log_kernel, "[EJECUTAR]- Vuelta del FOR: %d", i);
 
-				log_info(log_kernel, "%d", pcb->comando);
-				log_info(log_kernel, "%p", pcb->archivo);
+				log_info(log_kernel, "[EJECUTAR]- %d", pcb->comando);
+				log_info(log_kernel, "[EJECUTAR]- %p", pcb->archivo);
 
 //				bufferRun2 = fgets(bufferRun, 100, pcb->archivo);
 				bufferRun = fgets(bufferRun, 100, pcb->archivo);
 
-				log_info(log_kernel, "Linea para ejecutar: %s", bufferRun);
+				log_info(log_kernel, "[EJECUTAR]- Linea para ejecutar: %s", bufferRun);
 
 				resp_com_t respuesta = resolverPedido(bufferRun);
 				loggearEjecucion(nivel, pcb->pid, bufferRun);
@@ -820,12 +769,12 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 				pcb->progamCounter++;
 				borrar_respuesta(respuesta);
 				if(pcb->tipoRespuesta >= RESP_ERROR_PEDIDO_DESCONOCIDO){
-					log_warning(log_kernel,"Entro para exit porque ocurrio el error %d",pcb->tipoRespuesta);
+					log_warning(log_kernel,"[EJECUTAR]- Entro para exit porque ocurrio el error: %d",pcb->tipoRespuesta);
 					agregarAExit(pcb);
 					break;
 				}
 
-				log_info(log_kernel, "Por llamar a aplicar Retardo");
+				log_info(log_kernel, "[EJECUTAR]- Por llamar a aplicar Retardo");
 				aplicarRetardo();
 
 			}
@@ -834,7 +783,7 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 					sacarDeColaEjecucion(pcb);
 					agregarAListo(pcb);
 				} else {
-					log_info(log_kernel,"Entro para exit porque termino la ejecucion");
+					log_info(log_kernel,"[EJECUTAR]- Entro para exit porque termino la ejecucion");
 					agregarAExit(pcb);
 				}
 			}
@@ -859,19 +808,19 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 		} //Aca termina el si la rafaga restante del proceso (asociado al comando RUN) es mayor que el QUANTUM
 		else if (pcb->estado == ejecucion) {
 
-			log_info(log_kernel,"===>Seccion de Quantum mayor que rafaga restante del proceso");
+			log_info(log_kernel,"[EJECUTAR]- ===>Seccion de Quantum mayor que rafaga restante del proceso.");
 
 			int rafagaRestante = pcb->rafaga - pcb->progamCounter;
 
-			log_info(log_kernel, "===>Rafaga restante: %d", rafagaRestante);
+			log_info(log_kernel, "[EJECUTAR]- ===>Rafaga restante: %d.", rafagaRestante);
 
 			for (int i = 1; rafagaRestante >= i; i++) {
 
-				log_info(log_kernel, "Vuelta del FOR: %d", i);
+				log_info(log_kernel, "[EJECUTAR]- Vuelta del FOR: %d.", i);
 
 				bufferRun = fgets(bufferRun, 100, pcb->archivo);
 
-				log_info(log_kernel, "Linea para ejecutar: %s", bufferRun);
+				log_info(log_kernel, "[EJECUTAR]- Linea para ejecutar: %s.", bufferRun);
 
 				resp_com_t respuesta = resolverPedido(bufferRun);
 				loggearEjecucion(nivel, pcb->pid, bufferRun);
@@ -881,13 +830,13 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 
 				borrar_respuesta(respuesta);
 
-				log_info(log_kernel, "Por llamar a aplicar Retardo");
+				log_info(log_kernel, "[EJECUTAR]- Por llamar a aplicar Retardo");
 
 				pcb->progamCounter++;
 
 				if (pcb->tipoRespuesta >= RESP_ERROR_PEDIDO_DESCONOCIDO) {
 
-					log_info(log_kernel,"Entro para exit porque ocurrio el error %d",pcb->tipoRespuesta);
+					log_info(log_kernel,"[EJECUTAR]- Entro para exit porque ocurrio el error %d",pcb->tipoRespuesta);
 					agregarAExit(pcb);
 					break;
 
@@ -909,13 +858,13 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 
 		borrar_respuesta(respuesta);
 
-		log_info(log_kernel, "Por llamar a aplicar Retardo");
+		log_info(log_kernel, "[EJECUTAR]- Por llamar a aplicar Retardo");
 		aplicarRetardo();
 
 		pcb->progamCounter++;
 		if (pcb->tipoRespuesta >= RESP_ERROR_PEDIDO_DESCONOCIDO) {
 
-			log_info(log_kernel, "Entro para exit porque ocurrio el error %d", pcb->tipoRespuesta);
+			log_info(log_kernel, "[EJECUTAR]- Entro para exit porque ocurrio el error %d", pcb->tipoRespuesta);
 			agregarAExit(pcb);
 
 		}
@@ -923,7 +872,7 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 
 	if (pcb->progamCounter == pcb->rafaga && pcb->estado == ejecucion) {
 
-		log_info(log_kernel, "Entro para exit");
+		log_info(log_kernel, "[EJECUTAR]- Entro para exit por fin de rafaga.");
 		agregarAExit(pcb);
 	}
 
@@ -931,20 +880,21 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 
 void agregarAExit(t_pcb* pcb) {
 
-	log_info(log_kernel, "[COLA EXIT] Size Exit antes: %d",	list_size(colaExit));
+	log_info(log_kernel, "[agregarAExit]- Size colaExit antes: %d.",	list_size(colaExit));
 
 	int resultado = sacarDeColaEjecucion(pcb);
 
 	if (pcb->comando == RUN) {
 
-		log_info(log_kernel, "Antes de cerrar archivo");
-		log_info(log_kernel, "%p", pcb->archivo);
+		log_info(log_kernel, "[agregarAExit]- La direccion del archivo a cerrar: %p.", pcb->archivo);
 
 		fclose(pcb->archivo);
 
+		log_info(log_kernel, "[agregarAExit]- Archivo cerrado.");
+
 	}
 
-	log_info(log_kernel, "Resultado de sacar comando de ejecucion: %d",	resultado);
+	log_info(log_kernel, "[agregarAExit]- Resultado de sacar comando de ejecucion: %d",	resultado);
 
 	if (resultado >= 0) {
 
@@ -954,14 +904,14 @@ void agregarAExit(t_pcb* pcb) {
 
 		mutexDesbloquear(&mutexColaExit);
 
-		log_info(log_kernel, "[COLA EXIT]Size Exit despues: %d",list_size(colaExit));
+		log_info(log_kernel, "[agregarAExit]- Size colaExit despues: %d.",list_size(colaExit));
 
 		if(pcb->tipoRespuesta < RESP_ERROR_PEDIDO_DESCONOCIDO ){
 
 			printf("El comando: %s termino de ejecutarse", pcb->linea);
 			printf("\n>");
 			puts("");
-			log_info(log_kernel, "El comando: %s termino de ejecutarse", pcb->linea);
+			log_info(log_kernel, "[agregarAExit]- La linea: %s termino de ejecutarse.", pcb->linea);
 
 		}
 		else{
@@ -971,7 +921,7 @@ void agregarAExit(t_pcb* pcb) {
 			printf("%d",pcb->progamCounter);
 			printf("\n>");
 			puts("");
-			log_info(log_kernel, "El comando: %s termino con error, en la linea %d. Error de TIPO: %d", pcb->linea,pcb->progamCounter,pcb->tipoRespuesta);
+			log_info(log_kernel, "[agregarAExit]- El comando: %s termino con error, en la linea %d. Error de TIPO: %d", pcb->linea,pcb->progamCounter,pcb->tipoRespuesta);
 
 		}
 //		free(pcb->linea);
@@ -985,14 +935,13 @@ int sacarDeColaEjecucion(t_pcb* pcb) {
 	if (posicion >= 0) {
 
 		mutexBloquear(&mutexColaEjecucion);
-		log_info(log_kernel, "Por sacar de ejecucion");
+		log_info(log_kernel, "[sacarDeColaEjecucion]- Por sacar de ejecucion");
 		list_remove(colaEjecucion, posicion);
 
 		mutexDesbloquear(&mutexColaEjecucion);
 	}
 
-	log_info(log_kernel, "[COLA EJECUCION]Size Ejecucion (s): %d",
-			list_size(colaEjecucion));
+	log_info(log_kernel, "[sacarDeColaEjecucion]- colaEjecucion (s): %d",	list_size(colaEjecucion));
 
 	return posicion;
 }
