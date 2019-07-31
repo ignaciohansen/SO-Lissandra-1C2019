@@ -111,6 +111,7 @@ void LisandraSetUP() {
 	listaTablasInsertadas = list_create();
 	listaRegistrosMemtable = list_create();
 
+	rwLockIniciar(&sem_rw_memtable);
 	iniciarSemaforosCompactacion();
 }
 
@@ -586,7 +587,6 @@ void atenderRequest(char* linea) {
 	req = parser(linea);
 	resp_com_t respuesta;
 	respuesta.msg.tam = 0;
-
 	switch (req.command) {
 
 	case INSERT:
@@ -1068,14 +1068,15 @@ void esperarTiempoDump() {
 }
 
 void realizarDump() {
+	rwLockEscribir(&sem_rw_memtable);
 	mutexBloquear(&listaTablasInsertadas_mx);
 	int tam = list_size(listaTablasInsertadas);
 	mutexDesbloquear(&listaTablasInsertadas_mx);
-	mutexBloquear(&memtable_mx); //@martin @sincro lo descomento
+	//mutexBloquear(&memtable_mx); //@martin @sincro lo descomento
 	for (int i = 0; i < tam; i++) {
-		mutexBloquear(&listaTablasInsertadas_mx);
+//		mutexBloquear(&listaTablasInsertadas_mx);
 		char* tabla = list_get(listaTablasInsertadas, i);
-		mutexDesbloquear(&listaTablasInsertadas_mx);
+//		mutexDesbloquear(&listaTablasInsertadas_mx);
 		indiceTablaParaTamanio = i;
 		log_info(logger, "la tabla insertada en la memtable es %s", tabla);
 		char* path = armarPathTablaParaDump(tabla, cantidad_de_dumps);
@@ -1088,11 +1089,12 @@ void realizarDump() {
 	log_info(logger, "Se limpia diccionario y la listaTablasInsertadas");
 	vaciarMemtable();
 	log_info(logger, "Se vacio la memtable");
-	mutexDesbloquear(&memtable_mx); //@martin @sincro lo descomento
-	mutexBloquear(&listaTablasInsertadas_mx);
+//	mutexDesbloquear(&memtable_mx); //@martin @sincro lo descomento
+//	mutexBloquear(&listaTablasInsertadas_mx);
 	list_clean_and_destroy_elements(listaTablasInsertadas,free);//@martin @revisar
+	rwLockDesbloquear(&sem_rw_memtable);
 	log_info(logger, "Se vacio la lista de tablas insertadas");
-	mutexDesbloquear(&listaTablasInsertadas_mx);
+//	mutexDesbloquear(&listaTablasInsertadas_mx);
 }
 
 char* armarPathTablaParaDump(char* tabla, int dumps) {
@@ -2255,8 +2257,9 @@ t_registroMemtable* registroMayorTemporal(char* tabla, u_int16_t key,
 				registro = armarRegistroNulo();
 			} else {
 				if (registro == NULL) {
-					aux = leerBloquesConsecutivosUnaKey(lecturaTMP->bloques,
-							lecturaTMP->size, key, false);
+					aux = leerBloquesConsecutivosUnaKey(lecturaTMP->bloques,lecturaTMP->size, key, false);
+					if(aux == NULL)
+						aux = armarRegistroNulo();
 					if (aux->value != NULL) {
 						//registro = aux;
 						registro = crearCopiaRegistro(aux);	//@nacho agregado
@@ -2266,6 +2269,8 @@ t_registroMemtable* registroMayorTemporal(char* tabla, u_int16_t key,
 				} else {
 					aux = leerBloquesConsecutivosUnaKey(lecturaTMP->bloques,
 							lecturaTMP->size, key, false);
+					if(aux == NULL)
+						aux = armarRegistroNulo();
 					if (aux->value != NULL) {
 						log_info(logger,
 								"Nuevo registro encontrado: <%llu;%d;%s>",
@@ -2308,6 +2313,9 @@ t_registroMemtable* registroMayorParticion(char* tabla, u_int16_t key,
 		registro = armarRegistroNulo();
 	} else {
 		registro = leerBloquesConsecutivosUnaKey(ListaBloques->bloques,	ListaBloques->size, key, true);
+		if(registro == NULL){
+			registro = armarRegistroNulo();
+		}
 		list_destroy_and_destroy_elements(ListaBloques->bloques,free);
 	}
 	free(ListaBloques);
@@ -2406,6 +2414,7 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 		}
 
 		//LEER
+		log_info(logger, "[DEBUG] Voy a bloquear tabla %s",tabla);
 		rwLockLeer(&(semsTabla->rwLockTabla));
 
 		t_metadata_tabla *metadata = obtenerMetadataTabla(tabla);
@@ -2417,6 +2426,7 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 		if (metadata == NULL) {
 			registroMayor = armarRegistroNulo();
 			registroMayor->tam_registro = -2;
+			log_info(logger, "[DEBUG] Voy a desbloquear tabla %s",tabla);
 			rwLockDesbloquear(&(semsTabla->rwLockTabla)); //@martin si voy a retornar tengo que desbloquear no?
 			return registroMayor;
 		}; // 0: OK. -1: ERROR. // frenar en caso de error
@@ -2428,18 +2438,10 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 
 		int particiones = determinarParticion(valorKey, metadata->particiones);
 
-
-		t_registroMemtable* registroMemtable = registroMayorMemtable(tabla,
-				valorKeyU);
-
-
-
-		t_registroMemtable* registroParticion;
+				t_registroMemtable* registroParticion;
 
 		registroParticion = registroMayorParticion(tabla, valorKeyU,
 				particiones);
-
-
 
 		t_registroMemtable* registroTemporal = registroMayorTemporal(tabla,
 				valorKeyU, ".tmp");
@@ -2447,8 +2449,18 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 		t_registroMemtable* registroTemporalC = registroMayorTemporal(tabla,
 				valorKeyU, ".tmpc");
 
+		log_info(logger, "[DEBUG] Voy a desbloquear tabla %s",tabla);
+		rwLockDesbloquear(&(semsTabla->rwLockTabla));
+
+		log_info(logger, "[DEBUG] Voy a bloquear memtable");
+		rwLockLeer(&sem_rw_memtable);
+		t_registroMemtable* registroMemtable = registroMayorMemtable(tabla,	valorKeyU);
+		log_info(logger, "[DEBUG] Voy a desbloquear memtable");
+		rwLockDesbloquear(&sem_rw_memtable);
+
 		registroMayor = tomarMayorRegistro(registroMemtable, registroParticion,
 				registroTemporal, registroTemporalC);
+
 
 		//Como la función tomarMayorRegistro crea una copia del mayor, puedo borrar todos
 		borrarRegistro(registroMemtable);
@@ -2471,9 +2483,6 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 //		free(metadata);
 
 		// NACHO
-		rwLockDesbloquear(&(semsTabla->rwLockTabla));
-
-
 		free(metadata->consistency); //@nacho agregado
 		free(metadata); //@nacho agregado
 
@@ -2515,10 +2524,11 @@ int comandoDrop(char* tabla) {
 		log_info(logger, "Vamos a eliminar la tabla: %s", path);
 		free(path);
 
-		mutexBloquear(&memtable_mx);
+//		mutexBloquear(&memtable_mx);
+		rwLockEscribir(&sem_rw_memtable);
 		t_list *lista_reg = dictionary_get(memtable,tabla);
 		dictionary_remove(memtable,tabla);
-		mutexDesbloquear(&memtable_mx);
+//		mutexDesbloquear(&memtable_mx);
 		if (lista_reg != NULL)
 			list_destroy_and_destroy_elements(lista_reg,(void*)borrarRegistro);
 
@@ -2531,6 +2541,7 @@ int comandoDrop(char* tabla) {
 			}
 		}
 		mutexDesbloquear(&listaTablasInsertadas_mx);
+		rwLockDesbloquear(&sem_rw_memtable); //@sincro revisar si no caemos en interbloqueo
 
 		eliminarTablaCompleta(tabla);
 
@@ -2722,28 +2733,29 @@ int comandoInsert(char* tabla, char* key, char* valueOriginal, char* timestamp) 
 			t_registroMemtable* registroPorAgregarE = armarEstructura(valueDesenmascarado, key, timestamp);
 			free(valueDesenmascarado);
 			// Verifico que la key ya exista en el memtable, aca se hace el dump
-			mutexBloquear(&memtable_mx);
+//			mutexBloquear(&memtable_mx);
+			rwLockEscribir(&sem_rw_memtable);
 			bool tablaRepetida = dictionary_has_key(memtable, tabla);
-			mutexDesbloquear(&memtable_mx);
+//			mutexDesbloquear(&memtable_mx);
 		//	log_info(logger, "valor tablaRepetida %d", tablaRepetida);
 
 			if (tablaRepetida) {
 				log_info(logger, "Encontre una tabla repetida");
-				mutexBloquear(&memtable_mx);
+//				mutexBloquear(&memtable_mx);
 
 				t_list* tableRegisters = dictionary_get(memtable, tabla);
 				list_add(tableRegisters, registroPorAgregarE);
 
 				log_info(logger,"Agregué registro a la memtable <%llu,%d;%s>",registroPorAgregarE->timestamp,registroPorAgregarE->key, registroPorAgregarE->value);
 				//log_info(logger, "[DEBUG] esta tabla en la memtable tiene: ");
-				t_list* tableRegisters2 = dictionary_get(memtable, tabla);
+//				t_list* tableRegisters2 = dictionary_get(memtable, tabla);
 			//	log_info(logger, "[DEBUG] tamaño tabla registros %d : ", list_size(tableRegisters2));
 //				for (int i = 0; i < list_size(tableRegisters2); i++) {
 //					t_registroMemtable * regAux = list_get(tableRegisters2, i);
 //					//log_info(logger, "[DEBUG] %d <%llu;%d;%s>", i,regAux->timestamp, regAux->key, regAux->value);
 //				}
 
-				mutexDesbloquear(&memtable_mx);
+//				mutexDesbloquear(&memtable_mx);
 
 			}
 			else {
@@ -2754,16 +2766,16 @@ int comandoInsert(char* tabla, char* key, char* valueOriginal, char* timestamp) 
 //				char* aux2 = malloc(strlen(tabla) + 1); //@martin @revisar
 				strcpy(aux, tabla);
 //				strcpy(aux2, tabla);//@MARTIN
-				mutexBloquear(&memtable_mx);
+//				mutexBloquear(&memtable_mx);
 				dictionary_put(memtable, aux, listaAux);
-				mutexDesbloquear(&memtable_mx);
+//				mutexDesbloquear(&memtable_mx);
 				mutexBloquear(&listaTablasInsertadas_mx);
 				list_add(listaTablasInsertadas, aux); //puede llegar a romper, agregar un aux
 				mutexDesbloquear(&listaTablasInsertadas_mx);
 
 			}
 
-
+			rwLockDesbloquear(&sem_rw_memtable);
 			 //free(value);
 
 		}
@@ -3151,7 +3163,7 @@ t_registroMemtable *leerBloquesConsecutivosUnaKey(t_list *nroBloques,
 //	log_info(logger, "por imprimir el retval");
 	if (retval->timestamp != 0) {
 
-		log_info(logger,"[OBTENIENDO KEY BLOQUES] El registro con mayor timestamp es <%llu;%d;%s>",retval->timestamp, retval->key, "retval->value");
+		log_info(logger,"[OBTENIENDO KEY BLOQUES] El registro con mayor timestamp es <%llu;%d;%s>",retval->timestamp, retval->key, retval->value);
 	} else {
 		log_info(logger,"[OBTENIENDO KEY BLOQUES] No encontré un registro con la key indicada");
 	}
@@ -3163,9 +3175,11 @@ void cerrarTodo() {
 	liberarTodosLosRecursosGlobalesQueNoSeCerraron();
 	sem_destroy(&semaforoQueries);
 	if(dictionary_size(memtable)>0){
-		mutexBloquear(&memtable_mx); //@martin @sincro agrego
+		rwLockEscribir(&sem_rw_memtable);
+//		mutexBloquear(&memtable_mx); //@martin @sincro agrego
 		vaciarMemtable();
-		mutexDesbloquear(&memtable_mx); //@martin @sincro agrego
+//		mutexDesbloquear(&memtable_mx); //@martin @sincro agrego
+		rwLockDesbloquear(&sem_rw_memtable);
 	}
 	dictionary_destroy(memtable);
 	free(metadataLFS->magic_number);

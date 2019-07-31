@@ -58,8 +58,9 @@ time_gos_t proxima_ejecucion_gossiping(time_gos_t ultimo)
 
 void liberar_memoria_gossiping(void)
 {
-	list_clean_and_destroy_elements(g_lista_seeds,borrar_seed);
+	list_clean_and_destroy_elements(g_lista_seeds,(void*)borrar_seed);
 	gossiping_inicializado = false;
+	list_clean_and_destroy_elements(g_memorias_caidas,(void*)free);
 }
 
 void agregar_seed(int nro_mem, char* ip, char *puerto)

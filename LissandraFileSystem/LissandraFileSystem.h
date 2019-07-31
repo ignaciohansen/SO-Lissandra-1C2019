@@ -178,6 +178,8 @@ typedef struct{
 
 t_dictionary* dicSemTablas;
 
+RWlock sem_rw_memtable;
+
 t_registroMemtable* comandoSelect(char* tabla, char* key);
 int comandoInsertSinTimestamp(char* tabla,char* key,char* value);
 int comandoInsert(char* tabla,char* key,char* value,char* timestamp);

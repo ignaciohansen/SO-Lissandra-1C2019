@@ -1536,6 +1536,7 @@ int conectar_a_servidor(char *ip,char *puerto, id_com_t id)
 
 	if(connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen) == -1){
 		//printf("\n**No se pudo establecer conexion con el servidor**\n");
+		freeaddrinfo(server_info);
 		return -1;
     }
 /*

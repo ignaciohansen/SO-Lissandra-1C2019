@@ -331,7 +331,7 @@ resp_com_t resolverPedido(char *linea);
 
 void loggearEjecucion(int nivel, int pid, char* linea);
 
-
+void liberarTodo(void);
 
 /* METRICAS */
 //Por cada solicitud a una memoria se debe mantener una estadística interna de cada criterio que indique:

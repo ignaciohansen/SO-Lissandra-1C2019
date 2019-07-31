@@ -97,15 +97,14 @@ void* hilo_servidor(int * socket_p) {
 		imprimirMensaje(logger_com_lfs,
 				"[SERVIDOR] Esperando recibir un cliente");
 		cliente = esperar_cliente(socket_servidor);
-		hilo_cliente_args_t args; //@NACHO
 		imprimirMensaje(logger_com_lfs,"[SERVIDOR] Cliente intentando conectarse");
 		switch (cliente.id) {
 		case MEMORIA:
-			args.socket_cliente = cliente.socket; //@NACHO
-			args.requiere_lfs = false; //@NACHO
 			dar_bienvenida_cliente(cliente.socket, LFS, g_str_tam_valor);
-			pthread_create(&thread, NULL, (void *) hilo_cliente,&cliente.socket);
 			cliente_dar_de_alta(cliente.socket); //@NACHO
+			int *socket = malloc(sizeof(int));
+			*socket = cliente.socket;
+			pthread_create(&thread, NULL, (void *) hilo_cliente,socket);
 			pthread_detach(thread);
 			break;
 		default:
@@ -119,9 +118,9 @@ void* hilo_servidor(int * socket_p) {
 }
 
 //void * hilo_cliente(int * socket_p) @NACHO
-void * hilo_cliente(hilo_cliente_args_t *args){
+void * hilo_cliente(int *socket){
 	imprimirMensaje(logger_com_lfs,"[CLIENTE] Entrando a hilo de atención a un cliente");
-	int socket_cliente = args->socket_cliente;
+	int socket_cliente = *socket;
 	imprimirMensaje(logger_com_lfs, "[CLIENTE] Empiezo a esperar mensajes");
 	msg_com_t msg;
 	bool fin = false;
@@ -142,6 +141,8 @@ void * hilo_cliente(hilo_cliente_args_t *args){
 			respuesta = resolver_pedido(requestParser);
 			//printf("la respuesta a enviar es: %s",respuesta.msg.str);
 			aux_enviado_ok = enviar_respuesta(socket_cliente, respuesta);
+
+			borrar_respuesta(respuesta);
 
 			/* Acá tienen en request.str el request recibido
 			 * Deben resolverlo de alguna forma con las funciones que tienen
@@ -177,8 +178,9 @@ void * hilo_cliente(hilo_cliente_args_t *args){
 			borrar_mensaje(msg);
 			fin = true;
 			cliente_dar_de_baja(socket_cliente);
-			if(socket_cliente != -1){close(socket_cliente);}
-
+			if(socket_cliente != -1){
+				close(socket_cliente);
+			}
 			break;
 		default:
 			imprimirAviso(logger_com_lfs,
@@ -187,76 +189,75 @@ void * hilo_cliente(hilo_cliente_args_t *args){
 			break;
 		}
 	}
+	free(socket);
 	imprimirMensaje(logger_com_lfs, "[CLIENTE] Finalizando el hilo");
 	return NULL;
 }
 
 resp_com_t resolver_pedido(request_t req) {
-	{
-		resp_com_t respuesta;
-		log_info(logger,"[RESOLVIENDO PEDIDO] Llego %s",req.request_str);
+	resp_com_t respuesta;
+	log_info(logger,"[RESOLVIENDO PEDIDO] Llego %s",req.request_str);
 
-		switch (req.command) {
-		case INSERT:
-			respuesta = resolver_insert(req);
-			if (respuesta.tipo == RESP_OK) {
-				imprimirMensaje(logger,	"[RESOLVIENDO PEDIDO] INSERT hecho correctamente");
-			} else {
-				imprimirError(logger,"[RESOLVIENDO PEDIDO] El INSERT no pudo realizarse");
-			}
-			break;
-		case SELECT:
-			respuesta = resolver_select(req);
-			if (respuesta.tipo == RESP_OK && respuesta.msg.tam > 0) {
-				imprimirMensaje1(logger,
-						"[RESOLVIENDO PEDIDO] SELECT hecho correctamente. Valor %s obtenido",
-						respuesta.msg.str);
-			} else {
-				imprimirMensaje(logger,
-						"[RESOLVIENDO PEDIDO] El SELECT no pudo realizarse");
-			}
-			break;
-		case DESCRIBE:
-			respuesta = resolver_describe(req);
-			if (respuesta.tipo == RESP_OK && respuesta.msg.tam > 0) {
-				imprimirMensaje1(logger,
-						"[RESOLVIENDO PEDIDO] DESCRIBE hecho correctamente. Valor %s obtenido",
-						respuesta.msg.str);
-			} else {
-				imprimirError(logger,
-						"[RESOLVIENDO PEDIDO] El DESCRIBE no pudo realizarse");
-			}
-			break;
-		case DROP:
-			respuesta = resolver_drop(req);
-			if (respuesta.tipo == RESP_OK) {
-				imprimirMensaje(logger,
-						"[RESOLVIENDO PEDIDO] DROP hecho correctamente");
-			} else {
-				imprimirError(logger,
-						"[RESOLVIENDO PEDIDO] El DROP no pudo realizarse");
-			}
-			break;
-		case CREATE:
-			respuesta = resolver_create(req);
-			if (respuesta.tipo == RESP_OK) {
-				imprimirMensaje(logger,
-						"[RESOLVIENDO PEDIDO] CREATE hecho correctamente");
-			} else {
-				imprimirError(logger,
-						"[RESOLVIENDO PEDIDO] El CREATE no pudo realizarse");
-			}
-			break;
-
-		default:
-			respuesta = armar_respuesta(RESP_ERROR_PEDIDO_DESCONOCIDO, NULL);
-			break;
+	switch (req.command) {
+	case INSERT:
+		respuesta = resolver_insert(req);
+		if (respuesta.tipo == RESP_OK) {
+			imprimirMensaje(logger,	"[RESOLVIENDO PEDIDO] INSERT hecho correctamente");
+		} else {
+			imprimirError(logger,"[RESOLVIENDO PEDIDO] El INSERT no pudo realizarse");
 		}
+		break;
+	case SELECT:
+		respuesta = resolver_select(req);
+		if (respuesta.tipo == RESP_OK && respuesta.msg.tam > 0) {
+			imprimirMensaje1(logger,
+					"[RESOLVIENDO PEDIDO] SELECT hecho correctamente. Valor %s obtenido",
+					respuesta.msg.str);
+		} else {
+			imprimirMensaje(logger,
+					"[RESOLVIENDO PEDIDO] El SELECT no pudo realizarse");
+		}
+		break;
+	case DESCRIBE:
+		respuesta = resolver_describe(req);
+		if (respuesta.tipo == RESP_OK && respuesta.msg.tam > 0) {
+			imprimirMensaje1(logger,
+					"[RESOLVIENDO PEDIDO] DESCRIBE hecho correctamente. Valor %s obtenido",
+					respuesta.msg.str);
+		} else {
+			imprimirError(logger,
+					"[RESOLVIENDO PEDIDO] El DESCRIBE no pudo realizarse");
+		}
+		break;
+	case DROP:
+		respuesta = resolver_drop(req);
+		if (respuesta.tipo == RESP_OK) {
+			imprimirMensaje(logger,
+					"[RESOLVIENDO PEDIDO] DROP hecho correctamente");
+		} else {
+			imprimirError(logger,
+					"[RESOLVIENDO PEDIDO] El DROP no pudo realizarse");
+		}
+		break;
+	case CREATE:
+		respuesta = resolver_create(req);
+		if (respuesta.tipo == RESP_OK) {
+			imprimirMensaje(logger,
+					"[RESOLVIENDO PEDIDO] CREATE hecho correctamente");
+		} else {
+			imprimirError(logger,
+					"[RESOLVIENDO PEDIDO] El CREATE no pudo realizarse");
+		}
+		break;
 
-		//fprintf(tablas_fp,"\nEjecutado comando %s",req.request_str);
-		//loggearEstadoActual(tablas_fp);
-		return respuesta;
+	default:
+		respuesta = armar_respuesta(RESP_ERROR_PEDIDO_DESCONOCIDO, NULL);
+		break;
 	}
+
+	//fprintf(tablas_fp,"\nEjecutado comando %s",req.request_str);
+	//loggearEstadoActual(tablas_fp);
+	return respuesta;
 }
 
 resp_com_t resolver_describe(request_t req) {

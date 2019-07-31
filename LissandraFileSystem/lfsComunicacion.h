@@ -29,12 +29,7 @@ resp_com_t resolver_pedido(request_t req);
 
 //@NACHO
 
-typedef struct{
-	int socket_cliente;
-	bool requiere_lfs;
-}hilo_cliente_args_t;
-
-void * hilo_cliente(hilo_cliente_args_t *args);
+void * hilo_cliente(int *socket);
 void cerrar_todos_clientes(void);
 void cliente_dar_de_baja(int socket);
 void cliente_dar_de_alta(int socket);

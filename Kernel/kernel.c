@@ -93,10 +93,55 @@ int main() {
 
 	fclose(fp_trace_ejecucion);
 
+	liberarTodo();
+
 	log_info(log_kernel, "Salimoooos, fin del main.");
 
 	return 0;
 
+}
+
+void liberarTodo(void){
+	log_info(log_kernel, "[FINALIZANDO] Liberamos memoria");
+
+	log_info(log_kernel, "[FINALIZANDO] Borro memoria utilizada por el gossiping");
+	liberar_memoria_gossiping();
+
+	log_info(log_kernel, "[FINALIZANDO] Borro lista de tablas");
+	pthread_mutex_lock(&lista_tablas_mutex);
+	if (g_lista_tablas != NULL) {
+		list_destroy_and_destroy_elements(g_lista_tablas,(void *) borrarEntradaListaTablas);
+	}
+	pthread_mutex_unlock(&lista_tablas_mutex);
+
+	log_info(log_kernel, "[FINALIZANDO] Borro criterios");
+	pthread_mutex_lock(&lista_memorias_asociadas_mutex);
+	for (int i = 0; i < list_size(g_lista_memorias_asociadas); i++) {
+		seed_com_t *aux = list_get(g_lista_memorias_asociadas, i);
+		list_remove(g_lista_memorias_asociadas, i);
+		free(aux);
+	}
+	pthread_mutex_unlock(&lista_memorias_asociadas_mutex);
+	list_destroy_and_destroy_elements(criterioEC.listMemorias,free);
+	list_destroy_and_destroy_elements(criterioSHC.listMemorias,free);
+	list_destroy_and_destroy_elements(criterioSC.listMemorias,free);
+
+	log_info(log_kernel, "[FINALIZANDO] Borro estructura de metricas");
+	t_metricas_memoria *aux;
+	pthread_mutex_lock(&mutex_metricas);
+	for(int i=0; i<list_size(g_metricas.operaciones_memorias);i++){
+		aux = list_get(g_metricas.operaciones_memorias,i);
+		list_remove(g_metricas.operaciones_memorias,i);
+		free(aux);
+	}
+	pthread_mutex_unlock(&mutex_metricas);
+
+	log_info(log_kernel, "[FINALIZANDO] Borro archivo config");
+	free(arc_config->ip_memoria);
+	free(arc_config);
+
+	log_info(log_kernel, "[FINALIZANDO] Borro log");
+	log_destroy(log_kernel);
 }
 
 pthread_t* iniciarHilosMultiprocesamiento(int nivel) {
@@ -707,7 +752,7 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 	if (pcb->comando == RUN && pcb->estado == ejecucion) {
 
 		char* bufferRun = malloc(100);
-		char* bufferRun2 = malloc(100);
+//		char* bufferRun2 = malloc(100);
 
 		//KEY INexistente
 
@@ -721,12 +766,15 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 				log_info(log_kernel, "%d", pcb->comando);
 				log_info(log_kernel, "%p", pcb->archivo);
 
-				bufferRun2 = fgets(bufferRun, 100, pcb->archivo);
+//				bufferRun2 = fgets(bufferRun, 100, pcb->archivo);
+				bufferRun = fgets(bufferRun, 100, pcb->archivo);
 
-				log_info(log_kernel, "Linea para ejecutar: %s", bufferRun2);
+				log_info(log_kernel, "Linea para ejecutar: %s", bufferRun);
 
-				resp_com_t respuesta = resolverPedido(bufferRun2);
-				loggearEjecucion(nivel, pcb->pid, bufferRun2);
+				resp_com_t respuesta = resolverPedido(bufferRun);
+				loggearEjecucion(nivel, pcb->pid, bufferRun);
+
+				free(bufferRun);
 
 				pcb->tipoRespuesta = respuesta.tipo;
 				pcb->progamCounter++;
@@ -781,12 +829,13 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 
 				log_info(log_kernel, "Vuelta del FOR: %d", i);
 
-				bufferRun2 = fgets(bufferRun, 100, pcb->archivo);
+				bufferRun = fgets(bufferRun, 100, pcb->archivo);
 
-				log_info(log_kernel, "Linea para ejecutar: %s", bufferRun2);
+				log_info(log_kernel, "Linea para ejecutar: %s", bufferRun);
 
-				resp_com_t respuesta = resolverPedido(bufferRun2);
-				loggearEjecucion(nivel, pcb->pid, bufferRun2);
+				resp_com_t respuesta = resolverPedido(bufferRun);
+				loggearEjecucion(nivel, pcb->pid, bufferRun);
+				free(bufferRun);
 				//@martin @lorenzo aca habria que revisar si se produjo un error grave y abortar la ejecucion del script
 				pcb->tipoRespuesta = respuesta.tipo;
 
@@ -871,7 +920,7 @@ void agregarAExit(t_pcb* pcb) {
 			printf("El comando: %s termino de ejecutarse", pcb->linea);
 			printf("\n>");
 			puts("");
-			log_info(log_kernel, "El comando: %s termino con exito. ", pcb->linea);
+			log_info(log_kernel, "El comando: %s termino de ejecutarse", pcb->linea);
 
 		}
 		else{
@@ -1222,6 +1271,7 @@ int conectar_a_memoria(char ip[LARGO_IP], char puerto[LARGO_PUERTO]) {
 		return -1;
 	}
 
+	borrar_handshake(hs);
 	imprimirMensaje(log_kernel,
 			"[CONECTANDO A MEMORIA] Me conecté con éxito a la MEMORIA");
 
@@ -1454,8 +1504,7 @@ void actualizarTablasCriterios(t_list *nuevas) {
 	log_info(log_kernel, "[TABLAS] Se va a actualizar la lista de tablas");
 	pthread_mutex_lock(&lista_tablas_mutex);
 	if (g_lista_tablas != NULL) {
-		list_destroy_and_destroy_elements(g_lista_tablas,
-				(void *) borrarEntradaListaTablas);
+		list_destroy_and_destroy_elements(g_lista_tablas,(void *) borrarEntradaListaTablas);
 	}
 	g_lista_tablas = nuevas;
 	pthread_mutex_unlock(&lista_tablas_mutex);
