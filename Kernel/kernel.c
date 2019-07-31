@@ -982,8 +982,7 @@ void aplicarRetardo(void) {
 
 void gossiping_Kernel(pthread_t *hiloGossiping) {
 
-	inicializar_estructuras_gossiping(log_kernel,
-			arc_config->retardo_gossiping);
+	inicializar_estructuras_gossiping(log_kernel,arc_config->retardo_gossiping);
 
 	char auxPuerto[LARGO_PUERTO];
 
@@ -993,9 +992,6 @@ void gossiping_Kernel(pthread_t *hiloGossiping) {
 
 	iniciar_hilo_gossiping(&soy, hiloGossiping, actualizarMemoriasDisponibles);
 
-	/*	criterioSC;
-	 criterioSHC;
-	 criterioEC;*/
 }
 
 void actualizarMemoriasDisponibles() {
@@ -1006,7 +1002,7 @@ void actualizarMemoriasDisponibles() {
 		free(memoriasConocidasKernel.seeds);
 	}
 	memoriasConocidasKernel = armar_vector_seeds(soy);
-	log_info(log_kernel, "Cantidad Memorias: %d", memoriasConocidasKernel.cant);
+	log_info(log_kernel, "[actualizarMemoriasDisponibles]- Cantidad Memorias: %d", memoriasConocidasKernel.cant);
 	pthread_mutex_unlock(&memorias_conocidas_mutex);
 }
 
@@ -1053,8 +1049,7 @@ void actualizarMemoriasDisponibles() {
 seed_com_t* buscarMemoria(int numMemoria) {
 	seed_com_t *memoria_buscada = NULL;
 	int iMem = -1;
-	log_info(log_kernel, "[BUSCANDO MEMORIA] Voy a buscar memoria %d",
-			numMemoria);
+	log_info(log_kernel, "[buscarMemoria]- Voy a buscar memoria %d",numMemoria);
 	pthread_mutex_lock(&memorias_conocidas_mutex);
 	for (int i = 0; i < memoriasConocidasKernel.cant; i++) {
 		if (memoriasConocidasKernel.seeds[i].numMemoria == numMemoria) {
@@ -1064,17 +1059,15 @@ seed_com_t* buscarMemoria(int numMemoria) {
 	}
 	if (iMem != -1) {
 		memoria_buscada = malloc(sizeof(seed_com_t));
+
 		strcpy(memoria_buscada->ip, memoriasConocidasKernel.seeds[iMem].ip);
-		strcpy(memoria_buscada->puerto,
-				memoriasConocidasKernel.seeds[iMem].puerto);
-		memoria_buscada->numMemoria =
-				memoriasConocidasKernel.seeds[iMem].numMemoria;
-		log_info(log_kernel,
-				"[BUSCANDO MEMORIA] Se encontro memoria %d: Ip %s. Puerto %s",
-				numMemoria, memoria_buscada->ip, memoria_buscada->puerto);
+
+		strcpy(memoria_buscada->puerto,memoriasConocidasKernel.seeds[iMem].puerto);
+
+		memoria_buscada->numMemoria =memoriasConocidasKernel.seeds[iMem].numMemoria;
+		log_info(log_kernel,"[buscarMemoria]- Se encontro memoria %d: Ip %s. Puerto %s",numMemoria, memoria_buscada->ip, memoria_buscada->puerto);
 	} else {
-		log_info(log_kernel, "[BUSCANDO MEMORIA] No se encontro memoria %d",
-				iMem);
+		log_info(log_kernel, "[buscarMemoria]- No se encontro memoria %d",iMem);
 	}
 	pthread_mutex_unlock(&memorias_conocidas_mutex);
 
@@ -1083,12 +1076,15 @@ seed_com_t* buscarMemoria(int numMemoria) {
 
 void comandoAdd(char** comandoSeparado) {
 
-	log_info(log_kernel, "Llego el comando ADD.");
+	log_info(log_kernel, "[comandoAdd]- Llego el comando ADD.");
 
 	//seed_com_t* resultado = buscarMemoria(comandoSeparado);
+
 	int criterioInt = buscarCriterio(comandoSeparado[4]);
 	if (criterioInt < 0 || criterioInt > EC) {
-		log_error(log_kernel, "El criterio %s no existe", comandoSeparado[4]);
+
+		log_error(log_kernel, "[comandoAdd]- El criterio %s no existe", comandoSeparado[4]);
+
 		printf("El criterio %s no existe\n", comandoSeparado[4]);
 		return;
 	}
@@ -1096,17 +1092,12 @@ void comandoAdd(char** comandoSeparado) {
 
 	if (resultado != NULL) {
 
-		log_info(log_kernel, "La memoria numero %s ha sido encontrada.\n",
-				comandoSeparado[2]);
+		log_info(log_kernel, "[comandoAdd]- La memoria numero %s ha sido encontrada.\n",comandoSeparado[2]);
 
-		log_info(log_kernel, "El criterio para asociar es el: %s",
-				comandoSeparado[4]);
-
-		log_info(log_kernel,
-				"El criterio para asociar es el: %s,corresponde al valor: %d",
-				comandoSeparado[4], criterioInt);
+		log_info(log_kernel,"[comandoAdd]- El criterio para asociar es el: %s,corresponde al valor: %d",comandoSeparado[4], criterioInt);
 
 		int resultado_agregar = agregarMemoriaCriterio(resultado, criterioInt);
+
 		switch(resultado_agregar){
 			case 1:
 				printf("La memoria %s fue asociada al criterio %s con exito.\n",comandoSeparado[2], comandoSeparado[4]);
@@ -1135,8 +1126,7 @@ void comandoAdd(char** comandoSeparado) {
 	} else {
 
 		printf("No se encontro la memoria.\n");
-		log_info(log_kernel, "La memoria %s memoria no ha sido encontrada",
-				comandoSeparado[2]);
+		log_info(log_kernel, "[comandoAdd]- La memoria %s memoria no ha sido encontrada", comandoSeparado[2]);
 	}
 
 }
@@ -1144,18 +1134,18 @@ void comandoAdd(char** comandoSeparado) {
 int buscarCriterio(char* criterio) {
 
 	if (criterio == NULL) {
-		log_info(log_kernel, "Recibimos el criterio: NULL");
+		log_info(log_kernel, "[buscarCriterio]- Recibimos el criterio: NULL");
 		return -1;
 	}
 
-	log_info(log_kernel, "Recibimos el criterio: %s", criterio);
+	log_info(log_kernel, "[buscarCriterio]- Recibimos el criterio: %s", criterio);
 
 	int i = 0;
 
 	for (i; i <= EC && strcmp(criterios[i], criterio); i++) {
 	}
 
-	log_info(log_kernel, "Se devuelve el valor %d", i);
+	log_info(log_kernel, "[buscarCriterio]- Se devuelve el valor %d", i);
 
 	return i;
 }
@@ -1216,33 +1206,32 @@ int buscarCriterio(char* criterio) {
  }*/
 
 void comandoMetrics() {
+
 	imprimirMetricas(true);
 }
 
 int conectar_a_memoria(char ip[LARGO_IP], char puerto[LARGO_PUERTO]) {
 
 	char puerto_memoria[20];
+
 	snprintf(puerto_memoria, 19, "%d", arc_config->puerto_memoria);
-	imprimirMensaje2(log_kernel,
-			"[CONECTANDO A MEMORIA] Me voy a intentar conectar a ip: <%s> puerto: <%s>",
-			arc_config->ip_memoria, puerto_memoria);
+
+	imprimirMensaje2(log_kernel,"[conectar_a_memoria]- Me voy a intentar conectar a ip: <%s> puerto: <%s>",arc_config->ip_memoria, puerto_memoria);
+
 	int socket = conectar_a_servidor(ip, puerto, soy);
 	if (socket == -1) {
-		imprimirError(log_kernel,
-				"[CONECTANDO A MEMORIA] No fue posible conectarse con la Memoria. TERMINANDO\n");
+		imprimirError(log_kernel,"[conectar_a_memoria]- No fue posible conectarse con la Memoria. TERMINANDO\n");
 		return -1;
 	}
 
-	imprimirMensaje(log_kernel,
-			"[CONECTANDO A MEMORIA] Me conecté con éxito a la MEMORIA. Espero su hs");
+	imprimirMensaje(log_kernel,"[conectar_a_memoria]- Me conecté con éxito a la MEMORIA. Espero su hs");
 	//Si me conecté, espero su msg de bienvenida
 
 	msg_com_t msg = recibir_mensaje(socket);
 
 	if (msg.tipo != HANDSHAKECOMANDO) {
 		borrar_mensaje(msg);
-		imprimirError(log_kernel,
-				"[CONECTANDO A MEMORIA] MEMORIA no responde el hs. TERMINANDO\n");
+		imprimirError(log_kernel,"[conectar_a_memoria]- MEMORIA no responde el hs. TERMINANDO\n");
 		return -1;
 	}
 
@@ -1251,20 +1240,16 @@ int conectar_a_memoria(char ip[LARGO_IP], char puerto[LARGO_PUERTO]) {
 
 	if (hs.id == RECHAZADO) {
 		if (hs.msg.tam == 0)
-			imprimirError(log_kernel,
-					"[CONECTANDO A MEMORIA] MEMORIA rechazo la conexión. TERMINANDO\n");
+			imprimirError(log_kernel,"[conectar_a_memoria]- MEMORIA rechazo la conexión. TERMINANDO\n");
 		else
-			imprimirError1(log_kernel,
-					"[CONECTANDO A MEMORIA] MEMORIA rechazo la conexión [%s]. TERMINANDO\n",
-					hs.msg.str);
+			imprimirError1(log_kernel,"[conectar_a_memoria]- MEMORIA rechazo la conexión [%s]. TERMINANDO\n",hs.msg.str);
 		borrar_handshake(hs);
 		close(socket);
 		return -1;
 	}
 
 	borrar_handshake(hs);
-	imprimirMensaje(log_kernel,
-			"[CONECTANDO A MEMORIA] Me conecté con éxito a la MEMORIA");
+	imprimirMensaje(log_kernel,"[conectar_a_memoria]- Me conecté con éxito a la MEMORIA");
 
 	return socket;
 }
@@ -1282,8 +1267,7 @@ void inotifyAutomatico(char* pathDelArchivoAEscuchar) {
 			perror("inotify_init");
 		}
 
-		wd = inotify_add_watch(fd, pathDelArchivoAEscuchar,
-		IN_MODIFY | IN_CREATE | IN_DELETE);
+		wd = inotify_add_watch(fd, pathDelArchivoAEscuchar,IN_MODIFY | IN_CREATE | IN_DELETE);
 		length = read(fd, buffer, BUF_LEN);
 
 		if (length < 0) {
@@ -1314,7 +1298,7 @@ void inotifyAutomatico(char* pathDelArchivoAEscuchar) {
 
 void recargarConfiguracion(char* path_config) {
 
-	log_info(log_kernel, "[ACTUALIZANDO RETARDOS y QUANTUM] Voy a actualizar");
+	log_info(log_kernel, "[recargarConfiguracion]- Voy a actualizar");
 
 	mutexBloquear(&mutex_retardos_kernel);
 
@@ -1322,67 +1306,55 @@ void recargarConfiguracion(char* path_config) {
 
 	if (auxConfigFile != NULL) {
 
-		log_info(log_kernel,
-				"[ACTUALIZANDO RETARDOS y QUANTUM] LEYENDO CONFIGURACION...");
+		log_info(log_kernel,"[recargarConfiguracion]- LEYENDO CONFIGURACION...");
 
 		if (config_has_property(auxConfigFile, "SLEEP_EJECUCION")) {
 
-			arc_config->sleep_ejecucion = config_get_int_value(auxConfigFile,
-					"SLEEP_EJECUCION");
-			log_info(log_kernel,
-					"[ACTUALIZANDO RETARDOS y QUANTUM] SLEEP_EJECUCION: %d",
-					arc_config->sleep_ejecucion);
+			arc_config->sleep_ejecucion = config_get_int_value(auxConfigFile,"SLEEP_EJECUCION");
+			log_info(log_kernel,"[recargarConfiguracion]- SLEEP_EJECUCION: %d",	arc_config->sleep_ejecucion);
 
 		} else {
-			log_error(log_kernel,
-					"[ACTUALIZANDO RETARDOS y QUANTUM] NO HAY SLEEP_EJECUCION CONFIGURADO");
+			log_error(log_kernel,"[recargarConfiguracion]- NO HAY SLEEP_EJECUCION CONFIGURADO");
 		} // SLEEP_EJECUCION
 
 		if (config_has_property(auxConfigFile, "METADATA_REFRESH")) {
 
-			arc_config->metadata_refresh = config_get_int_value(auxConfigFile,
-					"METADATA_REFRESH");
-			log_info(log_kernel,
-					"[ACTUALIZANDO RETARDOS y QUANTUM] METADATA_REFRESH es de: %d",
-					arc_config->metadata_refresh);
+			arc_config->metadata_refresh = config_get_int_value(auxConfigFile,"METADATA_REFRESH");
+			log_info(log_kernel,"[recargarConfiguracion] METADATA_REFRESH es de: %d",arc_config->metadata_refresh);
 
 		} else {
-			log_error(log_kernel,
-					"[ACTUALIZANDO RETARDOS y QUANTUM] NO HAY METADATA_REFRESH CONFIGURADO");
+			log_error(log_kernel,"[recargarConfiguracion]- NO HAY METADATA_REFRESH CONFIGURADO");
 		} // METADATA_REFRESH
 
 		if (config_has_property(auxConfigFile, "QUANTUM")) {
 
-			arc_config->quantum = config_get_int_value(auxConfigFile,
-					"QUANTUM");
-			log_info(log_kernel,
-					"[ACTUALIZANDO RETARDOS y QUANTUM] Valor DEL QUANTUM: %d",
-					arc_config->quantum);
+			arc_config->quantum = config_get_int_value(auxConfigFile,"QUANTUM");
+			log_info(log_kernel,"[recargarConfiguracion]- Valor DEL QUANTUM: %d",arc_config->quantum);
 
 		} else {
-			log_error(log_kernel,
-					"[ACTUALIZANDO RETARDOS y QUANTUM] NO HAY QUANTUM CONFIGURADO");
+			log_error(log_kernel,"[recargarConfiguracion]- NO HAY QUANTUM CONFIGURADO");
 		} // QUANTUM
 
 	} else {
-		log_error(log_kernel,
-				"[ACTUALIZANDO RETARDOS y QUANTUM] NO HAY ARCHIVO DE CONFIGURACION DE MODULO DEL KERNEL"); // ERROR: SIN ARCHIVO CONFIGURACION
+		log_error(log_kernel,"[recargarConfiguracion]- NO HAY ARCHIVO DE CONFIGURACION DE MODULO DEL KERNEL"); // ERROR: SIN ARCHIVO CONFIGURACION
 	}
 
 	config_destroy(auxConfigFile);
 
-	log_info(log_kernel,
-			"[ACTUALIZANDO RETARDOS y QUANTUM] RETARDOS y QUANTUM ACTUALIZADOS CORRECTAMENTE");
+	log_info(log_kernel,"[recargarConfiguracion]- RETARDOS y QUANTUM ACTUALIZADOS CORRECTAMENTE");
 
 	mutexDesbloquear(&mutex_retardos_kernel);
 }
 
 void *hilo_metadata_refresh(void *args) {
-	log_info(log_kernel, "[METADATA REFRESH] Entrando a hilo de actualizacion");
+	log_info(log_kernel, "[hilo_metadata_refresh]- Entrando a hilo de actualizacion");
+
 	while (1) {
-		log_info(log_kernel,
-				"[METADATA REFRESH] Voy a actualizar la metadata de las tablas");
+
+		log_info(log_kernel,"[hilo_metadata_refresh]- Voy a actualizar la metadata de las tablas");
+
 		actualizarMetadataTablas();
+
 		usleep(arc_config->metadata_refresh * 1000);
 	}
 
@@ -1396,38 +1368,37 @@ int actualizarMetadataTablas(void) {
 
 	seed_com_t *memoria = elegirMemoria();
 	if (memoria == NULL) {
-		log_error(log_kernel,"[METADATA REFRESH] No tengo memorias para mandar el describe");
+		log_error(log_kernel,"[actualizarMetadataTablas]- No tengo memorias para mandar el describe");
 		borrar_request_com(request);
 		return -1;
 	}
 
 	int socket_memoria = conectar_a_memoria(memoria->ip, memoria->puerto);
 	if (socket_memoria == -1) {
-		log_error(log_kernel,"[METADATA REFRESH] Error al conectarse a la memoria para hacer el describe");
+		log_error(log_kernel,"[actualizarMetadataTablas]- Error al conectarse a la memoria para hacer el describe");
 		eliminarMemoriaAsociada(memoria->numMemoria); //esta función también la saca de todos los criterios en los que estuviera
 		free(memoria);
 		borrar_request_com(request);
 		return -1;
 	}
 
-	log_info(log_kernel,
-			"[METADATA REFRESH] Voy a enviar un describe global a la memoria %d",
-			memoria->numMemoria);
+	log_info(log_kernel,"[actualizarMetadataTablas]- Voy a enviar un describe global a la memoria %d",memoria->numMemoria);
+
 	if (enviar_request(socket_memoria, request) == -1) {
-		log_error(log_kernel,
-				"[METADATA REFRESH] NO SE PUDO ENVIAR EL DESCRIBE A LA MEMORIA %d",
-				memoria->numMemoria);
+
+		log_error(log_kernel,"[actualizarMetadataTablas]- NO SE PUDO ENVIAR EL DESCRIBE A LA MEMORIA %d",memoria->numMemoria);
 		borrar_request_com(request);
 		free(memoria);
 		return -1;
 	}
+
 	borrar_request_com(request);
 
 	msg_com_t msg = recibir_mensaje(socket_memoria);
 	if (msg.tipo != RESPUESTA) {
-		log_error(log_kernel,
-				"[METADATA REFRESH] ERROR AL RECIBIR RESPUESTA DE MEMORIA %d",
-				memoria->numMemoria);
+
+		log_error(log_kernel,"[actualizarMetadataTablas]- ERROR AL RECIBIR RESPUESTA DE MEMORIA %d",	memoria->numMemoria);
+
 		borrar_mensaje(msg);
 		free(memoria);
 		return -1;
@@ -1437,20 +1408,26 @@ int actualizarMetadataTablas(void) {
 	borrar_mensaje(msg);
 
 	if (resp.tipo == RESP_OK && resp.msg.tam > 0) {
-		log_info(log_kernel,
-				"[METADATA REFRESH] La memoria %d respondió con %s",
-				memoria->numMemoria, resp.msg.str);
+
+		log_info(log_kernel,"[actualizarMetadataTablas]- La memoria %d respondió con %s",memoria->numMemoria, resp.msg.str);
+
 		t_list *nuevaListaTablas = procesarDescribe(resp.msg.str);
+
 		actualizarTablasCriterios(nuevaListaTablas);
+
 	} else {
-		log_warning(log_kernel,
-				"[METADATA REFRESH] La memoria %d no pudo resolver el describe. Error <%d>",
-				memoria->numMemoria, resp.tipo);
+
+		log_warning(log_kernel,"[actualizarMetadataTablas]- La memoria %d no pudo resolver el describe. Error <%d>",memoria->numMemoria, resp.tipo);
+
 		borrar_respuesta(resp);
+
 		free(memoria);
+
 		return -1;
 	}
+
 	free(memoria);
+
 	borrar_respuesta(resp);
 
 	return 1;
@@ -1478,8 +1455,7 @@ t_list *procesarDescribe(char *str) {
 		} else { //Tiempo de compactacion
 				 //La agrego recién acá para asegurarme que haya venido bien el describe. No sería necesario
 			list_add(lista_tablas, aux);
-			log_info(log_kernel, "[NUEVAS TABLAS] Tabla recibida <%d> %s %d",
-					i / 4, aux->nombreTabla, aux->criterio);
+			log_info(log_kernel, "[procesarDescribe]- Tabla recibida <%d> %s %d",i / 4, aux->nombreTabla, aux->criterio);
 		}
 	}
 	if (i % 4 != 0 && aux != NULL) {
@@ -1498,49 +1474,64 @@ t_list *procesarDescribe(char *str) {
 }
 
 void actualizarTablasCriterios(t_list *nuevas) {
-	log_info(log_kernel, "[TABLAS] Se va a actualizar la lista de tablas");
+
+	log_info(log_kernel, "[actualizarTablasCriterios]- Se va a actualizar la lista de tablas");
+
 	pthread_mutex_lock(&lista_tablas_mutex);
+
 	if (g_lista_tablas != NULL) {
+
 		list_destroy_and_destroy_elements(g_lista_tablas,(void *) borrarEntradaListaTablas);
 	}
+
 	g_lista_tablas = nuevas;
+
 	pthread_mutex_unlock(&lista_tablas_mutex);
-	log_info(log_kernel, "[TABLAS] Se actualizó la lista de tablas");
+
+	log_info(log_kernel, "[actualizarTablasCriterios]- Se actualizó la lista de tablas");
 }
 
 //No hago copia de la tabla, por lo que no hay que hacer un free en el describe
 void agregarTablaCriterio(t_tablas *tabla) {
+
 	pthread_mutex_lock(&lista_tablas_mutex);
+
 	if (g_lista_tablas == NULL)
 		g_lista_tablas = list_create();
+
 	list_add(g_lista_tablas, tabla);
+
 	pthread_mutex_unlock(&lista_tablas_mutex);
-	log_info(log_kernel,
-			"[TABLAS] Se agregó la tabla %s a la lista de tablas. Criterio: %s",
+
+	log_info(log_kernel,"[agregarTablaCriterio]- Se agregó la tabla %s a la lista de tablas. Criterio: %s",
 			tabla->nombreTabla, criterios[tabla->criterio]);
 }
 
 int buscarCriterioTabla(char *nombre_tabla) {
 	int criterio = -1;
+
 	//@todo @martin revisar sincro de esta función
-	log_info(log_kernel, "[BUSCANDO CRITERIO TABLA] Voy a buscar tabla %s",
-			nombre_tabla);
+
+	log_info(log_kernel, "[buscarCriterioTabla]- Voy a buscar tabla %s",nombre_tabla);
+
 	pthread_mutex_lock(&lista_tablas_mutex);
+
 	for (int i = 0; i < list_size(g_lista_tablas); i++) {
+
 		t_tablas *aux = list_get(g_lista_tablas, i);
+
 		if (!strcmp(aux->nombreTabla, nombre_tabla)) {
-			log_info(log_kernel,
-					"[BUSCANDO CRITERIO TABLA] El criterio de la tabla %s es %s",
-					nombre_tabla, criterios[aux->criterio]);
+
+			log_info(log_kernel,"[buscarCriterioTabla]- El criterio de la tabla %s es %s",nombre_tabla, criterios[aux->criterio]);
+
 			criterio = aux->criterio;
+
 			break;
 		}
 	}
 	pthread_mutex_unlock(&lista_tablas_mutex);
 	if (criterio == -1) {
-		log_error(log_kernel,
-				"[BUSCANDO CRITERIO TABLA] No se conoce la tabla %s",
-				nombre_tabla);
+		log_error(log_kernel,"[buscarCriterioTabla]- No se conoce la tabla %s",	nombre_tabla);
 	}
 	return criterio;
 }
@@ -1602,7 +1593,7 @@ seed_com_t *elegirMemoriaCriterio(int num_criterio, uint16_t key) {
 	strcpy(retval->puerto, aux->puerto);
 	retval->numMemoria = aux->numMemoria;
 
-	log_info(log_kernel, "[ELIGIENDO MEMORIA] La memoria elegida es la %d",retval->numMemoria);
+	log_info(log_kernel, "[elegirMemoriaCriterio]- La memoria elegida es la %d",retval->numMemoria);
 
 	return retval;
 }
@@ -1618,21 +1609,25 @@ int numMemoriaHash(uint16_t key)
 	if(list_size(criterioSHC.listMemorias)==0){
 		return -1;
 	}
-	log_info(log_kernel,"[SHC] KEY %d, cantidad memorias %d",key,list_size(criterioSHC.listMemorias));
+
+	log_info(log_kernel,"[numMemoriaHash]- KEY %d, cantidad memorias %d",key,list_size(criterioSHC.listMemorias));
+
 	return (key % list_size(criterioSHC.listMemorias));
 }
 
 int vaciarMemoriasSHC(void)
 {
 	//@todo @martin revisar sincro
-	log_info(log_kernel, "[SHC] Se va a mandar Journal a todas las memorias asociadas al criterio");
+	log_info(log_kernel, "[vaciarMemoriasSHC]- Se va a mandar Journal a todas las memorias asociadas al criterio");
 	t_list *copiaSHC = list_duplicate(criterioSHC.listMemorias);
 	request_t request = parser("JOURNAL");
 	resp_com_t resp = resolverJournal(request,copiaSHC);
+
 	borrar_respuesta(resp);
 	borrar_request(request);
+
 	list_destroy(copiaSHC); //@martin @revisar tengo que destruir los elementos?
-	log_info(log_kernel, "[SHC] Se mando Journal a todas las memorias asociadas al criterio");
+	log_info(log_kernel, "[vaciarMemoriasSHC]- Se mando Journal a todas las memorias asociadas al criterio");
 	return 1;
 }
 
@@ -1655,29 +1650,39 @@ int agregarMemoriaCriterio(seed_com_t *memoria, int num_criterio) {
 
 	t_criterios criterio;
 	if (num_criterio == SC) {
+
 		if(list_size(criterioSC.listMemorias)>0){
-			log_warning(log_kernel, "[ADD] No se puede asociar mas de una memoria al criterio SC");
+
+			log_warning(log_kernel, "[agregarMemoriaCriterio]- No se puede asociar mas de una memoria al criterio SC");
 			return -2;
+
 		}
+
 		criterio = criterioSC;
+
 	} else if (num_criterio == SHC) {
+
 		criterio = criterioSHC;
+
 	} else if (num_criterio == EC) {
+
 		criterio = criterioEC;
+
 	} else {
-		log_error(log_kernel, "No existe un criterio con el numero %d",
-				num_criterio);
+
+		log_error(log_kernel, "[agregarMemoriaCriterio]- No existe un criterio con el numero %d",num_criterio);
 		return -1;
 	}
 
 	t_list *memorias_criterio = criterio.listMemorias;
 	if(estaMemoriaEnCriterio(memoria->numMemoria,memorias_criterio))
 	{
-		log_info(log_kernel, "La memoria %d ya estaba asociada al criterio %s",memoria->numMemoria,criterios[num_criterio]);
+		log_info(log_kernel, "[agregarMemoriaCriterio]- La memoria %d ya estaba asociada al criterio %s",memoria->numMemoria,criterios[num_criterio]);
 		return 0;
 	}
 	if(num_criterio == SHC){
-		log_info(log_kernel, "[ADD] Se manda journal a todas las memorias asociadas a este criterio");
+
+		log_info(log_kernel, "[agregarMemoriaCriterio]- Se manda journal a todas las memorias asociadas a este criterio");
 		vaciarMemoriasSHC();
 	}
 
@@ -1689,7 +1694,7 @@ int agregarMemoriaCriterio(seed_com_t *memoria, int num_criterio) {
 	list_add(memorias_criterio, copia);
 	//NO HACER UN FREE DE 'copia' EN ESTA FUNCIÓN, SINO ROMPE
 
-	log_info(log_kernel, "[ADD] Memoria %d agregada al criterio %d",copia->numMemoria, num_criterio);
+	log_info(log_kernel, "[agregarMemoriaCriterio]- Memoria %d agregada al criterio %d",copia->numMemoria, num_criterio);
 
 	return 1;
 }
@@ -1712,53 +1717,74 @@ int agregarMemoriaAsociada(seed_com_t *memoria) {
 	seed_com_t *copia;
 
 	if (!estaMemoriaAsociada(memoria->numMemoria)) {
+
 		copia = malloc(sizeof(seed_com_t));
+
 		strcpy(copia->ip, memoria->ip);
 		strcpy(copia->puerto, memoria->puerto);
 		copia->numMemoria = memoria->numMemoria;
+
 		pthread_mutex_lock(&lista_memorias_asociadas_mutex);
+
 		list_add(g_lista_memorias_asociadas, copia);
+
 		pthread_mutex_unlock(&lista_memorias_asociadas_mutex);
-		log_info(log_kernel,"[AGREGAR MEMORIA] La memoria %d fue agregada a la lista de memorias asociadas",memoria->numMemoria);
+
+		log_info(log_kernel,"[agregarMemoriaAsociada]- La memoria %d fue agregada a la lista de memorias asociadas",memoria->numMemoria);
 		agregarMemoriaMetricas(memoria->numMemoria);
 	}
 	else{
-		log_info(log_kernel,"[AGREGAR MEMORIA] La memoria %d ya estaba asociada a algun criterio antes",memoria->numMemoria);
+
+		log_info(log_kernel,"[agregarMemoriaAsociada]- La memoria %d ya estaba asociada a algun criterio antes",memoria->numMemoria);
+
 	}
 
 	return 1;
 }
 
 int eliminarMemoriaAsociada(int numMemoria) {
+
 	int cont = 0;
 	pthread_mutex_lock(&lista_memorias_asociadas_mutex);
 
 	for (int i = 0; i < list_size(g_lista_memorias_asociadas); i++) {
+
 		seed_com_t *aux = list_get(g_lista_memorias_asociadas, i);
+
 		if (aux->numMemoria == numMemoria) {
+
 			list_remove(g_lista_memorias_asociadas, i);
+
 			free(aux);
+
 			cont++; //Para saber si estaba asociada o no
+
 			break;
 			//Cambie la función asociar memoria para que no haya duplicadas
 			//i--; //Ahora la lista tiene un elemento menos
 		}
 	}
+
 	pthread_mutex_unlock(&lista_memorias_asociadas_mutex);
-	log_info(log_kernel, "[BAJA MEMORIA] Memoria %d eliminada de las memorias asociadas",numMemoria);
+
+	log_info(log_kernel, "[eliminarMemoriaAsociada]- Memoria %d eliminada de las memorias asociadas",numMemoria);
 	//Si estaba en algún criterio, también la saco
 	if(eliminarMemoriaCriterio(numMemoria, criterioEC.listMemorias) > 0){
-		log_info(log_kernel,"[BAJA MEMORIA] Memoria %d eliminada del criterio EC",numMemoria);
-		log_info(log_kernel,"[BAJA MEMORIA] El criterio EC ahora tiene %d memorias",list_size(criterioEC.listMemorias));
+
+		log_info(log_kernel,"[eliminarMemoriaAsociada]- Memoria %d eliminada del criterio EC",numMemoria);
+
+		log_info(log_kernel,"[eliminarMemoriaAsociada]- El criterio EC ahora tiene %d memorias",list_size(criterioEC.listMemorias));
 	}
 	if(eliminarMemoriaCriterio(numMemoria, criterioSC.listMemorias) > 0){
-		log_info(log_kernel,"[BAJA MEMORIA] Memoria %d eliminada del criterio SC",numMemoria);
-		log_info(log_kernel,"[BAJA MEMORIA] No se podran resolver pedidos SC hasta agregar otra memoria a este criterio",numMemoria);
+
+		log_info(log_kernel,"[eliminarMemoriaAsociada]- Memoria %d eliminada del criterio SC",numMemoria);
+
+		log_info(log_kernel,"[eliminarMemoriaAsociada]- No se podran resolver pedidos SC hasta agregar otra memoria a este criterio",numMemoria);
 	}
 	if(eliminarMemoriaCriterio(numMemoria, criterioSHC.listMemorias) > 0){
-		log_info(log_kernel,"[BAJA MEMORIA] Memoria %d eliminada del criterio SHC",numMemoria);
+		log_info(log_kernel,"[eliminarMemoriaAsociada]- Memoria %d eliminada del criterio SHC",numMemoria);
 		vaciarMemoriasSHC();
-		log_info(log_kernel,"[BAJA MEMORIA] Se mendo journal a todas las memorias que quedan en el criterio",numMemoria);
+		log_info(log_kernel,"[eliminarMemoriaAsociada]- Se mendo journal a todas las memorias que quedan en el criterio",numMemoria);
 	}
 	//Finalmente la saco de las metricas
 	sacarMemoriaMetricas(numMemoria);
@@ -1774,8 +1800,10 @@ int eliminarMemoriaCriterio(int numMemoria, t_list *lista_memorias) {
 	//@martin: falta sincro
 
 	int cont=0;
+
 	for(int i=0;i<list_size(lista_memorias);i++){
 		seed_com_t *aux = list_get(lista_memorias,i);
+
 		if(aux->numMemoria == numMemoria){
 			list_remove(lista_memorias,i);
 			free(aux);
@@ -1792,13 +1820,15 @@ int eliminarMemoriaCriterio(int numMemoria, t_list *lista_memorias) {
 
 //Uso este tipo de respuesta para poder especificar tipo de error, en el caso de que lo haya, y respuesta
 resp_com_t resolverPedido(char *linea) {
+
 	if (linea[strlen(linea) - 1] == '\n') {
 		linea[strlen(linea) - 1] = '\0';
 	}
 	resp_com_t resp;
 	request_t request = parser(linea);
 
-	log_info(log_kernel, "[REQUEST] Voy a resolver pedido %s",linea);
+	log_info(log_kernel, "[resolverPedido]- Voy a resolver pedido %s",linea);
+
 	switch(request.command){
 		case SELECT_PARSER:
 			resp = resolverSelect(request);
@@ -1831,55 +1861,69 @@ resp_com_t resolverPedido(char *linea) {
 	default:
 		break;
 	}
+
 	borrar_request(request);
+
 	if (resp.tipo == RESP_OK) {
-		log_info(log_kernel, "[REQUEST] Pedido %s resuelto OK", linea);
+
+		log_info(log_kernel, "[resolverPedido]- Pedido %s resuelto OK", linea);
 		if (resp.msg.str != NULL && resp.msg.tam > 0)
-			log_info(log_kernel, "[REQUEST] Respuesta a pedido %s es %s", linea,
-					resp.msg.str);
+			log_info(log_kernel, "[resolverPedido]- Respuesta a pedido %s es %s", linea,resp.msg.str);
+
 	} else {
-		log_error(log_kernel,
-				"[REQUEST] El pedido %s no se pudo resolver. Error <%d>", linea,
-				resp.tipo);
+
+		log_error(log_kernel,"[resolverPedido]- El pedido %s no se pudo resolver. Error <%d>", linea,resp.tipo);
 	}
+
 	return resp;
 }
 
 resp_com_t resolverSelect(request_t request) {
 	//  SELECT  NOMBRE_TABLA    KEY
 	//<command>   args[0]     args[1]
+
 	if (request.cant_args != 2)
 		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS, NULL);
+
 	uint16_t key = atoi(request.args[1]);
+
 	int criterio = buscarCriterioTabla(request.args[0]);
+
 	if (criterio == -1) {
-		log_error(log_kernel,
-				"[SELECT] No tenemos metadata de la tabla %s, no podemos seguir",
-				request.args[0]);
+
+		log_error(log_kernel,"[resolverSelect]- No tenemos metadata de la tabla %s, no podemos seguir",request.args[0]);
+
 		return armar_respuesta(RESP_ERROR_DESCONOZCO_CRITERIO_TABLA, NULL);
 	}
-	log_info(log_kernel, "[SELECT] La tabla es de criterio %s",
-			criterios[criterio]);
+
+	log_info(log_kernel, "[resolverSelect]- La tabla es de criterio %s",criterios[criterio]);
+
 	seed_com_t *datos_memoria = elegirMemoriaCriterio(criterio, key);
+
 	if (datos_memoria == NULL) {
-		log_error(log_kernel,
-				"[SELECT] No se encontro una memoria a la que mandar el select");
+
+		log_error(log_kernel,"[resolverSelect]- No se encontro una memoria a la que mandar el select");
+
 		return armar_respuesta(RESP_ERROR_SIN_MEMORIAS_CRITERIO, NULL);
 	}
-	log_info(log_kernel, "[SELECT] Memoria elegida: %d",
-			datos_memoria->numMemoria);
-	int socket_memoria = conectar_a_memoria(datos_memoria->ip,
-			datos_memoria->puerto);
+
+	log_info(log_kernel, "[resolverSelect] Memoria elegida: %d",datos_memoria->numMemoria);
+
+	int socket_memoria = conectar_a_memoria(datos_memoria->ip,datos_memoria->puerto);
+
 	if (socket_memoria == -1) {
-		log_error(log_kernel,
-				"[SELECT] No se pudo establecer conexion con la memoria %d",
-				datos_memoria->numMemoria);
+
+		log_error(log_kernel,"[resolverSelect]- No se pudo establecer conexion con la memoria %d",datos_memoria->numMemoria);
+
 		eliminarMemoriaAsociada(datos_memoria->numMemoria); //esta función también la saca de todos los criterios en los que estuviera
+
 		return armar_respuesta(RESP_ERROR_COMUNICACION, NULL);
 	}
 
 	uint64_t t0 = timestamp();
+
 	resp_com_t resp = enviar_recibir(socket_memoria,request.request_str);
+
 	contar_select(datos_memoria->numMemoria,criterio,timestamp()-t0);
 
 	free(datos_memoria);
@@ -1890,39 +1934,46 @@ resp_com_t resolverSelect(request_t request) {
 resp_com_t resolverInsert(request_t request) {
 	//  INSERT  NOMBRE_TABLA   KEY     VALUE  [TIMESTAMP]
 	//<command>   args[0]    args[1]  args[2]   args[3]
+
 	if (request.cant_args != 3 && request.cant_args != 4)
 		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS, NULL);
-	log_info(log_kernel, "[DEBUG] Cant args = %d",request.cant_args);
+
+	log_info(log_kernel, "[resolverInsert | DEBUG] Cant args = %d",request.cant_args);
+
 	uint16_t key = atoi(request.args[1]);
+
 	int criterio = buscarCriterioTabla(request.args[0]);
+
 	if (criterio == -1) {
-		log_error(log_kernel,
-				"[INSERT] No tenemos metadata de la tabla %s, no podemos seguir",
-				request.args[0]);
+		log_error(log_kernel,"[resolverInsert]- No tenemos metadata de la tabla %s, no podemos seguir",request.args[0]);
+
 		return armar_respuesta(RESP_ERROR_DESCONOZCO_CRITERIO_TABLA, NULL);
 	}
-	log_info(log_kernel, "[INSERT] La tabla es de criterio %s",
-			criterios[criterio]);
+	log_info(log_kernel, "[resolverInsert]- La tabla es de criterio %s",criterios[criterio]);
+
 	seed_com_t *datos_memoria = elegirMemoriaCriterio(criterio, key);
+
 	if (datos_memoria == NULL) {
-		log_error(log_kernel,
-				"[INSERT] No se encontro una memoria a la que mandar el insert");
+		log_error(log_kernel,"[resolverInsert]- No se encontro una memoria a la que mandar el insert");
+
 		return armar_respuesta(RESP_ERROR_SIN_MEMORIAS_CRITERIO, NULL);
 	}
-	log_info(log_kernel, "[INSERT] Memoria elegida: %d",
-			datos_memoria->numMemoria);
-	int socket_memoria = conectar_a_memoria(datos_memoria->ip,
-			datos_memoria->puerto);
+	log_info(log_kernel, "[resolverInsert]- Memoria elegida: %d",datos_memoria->numMemoria);
+
+	int socket_memoria = conectar_a_memoria(datos_memoria->ip,datos_memoria->puerto);
 	if (socket_memoria == -1) {
-		log_error(log_kernel,
-				"[INSERT] No se pudo establecer conexion con la memoria %d",
-				datos_memoria->numMemoria);
+
+		log_error(log_kernel,"[resolverInsert]- No se pudo establecer conexion con la memoria %d",datos_memoria->numMemoria);
+
 		eliminarMemoriaAsociada(datos_memoria->numMemoria); //esta función también la saca de todos los criterios en los que estuviera
+
 		return armar_respuesta(RESP_ERROR_COMUNICACION, NULL);
 	}
 
 	uint64_t t0 = timestamp();
+
 	resp_com_t resp = enviar_recibir(socket_memoria,request.request_str);
+
 	contar_insert(datos_memoria->numMemoria,criterio,timestamp()-t0);
 
 	free(datos_memoria);
@@ -1937,38 +1988,38 @@ resp_com_t resolverCreate(request_t request) {
 		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS, NULL);
 
 	seed_com_t *datos_memoria = elegirMemoria();
+
 	if (datos_memoria == NULL) {
-		log_error(log_kernel,
-				"[CREATE] No se encontro una memoria a la que mandar el create");
+		log_error(log_kernel,"[resolverCreate]- No se encontro una memoria a la que mandar el create");
+
 		return armar_respuesta(RESP_ERROR_SIN_MEMORIAS_ASOCIADAS, NULL);
 	}
-	log_info(log_kernel, "[CREATE] Memoria elegida: %d",
-			datos_memoria->numMemoria);
-	int socket_memoria = conectar_a_memoria(datos_memoria->ip,
-			datos_memoria->puerto);
+	log_info(log_kernel, "[resolverCreate]- Memoria elegida: %d",datos_memoria->numMemoria);
+
+	int socket_memoria = conectar_a_memoria(datos_memoria->ip,datos_memoria->puerto);
 	if (socket_memoria == -1) {
-		log_error(log_kernel,
-				"[CREATE] No se pudo establecer conexion con la memoria %d",
-				datos_memoria->numMemoria);
+
+		log_error(log_kernel,"[resolverCreate]- No se pudo establecer conexion con la memoria %d",datos_memoria->numMemoria);
+
 		eliminarMemoriaAsociada(datos_memoria->numMemoria); //esta función también la saca de todos los criterios en los que estuviera
+
 		return armar_respuesta(RESP_ERROR_COMUNICACION, NULL);
 	}
 	resp_com_t resp = enviar_recibir(socket_memoria, request.request_str);
 
 	if (resp.tipo == RESP_OK) {
-		log_info(log_kernel,
-				"[CREATE] El create de la tabla %s se realizo correctamente. Se agrega la metadata de la tabla",
-				request.args[0]);
+		log_info(log_kernel,"[resolverCreate]- El create de la tabla %s se realizo correctamente. Se agrega la metadata de la tabla",request.args[0]);
+
 		//La tabla se pudo crear y tengo que agregar su metadata a la estructura de tablas conocidas
 		t_tablas *nueva_tabla = malloc(sizeof(t_tablas)); //NO HACER FREE ACA, LO HAGO EN OTRA FUNCION
 		nueva_tabla->criterio = buscarCriterio(request.args[1]);
 		nueva_tabla->nombreTabla = malloc(strlen(request.args[0] + 1));
+
 		strcpy(nueva_tabla->nombreTabla, request.args[0]);
 		agregarTablaCriterio(nueva_tabla);
+
 	} else {
-		log_warning(log_kernel,
-				"[CREATE] El create de la tabla %s no se pudo resolver. Error de tipo <%d>",
-				request.args[0], resp.tipo);
+		log_warning(log_kernel,"[resolverCreate]- El create de la tabla %s no se pudo resolver. Error de tipo <%d>",request.args[0], resp.tipo);
 	}
 	free(datos_memoria);
 	close(socket_memoria);
@@ -1978,8 +2029,10 @@ resp_com_t resolverCreate(request_t request) {
 resp_com_t resolverDescribe(request_t request) {
 	// DESCRIBE  [NOMBRE_TABLA]*
 	//<command>   	args[0]
+
 	seed_com_t *datos_memoria;
 	bool describeGlobal;
+
 	if (request.cant_args > 1) {
 		return armar_respuesta(RESP_ERROR_CANT_PARAMETROS, NULL);
 	} else if (request.cant_args == 0) {
@@ -1991,44 +2044,48 @@ resp_com_t resolverDescribe(request_t request) {
 	}
 
 	if (datos_memoria == NULL) {
-		log_error(log_kernel,
-				"[DESCRIBE] No se encontro una memoria a la que mandar el pedido");
+		log_error(log_kernel,"[resolverDescribe]- No se encontro una memoria a la que mandar el pedido");
+
 		return armar_respuesta(RESP_ERROR_SIN_MEMORIAS_ASOCIADAS, NULL);
 	}
-	log_info(log_kernel, "[DESCRIBE] Memoria elegida: %d",
-			datos_memoria->numMemoria);
-	int socket_memoria = conectar_a_memoria(datos_memoria->ip,
-			datos_memoria->puerto);
+
+	log_info(log_kernel, "[resolverDescribe]- Memoria elegida: %d",datos_memoria->numMemoria);
+
+	int socket_memoria = conectar_a_memoria(datos_memoria->ip,datos_memoria->puerto);
 	if (socket_memoria == -1) {
-		log_error(log_kernel,
-				"[DESCRIBE] No se pudo establecer conexion con la memoria %d",
-				datos_memoria->numMemoria);
+		log_error(log_kernel,"[resolverDescribe]- No se pudo establecer conexion con la memoria %d",datos_memoria->numMemoria);
+
 		eliminarMemoriaAsociada(datos_memoria->numMemoria); //esta función también la saca de todos los criterios en los que estuviera
+
 		return armar_respuesta(RESP_ERROR_COMUNICACION, NULL);
 	}
 	resp_com_t resp = enviar_recibir(socket_memoria, request.request_str);
 
 	if (resp.tipo == RESP_OK && resp.msg.tam > 0) {
-		log_info(log_kernel, "[DESCRIBE] La memoria %d respondió con %s",
-				datos_memoria->numMemoria, resp.msg.str);
+
+		log_info(log_kernel, "[resolverDescribe]- La memoria %d respondió con %s",datos_memoria->numMemoria, resp.msg.str);
+
 		t_list *nuevaListaTablas = procesarDescribe(resp.msg.str);
+
 		if (describeGlobal)
 			actualizarTablasCriterios(nuevaListaTablas);
 		else {
 			t_tablas *aux = list_get(nuevaListaTablas, 0);
 			t_tablas *tabla = malloc(sizeof(t_tablas)); //NO HACER FREE
+
 			tabla->criterio = aux->criterio;
 			tabla->nombreTabla = malloc(strlen(aux->nombreTabla) + 1);
 			strcpy(tabla->nombreTabla, aux->nombreTabla);
+
 			agregarTablaCriterio(tabla);
-			list_destroy_and_destroy_elements(nuevaListaTablas,
-					(void *) borrarEntradaListaTablas);
+
+			list_destroy_and_destroy_elements(nuevaListaTablas,(void *) borrarEntradaListaTablas);
 		}
 	} else {
-		log_warning(log_kernel,
-				"[DESCRIBE] La memoria %d no pudo resolver el describe. Error <%d>",
-				datos_memoria->numMemoria, resp.tipo);
+
+		log_warning(log_kernel,"[resolverDescribe]- La memoria %d no pudo resolver el describe. Error <%d>",datos_memoria->numMemoria, resp.tipo);
 	}
+
 	free(datos_memoria);
 	close(socket_memoria);
 
@@ -2044,21 +2101,21 @@ resp_com_t resolverDrop(request_t request) {
 	}
 	datos_memoria = elegirMemoria();
 	if (datos_memoria == NULL) {
-		log_error(log_kernel,
-				"[DROP] No se encontro una memoria a la que mandar el pedido");
+		log_error(log_kernel,"[resolverDrop]- No se encontro una memoria a la que mandar el pedido");
 		return armar_respuesta(RESP_ERROR_SIN_MEMORIAS_ASOCIADAS, NULL);
 	}
-	log_info(log_kernel, "[DROP] Memoria elegida: %d",
-			datos_memoria->numMemoria);
-	int socket_memoria = conectar_a_memoria(datos_memoria->ip,
-			datos_memoria->puerto);
+
+	log_info(log_kernel, "[resolverDrop]- Memoria elegida: %d",	datos_memoria->numMemoria);
+
+	int socket_memoria = conectar_a_memoria(datos_memoria->ip,datos_memoria->puerto);
 	if (socket_memoria == -1) {
-		log_error(log_kernel,
-				"[DROP] No se pudo establecer conexion con la memoria %d",
-				datos_memoria->numMemoria);
+		log_error(log_kernel,"[resolverDrop]- No se pudo establecer conexion con la memoria %d",datos_memoria->numMemoria);
+
 		eliminarMemoriaAsociada(datos_memoria->numMemoria); //esta función también la saca de todos los criterios en los que estuviera
+
 		return armar_respuesta(RESP_ERROR_COMUNICACION, NULL);
 	}
+
 	resp_com_t resp = enviar_recibir(socket_memoria, request.request_str);
 
 	//@martin: hace falta borrar la tabla de los criterios?
@@ -2098,10 +2155,11 @@ resp_com_t resolverJournal(request_t request, t_list *lista_memorias)
 
 	for(int i = 0; i<list_size(lista_memorias);i++){
 		datos_memoria = list_get(lista_memorias,i);
-		log_info(log_kernel,"[JOURNAL] Enviando journal a memoria %d",datos_memoria->numMemoria);
+		log_info(log_kernel,"[resolverJournal]- Enviando journal a memoria %d",datos_memoria->numMemoria);
 		int socket_memoria = conectar_a_memoria(datos_memoria->ip,datos_memoria->puerto);
 		if(socket_memoria == -1){
-			log_error(log_kernel,"[JOURNAL] No se pudo establecer conexion con la memoria %d", datos_memoria->numMemoria);
+
+			log_error(log_kernel,"[resolverJournal]- No se pudo establecer conexion con la memoria %d", datos_memoria->numMemoria);
 
 			eliminarMemoriaAsociada(datos_memoria->numMemoria); //esta función también la saca de todos los criterios en los que estuviera
 			break;
@@ -2109,20 +2167,18 @@ resp_com_t resolverJournal(request_t request, t_list *lista_memorias)
 		resp_com_t resp = enviar_recibir(socket_memoria, request.request_str);
 
 		if (resp.tipo == RESP_OK) {
-			log_info(log_kernel,
-					"[JOURNAL] La memoria %d resolvio journal con exito",
-					datos_memoria->numMemoria);
+			log_info(log_kernel,"[resolverJournal]- La memoria %d resolvio journal con exito",datos_memoria->numMemoria);
 			cont++;
 		} else {
-			log_error(log_kernel,
-					"[JOURNAL] La memoria %d no pudo resolver el journal. Error <%d>",
-					datos_memoria->numMemoria, resp.tipo);
+
+			log_error(log_kernel,"[resolverJournal]- La memoria %d no pudo resolver el journal. Error <%d>",datos_memoria->numMemoria, resp.tipo);
 		}
+
 		borrar_respuesta(resp);
 		close(socket_memoria);
 	}
 
-	log_info(log_kernel, "[JOURNAL] Journal resuelto correctamente por %d memorias del total de %d", cont, list_size(lista_memorias));
+	log_info(log_kernel, "[resolverJournal]- Journal resuelto correctamente por %d memorias del total de %d", cont, list_size(lista_memorias));
 
 	return armar_respuesta(RESP_OK, NULL);
 }
@@ -2133,44 +2189,47 @@ resp_com_t enviar_recibir(int socket,char *req_str)
 	a_enviar.tam = strlen(req_str) + 1;
 	a_enviar.str = malloc(a_enviar.tam);
 	strcpy(a_enviar.str, req_str);
-	log_info(log_kernel, "[COMUNICACION] Voy a enviar request: %s", req_str);
+	log_info(log_kernel, "[enviar_recibir]- Voy a enviar request: %s", req_str);
+
 	if (enviar_request(socket, a_enviar) == -1) {
-		log_error(log_kernel, "[COMUNICACION] Error al enviar request: %s",
-				req_str);
+		log_error(log_kernel, "[enviar_recibir]- Error al enviar request: %s",req_str);
 		borrar_request_com(a_enviar);
 		return armar_respuesta(RESP_ERROR_COMUNICACION, NULL);
 	}
 	borrar_request_com(a_enviar);
 
-	log_info(log_kernel, "[COMUNICACION] Request enviado: %s", req_str);
+	log_info(log_kernel, "[enviar_recibir] Request enviado: %s", req_str);
 
 	msg_com_t msg = recibir_mensaje(socket);
 	if (msg.tipo != RESPUESTA) {
-		log_error(log_kernel,
-				"[COMUNICACION] Error al recibir respuesta para el request: %s",
-				req_str);
+
+		log_error(log_kernel,"[enviar_recibir] Error al recibir respuesta para el request: %s",req_str);
 		borrar_mensaje(msg);
 		return armar_respuesta(RESP_ERROR_COMUNICACION, NULL);
 	}
 	resp_com_t resp = procesar_respuesta(msg);
 	borrar_mensaje(msg);
+
 	if (resp.tipo == RESP_OK) {
-		log_info(log_kernel,
-				"[COMUNICACION] El request <%s> se realizó correctamente",
-				req_str);
+		log_info(log_kernel,"[enviar_recibir]- El request <%s> se realizó correctamente",req_str);
+
 		if (resp.msg.str != NULL && resp.msg.tam > 0) {
-			log_info(log_kernel, "[COMUNICACION] La respuesta es <%s>",
-					resp.msg.str);
+
+			log_info(log_kernel, "[enviar_recibir]- La respuesta es <%s>",resp.msg.str);
+
 		}
+
 	} else {
-		log_error(log_kernel,
-				"[COMUNICACION] El request <%s> no pudo realizarse. Error <%d>",
-				req_str, resp.tipo);
+
+		log_error(log_kernel,"[enviar_recibir]- El request <%s> no pudo realizarse. Error <%d>",req_str, resp.tipo);
+
 	}
+
 	return resp;
 }
 
 void loggearEjecucion(int nivel, int pid, char* linea) {
+
 	fprintf(fp_trace_ejecucion, "\n<NIVEL %d><PID: %d>: %s", nivel, pid, linea);
 }
 
@@ -2223,7 +2282,8 @@ void agregarMemoriaMetricas(int num_memoria)
 	t_metricas_memoria *nueva = malloc(sizeof(t_metricas_memoria));
 	nueva->num_memoria = num_memoria;
 	nueva->operaciones = 0;
-	log_info(log_kernel, "[METRICAS] Inicializando estructuras para las metricas de la memoria %d",num_memoria);
+	log_info(log_kernel, "[agregarMemoriaMetricas]- Inicializando estructuras para las metricas de la memoria %d",num_memoria);
+
 	pthread_mutex_lock(&mutex_metricas);
 	list_add(g_metricas.operaciones_memorias,nueva);
 	pthread_mutex_unlock(&mutex_metricas);
@@ -2232,8 +2292,10 @@ void agregarMemoriaMetricas(int num_memoria)
 void sacarMemoriaMetricas(int num_memoria)
 {
 	t_metricas_memoria *aux;
-	log_info(log_kernel, "[METRICAS] Sacando la memoria %d de las estructuras de las metricas",num_memoria);
+	log_info(log_kernel, "[sacarMemoriaMetricas]- Sacando la memoria %d de las estructuras de las metricas",num_memoria);
+
 	pthread_mutex_lock(&mutex_metricas);
+
 	for(int i=0; i<list_size(g_metricas.operaciones_memorias);i++){
 		aux = list_get(g_metricas.operaciones_memorias,i);
 		if(aux->num_memoria == num_memoria){
@@ -2248,9 +2310,11 @@ void sacarMemoriaMetricas(int num_memoria)
 void contar_insert(int num_memoria, int criterio, uint64_t duracion)
 {
 	t_metricas_memoria *aux;
-	log_info(log_kernel, "[METRICAS] Agregando informacion de insert. Memoria: %d. Criterio: %s. Duracion: %llums",num_memoria,criterios[criterio],duracion);
+	log_info(log_kernel, "[contar_insert]- Agregando informacion de insert. Memoria: %d. Criterio: %s. Duracion: %llums",num_memoria,criterios[criterio],duracion);
+
 	pthread_mutex_lock(&mutex_metricas);
 	g_metricas.operaciones_totales++;
+
 	for(int i=0; i<list_size(g_metricas.operaciones_memorias);i++){
 		aux = list_get(g_metricas.operaciones_memorias,i);
 		if(aux->num_memoria == num_memoria){
@@ -2267,9 +2331,10 @@ void contar_insert(int num_memoria, int criterio, uint64_t duracion)
 void contar_select(int num_memoria, int criterio, uint64_t duracion)
 {
 	t_metricas_memoria *aux;
-	log_info(log_kernel, "[METRICAS] Agregando informacion de select. Memoria: %d. Criterio: %s. Duracion: %llums",num_memoria,criterios[criterio],duracion);
+	log_info(log_kernel, "[contar_select]- Agregando informacion de select. Memoria: %d. Criterio: %s. Duracion: %llums",num_memoria,criterios[criterio],duracion);
 	pthread_mutex_lock(&mutex_metricas);
 	g_metricas.operaciones_totales++;
+
 	for(int i=0; i<list_size(g_metricas.operaciones_memorias);i++){
 		aux = list_get(g_metricas.operaciones_memorias,i);
 		if(aux->num_memoria == num_memoria){
@@ -2287,12 +2352,15 @@ void imprimirMetricas(bool enConsola)
 {
 	t_metricas_memoria *aux;
 	pthread_mutex_lock(&mutex_metricas);
-	log_info(log_kernel, "[METRICAS] Ultima actualizacion hace %d segundos",(timestamp()-g_metricas.ultima_actualiz)/1000);
+
+	log_info(log_kernel, "[imprimirMetricas]- Ultima actualizacion hace %d segundos",(timestamp()-g_metricas.ultima_actualiz)/1000);
 	if(enConsola){
 		printf("\n[METRICAS] Ultima actualizacion hace %d segundos",(timestamp()-g_metricas.ultima_actualiz)/1000);
 	}
 	float read_latency, write_latency, memory_load;
+
 	for(int i=0;i<3;i++){
+
 		if( g_metricas.criterio[i].cant_select > 0 )
 			read_latency = (float)g_metricas.criterio[i].tiempo_select / g_metricas.criterio[i].cant_select;
 		else
@@ -2307,6 +2375,7 @@ void imprimirMetricas(bool enConsola)
 		imprimirStringInt(enConsola,"[METRICAS] Criterio %s. Writes: %d",criterios[i],g_metricas.criterio[i].cant_insert);
 	}
 	for(int i=0; i<list_size(g_metricas.operaciones_memorias);i++){
+
 		aux = list_get(g_metricas.operaciones_memorias,i);
 		if(g_metricas.operaciones_totales > 0)
 			memory_load = ((float)aux->operaciones/g_metricas.operaciones_totales)*100;
