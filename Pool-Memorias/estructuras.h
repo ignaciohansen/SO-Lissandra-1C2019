@@ -19,6 +19,7 @@
 #include "commons/bitarray.h"
 #include <pthread.h>
 #include <stdint.h>
+#include "../Biblioteca/src/Biblioteca.h"
 
 //#include "parser.h"
 //#include "retardos.h"
@@ -30,6 +31,8 @@ pthread_t journalHilo;
 t_log* log_memoria;
 FILE* tablas_fp;
 t_bitarray* bitmap;
+
+RWlock sem_insert_select;
 
 pthread_mutex_t mutex_retardos_memoria;
 

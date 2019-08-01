@@ -33,10 +33,13 @@ void * retardo_journal(void){
 	//	char* journalAutomatico = malloc(sizeof("**********JOURNAL AUTOMATICO ACTIVADO**********\n\n")+1);
 	//	memcpy(journalAutomatico, "**********JOURNAL AUTOMATICO ACTIVADO**********\n\n", strlen("**********JOURNAL AUTOMATICO ACTIVADO**********\n\n")+1);
 
+
 		pthread_mutex_lock(&JOURNALHecho);
 		mutexBloquear(&verificarSiBitmapLleno);
 		activo_retardo_journal = true;
+		rwLockEscribir(&sem_insert_select);
 		int cant_pasados = JOURNAL(-1);
+		rwLockDesbloquear(&sem_insert_select);
 		fprintf(tablas_fp,"\nEjecutado JOURNAL AUTOMÁTICO");
 		loggearEstadoActual(tablas_fp);
 		imprimirMensaje1(log_memoria, "[JOURNAL AUTOMATICO] %d registros recibidos ok por LFS", cant_pasados);

@@ -980,17 +980,16 @@ void agregarAExit(t_pcb* pcb) {
 
 int sacarDeColaEjecucion(t_pcb* pcb) {
 
+	mutexBloquear(&mutexColaEjecucion);
 	int posicion = buscarPcbEnColaEjecucion(pcb);
 
 	if (posicion >= 0) {
 
-		mutexBloquear(&mutexColaEjecucion);
 		log_info(log_kernel, "Por sacar de ejecucion");
 		list_remove(colaEjecucion, posicion);
-
-		mutexDesbloquear(&mutexColaEjecucion);
 	}
 
+	mutexDesbloquear(&mutexColaEjecucion);
 	log_info(log_kernel, "[COLA EJECUCION]Size Ejecucion (s): %d",
 			list_size(colaEjecucion));
 
