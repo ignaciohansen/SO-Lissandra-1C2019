@@ -1979,7 +1979,7 @@ void eliminarTablaCompleta(char* tabla) {
 	}
 	list_destroy_and_destroy_elements(lista_tmp, free);
 
-	t_list *lista_tmpc = obtenerArchivosDirectorio(path, ".tmp");
+	t_list *lista_tmpc = obtenerArchivosDirectorio(path, ".tmpc");
 	for (int i = 0; i < list_size(lista_tmpc); i++) {
 		char *aux = list_get(lista_tmpc, i);
 		log_info(logger, "[BORRANDO] Borrando archivo %s", aux);
