@@ -236,6 +236,7 @@ void* hilo_consola(int * socket_p){
 		if(linea_leida)
 			add_history(linea_leida);
 		req = parser(linea_leida);
+		log_info(log_memoria,"[CONSOLA] Request: %s",linea_leida);
 		free(linea_leida);
 		switch(req.command){
 			case SALIR:
@@ -733,7 +734,10 @@ resp_com_t resolver_journal(int socket_lfs,request_t req)
 	}
 	char *msg_resp = malloc(100);
 	resp_com_t resp;
+
+	rwLockEscribir(&sem_insert_select);
 	int cant_pasados = procesoJournal(socket_lfs);
+	rwLockDesbloquear(&sem_insert_select);
 
 	if(cant_pasados != -1){
 		snprintf(msg_resp, 99, "Journal hecho. %d registros recibidos OK",cant_pasados);
@@ -784,7 +788,7 @@ char* select_memoria(char *nombre_tabla, uint16_t key)
 	char* valorAux = malloc(max_valor_key);
 	//void* informacion = malloc(sizeof(pagina)+max_valor_key);
 	pagina->value = malloc(max_valor_key);
-
+	rwLockLeer(&sem_insert_select);
 	if(funcionSelect(nombre_tabla, key, &pagina, &valorAux)!=0){
 		pag = buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(nombre_tabla, key, &seg);
 		free(pagina->value);
@@ -798,6 +802,7 @@ char* select_memoria(char *nombre_tabla, uint16_t key)
 		imprimirAviso(log_memoria,"[WRAPPER DE SELECT] Valor no encontrado");
 
 	}
+	rwLockDesbloquear(&sem_insert_select);
 
 	//free(informacion);
 	if(encontrada){

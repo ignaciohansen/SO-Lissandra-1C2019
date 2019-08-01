@@ -30,6 +30,8 @@ void armarMemoriaPrincipal() {
 	/* NO SÉ SI ESTO SE USA
 	 * DE USARSE TIENE SENTIDO QUE ESTÉ EN ESTA FUNCIÓN,NO?
 	 * */
+	rwLockIniciar(&sem_insert_select);
+
 	aux_crear_pagina = malloc(sizeof(pagina));
 	aux_devolver_pagina = malloc(sizeof(pagina_a_devolver));
 	aux_segmento = malloc(sizeof(segmento));
@@ -159,7 +161,7 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 	mutexBloquear(&ACCIONLRU);
 	mutexDesbloquear(&ACCIONLRU);
 
-
+	rwLockEscribir(&sem_insert_select);
 
 	segmento* segmentoBuscado = NULL;
 	pagina_referenciada* ref = malloc(sizeof(pagina_referenciada));
@@ -221,12 +223,19 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 					ref->nropagina, keyBuscada);
 				}
 		//	printf("\n\n\nPASAMOS INSERT\n\n");
+			log_info(log_memoria,"[DBG] 1");
+			if(segmentoBuscado == NULL)
+				log_info(log_memoria,"[DBG] Segmento buscado es null");
 			pagina_referenciada* ref3 = segmentoBuscado->paginasAsocida;
+			if(ref3 == NULL)
+					log_info(log_memoria,"[DBG] ref3 es null");
+			log_info(log_memoria,"[DBG] Antes del while");
 	//		printf("\n\n\n%d\n\n", ref3->nropagina);
 			while(ref3->sig!=NULL){
 				ref3=ref3->sig;
 		//		printf("\n\n\n%d\n\n", ref3->nropagina);
 			}
+			log_info(log_memoria,"[DBG] Despues del while");
 			ref3->sig = ref;
 		//	printf("\n\n\nPASAMOS INSERT\n\n");
 		//	ref->sig = segmentoBuscado->paginasAsocida->sig;
@@ -264,7 +273,7 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 		modificarValoresDeTablaYMemoriaAsociadasAKEY(posicionAIr, valorAPoner, timestamp_val);
 	}
 //	mutexDesbloquear(&mutex_bloque_LRU_modificando);
-
+	rwLockDesbloquear(&sem_insert_select);
 	return 1;
 }
 
@@ -287,6 +296,7 @@ int funcionSelect(char* nombreTablaAIr, u_int16_t keyBuscada,
 		imprimirError2(log_memoria, "[FUNCION SELECT] ERROR, NO SE ENCONTRO NADA. SEGMENTO BUSCADO: <%s>. KEY BUSCADA: <%d>.DEVUELVO ERROR",
 					nombreTablaAIr, keyBuscada);
 //			free(informacion);
+
 			return 0;
 		}
 	log_info(log_memoria, "[FUNCION SELECT] Numero de pagina a donde debo ir: %d.Me pongo a buscar los datos", direccionPagina);
@@ -789,8 +799,10 @@ void borrarSegmentoPasadoPorParametro(segmento* unSegmento){
 		}
 	}
 	aux_aux_segmento->siguienteSegmento = aux_segmentos->siguienteSegmento;
-	free(aux_segmentos->path_tabla);
-	free(aux_segmentos);
+//	free(aux_segmentos->path_tabla);
+//	free(aux_segmentos);
+
+	log_info(log_memoria,"[DEBUGGGGG_AUX_AUX] D1: %p, D2: %p, D3: %p",unSegmento,aux_segmentos,aux_aux_segmento);
 
 	log_info(log_memoria, "[BORRANDO 1 SEGMENTO] Segmento <%s> BORRADO", unSegmento->path_tabla);
 }
@@ -910,17 +922,16 @@ void segmento_eliminar_nro_pagina(segmento* unSegmento, int nroAQuitar){
 	mutexBloquear(&mutex_segmento_aux);
 	mutexBloquear(&mutex_segmento_modificando);
 	//BUSCO NRO DE PAGINA->LA ELIMINO -> ACOMODO LA LISTA
-	pagina_referenciada* tablaPaginaAux;
 	pagina_referenciada* tablaPaginaBuscador;
 	pagina_referenciada* tablaPaginaAnterior;
 	tablaPaginaBuscador = unSegmento->paginasAsocida;
-	tablaPaginaAux = NULL;
+//	tablaPaginaAux = NULL;
 	tablaPaginaAnterior = NULL;
 //	printf("\nPASO A COMPARAR NUMEROS\n\n");
 	while(tablaPaginaBuscador->nropagina != nroAQuitar){
 	//	printf("\nNRO DEL SEGMENTO vs NROAQUITAR\n%d                ==      %d\n\n", tablaPaginaBuscador->nropagina, nroAQuitar);
 //		log_info(log_memoria, "nro pag %d",tablaPaginaBuscador->nropagina);
-		tablaPaginaAux = tablaPaginaBuscador;
+//		tablaPaginaAux = tablaPaginaBuscador;
 		tablaPaginaAnterior = tablaPaginaBuscador;
 		tablaPaginaBuscador = tablaPaginaBuscador->sig;
 	}
@@ -937,7 +948,7 @@ void segmento_eliminar_nro_pagina(segmento* unSegmento, int nroAQuitar){
 	mutexBloquear(&mutex_bitmap);
 	liberarPosicionLRU(tablaPaginaBuscador->nropagina);
 	mutexDesbloquear(&mutex_bitmap);
-	free(tablaPaginaBuscador);
+//	free(tablaPaginaBuscador);
 
 	//if(tablaPaginaAux==NULL){
 	if(unSegmento->paginasAsocida == NULL){
