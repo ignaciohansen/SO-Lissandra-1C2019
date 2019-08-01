@@ -17,6 +17,9 @@ t_list *g_lista_memorias_asociadas = NULL;
 pthread_mutex_t memorias_conocidas_mutex = PTHREAD_MUTEX_INITIALIZER;
 FILE *fp_trace_ejecucion;
 
+//Agregue esto (lorenzo)
+pthread_mutex_t lista_memorias_criterio_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 int main() {
 
 	fp_trace_ejecucion = fopen("../Log/traceEjecucion.txt", "w"); //Para revisar si estamos haciendo bien la planificacion
@@ -996,13 +999,15 @@ void gossiping_Kernel(pthread_t *hiloGossiping) {
 
 void actualizarMemoriasDisponibles() {
 
-	//Logear diferencias de memorias TODO
+	//Logear diferencias de memorias TODO (Listoo)
+	//log_info(log_kernel, "[actualizarMemoriasDisponibles]- Cantidad Memorias ANTES: %d", memoriasConocidasKernel.cant);
+
 	pthread_mutex_lock(&memorias_conocidas_mutex);
 	if (memoriasConocidasKernel.cant != 0) {
 		free(memoriasConocidasKernel.seeds);
 	}
 	memoriasConocidasKernel = armar_vector_seeds(soy);
-	log_info(log_kernel, "[actualizarMemoriasDisponibles]- Cantidad Memorias: %d", memoriasConocidasKernel.cant);
+	log_info(log_kernel, "[actualizarMemoriasDisponibles]- Cantidad Memorias DESPUES: %d", memoriasConocidasKernel.cant);
 	pthread_mutex_unlock(&memorias_conocidas_mutex);
 }
 
@@ -1563,7 +1568,7 @@ seed_com_t *elegirMemoria(void) {
 }
 
 seed_com_t *elegirMemoriaCriterio(int num_criterio, uint16_t key) {
-
+	//@todo @lorenzo revisar
 	//@todo @martin revisar sincro de esta función
 	seed_com_t *retval = NULL;
 
@@ -1580,13 +1585,16 @@ seed_com_t *elegirMemoriaCriterio(int num_criterio, uint16_t key) {
 		criterio = criterioEC;
 		elegida = numMemoriaRandom(list_size(criterio.listMemorias));
 	}
-
+	//Agregue este Mutex_Verificarlo por las dudas!
+	pthread_mutex_lock(&lista_memorias_asociadas_mutex);
 	t_list *memorias_criterio = criterio.listMemorias;
 
 	if (list_size(memorias_criterio) == 0)
 		return NULL;
 
 	seed_com_t *aux = list_get(memorias_criterio, elegida);
+
+	pthread_mutex_unlock(&lista_memorias_asociadas_mutex);
 
 	retval = malloc(sizeof(seed_com_t));
 	strcpy(retval->ip, aux->ip);
@@ -1617,7 +1625,7 @@ int numMemoriaHash(uint16_t key)
 
 int vaciarMemoriasSHC(void)
 {
-	//@todo @martin revisar sincro
+	//@todo @martin revisar sincro | (lorenzo) para mi no deberia sincronizar al ser 1 sola
 	log_info(log_kernel, "[vaciarMemoriasSHC]- Se va a mandar Journal a todas las memorias asociadas al criterio");
 	t_list *copiaSHC = list_duplicate(criterioSHC.listMemorias);
 	request_t request = parser("JOURNAL");
@@ -1633,8 +1641,9 @@ int vaciarMemoriasSHC(void)
 
 bool estaMemoriaEnCriterio(int numMemoria, t_list *lista)
 {
-	//@todo @martin revisar sincro de esta función
+	//@todo @martin revisar sincro de esta función (sincro en agregarMemoriaCriterio)
 	bool encontrada = false;
+
 	for(int i=0; i<list_size(lista); i++){
 		seed_com_t *aux = list_get(lista, i);
 		if(aux->numMemoria == numMemoria){
@@ -1642,6 +1651,7 @@ bool estaMemoriaEnCriterio(int numMemoria, t_list *lista)
 			break;
 		}
 	}
+
 	return encontrada;
 }
 
@@ -1674,6 +1684,8 @@ int agregarMemoriaCriterio(seed_com_t *memoria, int num_criterio) {
 		return -1;
 	}
 
+	//Agregue este Mutex (lorenzo) Verificarlo!
+	pthread_mutex_lock(&lista_memorias_criterio_mutex);
 	t_list *memorias_criterio = criterio.listMemorias;
 	if(estaMemoriaEnCriterio(memoria->numMemoria,memorias_criterio))
 	{
@@ -1693,6 +1705,7 @@ int agregarMemoriaCriterio(seed_com_t *memoria, int num_criterio) {
 
 	list_add(memorias_criterio, copia);
 	//NO HACER UN FREE DE 'copia' EN ESTA FUNCIÓN, SINO ROMPE
+	pthread_mutex_unlock(&lista_memorias_criterio_mutex);
 
 	log_info(log_kernel, "[agregarMemoriaCriterio]- Memoria %d agregada al criterio %d",copia->numMemoria, num_criterio);
 
@@ -1798,9 +1811,12 @@ int eliminarMemoriaAsociada(int numMemoria) {
 
 int eliminarMemoriaCriterio(int numMemoria, t_list *lista_memorias) {
 	//@martin: falta sincro
+	//@lorenzo--> agregue cosas, revisar
 
 	int cont=0;
 
+	//Agregue este mutex
+	pthread_mutex_lock(&lista_memorias_criterio_mutex);
 	for(int i=0;i<list_size(lista_memorias);i++){
 		seed_com_t *aux = list_get(lista_memorias,i);
 
@@ -1814,6 +1830,7 @@ int eliminarMemoriaCriterio(int numMemoria, t_list *lista_memorias) {
 			//No hago el break porque la memoria puede estar asociada a más de un criterio y aparecer duplicada en esta lista
 		}
 	}
+	pthread_mutex_unlock(&lista_memorias_criterio_mutex);
 //	log_info(log_kernel, "[BAJA MEMORIA] La memoria %d estaba en el criterio %d veces",numMemoria,cont);
 	return cont;
 }
