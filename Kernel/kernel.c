@@ -57,7 +57,6 @@ int main() {
 	pthread_t inotify_c;
 	pthread_create(&inotify_c, NULL, (void *) inotifyAutomatico,path_de_kernel);
 	pthread_detach(inotify_c);
-	printf("\n*Hilo de actualización de retardos y Quantum corriendo.\n");
 	log_info(log_kernel,"[MAIN]- Hilo de actualización de retardos y Quantum corriendo");
 
 	pthread_t hiloGossiping;
@@ -572,14 +571,14 @@ int rafagaComandoRun(char* path) {
 	if (fd == NULL) {
 
 		log_info(log_kernel, "[rafagaComandoRun]- El archivo pasado por path no se encontró");
-		printf("El archivo %s No existe!\n", path);
+		printf("El archivo %s No fue encontrado!\n", path);
 
 		//free(path);
 		return -1;
 	} else {
 
 		log_info(log_kernel,"[rafagaComandoRun]- El archivo se encontró con exito. Empezamos a leer para calcular la cantidad de lineas.");
-		printf("El archivo buscado en la dirección %s existe. Vamos a leerlo.\n",
+		printf("El archivo buscado en la dirección %s fue encontrato. Vamos a leerlo.\n",
 				path);
 
 		while ((caracter = fgetc(fd)) != EOF) {
@@ -653,7 +652,6 @@ void agregarANuevo(char* linea) {
 	list_add(colaNuevos, linea);
 	mutexDesbloquear(&mutexColaNuevos);
 
-	log_info(log_kernel,"[agregarANuevo]- Se desbloqueo la cola de nuevos.");
 	log_info(log_kernel,"[agregarANuevo]- Se agrego a la cola la linea %s: .",linea);
 	log_info(log_kernel, "[agregarANuevo]- Size colaNuevos: %d", list_size(colaNuevos));
 
@@ -662,7 +660,7 @@ void agregarANuevo(char* linea) {
 void agregarAListo(t_pcb* pcbParaAgregar) {
 
 	if (pcbParaAgregar->estado == nuevo) {
-		log_info(log_kernel, "[agregarAListo]- Por sacar el elemento de la cola de nuevos");
+		log_info(log_kernel, "[agregarAListo]- Por sacar el elemento de la cola de nuevos.");
 
 		mutexBloquear(&mutexColaNuevos);
 
@@ -686,9 +684,7 @@ void agregarAListo(t_pcb* pcbParaAgregar) {
 
 	mutexDesbloquear(&mutexColaListos);
 
-	log_info(log_kernel,"[agregarAListo]- Desbloqueamos el mutex y agregamos el PCB a la cola de listos.");
-
-	log_info(log_kernel, "[agregarAListo]-  Size colaListos: %d", list_size(colaListos));
+	log_info(log_kernel, "[agregarAListo]-  Size colaListos luego de agregar PCB: %d", list_size(colaListos));
 
 	log_info(log_kernel, "[agregarAListo]- Por hacer POST a sem_planificador");
 	sem_post(&sem_planificador);
@@ -699,11 +695,12 @@ void agregarAListo(t_pcb* pcbParaAgregar) {
 
 void agregarAEjecutando(t_pcb* pcb) {
 
+	log_info(log_kernel, "[agregarAEjecutando]- Llego el PID: %d ,para agregar a colaEjecucion.", pcb->pid);
 	mutexBloquear(&mutexColaEjecucion);
 	list_add(colaEjecucion, pcb);
 	pcb->estado = ejecucion;
 	mutexDesbloquear(&mutexColaEjecucion);
-	log_info(log_kernel, "[agregarAEjecutando]- Size colaEjecucion: %d", list_size(colaEjecucion));
+	log_info(log_kernel, "[agregarAEjecutando]- Luego de agregar PCB, el Size colaEjecucion: %d", list_size(colaEjecucion));
 }
 
 t_pcb* obtenerColaListos(void) {
@@ -753,12 +750,13 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 		//Rafaga restante del PCB sea mayor o igual que el Quantum
 		if ((pcb->rafaga - pcb->progamCounter) >= quantum) {
 
+			log_info(log_kernel, "[EJECUTAR]- DENTRO DEL QUANTUM");
 			for (int i = 1; quantum >= i; i++) {
 
-				log_info(log_kernel, "[EJECUTAR]- Vuelta del FOR: %d", i);
+				log_info(log_kernel, "[EJECUTAR]- QUANTUM: %d", i);
 
-				log_info(log_kernel, "[EJECUTAR]- %d", pcb->comando);
-				log_info(log_kernel, "[EJECUTAR]- %p", pcb->archivo);
+				//log_info(log_kernel, "[EJECUTAR]- %d", pcb->comando);
+				//log_info(log_kernel, "[EJECUTAR]- %p", pcb->archivo);
 
 //				bufferRun2 = fgets(bufferRun, 100, pcb->archivo);
 				bufferRun = fgets(bufferRun, 100, pcb->archivo);
@@ -768,6 +766,7 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 				resp_com_t respuesta = resolverPedido(bufferRun);
 				loggearEjecucion(nivel, pcb->pid, bufferRun);
 
+				log_info(log_kernel, "[EJECUTAR]- RESULTADO FUE: %s", respuesta.msg.str);
 				pcb->tipoRespuesta = respuesta.tipo;
 				pcb->progamCounter++;
 				borrar_respuesta(respuesta);
@@ -781,6 +780,7 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 				aplicarRetardo();
 
 			}
+			log_info(log_kernel, "[EJECUTAR]- FUERA DEL QUANTUM");
 			if(pcb->estado == ejecucion){
 				if (pcb->rafaga > pcb->progamCounter) {
 					sacarDeColaEjecucion(pcb);
@@ -811,15 +811,15 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 		} //Aca termina el si la rafaga restante del proceso (asociado al comando RUN) es mayor que el QUANTUM
 		else if (pcb->estado == ejecucion) {
 
-			log_info(log_kernel,"[EJECUTAR]- ===>Seccion de Quantum mayor que rafaga restante del proceso.");
+			log_info(log_kernel,"[EJECUTAR]- ===>Seccion de Quantum MAYOR que rafaga restante del proceso.");
 
 			int rafagaRestante = pcb->rafaga - pcb->progamCounter;
 
-			log_info(log_kernel, "[EJECUTAR]- ===>Rafaga restante: %d.", rafagaRestante);
+			log_info(log_kernel, "[EJECUTAR]- ===> Rafaga restante: %d.", rafagaRestante);
 
 			for (int i = 1; rafagaRestante >= i; i++) {
 
-				log_info(log_kernel, "[EJECUTAR]- Vuelta del FOR: %d.", i);
+				log_info(log_kernel, "[EJECUTAR]- Vuelta de EJECUCION: %d.", i);
 
 				bufferRun = fgets(bufferRun, 100, pcb->archivo);
 
@@ -828,7 +828,8 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 				resp_com_t respuesta = resolverPedido(bufferRun);
 				loggearEjecucion(nivel, pcb->pid, bufferRun);
 
-				//@martin @lorenzo aca habria que revisar si se produjo un error grave y abortar la ejecucion del script
+				log_info(log_kernel, "[EJECUTAR]- RESULTADO FUE: %s", respuesta.msg.str);
+
 				pcb->tipoRespuesta = respuesta.tipo;
 
 				borrar_respuesta(respuesta);
@@ -854,10 +855,13 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 
 	//Si es otro comando:
 	else if (pcb->estado == ejecucion) {
+		log_info(log_kernel, "[EJECUTAR]- Por ejecutar comando ingresado por consulta: %s.", pcb->linea);
 		resp_com_t respuesta = resolverPedido(pcb->linea);
 		loggearEjecucion(nivel, pcb->pid, pcb->linea);
-		//@martin @lorenzo aca habria que revisar si se produjo un error grave y abortar la ejecucion del script
+
 		pcb->tipoRespuesta = respuesta.tipo;
+
+		log_info(log_kernel, "[EJECUTAR]- RESULTADO FUE: %s", respuesta.msg.str);
 
 		borrar_respuesta(respuesta);
 
@@ -974,11 +978,11 @@ int buscarPcbEnColaEjecucion(t_pcb* pcb) {
 
 void aplicarRetardo(void) {
 
-	log_info(log_kernel,"[KERNEL | aplicarRetardo] Por ejecutar instruccion sleep de: %d",	arc_config->sleep_ejecucion);
+	log_info(log_kernel,"[KERNEL | aplicarRetardo] Por ejecutar instruccion sleep de: %d.",	arc_config->sleep_ejecucion);
 
 	usleep(arc_config->sleep_ejecucion * 1000); //usleep recibe microsegundos
 
-	log_info(log_kernel,"[KERNEL | aplicarRetardo] Luego de instruccion sleep");
+	log_info(log_kernel,"[KERNEL | aplicarRetardo] Luego de instruccion sleep.");
 }
 
 void gossiping_Kernel(pthread_t *hiloGossiping) {
@@ -1933,7 +1937,7 @@ resp_com_t resolverSelect(request_t request) {
 		return armar_respuesta(RESP_ERROR_SIN_MEMORIAS_CRITERIO, NULL);
 	}
 
-	log_info(log_kernel, "[resolverSelect] Memoria elegida: %d",datos_memoria->numMemoria);
+	log_info(log_kernel, "[resolverSelect] Memoria elegida: %d, que corresponde al criterio: %s",datos_memoria->numMemoria,criterios[criterio]);
 
 	int socket_memoria = conectar_a_memoria(datos_memoria->ip,datos_memoria->puerto);
 
@@ -1984,7 +1988,7 @@ resp_com_t resolverInsert(request_t request) {
 
 		return armar_respuesta(RESP_ERROR_SIN_MEMORIAS_CRITERIO, NULL);
 	}
-	log_info(log_kernel, "[resolverInsert]- Memoria elegida: %d",datos_memoria->numMemoria);
+	log_info(log_kernel, "[resolverInsert]- Memoria elegida: %d, que corresponde al criterio: %s",datos_memoria->numMemoria,criterios[criterio]);
 
 	int socket_memoria = conectar_a_memoria(datos_memoria->ip,datos_memoria->puerto);
 	if (socket_memoria == -1) {
