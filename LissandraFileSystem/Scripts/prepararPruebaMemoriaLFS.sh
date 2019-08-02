@@ -1,5 +1,19 @@
 #!/bin/bash
 
+IP_LFS=127.0.0.1
+
+if [ $# -eq 1 ];
+then
+IP_LFS=$1
+fi
+
+if [ $# -gt 1 ];
+then
+echo $#
+echo "El unico parametro habiitado es la ip"
+exit 1
+fi
+
 echo "Script para ejecutar la prueba de memoria en el FileSystem"
 
 cd ..
@@ -20,6 +34,8 @@ fi
 
 cp ../../CONFIGS_SCRIPTS/PRUEBA_MEMORIA/LFS_CONFIG.txt ./
 echo "Config de memoria copiado"
+
+sed -i -e "s/ip/$IP_LFS/" LFS_CONFIG.txt
 
 cd ..
 
