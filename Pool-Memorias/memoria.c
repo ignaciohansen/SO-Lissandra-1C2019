@@ -410,9 +410,9 @@ void iniciarSemaforosYMutex() {
 //	semaforoIniciar(&paginasSinUsar, cantPaginasTotales);
 
 	mutexIniciar(&mutex_retardo_memoria);
-		mutexIniciar(&mutex_retardo_gossiping);
-		mutexIniciar(&mutex_retardo_fs);
-		mutexIniciar(&mutex_retardo_journal);
+	mutexIniciar(&mutex_retardo_gossiping);
+	mutexIniciar(&mutex_retardo_fs);
+	mutexIniciar(&mutex_retardo_journal);
 
 	mutexIniciar(&mutex_bloquear_select_por_limpieza);
 
@@ -420,10 +420,8 @@ void iniciarSemaforosYMutex() {
 	mutexIniciar(&mutex_retardos_memoria);
 //	iniciarSemaforosRetados();
 
-	log_info(log_memoria, "[SEMAFOROS] Semaforos y mutex inicializados");
-	log_info(log_memoria,
-			"[SEMAFOROS] Semaforo paginasSinUsar iniciada con valor '%d'",
-			cantPaginasTotales);
+//	log_info(log_memoria, "[SEMAFOROS] Semaforos y mutex inicializados");
+//	log_info(log_memoria,	"[SEMAFOROS] Semaforo paginasSinUsar iniciada con valor '%d'",	cantPaginasTotales);
 }
 
 /*-----------------------------------------------------------------------------
@@ -954,8 +952,7 @@ void cargarConfiguracion(char *path_config) {
 		if (config_has_property(configFile, "IP_SEEDS")) {
 
 			arc_config->ip_seeds = config_get_array_value(configFile, "IP_SEEDS");
-			log_info(log_memoria, "[CONFIGURANDO MODULO] IP DE SEEDS: %s",
-					arc_config->ip_fs);
+			log_info(log_memoria, "[CONFIGURANDO MODULO] IPs DE SEEDS LEIDOS");
 
 		} else {
 			log_error(log_memoria, "[ERROR] NO HAY IPS PARA SEEDS");
@@ -964,8 +961,7 @@ void cargarConfiguracion(char *path_config) {
 		if (config_has_property(configFile, "PUERTO_SEEDS")) {
 			arc_config->puerto_seeds = config_get_array_value(configFile,
 					"PUERTO_SEEDS");
-			log_info(log_memoria, "[CONFIGURANDO MODULO] PUERTOS PARA SEEDS: %d",
-					arc_config->puerto_seeds);
+			log_info(log_memoria, "[CONFIGURANDO MODULO] PUERTOS PARA SEEDS LEIDOS");
 
 		} else {
 			log_error(log_memoria,
@@ -1243,7 +1239,7 @@ int procesoJournal(int socket_lfs){
 //	printf("EN PROCESO JOURNAL\n\n");
 //	retardo_journal(arc_config->retardo_journal);
 	cant_pasados = JOURNAL(socket_lfs);
-	log_info(log_memoria, "[procesoJournal] JOURNAL REALIZADO, PROCEDO A REINICIAR EL HILO JOURNAL");
+//	log_info(log_memoria, "[JOURNAL] JOURNAL REALIZADO, PROCEDO A REINICIAR EL HILO JOURNAL");
 	pthread_create(&journalHilo, NULL, retardo_journal, arc_config->retardo_journal);
 	hiloDetach(journalHilo);
 	mutexDesbloquear(&JOURNALHecho);

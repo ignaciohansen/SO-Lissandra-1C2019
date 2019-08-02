@@ -320,7 +320,7 @@ void *hilo_gossiping(thread_gos_args_t *args_p)
 	id_com_t *id_proceso = &(args.id_proceso);
 	free(args_p);
 	imprimirMensaje(logger_gossiping,"[HILO GOSSIPING] Entrando a hilo");
-	log_info(logger_gossiping,"[HILO GOSSIPING] Soy proceso %d",*id_proceso);
+//	log_info(logger_gossiping,"[HILO GOSSIPING] Soy proceso %d",*id_proceso);
 	//time_gos_t t0 = ahora(), t1 = 0;
 	time_gos_t proximo, ultimo = 0;
 	proximo = proxima_ejecucion_gossiping(ultimo);

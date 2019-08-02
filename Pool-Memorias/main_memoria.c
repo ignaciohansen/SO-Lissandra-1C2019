@@ -171,22 +171,22 @@ int conectar_a_lfs(bool inicializando, int *tam_valor)
 	id_com_t memoria = MEMORIA;
 	char puerto_fs[20];
 	snprintf(puerto_fs,19,"%d",arc_config->puerto_fs);
-	imprimirMensaje2(log_memoria,"[CONECTANDO A LFS] Me voy a intentar conectar a ip: <%s> puerto: <%s>", arc_config->ip_fs, puerto_fs);
+//	imprimirMensaje2(log_memoria,"[CONECTANDO A LFS] Me voy a intentar conectar a ip: <%s> puerto: <%s>", arc_config->ip_fs, puerto_fs);
 	int socket = conectar_a_servidor(arc_config->ip_fs,puerto_fs,memoria);
 //	printf("\nOBTUVE RESPUESTA\n\n\n");
 	if(socket == -1){
-		imprimirError(log_memoria,"[CONECTANDO A LFS] No fue posible conectarse con lissandra. TERMINANDO\n");
+		imprimirError(log_memoria,"[CONECTANDO A LFS] No fue posible conectarse con lissandra.\n");
 		return -1;
 	}
 
-	imprimirMensaje(log_memoria,"[CONECTANDO A LFS] Me conecté con éxito al lfs. Espero su hs");
+//	imprimirMensaje(log_memoria,"[CONECTANDO A LFS] Me conecté con éxito al lfs. Espero su hs");
 	//Si me conecté, espero su msg de bienvenida
 
 	msg_com_t msg = recibir_mensaje(socket);
 
 	if(msg.tipo != HANDSHAKECOMANDO){
 		borrar_mensaje(msg);
-		imprimirError(log_memoria,"[CONECTANDO A LFS] Lfs no responde el hs. TERMINANDO\n");
+		imprimirError(log_memoria,"[CONECTANDO A LFS] Lfs no responde el hs.\n");
 		return -1;
 	}
 
@@ -195,16 +195,16 @@ int conectar_a_lfs(bool inicializando, int *tam_valor)
 
 	if(hs.id == RECHAZADO){
 		if(hs.msg.tam == 0 )
-			imprimirError(log_memoria,"[CONECTANDO A LFS] Lfs rechazo la conexión. TERMINANDO\n");
+			imprimirError(log_memoria,"[CONECTANDO A LFS] Lfs rechazo la conexión.\n");
 		else
-			imprimirError1(log_memoria,"[CONECTANDO A LFS] Lfs rechazo la conexión [%s]. TERMINANDO\n",hs.msg.str);
+			imprimirError1(log_memoria,"[CONECTANDO A LFS] Lfs rechazo la conexión [%s].\n",hs.msg.str);
 		borrar_handshake(hs);
 		close(socket);
 		return -1;
 	}
 	if(inicializando){
 		if(hs.msg.tam == 0){
-			imprimirError(log_memoria,"[CONECTANDO A LFS] Lfs no mandó el tamaño de los valores. TERMINANDO\n");
+			imprimirError(log_memoria,"[CONECTANDO A LFS] Lfs no mandó el tamaño de los valores.\n");
 			borrar_handshake(hs);
 			close(socket);
 			return -1;
@@ -291,14 +291,17 @@ void* hilo_consola(int * socket_p){
 
 void cliente_dar_de_alta(int socket)
 {
-	int *copy = malloc(sizeof(int)); //NO HACER UN FREE ACÁ SINO VA A ROMPER, LO HAGO MÁS ADELANTE
+//	cliente_t *cliente = malloc(sizeof(cliente_t));
+	int *copia = malloc(sizeof(int));
+	memcpy(copia,&socket,sizeof(int));
+//	int *copy = malloc(sizeof(int)); //NO HACER UN FREE ACÁ SINO VA A ROMPER, LO HAGO MÁS ADELANTE
 	log_info(log_memoria,"[CLIENTE] Dando de alta cliente en socket %d",socket);
-	memcpy(copy,&socket,sizeof(int));
+//	memcpy(copy,&socket,sizeof(int));
 	pthread_mutex_lock(&mutex_clientes_activos);
-	list_add(clientes_activos,copy);
+	list_add(clientes_activos,copia);
 	int activos = list_size(clientes_activos);
 	pthread_mutex_unlock(&mutex_clientes_activos);
-	log_info(log_memoria,"[CLIENTE] Socket cliente %d agregado a la lista de activos",socket);
+//	log_info(log_memoria,"[CLIENTE] Socket cliente %d agregado a la lista de activos",socket);
 	log_info(log_memoria,"[CLIENTE] Hay %d clientes activos",activos);
 }
 
@@ -306,7 +309,7 @@ void cliente_dar_de_baja(int socket)
 {
 	int *aux;
 	bool encontrado = false;
-	log_info(log_memoria,"[CLIENTE] Voy a dar de baja socket %d",socket);
+//	log_info(log_memoria,"[CLIENTE] Voy a dar de baja socket %d",socket);
 	pthread_mutex_lock(&mutex_clientes_activos);
 	for(int i=0;i<list_size(clientes_activos);i++){
 		aux = list_get(clientes_activos,i);
@@ -320,8 +323,8 @@ void cliente_dar_de_baja(int socket)
 	}
 	int activos = list_size(clientes_activos);
 	pthread_mutex_unlock(&mutex_clientes_activos);
-	if(encontrado == false)
-		log_info(log_memoria,"[CLIENTE] Socket cliente %d no se dió de baja porque no se encontró en la lista");
+//	if(encontrado == false)
+//		log_info(log_memoria,"[CLIENTE] Socket cliente %d no se dió de baja porque no se encontró en la lista");
 	log_info(log_memoria,"[CLIENTE] Hay %d clientes activos",activos);
 }
 
@@ -329,11 +332,13 @@ void cerrar_todos_clientes(void)
 {
 	pthread_mutex_lock(&mutex_clientes_activos);
 	log_info(log_memoria,"[CLIENTE] Cerrando sockets de clientes activos. Hay %d",list_size(clientes_activos));
+//	int *aux;
 	int *aux;
 	for(int i=0;i<list_size(clientes_activos);i++){
 		aux = list_get(clientes_activos, i);
 		if(*aux != -1){
 			log_info(log_memoria,"[CLIENTE] Cerrando socket %d",*aux);
+//			pthread_cancel(*(aux->hilo));
 			close(*aux);//@martin : va con *?
 		}
 		free(aux);
@@ -364,33 +369,34 @@ void* hilo_servidor(int * socket_p){
 	imprimirMensaje(log_memoria,"[SERVIDOR] Entrando a hilo de escucha del servidor de la memoria");
 	hilo_cliente_args_t *args;
 	while(1){
-		imprimirMensaje(log_memoria,"[SERVIDOR] Esperando recibir un cliente");
+//		imprimirMensaje(log_memoria,"[SERVIDOR] Esperando recibir un cliente");
 		cliente = esperar_cliente(socket);
-		imprimirMensaje(log_memoria,"[SERVIDOR] Cliente intentando conectarse");
+//		imprimirMensaje(log_memoria,"[SERVIDOR] Cliente intentando conectarse");
 //		pthread_attr_t attr;
 //		pthread_attr_init(&attr);
 //		//EL PTHREAD_CREATE_DETACHED LO HACE ACTUAR COMO SI FUERA UN DETACH PERO AL FINALIZAR SE LIBERA
 //		//DETACH POR OTRA PARTE SOLO TIENE EL PROBLEMA QUE NO SE LIBERAL AL FINAL Y SE VAN ACUMULANDO
 //		//EN POSSYBLE LOST.
 //		pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+		pthread_t aux;
 		switch(cliente.id){
 			case MEMORIA:
 				args = malloc(sizeof(hilo_cliente_args_t));
 				args->socket_cliente = cliente.socket;
 				args->requiere_lfs = false;
 				dar_bienvenida_cliente(cliente.socket, MEMORIA, "Bienvenido!");
-				cliente_dar_de_alta(cliente.socket);
 				pthread_create(&thread, NULL,(void *)hilo_cliente, args );
+				cliente_dar_de_alta(cliente.socket);
 //				pthread_join(thread, NULL);
 				pthread_detach(thread);
 				break;
 			case KERNEL:
 				args = malloc(sizeof(hilo_cliente_args_t));
 				args->socket_cliente = cliente.socket;
-				args->requiere_lfs = true;
+				args->requiere_lfs = false;
 				dar_bienvenida_cliente(cliente.socket, MEMORIA, "Bienvenido!");
+				pthread_create(&thread, NULL,(void *)hilo_cliente, args );
 				cliente_dar_de_alta(cliente.socket);
-				pthread_create(&thread,NULL,(void *)hilo_cliente, args );
 //				pthread_join(thread, NULL);
 				pthread_detach(thread);
 				break;
@@ -417,12 +423,12 @@ void * hilo_cliente(hilo_cliente_args_t *args)
 			imprimirMensaje(log_memoria,"[CLIENTE] Ya tengo un canal para comunicarme con el lfs");
 		}
 	}*/
-	imprimirMensaje(log_memoria,"[CLIENTE] Empiezo a esperar mensajes");
+//	imprimirMensaje(log_memoria,"[CLIENTE] Empiezo a esperar mensajes");
 	msg_com_t msg;
 	bool fin = false;
 	while(fin == false){
 		msg = recibir_mensaje(socket_cliente);
-		imprimirMensaje(log_memoria,"[CLIENTE] Recibí un mensaje");
+//		imprimirMensaje(log_memoria,"[CLIENTE] Recibí un mensaje");
 		retardo_memoria();	//SIEMPRE TENDRAN 1 RETARNO AL ENTRAR UN NUEVO PEDIDO
 		req_com_t request;
 		request_t req_parseado;
@@ -430,11 +436,11 @@ void * hilo_cliente(hilo_cliente_args_t *args)
 		resp_com_t respuesta;
 		switch(msg.tipo){
 			case REQUEST:
-				imprimirMensaje(log_memoria,"[CLIENTE] El mensaje recibido es un request");
 				request = procesar_request(msg);
 				borrar_mensaje(msg);
 				req_parseado = parser(request.str);
 				borrar_request_com(request);
+				log_info(log_memoria,"[CLIENTE] El cliente envio: %s",req_parseado.request_str);
 				respuesta = resolver_pedido(req_parseado,socket_lfs);
 
 				if(respuesta.tipo == RESP_OK)
@@ -454,7 +460,7 @@ void * hilo_cliente(hilo_cliente_args_t *args)
 				borrar_respuesta(respuesta);
 				break;
 			case GOSSIPING:
-				imprimirMensaje(log_memoria,"[CLIENTE] El mensaje recibido es un pedido de gossiping");
+				imprimirMensaje(log_memoria,"[CLIENTE] El cliente hizo un pedido de gossiping");
 				gossip = procesar_gossiping(msg);
 				borrar_mensaje(msg);
 				if(responder_gossiping(gossip,MEMORIA,socket_cliente) != -1) {
@@ -483,8 +489,8 @@ void * hilo_cliente(hilo_cliente_args_t *args)
 		}
 	}
 	free(args);
-	imprimirMensaje(log_memoria,"[CLIENTE] Finalizando el hilo");
-	pthread_cancel(pthread_self());
+//	imprimirMensaje(log_memoria,"[CLIENTE] Finalizando el hilo");
+//	pthread_cancel(pthread_self());
 	return NULL;
 }
 
@@ -599,7 +605,7 @@ resp_com_t resolver_drop(int socket_lfs,request_t req)
 		imprimirError(log_memoria,"[DROP] No pude conectarme al lfs");
 	}
 	else{
-		imprimirMensaje(log_memoria,"[DROP] Ya tengo un canal para comunicarme con el lfs");
+//		imprimirMensaje(log_memoria,"[DROP] Ya tengo un canal para comunicarme con el lfs");
 	}
 
 	//Le envio el DROP al filesystem
@@ -657,7 +663,7 @@ resp_com_t resolver_create(int socket_lfs,request_t req)
 		imprimirError(log_memoria,"[CREATE] No pude conectarme al lfs");
 	}
 	else{
-		imprimirMensaje(log_memoria,"[CREATE] Ya tengo un canal para comunicarme con el lfs");
+//		imprimirMensaje(log_memoria,"[CREATE] Ya tengo un canal para comunicarme con el lfs");
 	}
 
 	//Le envio el CREATE al filesystem
@@ -730,7 +736,7 @@ resp_com_t resolver_journal(int socket_lfs,request_t req)
 		imprimirError(log_memoria,"[JOURNAL] No pude conectarme al lfs");
 	}
 	else{
-		imprimirMensaje(log_memoria,"[JOURNAL] Ya tengo un canal para comunicarme con el lfs");
+//		imprimirMensaje(log_memoria,"[JOURNAL] Ya tengo un canal para comunicarme con el lfs");
 	}
 	char *msg_resp = malloc(100);
 	resp_com_t resp;
@@ -769,9 +775,9 @@ resp_com_t resolver_insert(request_t req, int modif)
 	uint16_t key = atoi(req.args[1]);
 	char *valor = req.args[2];
 	retardo_memoria();
-	imprimirMensaje3(log_memoria,"[INSERT] Voy a agregar %s en la key %d de la tabla %s",valor,key,nombre_tabla);
+//	imprimirMensaje3(log_memoria,"[INSERT] Voy a agregar %s en la key %d de la tabla %s",valor,key,nombre_tabla);
 	if(funcionInsert(nombre_tabla, key, valor, modif, timestamp_val)== -1){
-		imprimirError(log_memoria, "[INSERT]ERROR: Mayor al pasar max value");
+//		imprimirError(log_memoria, "[INSERT] ERROR: Mayor al pasar max value");
 		return armar_respuesta(RESP_ERROR_MAYOR_MAX_VALUE,NULL);
 	}
 	return armar_respuesta(RESP_OK,NULL);
@@ -781,7 +787,7 @@ char* select_memoria(char *nombre_tabla, uint16_t key)
 {
 	pagina_a_devolver* pagina = malloc(sizeof(pagina_a_devolver));
 
-	imprimirMensaje2(log_memoria,"[WRAPPER DE SELECT] Quiero obtener la key %d de la tabla %s",key,nombre_tabla);
+//	imprimirMensaje2(log_memoria,"[WRAPPER DE SELECT] Quiero obtener la key %d de la tabla %s",key,nombre_tabla);
 	segmento *seg;
 	int pag;
 	bool encontrada = false;
@@ -795,11 +801,11 @@ char* select_memoria(char *nombre_tabla, uint16_t key)
 		free(pagina);
 		//		imprimirMensaje(log_memoria,"[WRAPPER DE SELECT] POR AQUIIIIII NO");
 		pagina = selectPaginaPorPosicion(pag,true);
-		imprimirMensaje1(log_memoria,"[WRAPPER DE SELECT] Valor encontrado: %s",pagina->value);
+//		imprimirMensaje1(log_memoria,"[WRAPPER DE SELECT] Valor encontrado: %s",pagina->value);
 		encontrada = true;
 
 	} else {
-		imprimirAviso(log_memoria,"[WRAPPER DE SELECT] Valor no encontrado");
+//		imprimirAviso(log_memoria,"[WRAPPER DE SELECT] Valor no encontrado");
 
 	}
 	rwLockDesbloquear(&sem_insert_select);
@@ -809,7 +815,7 @@ char* select_memoria(char *nombre_tabla, uint16_t key)
 
 		char* valorADevolver = malloc(strlen(pagina->value)+1);
 		strcpy(valorADevolver, pagina->value);
-		imprimirMensaje1(log_memoria, "[WRAPPER DE SELECT] Se encontro lo buscado %s", valorADevolver);
+//		imprimirMensaje1(log_memoria, "[WRAPPER DE SELECT] Se encontro lo buscado %s", valorADevolver);
 		free(pagina->value);
 		free(pagina);
 		free(valorAux);
@@ -844,7 +850,7 @@ resp_com_t resolver_select(int socket_lfs,request_t req)
 			imprimirError(log_memoria,"[SELECT] No pude conectarme al lfs");
 		}
 		else{
-			imprimirMensaje(log_memoria,"[SELECT] Ya tengo un canal para comunicarme con el lfs");
+//			imprimirMensaje(log_memoria,"[SELECT] Ya tengo un canal para comunicarme con el lfs");
 		}
 
 		if(socket_lfs != -1){
@@ -1015,7 +1021,7 @@ resp_com_t resolver_describe(int socket_lfs, request_t req)
 
 int inicializar_gossiping_memoria(void)
 {
-	imprimirMensaje(log_memoria,"[INICIALIZANDO GOSSIPING MEMORIA] Entrando a función");
+//	imprimirMensaje(log_memoria,"[INICIALIZANDO GOSSIPING MEMORIA] Entrando a función");
 	if(arc_config == NULL || log_memoria == NULL){
 		imprimirAviso(log_memoria,"[INICIALIZANDO GOSSIPING MEMORIA] Es necesario tener cargado config y log");
 		return -1;
