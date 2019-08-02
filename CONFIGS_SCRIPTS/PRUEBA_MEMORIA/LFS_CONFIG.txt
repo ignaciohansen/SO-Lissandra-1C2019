@@ -1,6 +1,6 @@
 IP=ip
 PUERTO_ESCUCHA=5003
-PUNTO_MONTAJE=tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem
+PUNTO_MONTAJE=/home/utnso/lfs-prueba-memoria
 RETARDO=0
-TAMAÑO_VALUE=60
+TAMANIO_VALUE=60
 TIEMPO_DUMP=3000	

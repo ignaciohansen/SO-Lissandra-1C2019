@@ -37,7 +37,14 @@ echo "Config base copiado"
 
 sed -i -e "s/ip/$IP_LFS/" LFS_CONFIG.txt
 
-cd ..
+if [ ! -d home/utnso/lfs-base ];
+then
+mkdir home/utnso/lfs-base
+else
+rm -r home/utnso/lfs-base/*
+fi
+
+cd home/utnso/lfs-base
 
 if [ ! -d Metadata ];
 then
@@ -50,18 +57,18 @@ cd Metadata/
 if [  -f Metadata ];
 then
 echo "se borra el archivo anterior de Metadata"
-rm -r  Metadata
+rm  Metadata
 fi
 
 cp ../../METADATAS_SCRIPTS/PRUEBA_BASE/Metadata ./
 echo "Metadata base copiada"
 
-cd ../Scripts
+cd /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Scripts
 
-if [ !  -x scriptInicial.sh ];
+if [ !  -x limpiarLFS.sh ];
 then
-echo "se le da permisos de ejecucion al scriptInicial.sh"
-chmod +x scriptInicial.sh
+echo "se le da permisos de ejecucion al limpiarLFS.sh"
+chmod +x limpiarLFS.sh
 fi
 
-./scriptInicial.sh
+./limpiarLFS.sh

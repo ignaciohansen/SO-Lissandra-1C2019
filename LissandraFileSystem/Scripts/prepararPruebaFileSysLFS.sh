@@ -37,7 +37,14 @@ echo "Config de lfs copiado"
 
 sed -i -e "s/ip/$IP_LFS/" LFS_CONFIG.txt
 
-cd ..
+if [ ! -d /home/utnso/lfs-compactacion ];
+then
+mkdir /home/utnso/lfs-compactacion
+else
+rm -r /home/utnso/lfs-compactacion/*
+fi
+
+cd /home/utnso/lfs-compactacion
 
 if [ ! -d Metadata ];
 then
@@ -56,12 +63,12 @@ fi
 cp ../../METADATAS_SCRIPTS/PRUEBA_LFS/Metadata ./
 echo "Metadata de lfs copiada"
 
-cd ../Scripts
+cd /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Scripts
 
-if [ !  -x scriptInicial.sh ];
+if [ !  -x limpiarLFS.sh ];
 then
-echo "se le da permisos de ejecucion al scriptInicial.sh"
-chmod +x scriptInicial.sh
+echo "se le da permisos de ejecucion al limpiarLFS.sh"
+chmod +x limpiarLFS.sh
 fi
 
-./scriptInicial.sh
+./limpiarLFS.sh
