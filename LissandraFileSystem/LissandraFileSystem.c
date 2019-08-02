@@ -80,12 +80,11 @@ int main() {
 
 void LisandraSetUP() {
 
-	imprimirMensajeProceso("Iniciando el modulo LISSANDRA FILE SYSTEM\n");
+	imprimirMensajeProceso("==Iniciando el modulo LISSANDRA FILE SYSTEM==\n");
 
 	logger = archivoLogCrear(LOG_PATH, "Proceso Lissandra File System");
 
-	imprimirVerde(logger,
-			"[LOG CREADO] continuamos cargando la estructura de configuracion.");
+	imprimirVerde(logger,"[LOG CREADO] continuamos cargando la estructura de configuracion.");
 
 	if (cargarConfiguracion()) {
 		if (!obtenerMetadata()) {
@@ -95,7 +94,7 @@ void LisandraSetUP() {
 		}
 	}
 
-	log_info(logger, "la configuracion y la metadata se levantaron ok");
+	log_info(logger, "La configuracion y la metadata se levantaron correctamente");
 
 
 	if(!existeDirectorio(tabla_Path)){
@@ -132,38 +131,33 @@ bool existeDirectorio(char *path)
 
 bool cargarConfiguracion() {
 
-	log_info(logger, "Por reservar memoria para variable de configuracion.");
+
 
 	configFile = malloc(sizeof(t_lfilesystem_config));
 
 	t_config* archivoCOnfig;
 
-	log_info(logger,
-			"Por crear el archivo de config para levantar archivo con datos.");
+	log_info(logger,"Por crear el archivo de config para levantar archivo con datos.");
 
 	archivoCOnfig = config_create(PATH_LFILESYSTEM_CONFIG);
 
 	if (archivoCOnfig == NULL) {
-		imprimirMensajeProceso(
-				"NO se ha encontrado el archivo de configuracion\n");
+		imprimirMensajeProceso("NO se ha encontrado el archivo de configuracion\n");
 		log_info(logger, "NO se ha encontrado el archivo de configuracion");
 	} else {
 		int ok = 1;
-		imprimirMensajeProceso(
-				"Se ha encontrado el archivo de configuracion\n");
+		imprimirMensajeProceso("Se ha encontrado el archivo de configuracion\n");
 
 		log_info(logger, "LissandraFS: Leyendo Archivo de Configuracion...");
 
 		if (config_has_property(archivoCOnfig, "PUERTO_ESCUCHA")) {
 
-			log_info(logger, "Almacenando el puerto");
 
 			//Por lo que dice el texto
 			configFile->puerto_escucha = config_get_int_value(archivoCOnfig,
 					"PUERTO_ESCUCHA");
 
-			log_info(logger, "El puerto de escucha es: %d",
-					configFile->puerto_escucha);
+			log_info(logger, "El puerto de escucha es: %d",configFile->puerto_escucha);
 
 		} else {
 			imprimirError(logger,
@@ -174,8 +168,7 @@ bool cargarConfiguracion() {
 
 		if (config_has_property(archivoCOnfig, "PUNTO_MONTAJE")) {
 
-			log_info(logger, "Almacenando el PUNTO DE MONTAJE: %s",
-					config_get_string_value(archivoCOnfig, "PUNTO_MONTAJE"));
+
 			//Por lo que dice el texto		
 			char *aux = config_get_string_value(archivoCOnfig,"PUNTO_MONTAJE");
 			configFile->punto_montaje = malloc(strlen(aux)+1);
@@ -189,7 +182,7 @@ bool cargarConfiguracion() {
 
 			snprintf(tabla_Path, tamanio, "%s%s", configFile->punto_montaje,TABLE_PATH);
 
-			log_info(logger, "Y ahora la variable tabla_path queda con: %s",tabla_Path);
+			//log_info(logger, "Y ahora la variable tabla_path queda con: %s",tabla_Path);
 
 		} else {
 			imprimirError(logger,
@@ -200,14 +193,12 @@ bool cargarConfiguracion() {
 
 		if (config_has_property(archivoCOnfig, "RETARDO")) {
 
-			log_info(logger, "Almacenando el retardo");
 
 			//Por lo que dice el texto
 			configFile->retardo = config_get_int_value(archivoCOnfig,
 					"RETARDO");
 
-			log_info(logger, "El retardo de respuesta es: %d",
-					configFile->retardo);
+			log_info(logger, "El retardo de respuesta es: %d",configFile->retardo);
 
 		} else {
 			imprimirError(logger,
@@ -218,14 +209,12 @@ bool cargarConfiguracion() {
 
 		if (config_has_property(archivoCOnfig, "TAMANIO_VALUE")) {
 
-			log_info(logger, "Almacenando el tamanio del valor de una key");
 
 			//Por lo que dice el texto
 			configFile->tamanio_value = config_get_int_value(archivoCOnfig,
 					"TAMANIO_VALUE");
 
-			log_info(logger, "El tamanio del valor es: %d",
-					configFile->tamanio_value);
+			log_info(logger, "El tamanio del valor es: %d",configFile->tamanio_value);
 
 		} else {
 			imprimirError(logger,
@@ -236,14 +225,12 @@ bool cargarConfiguracion() {
 
 		if (config_has_property(archivoCOnfig, "TIEMPO_DUMP")) {
 
-			log_info(logger, "Almacenando el puerto");
 
 			//Por lo que dice el texto
 			configFile->tiempo_dump = config_get_int_value(archivoCOnfig,
 					"TIEMPO_DUMP");
 
-			log_info(logger, "El tiempo de dumpeo es: %d",
-					configFile->tiempo_dump);
+			log_info(logger, "El tiempo de dumpeo es: %d",configFile->tiempo_dump);
 
 		} else {
 			imprimirError(logger,
@@ -254,7 +241,6 @@ bool cargarConfiguracion() {
 
 		if (config_has_property(archivoCOnfig, "IP")) {
 
-			log_info(logger, "Almacenando la IP");
 			char *aux = config_get_string_value(archivoCOnfig,"IP");
 			configFile->ip = malloc(strlen(aux)+1);
 			strcpy(configFile->ip,aux);
@@ -307,8 +293,7 @@ void recargarConfiguracionLFS(char *path_config){
 		if (config_has_property(auxConfigFile, "TIEMPO_DUMP")) {
 
 			configFile->tiempo_dump = config_get_int_value(auxConfigFile, "TIEMPO_DUMP");
-			log_info(logger, "[ACTUALIZANDO RETARDOS] TIEMPO DUMP: %d",
-					configFile->tiempo_dump);
+			log_info(logger, "[ACTUALIZANDO RETARDOS] TIEMPO DUMP: %d",configFile->tiempo_dump);
 
 		} else {
 			log_error(logger, "[ACTUALIZANDO RETARDOS] NO HAY TIEMPO DUMP CONFIGURADO");
@@ -343,43 +328,20 @@ void cargarBitmap() {
 	bitmapPath = malloc(tamanio);
 	snprintf(bitmapPath, tamanio, "%s%s", configFile->punto_montaje,
 	PATH_LFILESYSTEM_BITMAP);
-	log_info(logger, "Path del bitmap: %s", bitmapPath);
 
 	if (!existeArchivo(bitmapPath)) {
-		log_info(logger,
-				"Archivo de bitmap no existe, se procede a crear el bitmap");
+		log_info(logger,"Archivo de bitmap no existe, se procede a crear el bitmap");
 		crearBitarray();
 		abrirBitmap();
 	} else {
-		log_info(logger, "existe archivo, se procede a abrir el bitmap");
+		log_info(logger, "Existe archivo, se procede a abrir el bitmap");
 		abrirBitmap();
 
 	}
 
-	log_info(logger, "cantidad de bloques libres en el bitmap: %d",
-			cantBloquesLibresBitmap());
+	log_info(logger, "cantidad de bloques libres en el bitmap: %d",cantBloquesLibresBitmap());
 
-	//pruebas de las funciones bitmap
-	log_info(logger, "cantidad de bloques ocupados: %d",
-			cantidadBloquesOcupadosBitmap());
 
-	ocuparBloqueLibreBitmap(obtenerPrimerBloqueLibreBitmap());
-	log_info(logger, "ocupando bloque: %d", 0);
-	log_info(logger, "se ocupo bien? tiene que ser 1: %d",
-			estadoBloqueBitmap(0));
-
-	log_info(logger, "cantidad de bloques ocupados: %d = 1?",
-			cantidadBloquesOcupadosBitmap());
-	log_info(logger, "primer bloque libre: %d",
-			obtenerPrimerBloqueLibreBitmap());
-
-	liberarBloqueBitmap(0);
-	log_info(logger, "okey... vamos a liberarlo");
-	log_info(logger, "se libero bien? tiene que ser 0: %d",
-			estadoBloqueBitmap(0));
-
-	log_info(logger, "cantidad de bloques ocupados: %d = 0?",
-			cantidadBloquesOcupadosBitmap());
 }
 
 int abrirBitmap() {
@@ -391,7 +353,7 @@ int abrirBitmap() {
 		log_error(logger, "Error en el fstat\n");
 		close(bitmap);
 	}
-	log_info(logger,"Sin error");
+
 	char *bmap;
 	bmap = mmap(NULL, mystat.st_size, PROT_WRITE | PROT_READ, MAP_SHARED,
 			bitmap, 0);
@@ -399,7 +361,7 @@ int abrirBitmap() {
 //	log_info(logger,"inicialicé mmap");
 
 	if (bmap == MAP_FAILED) {
-		log_error(logger, "algo fallo en el mmap");
+		log_error(logger, "Fallo el mmap");
 	}
 
 	int bytesAEscribirAux = metadataLFS->blocks / 8;
@@ -409,8 +371,7 @@ int abrirBitmap() {
 	bitarray = bitarray_create_with_mode(bmap, bytesAEscribirAux,
 			MSB_FIRST);
 
-	imprimirMensajeProceso(
-			"[BITMAP ABIERTO] ya se puede operar con los bloques");
+	imprimirMensajeProceso("[BITMAP ABIERTO] Ya se puede operar con los bloques");
 
 	//free(fs_path);
 	return 0;
@@ -423,11 +384,6 @@ void crearBitarray() {
 	if (metadataLFS->blocks % 8 != 0)
 		bytesAEscribirAux++;
 
-	log_info(logger, "bytes a escribir: %d", bytesAEscribirAux);
-	/*if (fopen(bitmapPath, "rb") != NULL) {
-
-	 return NULL;
-	 }*/
 
 	char* bitarrayAux = malloc(bytesAEscribirAux);
 	bzero(bitarrayAux, bytesAEscribirAux);
@@ -435,15 +391,12 @@ void crearBitarray() {
 	archivoBitmap = fopen(bitmapPath, "wb");
 
 	if (archivoBitmap == NULL) {
-		imprimirError(logger,
-				"El archivoBitmap no se pudo abrir correctamente");
+		imprimirError(logger,"El archivoBitmap no se pudo abrir correctamente");
 		exit(-1);
 	}
 
 	fwrite(bitarrayAux, bytesAEscribirAux, 1, archivoBitmap);
 
-	imprimirMensajeProceso(
-			"[BITMAP CREADO] ya se puede operar con los bloques");
 
 	//t_bitarray* bitarrayReturn = bitarray_create_with_mode(bitarrayAux, bytesAEscribir, MSB_FIRST);
 
@@ -452,27 +405,6 @@ void crearBitarray() {
 
 	//return bitarrayReturn;
 
-}
-
-void persistirCambioBitmap() {
-
-	/*FILE* archivoBitmap = fopen(bitmapPath, "wb");
-
-	 if(archivoBitmap == NULL) {
-	 log_error(logger, "error al abrir el archivo Bitmap");
-	 }*/
-
-	int bytesAEscribirAux = metadataLFS->blocks / 8;
-
-	if (metadataLFS->blocks % 8 != 0)
-		bytesAEscribirAux++;
-
-
-	fwrite(bitarray->bitarray, bytesAEscribirAux, 1, archivoBitmap);
-
-	//fclose(archivoBitmap);
-
-	log_info(logger, "cambios en bitmap persistidos");
 }
 
 int cantBloquesLibresBitmap() {
@@ -494,7 +426,7 @@ int estadoBloqueBitmap(int bloque) {
 int ocuparBloqueLibreBitmap(int bloque) {
 
 	bitarray_set_bit(bitarray, bloque);
-	//persistirCambioBitmap();
+
 
 	return 0;
 }
@@ -502,7 +434,7 @@ int ocuparBloqueLibreBitmap(int bloque) {
 int liberarBloqueBitmap(int bloque) {
 
 	bitarray_clean_bit(bitarray, bloque);
-	//persistirCambioBitmap();
+
 
 	return 0;
 }
@@ -549,7 +481,6 @@ int cantidadBloquesOcupadosBitmap() {
 
 void consola() {
 
-	log_info(logger, "En el hilo de consola");
 
 	menu();
 
@@ -561,20 +492,16 @@ void consola() {
 
 		if (linea && strcmp(linea, "\n") && strcmp(linea, "")) {
 			add_history(linea);
-		/*	sem_wait(&semaforoQueries);
-			list_add(list_queries, linea);
-			sem_post(&semaforoQueries);*/
+
 		}
 
 		if (!strncmp(linea, "SALIR", 5)) {
-			log_info(logger,
-					"\n\n**************************** SALIENDO ****************************\n\n");
+			log_info(logger,"\n\n**************************** SALIENDO ****************************\n\n");
 			free(linea);
 			break;
 		}
 
 		if (linea && strcmp(linea, "\n") && strcmp(linea, "")) { //Así no rompe cuando se apreta enter
-			//log_info(logger, "Llego aca");
 			atenderRequest(linea);
 		}
 		free(linea);
@@ -621,13 +548,11 @@ void atenderRequest(char* linea) {
 		imprimirAviso(logger, "[RESOLVIENDO PEDIDO] Voy a resolver DESCRIBE");
 		respuesta = resolver_describe(req);
 		if (respuesta.tipo == RESP_OK && respuesta.msg.tam > 0) {
-			imprimirMensaje1(logger,
-					"[RESOLVIENDO PEDIDO] DESCRIBE hecho correctamente. Valor %s obtenido",
+			imprimirMensaje1(logger,"[RESOLVIENDO PEDIDO] DESCRIBE hecho correctamente. Valor %s obtenido",
 					respuesta.msg.str);
 			//printf("[DESCRIBE] Valor obtenido: %s\n",respuesta.msg.str);
 		} else {
-			imprimirError(logger,
-					"[RESOLVIENDO PEDIDO] El DESCRIBE no pudo realizarse");
+			imprimirError(logger,"[RESOLVIENDO PEDIDO] El DESCRIBE no pudo realizarse");
 			printf("[DESCRIBE] El comando no pudo realizarse\n");
 		}
 
@@ -637,12 +562,10 @@ void atenderRequest(char* linea) {
 		imprimirMensaje(logger, "[RESOLVIENDO PEDIDO] Voy a resolver DROP");
 		respuesta = resolver_drop(req);
 		if (respuesta.tipo == RESP_OK) {
-			imprimirMensaje(logger,
-					"[RESOLVIENDO PEDIDO] DROP hecho correctamente");
+			imprimirMensaje(logger,"[RESOLVIENDO PEDIDO] DROP hecho correctamente");
 			printf("[DROP] La tabla %s se borro correctamente\n",req.args[0]);
 		} else {
-			imprimirError(logger,
-					"[RESOLVIENDO PEDIDO] El DROP no pudo realizarse");
+			imprimirError(logger,"[RESOLVIENDO PEDIDO] El DROP no pudo realizarse");
 			printf("[DROP] El comando no pudo realizarse\n");
 		}
 
@@ -695,7 +618,7 @@ void menu() {
 
 
 char *armarPathTabla(char *nombre_tabla) {
-	log_info(logger, "[ARMAR PATH TABLA] tabla recibida %s", nombre_tabla);
+
 	char *nombre_upper = malloc(strlen(nombre_tabla) + 1);
 	strcpy(nombre_upper, nombre_tabla);
 	string_to_upper(nombre_upper);
@@ -703,7 +626,7 @@ char *armarPathTabla(char *nombre_tabla) {
 	char *path = malloc(tamanio);
 	snprintf(path, tamanio, "%s%s", tabla_Path, nombre_upper);
 	free(nombre_upper);
-	log_info(logger, "[ARMAR PATH TABLA] Path armado %s", path);
+	//log_info(logger, "[ARMAR PATH TABLA] Path armado %s", path);
 	return path;
 }
 
@@ -711,11 +634,10 @@ char *armarPathMetadataTabla(char *nombre_tabla) {
 	char *nombre_upper = malloc(strlen(nombre_tabla) + 1);
 	strcpy(nombre_upper, nombre_tabla);
 	string_to_upper(nombre_upper);
-	int tamanio = strlen(tabla_Path) + strlen(nombre_upper)
-			+ strlen("/metadata") + 1;
+	int tamanio = strlen(tabla_Path) + strlen(nombre_upper)+ strlen("/metadata") + 1;
 	char *path = malloc(tamanio);
 	snprintf(path, tamanio, "%s%s%s", tabla_Path, nombre_upper, "/metadata");
-	log_info(logger, "[ARMAR PATH METADATA TABLA] Path armado %s", path);
+	//log_info(logger, "[ARMAR PATH METADATA TABLA] Path armado %s", path);
 	free(nombre_upper);
 	return path;
 }
@@ -723,22 +645,18 @@ char *armarPathMetadataTabla(char *nombre_tabla) {
 int verificarTabla(char *tabla) {
 	char *path = armarPathTabla(tabla);
 	FILE *file;
-	log_info(logger,
-			"[VERIFICADO] La direccion de la tabla que se quiere verificar es: %s",
-			path);
+	//log_info(logger,"[VERIFICADO] La direccion de la tabla que se quiere verificar es: %s",path);
 	file = fopen(path, "r");
 	free(path);
 
 	if (file == NULL) {
-		/*free(tablaAverificar);
-		 tablaAverificar = NULL;*/
-		log_error(logger, "[ERROR] No existe la tabla");
+
+		log_error(logger, "[VERIFICAR-TABLA] No existe la tabla");
 		return -1;
 
 	} else {
-		/*free(tablaAverificar);
-		 tablaAverificar = NULL;*/
-		log_info(logger, "[ OK ] La tabla ya existe.");
+
+		//log_info(logger, "[VERIFICAR-TABLA] La tabla ya existe.");
 		fclose(file);
 		return 0;
 	}
@@ -750,14 +668,13 @@ t_metadata_tabla* obtenerMetadataTabla(char* tabla) {
 	t_metadata_tabla* metadataTabla;
 
 	char *path_tabla_metadata = armarPathMetadataTabla(tabla);
-	log_info(logger, "[obtenerMetadata] (+) metadata a abrir : %s",	path_tabla_metadata);
+	//log_info(logger, "[obtenerMetadata] (+) metadata a abrir : %s",	path_tabla_metadata);
 
 	int result = 0;
 	metadataTabla = malloc(sizeof(t_metadata_tabla)); // Vatiable global.--->la hago local para soportar varios procesos concurrentes
 	t_config* metadataFile;
-	//log_info(logger, "antes de config create...");
+
 	metadataFile = config_create(path_tabla_metadata);
-	//log_info(logger, "despues de config create...");
 
 	if (metadataFile != NULL) {
 
@@ -765,7 +682,7 @@ t_metadata_tabla* obtenerMetadataTabla(char* tabla) {
 
 		if (config_has_property(metadataFile, "CONSISTENCY")) {
 
-			log_info(logger, "Almacenando consistencia");
+
 			// Si no hago esto, al destruir la configuración genero un segmentation fault
 			char *auxStr = config_get_string_value(metadataFile, "CONSISTENCY");
 			metadataTabla->consistency = malloc(strlen(auxStr) + 1);
@@ -782,7 +699,6 @@ t_metadata_tabla* obtenerMetadataTabla(char* tabla) {
 
 		if (config_has_property(metadataFile, "PARTITIONS")) {
 
-			log_info(logger, "Almacenando particiones");
 
 			metadataTabla->particiones = config_get_int_value(metadataFile,
 					"PARTITIONS");
@@ -820,8 +736,7 @@ t_metadata_tabla* obtenerMetadataTabla(char* tabla) {
 
 	} // if (metadataFile != NULL)
 
-	log_info(logger,
-			"[FREE] variable metadataFile utlizada para navegar el metadata.");
+	//log_info(logger,"[FREE] variable metadataFile utlizada para navegar el metadata.");
 
 	if (metadataFile != NULL)
 		config_destroy(metadataFile);
@@ -852,7 +767,6 @@ int obtenerMetadata() {
 	snprintf(metadataPath, tamanio, "%s%s", configFile->punto_montaje,
 	PATH_LFILESYSTEM_METADATA);
 
-	log_info(logger, "ruta de la metadata: %s", metadataPath);
 
 	t_config* metadataFile;
 	metadataFile = config_create(metadataPath);
@@ -863,8 +777,7 @@ int obtenerMetadata() {
 
 		if (config_has_property(metadataFile, "BLOCK_SIZE")) {
 
-			log_info(logger, "Almacenando tamanio de bloque");
-			// PROBLEMA.
+
 			metadataLFS->block_size = config_get_int_value(metadataFile,
 					"BLOCK_SIZE");
 
@@ -874,13 +787,12 @@ int obtenerMetadata() {
 		} else {
 
 			log_error(logger,
-					"El metadata no contiene el tama��ano de bloque [BLOCK_SIZE]");
+					"El metadata no contiene el tamanio de bloque [BLOCK_SIZE]");
 
 		} // if (config_has_property(metadataFile, "CONSISTENCY"))
 
 		if (config_has_property(metadataFile, "BLOCKS")) {
 
-			log_info(logger, "Almacenando cantidad de bloques");
 
 			metadataLFS->blocks = config_get_int_value(metadataFile, "BLOCKS");
 
@@ -896,7 +808,6 @@ int obtenerMetadata() {
 
 		if (config_has_property(metadataFile, "MAGIC_NUMBER")) {
 
-			log_info(logger, "Almacenando magic number");
 			char* aux = config_get_string_value(metadataFile,
 					"MAGIC_NUMBER");
 			metadataLFS->magic_number = malloc(strlen(aux)+1);
@@ -914,28 +825,25 @@ int obtenerMetadata() {
 
 	} else {
 
-		log_error(logger,
-				"[ERROR] Archivo metadata de file system no encontrado.");
+		log_error(logger,"[ERROR] Archivo metadata de file system no encontrado.");
 
 		result = -1;
 
 	} // if (metadataFile != NULL)
 
-	log_info(logger,
-			"[FREE] variable metadataFile utlizada para navegar el metadata.");
+	//log_info(logger,"[FREE] variable metadataFile utlizada para navegar el metadata.");
 
 	free(metadataPath);
 	config_destroy(metadataFile);
 
-	//log_info(logger, "result: %d", result);
 
 	return result;
 }
 
 char* retornarValores(char* tabla, t_metadata_tabla* metadata) {
 
-	printf("\nValores de la %s \n\n", tabla);
-	printf("CONSISTENCY=%s\nPARTITIONS=%d\nCOMPACTION_TIME=%d\n", metadata->consistency,metadata->particiones,metadata->compaction_time);
+	//printf("\nValores de la %s \n\n", tabla);
+	//printf("CONSISTENCY=%s\nPARTITIONS=%d\nCOMPACTION_TIME=%d\n", metadata->consistency,metadata->particiones,metadata->compaction_time);
 
 	char* particiones = malloc(4);
 	char* tiempoCompactacion = malloc(7);
@@ -974,7 +882,6 @@ char* retornarValoresDirectorio() {
 
 	dir = opendir(pathTabla);
 
-	log_info(logger, "[DEBUG] directorio %s", pathTabla);
 
 	if (dir == NULL) {
 		log_error(logger, "No puedo abrir el directorio");
@@ -990,9 +897,9 @@ char* retornarValoresDirectorio() {
 			t_metadata_tabla* metadata = obtenerMetadataTabla(ent->d_name);
 			if (metadata != NULL) {
 				resultado = retornarValores(ent->d_name, metadata);
-				log_info(logger, "el resultado es %s", resultado);
+				//log_info(logger, "el resultado es %s", resultado);
 				memoriaParaMalloc += strlen(resultado) + 1; // el 1 es por el | para separar cada describe
-				log_info(logger, "tamanio malloc es %d", memoriaParaMalloc);
+				//log_info(logger, "tamanio malloc es %d", memoriaParaMalloc);
 				list_add(lista_describes, resultado);
 				encontreAlgoEnDirectorio = true;
 				free(metadata->consistency);
@@ -1003,13 +910,11 @@ char* retornarValoresDirectorio() {
 		}
 	}
 
-	log_info(logger, "[DEBUG] Fin de lectura directorio");
+	//log_info(logger, "[DEBUG] Fin de lectura directorio");
 	char* resultadoFinal = NULL;
 	if (encontreAlgoEnDirectorio) {
-//		resultadoFinal = malloc(memoriaParaMalloc + 1);
 		resultadoFinal = string_new();
 		for (int i = 0; i < list_size(lista_describes); i++) {
-//			log_info(logger, "[DEBUG] Entré al for");
 			char* elemento = list_get(lista_describes, i);
 			string_append(&resultadoFinal, elemento);
 			if(i < list_size(lista_describes)-1)
@@ -1031,7 +936,6 @@ char* retornarValoresDirectorio() {
 
 void INThandler(int sig) {
 
-	//char  c;
 
 	signal(sig, SIG_IGN);
 	printf("\n");
@@ -1048,13 +952,12 @@ void esperarTiempoDump() {
 	while (true) {
 
 		usleep(configFile->tiempo_dump * 1000);
-//		sleep(15);
-		log_info(logger, "Es tiempo de dump, hay cosas en la memtable?");
+		log_info(logger, "Es tiempo de dump, verificando si hay cosas en la memtable");
 		mutexBloquear(&listaTablasInsertadas_mx);
 		int tam = list_size(listaTablasInsertadas);
 		mutexDesbloquear(&listaTablasInsertadas_mx);
 		if (tam > 0) {
-			log_info(logger, "Se encontraron cosas, se hace el dump");
+	        log_info(logger, "Se encontraron cosas en la memtable, se hace el dump");
 			realizarDump();
 			printf("\n****Se realizó un DUMP****\n>");
 
@@ -1080,11 +983,10 @@ void realizarDump() {
 		indiceTablaParaTamanio = i;
 		log_info(logger, "la tabla insertada en la memtable es %s", tabla);
 		char* path = armarPathTablaParaDump(tabla, cantidad_de_dumps);
-		log_info(logger, "[DEBUG] VOY A CREAR EL TMP");
 		crearArchivoTemporal(path, tabla);
 		free(path); //  @VALGRIND @MARTIN
 
-		//tamanioRegistros[i] = 0;
+
 	}
 	log_info(logger, "Se limpia diccionario y la listaTablasInsertadas");
 	vaciarMemtable();
@@ -1103,7 +1005,7 @@ char* armarPathTablaParaDump(char* tabla, int dumps) {
 	char *pathTemp = malloc(tam);
 	snprintf(pathTemp, tam, "%s/%d%s", pathTabla, dumps, ".tmp");
 	free(pathTabla);
-	log_info(logger, "la ruta es %s", pathTemp);
+	//log_info(logger, "la ruta es %s", pathTemp);
 	return pathTemp;
 
 
@@ -1114,18 +1016,17 @@ char* armarPathTablaParaDump(char* tabla, int dumps) {
 int crearArchivoTemporal(char* path, char* tabla) {
 
 	// path objetivo: /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Tables/TABLA/cantidad_de_dumps.tmp
-	log_info(logger, "[DEBUG] POR ENTRAR AL MUTEX REGISTROS TABLA");
+
 	//mutexBloquear(&memtable_mx); @martin @sincro comentado
 	t_list* listaRegistrosTabla = dictionary_get(memtable, tabla);
 //	t_list *listaRegistrosTabla = list_duplicate(dictionary_get(memtable, tabla)); //@martin @debug
 	// mutexDesbloquear(&memtable_mx); @martin @sincro comentado
-	log_info(logger, "[DEBUG] PASE EL MUTEX REGISTROS TABLA");
 
-	log_info(logger, "[DEBUG] HICE EL GET DE SEM TABLA");
+
 	t_sems_tabla* semsTabla = dictionary_get(dicSemTablas,tabla);
-	log_info(logger, "[DEBUG] POR ENTRAR AL LECTURA ESCRITURA");
+
 	rwLockEscribir(&(semsTabla->rwLockTabla));
-	log_info(logger, "[DEBUG] PASE EL LECTURA ESCRITURA");
+
 
 	t_list* bloquesUsados = list_create();
 	int tam_total_registros = tamTotalListaRegistros(listaRegistrosTabla);
@@ -1161,8 +1062,7 @@ int crearArchivoTemporal(char* path, char* tabla) {
 	if (resultadoEscritura != -1) {
 		FILE* temporal;
 		temporal = fopen(path, "w");
-		log_info(logger, "[DUMP] creamos el archivo, ahora  lo llenamos");
-		log_info(logger, "[DUMP] path del archivo %s", path);
+		log_info(logger, "[DUMP] Creamos el archivo: %s", path);
 
 		if (temporal != NULL) {
 			char *contenido;
@@ -1194,27 +1094,25 @@ int crearArchivoTemporal(char* path, char* tabla) {
 			fputs(contenido, temporal);
 			log_info(logger, "[DUMP] Temporal completado con: %s", contenido);
 			free(contenido);
-			log_info(logger, "[DUMP] hice free de contenido");
 			free(bloque); //@martin
 			free(size);//@martin
 			fclose(temporal);
 		} else {
 			//liberar bloques de la lista de bloquesUsados
 			log_error(logger,
-					"[DUMP] error al abrir el archivo temporal con path: %s",
+					"[DUMP] Error al abrir el archivo temporal con path: %s",
 					path);
 		}
 	} else {
 		log_error(logger,
-				"[DUMP] hubo un error al escribir los datos en los bloques");
+				"[DUMP] Hubo un error al escribir los datos en los bloques");
 	}
 	free(bufferRegistros);
-	log_info(logger, "[DEBUG] hice free de buffer");
+
 	list_destroy_and_destroy_elements(bloquesUsados, free);
-	log_info(logger, "[DEBUG] hice destroy");
-	log_info(logger, "[DEBUG] Voy a desbloquear semaforo tabla %s",tabla);
+
 	rwLockDesbloquear(&(semsTabla->rwLockTabla));
-	log_info(logger, "[DEBUG] desbloquie semaforo tabla %s",tabla);
+
 	return 0;
 }
 
@@ -1223,8 +1121,7 @@ int crearArchivoTemporal(char* path, char* tabla) {
 //<value>;<key>;<timestamp>\n
 int tamTotalListaRegistros(t_list* listaRegistros) {
 	int cantidad_registros = list_size(listaRegistros);
-	log_info(logger, "cantidad de registros de la lista: %d",
-			cantidad_registros);
+	log_info(logger, "Cantidad de registros de la lista: %d",cantidad_registros);
 
 	int tam_total_registros = 0;
 	t_registroMemtable* registro;
@@ -1239,7 +1136,7 @@ int tamTotalListaRegistros(t_list* listaRegistros) {
 
 	tam_total_registros += sizeof(char) * 3 * cantidad_registros;
 
-	log_info(logger, "tamanio total de registros: %d", tam_total_registros);
+	log_info(logger, "Tamanio total de registros: %d", tam_total_registros);
 
 	return tam_total_registros;
 }
@@ -1284,7 +1181,7 @@ void* armarBufferConRegistros(t_list* listaRegistros, int tam_total_registros) {
 		memcpy(bufferConRegistros + offset, &barra_n, sizeof(char));
 		offset += sizeof(char);
 	}
-	log_info(logger,"[DEBUG555] Tamanio total escrito %d. Tamanio total del buffer %d",offset,tam_total_registros);
+	//log_info(logger,"[DEBUG555] Tamanio total escrito %d. Tamanio total del buffer %d",offset,tam_total_registros);
 	return bufferConRegistros;
 }
 
@@ -1301,13 +1198,13 @@ int escribirVariosBloques(t_list* bloques, int tam_total_registros,
 		log_info(logger, "bloque seleccionado para guardar el tmp %d",
 				nroBloque);
 		if (tam_total_registros <= metadataLFS->block_size) {
-			log_info(logger, "tam registros menor a block size");
+			//log_info(logger, "tam registros menor a block size");
 			resultado = escribirBloque(nroBloque, tam_total_registros, offset,
 					buffer);
 			offset += tam_total_registros;
 			tam_total_registros -= tam_total_registros;
 		} else {
-			log_info(logger, "tam registros mayor a block size");
+			//log_info(logger, "tam registros mayor a block size");
 			resultado = escribirBloque(nroBloque, metadataLFS->block_size,
 					offset, buffer);
 			tam_total_registros -= metadataLFS->block_size;
@@ -1337,7 +1234,7 @@ int escribirBloque(int bloque, int size, int offset, void* buffer) {
 
 	if (bloqueFile != NULL) {
 
-//		log_info(logger, "entre al if");
+
 		fwrite(buffer + offset, size, 1, bloqueFile);
 		fclose(bloqueFile);
 		free(path);
@@ -1396,7 +1293,7 @@ t_list* leerBloque(char* path) {
 	fseek(bloque, 0, SEEK_END);
 	tam_bloque = ftell(bloque);
 
-	log_info(logger, "[BLOQUE] tam del bloque: %d", tam_bloque);
+	log_info(logger, "[BLOQUE] Tamanio del bloque: %d", tam_bloque);
 
 	rewind(bloque);
 
@@ -1454,14 +1351,13 @@ t_list* leerBloque(char* path) {
 
 			//Agrego el registro a la lista que voy a retornar
 			list_add(registros_leidos, registro);
-			log_info(logger, "Agregado a la lista");
-			log_info(logger, "Hasta ahora lei %d bytes de %d", offset,
-					tam_bloque);
+
+			//log_info(logger, "Hasta ahora lei %d bytes de %d", offset,tam_bloque);
 		}
 		free(aux);
 		fclose(bloque);
 	} else {
-		log_error(logger, "[BLOQUE] no se pudo leer el archivo con el path: %s",
+		log_error(logger, "[BLOQUE] No se pudo leer el archivo con el path: %s",
 				path);
 	}
 
@@ -1541,9 +1437,6 @@ t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total) {
 			break;
 
 		case EST_TIMESTAMP:
-//			log_info(logger, "Buscando el timestamp");
-//			log_info(logger, "Al bloque le quedan %d bytes y yo necesito %d",
-//					tam_bloque - offset_bloque, sizeof(u_int64_t) - offset_campo);
 
 			//Si con los bytes que le quedan al bloque me alcanza para completar el campo, los copio y avanzo al siguiente estado
 			if (offset_bloque + sizeof(u_int64_t) - offset_campo
@@ -1553,7 +1446,7 @@ t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total) {
 						sizeof(u_int64_t) - offset_campo);
 				memcpy(&(registro->timestamp), aux_campo_leyendo,
 						sizeof(u_int64_t));
-//				log_info(logger, "Timestamp leido: %d", registro->timestamp);
+
 
 				//Avanzo los offset los bytes que acabo de leer
 				offset_bloque += sizeof(u_int64_t) - offset_campo;
@@ -1573,8 +1466,7 @@ t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total) {
 				offset_campo += tam_bloque - offset_bloque;
 				offset_total += tam_bloque - offset_bloque;
 				offset_bloque += tam_bloque - offset_bloque;
-//				log_info(logger, "Me faltan %d bytes para leer el timestamp",
-//						sizeof(u_int64_t) - offset_campo);
+
 
 				//Voy a leer un nuevo bloque
 				anterior = estado;
@@ -1583,10 +1475,7 @@ t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total) {
 			break;
 
 		case EST_KEY:
-//			log_info(logger, "Buscando key");
-//			log_info(logger, "Al bloque le quedan %d bytes y yo necesito %d",
-//					tam_bloque - offset_bloque,
-//					sizeof(uint16_t) - offset_campo);
+
 
 			//Si con los bytes que le quedan al bloque me alcanza para completar el campo, los copio y avanzo al siguiente estado
 			if (offset_bloque + sizeof(uint16_t) - offset_campo <= tam_bloque) {
@@ -1594,7 +1483,7 @@ t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total) {
 						registros_bloque + offset_bloque,
 						sizeof(uint16_t) - offset_campo);
 				memcpy(&(registro->key), aux_campo_leyendo, sizeof(uint16_t));
-//				log_info(logger, "Key leída: %d", registro->key);
+
 
 				//Avanzo los offset los bytes que acabo de leer
 				offset_bloque += sizeof(uint16_t) - offset_campo;
@@ -1614,8 +1503,7 @@ t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total) {
 				offset_campo += tam_bloque - offset_bloque;
 				offset_total += tam_bloque - offset_bloque;
 				offset_bloque += tam_bloque - offset_bloque;
-//				log_info(logger, "Me faltan %d bytes para leer la key",
-//						sizeof(uint16_t) - offset_campo);
+
 
 				//Voy a leer un nuevo bloque
 				anterior = estado;
@@ -1624,7 +1512,7 @@ t_list* leerBloquesConsecutivos(t_list *nroBloques, int tam_total) {
 			break;
 
 		case EST_VALUE:
-//			log_info(logger, "Buscando value");
+
 			leiValueEntero = false;
 
 			//Si con los bytes que le quedan al bloque me alcanza para completar el tamaño máximo para un value, los copio y avanzo al siguiente estado
@@ -1781,132 +1669,11 @@ t_registroMemtable *crearCopiaRegistro(t_registroMemtable *origen) {
 	return copia;
 }
 
-int pruebaLecturaBloquesConsecutivos(void) {
-	void *buffer = malloc(4000);
-	int offset = 0;
-	char value[20];
-	uint16_t key = 0;
-	u_int64_t timestamp = 0;
-	char barran[2], coma[2];
-	strcpy(barran, "\n");
-	strcpy(coma, ",");
-
-	for (int i = 0; i < 200; i++) {
-		timestamp += 554;
-		key = i % 15;
-		snprintf(value, 9, "val%d", i * 13);
-		memcpy(buffer + offset, &timestamp, sizeof(u_int64_t));
-		offset += sizeof(u_int64_t);
-		memcpy(buffer + offset, coma, sizeof(char));
-		offset += sizeof(char);
-		memcpy(buffer + offset, &key, sizeof(uint16_t));
-		offset += sizeof(uint16_t);
-		memcpy(buffer + offset, coma, sizeof(char));
-		offset += sizeof(char);
-		memcpy(buffer + offset, value, strlen(value));
-		offset += strlen(value);
-		memcpy(buffer + offset, barran, sizeof(char));
-		offset += sizeof(char);
-
-		log_info(logger, "[PRUEBA] Escribi %llu;%d;%s. Hasta ahora son %d bytes",
-				timestamp, key, value, offset);
-	}
-
-	log_info(logger, "[PRUEBA] En total son %d bytes", offset);
-
-	FILE *bloque1 = NULL;
-	FILE *bloque2 = NULL;
-	FILE *bloque3 = NULL;
-	FILE *bloque4 = NULL;
-
-	int numBloque1 = 2, numBloque2 = 1, numBloque3 = 3, numBloque4 = 113;
-
-	abrirArchivoBloque(&bloque1, numBloque1, "wb");
-	abrirArchivoBloque(&bloque2, numBloque2, "wb");
-	abrirArchivoBloque(&bloque3, numBloque3, "wb");
-	abrirArchivoBloque(&bloque4, numBloque4, "wb");
-
-	int desp, bytes1, bytes2, bytes3, bytes4;
-//	aux=offset/2;
-
-	bytes1 = 1000;
-	bytes2 = 500;
-	bytes3 = 700;
-	bytes4 = offset - bytes1 - bytes2 - bytes3;
-
-	desp = 0;
-
-	fwrite(buffer + desp, bytes1, 1, bloque1);
-	log_info(logger, "[PRUEBA] Escribí %d bytes en el bloque1", bytes1);
-	desp += bytes1;
-
-	fwrite(buffer + desp, bytes2, 1, bloque2);
-	log_info(logger, "[PRUEBA] Escribí %d bytes en el bloque2", bytes2);
-	desp += bytes2;
-
-	fwrite(buffer + desp, bytes3, 1, bloque3);
-	log_info(logger, "[PRUEBA] Escribí %d bytes en el bloque3", bytes3);
-	desp += bytes3;
-
-	fwrite(buffer + desp, bytes4, 1, bloque4);
-	log_info(logger, "[PRUEBA] Escribí %d bytes en el bloque3", bytes4);
-	desp += bytes4;
-
-	fclose(bloque1);
-	fclose(bloque2);
-	fclose(bloque3);
-	fclose(bloque4);
-
-	free(buffer);
-	t_list *listaBloques = list_create();
-
-	list_add(listaBloques, &numBloque1);
-	list_add(listaBloques, &numBloque2);
-	list_add(listaBloques, &numBloque3);
-	list_add(listaBloques, &numBloque4);
-
-	t_list *regLeidos = leerBloquesConsecutivos(listaBloques, offset);
-
-	list_iterate(regLeidos, (void*) imprimirRegistro);
-	t_registroMemtable *registroMayor;
-	list_destroy_and_destroy_elements(regLeidos, (void*) borrarRegistro);
-
-	for (int i = 0; i < 20; i++) {
-		log_info(logger,
-				"[PRUEBA] Voy a buscar el mayor registro con %d como key", i);
-		registroMayor = leerBloquesConsecutivosUnaKey(listaBloques, offset, i,
-		false);
-		if (registroMayor == NULL) {
-			log_error(logger,
-					"[PRUEBA] No se pudo leer la lista de bloques indicada");
-			continue;
-		}
-		if (registroMayor->timestamp != 0) {
-			log_info(logger, "[PRUEBA] El mayor de la key %d es <%llu;%d;%s>", i,
-					registroMayor->timestamp, registroMayor->key,
-					registroMayor->value);
-			printf("\nEl mayor de la key %d es <%llu;%d;%s>", i,
-					registroMayor->timestamp, registroMayor->key,
-					registroMayor->value);
-		} else {
-			printf("\nNo se encontro registro con la key %d", i);
-			log_info(logger, "[PRUEBA] No se encontró registro con la key %d",
-					i);
-		}
-		free(registroMayor->value);
-		free(registroMayor);
-	}
-	list_destroy(listaBloques);
-	printf("\n\nSalgo de función de prueba\n\n");
-	log_info(logger, "[PRUEBA] Salgo de función de prueba");
-	return 1;
-}
 
 //OPERACIONES CON BLOQUES
 
 //DUMP
 int determinarParticion(int key, int particiones) {
-
 
 	int retornar = key % particiones;
 
@@ -1998,7 +1765,7 @@ void eliminarTablaCompleta(char* tabla) {
 
 	int retMet = remove(path_tabla_metadata);
 
-	log_info(logger, "Resultado de remove del metadata de la tabla %d", retMet);
+	//log_info(logger, "Resultado de remove del metadata de la tabla %d", retMet);
 
 	if (retMet == 0) { // Eliminamos el archivo
 		log_info(logger, "El archivo fue eliminado satisfactoriamente\n");
@@ -2010,7 +1777,7 @@ void eliminarTablaCompleta(char* tabla) {
 
 	int retTab = remove(path);
 
-	log_info(logger, "Resultado de remove de la tabla %d", retTab);
+	//log_info(logger, "Resultado de remove de la tabla %d", retTab);
 
 	if (retTab == 0) { // Eliminamos el archivo
 		log_info(logger, "El archivo fue eliminado satisfactoriamente\n");
@@ -2082,7 +1849,7 @@ t_registroMemtable* armarEstructura(char* value, char* key, char* timestamp) {
 	u_int16_t keyRegistro = strtol(key, NULL, 10);
 	registroMemtable->key = keyRegistro;
 
-	log_info(logger, "Tamaño de registro agregado = %d",registroMemtable->tam_registro);
+	//log_info(logger, "Tamaño de registro agregado = %d",registroMemtable->tam_registro);
 	//log_info(logger,"El registro quedo conformado por: \n");
 	//log_info(logger,"Value = %s ",registroMemtable->value);
 	//log_info(logger, "Timestamp = %llu ", registroMemtable->timestamp);
@@ -2122,7 +1889,7 @@ t_bloquesUsados* leerTemporaloParticion(char* path) {
 
 		int size = config_get_int_value(tempFile, "SIZE");
 
-		log_info(logger, "Size encontrado del temp es: %d", size);
+		//log_info(logger, "Size encontrado del temp es: %d", size);
 
 		char** bloques = config_get_array_value(tempFile, "BLOCKS");
 
@@ -2159,7 +1926,7 @@ t_bloquesUsados* leerTemporaloParticion(char* path) {
 }
 
 t_registroMemtable* obtenerRegistroMayor(char* tabla, int key,	t_list* listaSegunLugar) {
-	log_info(logger, "la key que mande del select %d", key);
+
 	t_registroMemtable* registro = NULL;
 	t_registroMemtable* retval = malloc(sizeof(t_registroMemtable));
 	for (int i = 0; i < list_size(listaSegunLugar); i++) {
@@ -2414,7 +2181,7 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 		}
 
 		//LEER
-		log_info(logger, "[DEBUG] Voy a bloquear tabla %s",tabla);
+		//log_info(logger, "[DEBUG] Voy a bloquear tabla %s",tabla);
 		rwLockLeer(&(semsTabla->rwLockTabla));
 
 		t_metadata_tabla *metadata = obtenerMetadataTabla(tabla);
@@ -2426,7 +2193,7 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 		if (metadata == NULL) {
 			registroMayor = armarRegistroNulo();
 			registroMayor->tam_registro = -2;
-			log_info(logger, "[DEBUG] Voy a desbloquear tabla %s",tabla);
+			//log_info(logger, "[DEBUG] Voy a desbloquear tabla %s",tabla);
 			rwLockDesbloquear(&(semsTabla->rwLockTabla)); //@martin si voy a retornar tengo que desbloquear no?
 			return registroMayor;
 		}; // 0: OK. -1: ERROR. // frenar en caso de error
@@ -2449,13 +2216,13 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 		t_registroMemtable* registroTemporalC = registroMayorTemporal(tabla,
 				valorKeyU, ".tmpc");
 
-		log_info(logger, "[DEBUG] Voy a desbloquear tabla %s",tabla);
+		//log_info(logger, "[DEBUG] Voy a desbloquear tabla %s",tabla);
 		rwLockDesbloquear(&(semsTabla->rwLockTabla));
 
-		log_info(logger, "[DEBUG] Voy a bloquear memtable");
+		//log_info(logger, "[DEBUG] Voy a bloquear memtable");
 		rwLockLeer(&sem_rw_memtable);
 		t_registroMemtable* registroMemtable = registroMayorMemtable(tabla,	valorKeyU);
-		log_info(logger, "[DEBUG] Voy a desbloquear memtable");
+		//log_info(logger, "[DEBUG] Voy a desbloquear memtable");
 		rwLockDesbloquear(&sem_rw_memtable);
 
 		registroMayor = tomarMayorRegistro(registroMemtable, registroParticion,
@@ -2472,12 +2239,11 @@ t_registroMemtable* comandoSelect(char* tabla, char* key) {
 
 		if (registroMayor->timestamp > 0) {
 			log_info(logger, "Registro obtenido: <%llu;%d;%s>",registroMayor->timestamp, registroMayor->key,registroMayor->value);
-			printf("Registro obtenido: <%llu;%d;%s>\n", registroMayor->timestamp,
-					registroMayor->key, registroMayor->value);
+			//printf("Registro obtenido: <%llu;%d;%s>\n", registroMayor->timestamp,registroMayor->key, registroMayor->value);
 		} else {
 			log_info(logger, "No se encontró ningún registro con la key %d",
 					valorKey);
-			printf("No se encontró ningún registro con la key %d\n", valorKey);
+		//	printf("No se encontró ningún registro con la key %d\n", valorKey);
 		}
 
 //		free(metadata);
@@ -2500,25 +2266,25 @@ int comandoDrop(char* tabla) {
 	int retornoVerificar = verificarTabla(tabla);
 	if (retornoVerificar == 0) {
 
-		log_info(logger,"[DEBUG] arranco");
-		log_info(logger,"[DEBUG] tabla %s",tabla);
+
+	//	log_info(logger,"[DEBUG] tabla %s",tabla);
 		semsTabla = dictionary_get(dicSemTablas, tabla);
-		log_info(logger,"[DEBUG] 1");
+
 		if(semsTabla == NULL){
 			log_info(logger,"[DEBUG] es null");
 		}
-		log_info(logger,"[DEBUG] 2");
+
 		mutexBloquear(&(semsTabla->drop_mx));
 		rwLockEscribir(&(semsTabla->rwLockTabla));
-		log_info(logger,"[DEBUG] 3");
+
 		pthread_t *hiloCompactacion = dictionary_get(dicHilosCompactacion,tabla);
-		log_info(logger,"[DEBUG] 4");
+
 
 //		pthread_kill(*hiloCompactacion, SIGKILL);
-		log_info(logger,"[DEBUG] pase kill");
+
 //		dictionary_remove_and_destroy(dicHilosCompactacion,tabla,free);
 		dictionary_remove(dicHilosCompactacion,tabla);
-		log_info(logger,"[DEBUG] voy a armar path");
+
 
 		char*path = armarPathTabla(tabla);
 		log_info(logger, "Vamos a eliminar la tabla: %s", path);
@@ -2587,8 +2353,7 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 		free(path_tabla_metadata);
 
 		if (archivoMetadata != NULL) {
-			log_info(logger,
-					"El archivo metadata se creo satisfactoriamente");
+			log_info(logger,"El archivo metadata se creo satisfactoriamente");
 
 			log_info(logger, "Se crean los semaforos de la tabla");
 
@@ -2635,7 +2400,7 @@ int comandoCreate(char* tabla, char* consistencia, char* particiones,
 
 			//log_info(logger, "Se agrego el tiempo de compactacion %s",lineaTiempoCompactacion);
 
-			log_info(logger, "Metadata de la tabla creada \n%s%s%s",lineaConsistencia,lineaParticiones,lineaTiempoCompactacion);
+			log_info(logger, "Metadata de la tabla creada CONSISTENCY=%s,PARTITIONS=%s,COMPACTION_TIME=%s",consistencia,particiones,tiempoCompactacion);
 
 			fputs(lineaConsistencia, archivoMetadata);
 			fputs(lineaParticiones, archivoMetadata);
@@ -2801,7 +2566,7 @@ char* comandoDescribeEspecifico(char* tabla) {
 			char* resultado = retornarValores(tabla, metadata);
 			free(metadata->consistency);
 			free(metadata);
-			log_info(logger, "resultado describe %s", resultado);
+			log_info(logger, "Resultado describe %s", resultado);
 			rwLockDesbloquear(&(semsTabla->rwLockTabla));
 			return resultado;
 		} else {
@@ -2821,7 +2586,7 @@ char* comandoDescribe() {
 	}*///@gian
 	char* resultado = retornarValoresDirectorio();
 	if (resultado != NULL)
-		log_info(logger, "resultado describe de todas las tablas %s",
+		log_info(logger, "Resultado describe de todas las tablas %s",
 				resultado);
 
 	/*for(int i=0; i<dictionary_size(dicSemTablas); i++) {
@@ -3623,7 +3388,7 @@ int guardarRegistrosParticion(char *path_tabla, int particion,
 		FILE* fp;
 		fp = fopen(path_particion, "w");
 		log_info(logger,
-				"[COMPACTACION] creamos el archivo, ahora  lo llenamos");
+				"[COMPACTACION] creamos el archivo, ahora lo llenamos");
 		log_info(logger, "[COMPACTACION] path del archivo %s", path_particion);
 
 		if (fp != NULL) {
@@ -3656,12 +3421,12 @@ int guardarRegistrosParticion(char *path_tabla, int particion,
 		} else {
 			//liberar bloques de la lista de bloquesUsados
 			log_error(logger,
-					"[COMPACTACION] error al abrir el archivo con path: %s",
+					"[COMPACTACION] Error al abrir el archivo con path: %s",
 					path_particion);
 		}
 	} else {
 		log_error(logger,
-				"[COMPACTACION] hubo un error al escribir los datos en los bloques");
+				"[COMPACTACION] Hubo un error al escribir los datos en los bloques");
 	}
 
 	free(path_particion);

@@ -31,13 +31,13 @@ void finalizar_comunicacion(void) {
 void cliente_dar_de_alta(int socket)
 {
 	int *copy = malloc(sizeof(int)); //NO HACER UN FREE ACÁ SINO VA A ROMPER, LO HAGO MÁS ADELANTE
-	log_info(logger,"[CLIENTE] Dando de alta cliente en socket %d",socket);
+	//log_info(logger,"[CLIENTE] Dando de alta cliente en socket %d",socket);
 	memcpy(copy,&socket,sizeof(int));
 	pthread_mutex_lock(&mutex_clientes_activos);
 	list_add(clientes_activos,copy);
 	int activos = list_size(clientes_activos);
 	pthread_mutex_unlock(&mutex_clientes_activos);
-	log_info(logger,"[CLIENTE] Socket cliente %d agregado a la lista de activos",socket);
+	//log_info(logger,"[CLIENTE] Socket cliente %d agregado a la lista de activos",socket);
 	log_info(logger,"[CLIENTE] Hay %d clientes activos",activos);
 }
 
@@ -45,14 +45,14 @@ void cliente_dar_de_baja(int socket)
 {
 	int *aux;
 	bool encontrado = false;
-	log_info(logger,"[CLIENTE] Voy a dar de baja socket %d",socket);
+	//log_info(logger,"[CLIENTE] Voy a dar de baja socket %d",socket);
 	pthread_mutex_lock(&mutex_clientes_activos);
 	for(int i=0;i<list_size(clientes_activos);i++){
 		aux = list_get(clientes_activos,i);
 		if(*aux == socket){
 			list_remove(clientes_activos,i);
 			free(aux);
-			log_info(logger,"[CLIENTE] Socket cliente %d sacado de la lista de activos",socket);
+			//log_info(logger,"[CLIENTE] Socket cliente %d sacado de la lista de activos",socket);
 			encontrado = true;
 			break;
 		}
@@ -119,9 +119,9 @@ void* hilo_servidor(int * socket_p) {
 
 //void * hilo_cliente(int * socket_p) @NACHO
 void * hilo_cliente(int *socket){
-	imprimirMensaje(logger_com_lfs,"[CLIENTE] Entrando a hilo de atención a un cliente");
+	//imprimirMensaje(logger_com_lfs,"[CLIENTE] Entrando a hilo de atención a un cliente");
 	int socket_cliente = *socket;
-	imprimirMensaje(logger_com_lfs, "[CLIENTE] Empiezo a esperar mensajes");
+	//imprimirMensaje(logger_com_lfs, "[CLIENTE] Empiezo a esperar mensajes");
 	msg_com_t msg;
 	bool fin = false;
 	req_com_t request;
@@ -129,13 +129,14 @@ void * hilo_cliente(int *socket){
 	int aux_enviado_ok;
 	while (fin == false) {
 		msg = recibir_mensaje(socket_cliente);
-		imprimirMensaje(logger_com_lfs, "[CLIENTE] Recibí un mensaje");
+		//imprimirMensaje(logger_com_lfs, "[CLIENTE] Recibí un mensaje");
 
 		switch (msg.tipo) {
 		case REQUEST:
 
-			imprimirMensaje(logger_com_lfs,"[CLIENTE] El mensaje recibido es un request");
+
 			request = procesar_request(msg);
+//log_info(logger_com_lfs,"[CLIENTE] El mensaje recibido es un request: %s ", request.str);
 			borrar_mensaje(msg);
 			request_t requestParser = parser(request.str);
 			respuesta = resolver_pedido(requestParser);
@@ -173,8 +174,7 @@ void * hilo_cliente(int *socket){
 			break;
 
 		case DESCONECTADO:
-			imprimirMensaje(logger_com_lfs,
-					"[CLIENTE] El cliente se desconectó");
+			imprimirMensaje(logger_com_lfs,"[CLIENTE] El cliente se desconectó");
 			borrar_mensaje(msg);
 			fin = true;
 			cliente_dar_de_baja(socket_cliente);
@@ -347,7 +347,7 @@ resp_com_t resolver_drop(request_t req) {
 resp_com_t resolver_select(request_t req) {
 	t_registroMemtable* ret_val;
 	resp_com_t respuesta;
-	imprimirMensaje(logger, "[RESOLVIENDO SELECT] Entro a función");
+//	imprimirMensaje(logger, "[RESOLVIENDO SELECT] Entro a función");
 
 	if (req.cant_args == 2) {
 		char *nombre_tabla = req.args[0];
@@ -388,7 +388,7 @@ resp_com_t resolver_select(request_t req) {
 
 resp_com_t resolver_insert(request_t req) {
 	int ret_val;
-	imprimirMensaje(logger, "[RESOLVIENDO INSERT] Entro a función");
+	//imprimirMensaje(logger, "[RESOLVIENDO INSERT] Entro a función");
 
 
 	if (req.cant_args == 4) {
