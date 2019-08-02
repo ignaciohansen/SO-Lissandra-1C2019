@@ -46,7 +46,7 @@ rm -r  LFS_CONFIG.txt
 fi
 
 cp ../../CONFIGS_SCRIPTS/PRUEBA_LFS/LFS_CONFIG.txt ./
-echo "Config de lfs copiado"
+echo "Config lfs copiado"
 
 mv MEM$1_CONFIG.txt MEMORIA.txt
 

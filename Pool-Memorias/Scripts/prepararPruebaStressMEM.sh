@@ -45,7 +45,7 @@ echo "se borra el archivo anterior de config"
 rm -r  MEMORIA.txt
 fi
 
-cp ../../CONFIGS_SCRIPTS/PRUEBA_BASE/MEM$1_CONFIG.txt ./
+cp ../../CONFIGS_SCRIPTS/PRUEBA_STRESS/MEM$1_CONFIG.txt ./
 echo "Config stress copiado"
 
 mv MEM$1_CONFIG.txt MEMORIA.txt
