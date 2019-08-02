@@ -1,5 +1,32 @@
 #!/bin/bash
 
+if [ $# = 0 ];
+then
+echo "Estaba esperando 1 parametro para el numero de memoria y un opcional para el ip"
+exit 1
+fi
+
+IP_MEM=127.0.0.1
+IP_LFS=127.0.0.1
+
+if [ $# -eq 2 ];
+then
+IP_MEM=$2
+fi
+
+if [ $# -eq 3 ];
+then
+IP_MEM=$2
+IP_LFS=$3
+fi
+
+if [ $# -gt 3 ];
+then
+echo $#
+echo "Los parametros habiitados son el numero de memoria y la ip de mem y fs"
+exit 1
+fi
+
 echo "Script para ejecutar la prueba de LFS en el FileSystem"
 
 cd ..
@@ -21,31 +48,7 @@ fi
 cp ../../CONFIGS_SCRIPTS/PRUEBA_LFS/LFS_CONFIG.txt ./
 echo "Config de lfs copiado"
 
-cd ..
+mv MEM$1_CONFIG.txt MEMORIA.txt
 
-if [ ! -d Metadata ];
-then
-echo "se crea la carpeta de Metadata"
-mkdir Metadata
-fi
-
-cd Metadata/
-
-if [  -f Metadata ];
-then
-echo "se borra el archivo anterior de Metadata"
-rm -r  Metadata
-fi
-
-cp ../../METADATAS_SCRIPTS/PRUEBA_LFS/Metadata ./
-echo "Metadata de lfs copiada"
-
-cd ../Scripts
-
-if [ !  -x scriptInicial.sh ];
-then
-echo "se le da permisos de ejecucion al scriptInicial.sh"
-chmod +x scriptInicial.sh
-fi
-
-./scriptInicial.sh
+sed -i -e "s/ip/$IP_MEM/" MEM$1_CONFIG.txt
+sed -i -e "s/ip_fs/$IP_LFS/" MEM$1_CONFIG.txt
