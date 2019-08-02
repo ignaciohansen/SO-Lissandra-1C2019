@@ -27,6 +27,10 @@
 
 pthread_t journalHilo;
 
+typedef struct{
+	int socket;
+	pthread_t *hilo;
+}cliente_t;
 
 t_log* log_memoria;
 FILE* tablas_fp;

@@ -26,7 +26,7 @@ void retardo_fs(void){
 void * retardo_journal(void){
 	while(1){
 		int milisegundos= arc_config->retardo_journal;
-		imprimirMensaje1(log_memoria, "PROXIMO JOURNAL EN %d milisegundos>",milisegundos);
+		imprimirMensaje1(log_memoria, "[JOURNAL AUTOMATICO] PROXIMO JOURNAL EN %d milisegundos",milisegundos);
 		activo_retardo_journal=false;
 		usleep(milisegundos*1000);
 		//LUEGO DE ESTO EMPIEZA UN JOURNAL;
