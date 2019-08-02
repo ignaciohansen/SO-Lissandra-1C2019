@@ -60,7 +60,7 @@ echo "se borra el archivo anterior de Metadata"
 rm -r  Metadata
 fi
 
-cp ../../METADATAS_SCRIPTS/PRUEBA_LFS/Metadata ./
+cp /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/METADATAS_SCRIPTS/PRUEBA_LFS/Metadata ./
 echo "Metadata de lfs copiada"
 
 cd /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Scripts

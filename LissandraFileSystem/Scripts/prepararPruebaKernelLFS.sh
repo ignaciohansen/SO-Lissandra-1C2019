@@ -60,7 +60,7 @@ echo "se borra el archivo anterior de Metadata"
 rm -r  Metadata
 fi
 
-cp ../../METADATAS_SCRIPTS/PRUEBA_KERNEL/Metadata ./
+cp  /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/METADATAS_SCRIPTS/PRUEBA_KERNEL/Metadata ./
 echo "Metadata de kernel copiada"
 
 cd /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Scripts

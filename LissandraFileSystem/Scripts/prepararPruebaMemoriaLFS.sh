@@ -32,7 +32,7 @@ echo "se borra el archivo anterior de config"
 rm -r  LFS_CONFIG.txt
 fi
 
-cp ../../CONFIGS_SCRIPTS/PRUEBA_MEMORIA/LFS_CONFIG.txt ./
+cp  ../../CONFIGS_SCRIPTS/PRUEBA_MEMORIA/LFS_CONFIG.txt ./
 echo "Config de memoria copiado"
 
 sed -i -e "s/ip/$IP_LFS/" LFS_CONFIG.txt
@@ -60,7 +60,7 @@ echo "se borra el archivo anterior de Metadata"
 rm -r  Metadata
 fi
 
-cp ../../METADATAS_SCRIPTS/PRUEBA_MEMORIA/Metadata ./
+cp /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/METADATAS_SCRIPTS/PRUEBA_MEMORIA/Metadata ./
 echo "Metadata de memoria copiada"
 
 cd /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Scripts
