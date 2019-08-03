@@ -261,11 +261,10 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 		 * A LA MEMORIA PARA LA MODIFICACION DE LOS CAMPOS
 		 */
 		log_info(log_memoria, "[INSERT] Ya hay una pagina para la key %d en el segmento %s",keyBuscada,segmentoBuscado->path_tabla);
-	//	free(ref);
+		free(ref);
 	//	free(segmentoBuscado);
 		modificarValoresDeTablaYMemoriaAsociadasAKEY(posicionAIr, valorAPoner, timestamp_val);
 	}
-	free(ref);
 //	mutexDesbloquear(&mutex_bloque_LRU_modificando);
 	rwLockDesbloquear(&sem_insert_select);
 	return 1;
@@ -1116,7 +1115,7 @@ void LRU(
 //				log_info(log_memoria, "[LRU con candidato] LRU TERMINADO");
 			}
 	mutexDesbloquear(&ACCIONLRU);
-//	return candidatoAQuitar;
+	return candidatoAQuitar;
 }
 
 void limpiar_todos_los_elementos_de_1_segmento(segmento* segmentoABorrar){

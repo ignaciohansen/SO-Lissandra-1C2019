@@ -27,15 +27,7 @@ void actualizarMemoriasDisponibles(void)
 			aux = list_get(caidas,i);
 			log_info(log_memoria,"Memoria caida (%d): %d-%s-%s",i,aux->numMemoria,aux->ip,aux->puerto);
 		}
-		t_link_element* elemAux;
-		while(caidas->head!=NULL){
-			elemAux = caidas->head->next;
-			free(caidas->head->data);
-			free(caidas->head);
-			caidas->head = elemAux;
-			}
-		}
-		list_destroy(caidas);
+	}
 
 	if(huboCambios()){
 		log_info(log_memoria,"Hubo cambios en las memorias conocidas");
@@ -150,7 +142,6 @@ int main(int argc, char **argv)
 	pthread_cancel(consola_h);
 	pthread_cancel(inotify_c);
 	pthread_cancel(servidor_h);
-
 
 	free(path_de_memoria);
 
