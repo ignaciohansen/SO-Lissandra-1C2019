@@ -22,7 +22,7 @@ pthread_mutex_t lista_memorias_criterio_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int main() {
 
-	fp_trace_ejecucion = fopen("../Log/traceEjecucion.txt", "w"); //Para revisar si estamos haciendo bien la planificacion
+	//fp_trace_ejecucion = fopen("../Log/traceEjecucion.txt", "w"); //Para revisar si estamos haciendo bien la planificacion
 
 	log_kernel = archivoLogCrear(LOG_PATH, "[MAIN]- Proceso Kernel.");
 
