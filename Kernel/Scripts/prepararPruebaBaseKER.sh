@@ -1,5 +1,12 @@
 #!/bin/bash
 
+IP_MEM1=127.0.0.1
+
+if [ $# -eq 1 ];
+then
+IP_MEM1=$1
+fi
+
 echo "Script para ejecutar la prueba de base en el kernel"
 
 cd ..
@@ -21,3 +28,4 @@ fi
 cp ../../CONFIGS_SCRIPTS/PRUEBA_BASE/KERNEL.txt ./
 echo "Config base copiado"
 
+sed -i -e "s/mem1/$IP_MEM1/" KERNEL.txt
