@@ -23,27 +23,27 @@ IP_MEM=$2
 IP_LFS=$3
 fi
 
-if [ $# -eq 4 && $1 -eq 1 ];
+if [ $# -eq 4 ] && [ $1 -eq 1 ];
 then
 IP_MEM=$2
 IP_LFS=$3
 IP_MEM3=$4
 fi
 
-if [ $# -eq 4 && $1 -eq 2 ];
+if [ $# -eq 4 ] && [ $1 -eq 2 ];
 then
 IP_MEM=$2
 IP_LFS=$3
 IP_MEM4=$4
 fi
 
-if [ $# -eq 4 && $1 -eq 3 ];
+if [ $# -eq 4 ] && [ $1 -eq 3 ];
 then
 echo "La memoria 3 no tiene seeds"
 exit 1
 fi
 
-if [ $# -eq 4 && $1 -eq 4 ];
+if [ $# -eq 4 ] && [ $1 -eq 4 ];
 then
 IP_MEM=$2
 IP_LFS=$3
@@ -83,17 +83,17 @@ mv MEM$1_CONFIG.txt MEMORIA_$1.txt
 sed -i -e "s/ip/$IP_MEM/" MEMORIA_$1.txt
 sed -i -e "s/fs/$IP_LFS/" MEMORIA_$1.txt
 
-if [ $# -eq 4 && $1 -eq 1 ];
+if [ $1 -eq 1 ];
 then
-sed -i -e "s/mem3/$IP_MEM3/" MEM$1_CONFIG.txt
+sed -i -e "s/mem3/$IP_MEM3/" MEMORIA_$1.txt
 fi
 
-if [ $# -eq 4 && $1 -eq 2 ];
+if [ $1 -eq 2 ];
 then
-sed -i -e "s/mem4/$IP_MEM4/" MEM$1_CONFIG.txt
+sed -i -e "s/mem4/$IP_MEM4/" MEMORIA_$1.txt
 fi
 
-if [ $# -eq 4 && $1 -eq 4 ];
+if [ $1 -eq 4 ];
 then
-sed -i -e "s/mem1/$IP_MEM1/" MEM$1_CONFIG.txt
+sed -i -e "s/mem1/$IP_MEM1/" MEMORIA_$1.txt
 fi
