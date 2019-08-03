@@ -1585,10 +1585,12 @@ seed_com_t *elegirMemoriaCriterio(int num_criterio, uint16_t key) {
 	} else if (num_criterio == SHC) {
 		criterio = criterioSHC;
 		elegida = numMemoriaHash(key);
+		log_info(log_kernel,"[elegirMemoriaCriterio | SHC]- La key es: %d.",key);
 	} else {
 		criterio = criterioEC;
 		elegida = numMemoriaRandom(list_size(criterio.listMemorias));
 	}
+	log_info(log_kernel,"[elegirMemoriaCriterio]- El criterio es el: %s.",criterios[criterio.criterio]);
 	//Agregue este Mutex_Verificarlo por las dudas!
 //	pthread_mutex_lock(&lista_memorias_asociadas_mutex);
 	t_list *memorias_criterio = criterio.listMemorias;
