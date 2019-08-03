@@ -51,4 +51,4 @@ echo "Config base copiado"
 mv MEM$1_CONFIG.txt MEMORIA_$1.txt
 
 sed -i -e "s/ip/$IP_MEM/" MEM$1_CONFIG.txt
-sed -i -e "s/ip_fs/$IP_LFS/" MEM$1_CONFIG.txt
+sed -i -e "s/fs/$IP_LFS/" MEM$1_CONFIG.txt
