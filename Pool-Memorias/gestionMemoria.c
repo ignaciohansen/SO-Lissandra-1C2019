@@ -132,6 +132,7 @@ int loggearEstadoActual(FILE* fp)
 	return 1;
 }
 
+
 int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bool estadoAPoner, timestamp_mem_t timestamp_val){
 //	log_info(log_memoria, "[INSERT] En funcion INSERT");
 	if(strlen(valorAPoner)>=max_valor_key){
@@ -163,8 +164,7 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 		if(bitmapLleno()){
 //			log_info(log_memoria, "[INSERT] Debo realizar un LRU");
 			LRU();
-			posicionAIr = buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(nombreTabla, keyBuscada,
-																		&segmentoBuscado);
+			posicionAIr = buscarEntreLosSegmentosLaPosicionXNombreTablaYKey(nombreTabla, keyBuscada,&segmentoBuscado);
 		}
 		mutexDesbloquear(&verificarSiBitmapLleno);
 		log_info(log_memoria,"[INSERT] Hay marcos libres, no es necesario ejecutar LRU");
@@ -182,6 +182,7 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 //		log_info(log_memoria, "[INSERT] Verifico 1* si esta FULL memoria");
 
 		//CASO B, verifico si se encontro el segmento, caso contrario debo tambien crearlo
+		pthread_mutex_lock(&mutex_bloquear_select_por_limpieza);
 		if(segmentoBuscado==NULL){
 			log_info(log_memoria, "[INSERT] No se encontro un segmento asociado a la tabla '%s'",nombreTabla);
 			insertCrearPaginaConNuevoSegmento(nombreTabla, keyBuscada,
@@ -194,6 +195,12 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 
 			tabla_pagina_crear(keyBuscada, valorAPoner, estadoAPoner,
 					&ref, nombreTabla, true, segmentoBuscado, timestamp_val);
+
+			if(ref->sig == NULL){
+				log_info(log_memoria,"[DBG] OKAAAA");
+			}else{
+				log_info(log_memoria,"[DBG] mallllllllllllllll");
+			}
 
 			if(estadoAPoner) {
 //				printf("[INSERT] Tabla de pagina referenciada creada con info NROPAGINA|KEY|FLAG: %d|%d|TRUE",ref->nropagina, keyBuscada);
@@ -208,6 +215,11 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 			if(segmentoBuscado == NULL)
 				log_info(log_memoria,"[DBG] Segmento buscado es null");
 			pagina_referenciada* ref3 = segmentoBuscado->paginasAsocida;
+			if(ref->sig == NULL){
+				log_info(log_memoria,"[DBG] OKAAAA");
+			}else{
+				log_info(log_memoria,"[DBG] mallllllllllllllll");
+			}
 			if(ref3 == NULL)
 				log_info(log_memoria,"[DBG] ref3 es null");
 //			log_info(log_memoria,"[DBG] Antes del while");
@@ -217,7 +229,8 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 		//		printf("\n\n\n%d\n\n", ref3->nropagina);
 			}
 //			log_info(log_memoria,"[DBG] Despues del while");
-			ref3->sig = ref;
+//			ref3->sig = ref;
+
 		//	printf("\n\n\nPASAMOS INSERT\n\n");
 		//	ref->sig = segmentoBuscado->paginasAsocida->sig;
 		//	memcpy(segmentoBuscado->paginasAsocida->sig, ref->sig, sizeof(*pagina_referenciada));
@@ -239,6 +252,7 @@ int funcionInsert(char* nombreTabla, u_int16_t keyBuscada, char* valorAPoner, bo
 //			}
 //	//		free(ref);
 		}
+		pthread_mutex_unlock(&mutex_bloquear_select_por_limpieza);
 	} else {
 	/*	printf("[INSERT A MODIFICAR] Existe el segmento '%s' y la pagina que referencia la key (%d) que es NRO '%d'. Procedo a poner el nuevo valor que es '%s'",
 				segmentoBuscado->path_tabla, keyBuscada, posicionAIr, valorAPoner);*/
@@ -643,6 +657,7 @@ int buscarPaginaDisponible(u_int16_t key, bool existiaTabla,
 			free(pag);
 			pagina_referenciada = pagina_referenciada->sig;
 		}
+
 //		log_info(log_memoria, "[BITMAP] No se encontro en el segmento  '%s' la key '%d' buscad. Paso a crearla!",
 //				segmetnoApuntado->path_tabla, key);
 //		mutexDesbloquear(&mutex_bitmap);
@@ -1025,6 +1040,24 @@ void tabla_pagina_crear(
 	memcpy(*devolver, pag_ref, sizeof(pagina_referenciada));
 //	log_info(log_memoria, "[CREANDO TABLA DE PAGINAS] Se guardo la pagina en el marco %d", pag_ref->nropagina);
 
+	if(segmetnoApuntado != NULL){
+		pagina_referenciada *aux = segmetnoApuntado->paginasAsocida;
+		pagina_referenciada *anterior = NULL;
+	//	if(posicionAsignada==-1){
+		log_info(log_memoria, "[DBG] Entro al if");
+		while(aux != NULL){
+			log_info(log_memoria, "[DBG] Recorriendo paginas del segmento");
+			anterior = aux;
+			aux = aux->sig;
+		}
+		if(anterior == NULL){
+			segmetnoApuntado->paginasAsocida = *devolver;
+		}
+		else{
+			anterior->sig = *devolver;
+		}
+	}
+
 	free(pag_ref);
 	mutexDesbloquear(&mutex_tabla_pagina_en_modificacion);
 //	mutexDesbloquear(&mutex_pagina_auxiliar);
@@ -1082,7 +1115,7 @@ void LRU(
 //				log_info(log_memoria, "[LRU con candidato] LRU TERMINADO");
 			}
 	mutexDesbloquear(&ACCIONLRU);
-	return;
+	return candidatoAQuitar;
 }
 
 void limpiar_todos_los_elementos_de_1_segmento(segmento* segmentoABorrar){
@@ -1105,6 +1138,7 @@ void liberarTodosLasTablasDePaginas(pagina_referenciada* ref){
 	while(ref!=NULL){
 		refaux = ref->sig;
 	//	retardo_memoria(arc_config->retardo_mem);
+		log_info(log_memoria, "[DBG] Borrando");
 		memcpy(bloque_memoria+(ref->nropagina)*(sizeof(pagina)+max_valor_key), info, sizeof(pagina)+max_valor_key);
 		liberarPosicionLRU(ref->nropagina);
 		//log_info(log_memoria, "[LIBERAR SEGMENTO] TABLA DE LA PAGINA NRO '%d' LIBERADA", ref->nropagina);
@@ -1112,6 +1146,7 @@ void liberarTodosLasTablasDePaginas(pagina_referenciada* ref){
 		ref = refaux;
 		i++;
 	}
+	log_info(log_memoria, "[DBG] SALGO DEL WHILE");
 	mutexDesbloquear(&mutex_bitmap);
 	free(info);
 	log_info(log_memoria, "[BORRANDO SEGMENTO] Se borraron todas las paginas del segmento");
@@ -1124,7 +1159,7 @@ void liberarPosicionLRU(int posicionAIr) {
 	memcpy(bloque_LRU+posicionAIr*desplazamiento, info, sizeof(nodoLRU));
 	free(info);
 	bitmapLiberarBit(bitmap, posicionAIr);
-	//log_info(log_memoria, "[LIBERAR SEGMENTO EN LRU] BLOQUE DE LA LRU EN LA POSICION NRO '%d' LIBERADA", posicionAIr);
+	log_info(log_memoria, "[DBG] BLOQUE DE LA LRU EN LA POSICION NRO '%d' LIBERADA", posicionAIr);
 
 }
 
