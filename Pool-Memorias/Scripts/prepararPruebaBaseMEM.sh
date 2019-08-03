@@ -8,6 +8,7 @@ fi
 
 IP_MEM=127.0.0.1
 IP_LFS=127.0.0.1
+IP_MEM2=127.0.0.1
 
 if [ $# -eq 2 ];
 then
@@ -20,7 +21,14 @@ IP_MEM=$2
 IP_LFS=$3
 fi
 
-if [ $# -gt 3 ];
+if [ $# -eq 3 ];
+then
+IP_MEM=$2
+IP_LFS=$3
+IP_MEM2=$4
+fi
+
+if [ $# -gt 4 ];
 then
 echo $#
 echo "Los parametros habiitados son el numero de memoria y la ip de mem y fs"
@@ -52,3 +60,6 @@ mv MEM$1_CONFIG.txt MEMORIA_$1.txt
 
 sed -i -e "s/ip/$IP_MEM/" MEM$1_CONFIG.txt
 sed -i -e "s/fs/$IP_LFS/" MEM$1_CONFIG.txt
+sed -i -e "s/mem2/$IP_MEM2/" MEM$1_CONFIG.txt
+
+
