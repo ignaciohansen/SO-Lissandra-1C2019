@@ -39,12 +39,12 @@ sed -i -e "s/ip/$IP_LFS/" LFS_CONFIG.txt
 
 if [ ! -d home/utnso/lfs-base ];
 then
-mkdir home/utnso/lfs-base
+mkdir /home/utnso/lfs-base
 else
-rm -r home/utnso/lfs-base/*
+rm -r /home/utnso/lfs-base/*
 fi
 
-cd home/utnso/lfs-base
+cd /home/utnso/lfs-base
 
 if [ ! -d Metadata ];
 then
@@ -63,12 +63,12 @@ fi
 cp /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/METADATAS_SCRIPTS/PRUEBA_BASE/Metadata ./
 echo "Metadata base copiada"
 
-cd /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Scripts
+#cd /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Scripts
 
-if [ !  -x limpiarLFS.sh ];
-then
-echo "se le da permisos de ejecucion al limpiarLFS.sh"
-chmod +x limpiarLFS.sh
-fi
+#if [ !  -x limpiarLFS.sh ];
+#then
+#echo "se le da permisos de ejecucion al limpiarLFS.sh"
+#chmod +x limpiarLFS.sh
+#fi
 
-./limpiarLFS.sh
+#./limpiarLFS.sh

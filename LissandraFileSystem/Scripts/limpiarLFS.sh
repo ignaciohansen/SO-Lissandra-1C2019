@@ -10,7 +10,7 @@ then
 	rm -r Tables
 fi
 
-if [ -d Tables ];
+if [ -d Bloques ];
 then
 	echo "Elimino carpeta Bloques"
 	rm -r Bloques

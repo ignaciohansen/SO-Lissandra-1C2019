@@ -64,11 +64,3 @@ cp /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/METADATAS_SCRIPTS/PRUEBA_STRESS/M
 echo "Metadata de stress copiada"
 
 cd /home/utnso/tp-2019-1c-mi_ultimo_segundo_tp/LissandraFileSystem/Scripts
-
-if [ !  -x limpiarLFS.sh ];
-then
-echo "se le da permisos de ejecucion al limpiarLFS.sh"
-chmod +x limpiarLFS.sh
-fi
-
-./limpiarLFS.sh
