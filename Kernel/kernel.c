@@ -747,13 +747,14 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 
 		//KEY INexistente
 
+		log_info(log_kernel, "[EJECUTAR]- POR ENTRAR A EJECUTAR QUANTUM CON VALOR: %d",arc_config->quantum);
 		//Rafaga restante del PCB sea mayor o igual que el Quantum
 		if ((pcb->rafaga - pcb->progamCounter) >= quantum) {
 
 			log_info(log_kernel, "[EJECUTAR]- DENTRO DEL QUANTUM");
 			for (int i = 1; quantum >= i; i++) {
 
-				log_info(log_kernel, "[EJECUTAR]- QUANTUM: %d", i);
+				log_info(log_kernel, "[EJECUTAR]- RAFAGA: %d; del PID; %d, nivel: %d", i,pcb->pid,nivel);
 
 				//log_info(log_kernel, "[EJECUTAR]- %d", pcb->comando);
 				//log_info(log_kernel, "[EJECUTAR]- %p", pcb->archivo);
