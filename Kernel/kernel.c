@@ -928,7 +928,7 @@ void agregarAExit(t_pcb* pcb) {
 			printf("El comando: %s ", pcb->linea);
 			puts("finalizo antes por error en la linea ");
 			printf("%d",pcb->progamCounter);
-			printf("\n>");
+			//printf("\n>");
 			puts("");
 			log_info(log_kernel, "[COLA | agregarAExit]- El comando: %s termino con error, en la linea %d. Error de TIPO: %d", pcb->linea,pcb->progamCounter,pcb->tipoRespuesta);
 
