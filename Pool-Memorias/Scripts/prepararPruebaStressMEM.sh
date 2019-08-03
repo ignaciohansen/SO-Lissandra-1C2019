@@ -11,6 +11,7 @@ IP_LFS=127.0.0.1
 IP_MEM1=127.0.0.1
 IP_MEM2=127.0.0.1
 IP_MEM3=127.0.0.1
+IP_MEM4=127.0.0.1
 
 if [ $# -eq 2 ];
 then
@@ -37,6 +38,14 @@ IP_LFS=$3
 IP_MEM1=$4
 fi
 
+if [ $# -eq 5 ] && [ $1 -eq 3 ];
+then
+IP_MEM=$2
+IP_LFS=$3
+IP_MEM2=$4
+IP_MEM4=$5
+fi
+
 if [ $# -eq 5 ] && [ $1 -eq 5 ];
 then
 IP_MEM=$2
@@ -53,7 +62,7 @@ fi
 
 if [ $# -eq 4 ] && [ $1 -eq 3 ];
 then
-echo "La memoria 3 no tiene seeds"
+echo "La memoria 3 tiene 2 seeds"
 exit 1
 fi
 
@@ -104,6 +113,12 @@ fi
 if [ $1 -eq 4 ];
 then
 sed -i -e "s/mem1/$IP_MEM1/" MEMORIA_$1.txt
+fi
+
+if [ $1 -eq 3 ];
+then
+sed -i -e "s/mem2/$IP_MEM2/" MEMORIA_$1.txt
+sed -i -e "s/mem4/$IP_MEM4/" MEMORIA_$1.txt
 fi
 
 if [ $1 -eq 5 ];

@@ -1,10 +1,10 @@
 #!/bin/bash
 
-IP_MEM3=127.0.0.1
+IP_MEM2=127.0.0.1
 
 if [ $# -eq 1 ];
 then
-IP_MEM3=$1
+IP_MEM2=$1
 fi
 
 echo "Script para ejecutar la prueba de kernel en el kernel"
@@ -28,4 +28,4 @@ fi
 cp ../../CONFIGS_SCRIPTS/PRUEBA_KERNEL/KERNEL.txt ./
 echo "Config de kernel copiado"
 
-sed -i -e "s/mem3/$IP_MEM3/" KERNEL.txt
+sed -i -e "s/mem2/$IP_MEM2/" KERNEL.txt
