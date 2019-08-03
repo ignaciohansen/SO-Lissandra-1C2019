@@ -22,7 +22,7 @@ pthread_mutex_t lista_memorias_criterio_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int main() {
 
-	//fp_trace_ejecucion = fopen("../Log/traceEjecucion.txt", "w"); //Para revisar si estamos haciendo bien la planificacion
+	fp_trace_ejecucion = fopen("../Log/traceEjecucion.txt", "w"); //Para revisar si estamos haciendo bien la planificacion
 
 	log_kernel = archivoLogCrear(LOG_PATH, "[MAIN]- Proceso Kernel.");
 
@@ -861,9 +861,13 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 		loggearEjecucion(nivel, pcb->pid, pcb->linea);
 
 		pcb->tipoRespuesta = respuesta.tipo;
-
+		if(respuesta.msg.str>0){
 		log_info(log_kernel, "[EJECUTAR]- RESULTADO FUE: %s", respuesta.msg.str);
 		printf("RESULTADO FUE: %s\n", respuesta.msg.str);
+		}else{
+			printf("EJECUTADO %s RESUELTA OK\n",pcb->linea);
+
+		}
 
 		borrar_respuesta(respuesta);
 
