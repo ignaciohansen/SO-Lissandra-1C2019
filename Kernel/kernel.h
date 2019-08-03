@@ -377,4 +377,6 @@ void imprimirStringFloat(bool consola, const char *format,const char *p1, float 
 void imprimirStringInt(bool consola, const char *format, const char *p1, int p2);
 void imprimirIntFloat(bool consola, const char *format, int p1, float p2);
 
+bool esComandoValido(char *linea);
+
 #endif /* KERNEL_H_ */

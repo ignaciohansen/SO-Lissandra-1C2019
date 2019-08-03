@@ -362,28 +362,33 @@ void cerrarTodosLosHilosPendientes() {
 }
 
 
-void inicioLogYConfig(char* path_config, bool loggearEnConsola) {
+void inicioLogYConfig(int numMemoria, bool loggearEnConsola) {
 	tamanioPredefinidoParaNombreTabla = 50;
 //	log_memoria = archivoLogCrear(LOG_PATH, "Proceso Memoria");
-	archivoLogValidar(LOG_PATH);
-	log_memoria = log_create(LOG_PATH, "Proceso Memoria", loggearEnConsola, LOG_LEVEL_DEBUG);
-	log_info(log_memoria,
-			" ========== Iniciación de Pool de Memoria ========== ");
-
-
+	int tam_path = 150;
+	char *path_log = malloc(tam_path);
+	char *path_config = malloc(tam_path);
+	snprintf(path_log,tam_path, "../Log/LOG_MEMORIA_%d.txt",numMemoria);
+	snprintf(path_config,tam_path, "../Config/MEMORIA_%d.txt",numMemoria);
+	archivoLogValidar(path_log);
+	log_memoria = log_create(path_log, "Proceso Memoria", loggearEnConsola, LOG_LEVEL_INFO);
+	log_info(log_memoria," ========== Iniciación de Pool de Memoria ========== ");
 
 	tablas_fp = fopen(LOG_TABLAS_PATH, "w");
 	if(tablas_fp == NULL){
-		log_info(log_memoria, "[LOGYCONFIG] No se pudo crear el archivo de seguimiento de tablas");;
+		log_info(log_memoria, "[LOGYCONFIG] No se pudo crear el archivo de seguimiento de tablas");
 	}
 	else{
 		fprintf(tablas_fp,"ARCHIVO PARA SEGUIMIENTO DE TABLAS\n\n\n");
 		log_info(log_memoria, "[LOGYCONFIG] Logger de seguimiento de tablas creado en %s",LOG_TABLAS_PATH);
 	}
-
 	cargarConfiguracion(path_config);
-	log_info(log_memoria,
-			"[LOGYCONFIG] *** CONFIGURACIÓN DE MEMORIA CARGADA. *** ");
+
+	printf("\n*Se cargo el archivo de config <%s>*\n\n",path_config);
+	printf("\n*Se creo el log en <%s>*\n\n",path_log);
+	log_info(log_memoria,"[LOGYCONFIG] *** CONFIGURACIÓN DE MEMORIA CARGADA. *** ");
+	free(path_log);
+	free(path_config);
 }
 
 /*-----------------------------------------------------------------------------
@@ -888,10 +893,10 @@ void escucharConexionKernel() {
 void cargarConfiguracion(char *path_config) {
 //	printf("\n\n**********CARGANDO CONFIGURACION**********\n\n");
 	log_info(log_memoria, "[CONFIGURANDO MODULO] RESERVAR MEMORIA.");
-	if(arc_config != NULL){
-		//FUE CARGADA PREVIAMENTE POR LO TANTO DEBO LIMPIARLO PARA RECARGARLA DE NUEVO
-		config_destroy(arc_config);
-	}
+//	if(arc_config != NULL){
+//		//FUE CARGADA PREVIAMENTE POR LO TANTO DEBO LIMPIARLO PARA RECARGARLA DE NUEVO
+//		free(arc_config->ip);
+//	}
 	arc_config = malloc(sizeof(t_memoria_config));
 
 	// Lo inicializo así no generó segmentation fault al salir (puedo saber cuáles aloqué)
@@ -1037,8 +1042,8 @@ void cargarConfiguracion(char *path_config) {
 
 	} else {
 
-		log_error(log_memoria,
-				"[WARNING] NO HAY ARCHIVO DE CONFIGURACION DE MODULO MEMORIA"); // ERROR: SIN ARCHIVO CONFIGURACION
+		log_error(log_memoria,"[WARNING] NO EXISTE EL ARCHIVO DE CONFIGURACION <%s>",path_config); // ERROR: SIN ARCHIVO CONFIGURACION
+		exit(1);
 
 	}
 }

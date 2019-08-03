@@ -20,11 +20,19 @@ FILE *fp_trace_ejecucion;
 //Agregue esto (lorenzo)
 pthread_mutex_t lista_memorias_criterio_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-int main() {
+int main(int argc, char **argv) {
+
+	bool logEnConsola = true;
+	if(argc == 2){
+		if(!strcmp(argv[1],"-cl"))
+			logEnConsola = false;
+	}
 
 	fp_trace_ejecucion = fopen("../Log/traceEjecucion.txt", "w"); //Para revisar si estamos haciendo bien la planificacion
 
-	log_kernel = archivoLogCrear(LOG_PATH, "[MAIN]- Proceso Kernel.");
+	archivoLogValidar(LOG_PATH);
+//	log_kernel = archivoLogCrear(LOG_PATH, "[MAIN]- Proceso Kernel.");
+	log_kernel = log_create(LOG_PATH, "Proceso Kernel", logEnConsola, LOG_LEVEL_INFO);
 
 	log_info(log_kernel,"[MAIN]- Por cargar configuracion desde archivo.");
 
@@ -345,6 +353,13 @@ void consola() {
 			add_history(linea);
 			comandoSeparado = string_split(linea, separator);
 		}
+
+		if(!esComandoValido(linea)){
+			printf("\nEl comando <%s> no es valido. Intente de nuevo...",linea);
+			free(linea);
+			continue;
+		}
+
 
 		if (!strncmp(linea, "SALIR", 4)) {
 			log_info(log_kernel, "[CONSOLA]- Viene el comando en la cadena: %s",	comandoSeparado[0]);
@@ -917,17 +932,17 @@ void agregarAExit(t_pcb* pcb) {
 
 			printf("El comando: %s termino de ejecutarse", pcb->linea);
 			printf("\n>");
-			puts("");
+			printf("");
+//			puts("");
 			log_info(log_kernel, "[agregarAExit]- La linea: %s termino de ejecutarse.", pcb->linea);
 
 		}
 		else{
 
-			printf("El comando: %s ", pcb->linea);
-			puts("finalizo antes por error en la linea ");
-			printf("%d",pcb->progamCounter);
+			printf("El comando: %s finalizo antes por error en la linea %d", pcb->linea,pcb->progamCounter);
 			printf("\n>");
-			puts("");
+			printf("");
+//			puts("");
 			log_info(log_kernel, "[agregarAExit]- El comando: %s termino con error, en la linea %d. Error de TIPO: %d", pcb->linea,pcb->progamCounter,pcb->tipoRespuesta);
 
 		}
@@ -2443,4 +2458,150 @@ void imprimirIntFloat(bool consola, const char *format, int p1, float p2)
 		printf("\n");
 		printf(format,p1,p2);
 	}
+}
+
+bool esComandoValido(char *linea)
+{
+	bool esValido = false;
+	request_t req = parser(linea);
+	log_info(log_kernel, "[VALIDANDO REQUEST] ");
+	int criterio, key, t_compactacion, particiones;
+	switch(req.command){
+		case ADD_PARSER:
+			if(req.cant_args != 4){
+				log_warning(log_kernel, "[VALIDANDO REQUEST] Cantidad de parametros incorrecta para %s",req.command_str);
+				break;
+			}
+			if(strcmp(req.args[0],"MEMORY") || strcmp(req.args[2],"TO")){
+				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El comando %s debe ser de la forma: ADD MEMORY <NUM> TO <CRITERIO>",req.command_str);
+				break;
+			}
+			criterio = buscarCriterio(req.args[3]);
+			if(criterio < 0 || criterio > EC){
+				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El criterio %s no es un criterio valido",req.args[3]);
+				break;
+			}
+			int memoria = atoi(req.args[1]);
+			if(memoria == 0){
+				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El argumento %s no es un numero de memoria valido",req.args[1]);
+				break;
+			}
+			esValido = true;
+			break;
+		case RUN_PARSER:
+			if(req.cant_args != 1){
+				log_warning(log_kernel, "[VALIDANDO REQUEST] Cantidad de parametros incorrecta para %s",req.command_str);
+				break;
+			}
+			if(strlen(req.args[0])<5){
+				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El nombre de archivo <%s> no es valido",req.args[0]);
+				break;
+			}
+			if(!string_ends_with(req.args[0],".lql")){
+				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El nombre de archivo <%s> no es valido",req.args[0]);
+				break;
+			}
+			esValido = true;
+			break;
+		case SELECT_PARSER:
+			if(req.cant_args != 2){
+				log_warning(log_kernel, "[VALIDANDO REQUEST] Cantidad de parametros incorrecta para %s",req.command_str);
+				break;
+			}
+			key = strtol(req.args[1],NULL,10);
+			if(key == 0){
+				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El argumento %s no es un numero de key valido",req.args[1]);
+				break;
+			}
+			if(strlen(req.args[0])==0){
+				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El argumento %s no es un nombre de tabla valido",req.args[0]);
+				break;
+			}
+			esValido = true;
+			break;
+		case INSERT_PARSER:
+			if(req.cant_args != 3 && req.cant_args != 4){
+				log_warning(log_kernel, "[VALIDANDO REQUEST] Cantidad de parametros incorrecta para %s",req.command_str);
+				break;
+			}
+			key = strtol(req.args[1],NULL,10);
+			if(key == 0){
+				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El argumento %s no es un numero de key valido",req.args[1]);
+				break;
+			}
+			if(strlen(req.args[0])==0){
+				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El argumento %s no es un nombre de tabla valido",req.args[0]);
+				break;
+			}
+			if(strlen(req.args[2])==0 || string_contains(req.args[2],";") || string_contains(req.args[2],"|")){
+				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El argumento %s no es un value valido",req.args[0]);
+				break;
+			}
+			esValido = true;
+			break;
+		case CREATE_PARSER:
+			//CREATE TABLA SC 3 40000
+			if(req.cant_args != 4){
+				log_warning(log_kernel, "[VALIDANDO REQUEST] Cantidad de parametros incorrecta para %s",req.command_str);
+				break;
+			}
+			if(strlen(req.args[0])==0){
+				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El argumento %s no es un nombre de tabla valido",req.args[0]);
+				break;
+			}
+			criterio = buscarCriterio(req.args[1]);
+			if(criterio < 0 || criterio > EC){
+				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El criterio %s no es un criterio valido",req.args[3]);
+				break;
+			}
+			particiones = strtol(req.args[2],NULL,10);
+			if(particiones <= 0){
+				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El argumento %s no es una cantidad valida de particiones",req.args[1]);
+				break;
+			}
+			t_compactacion = strtol(req.args[3],NULL,10);
+			if(t_compactacion <= 0){
+				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El argumento %s no es un tiempo de compactacion valido",req.args[1]);
+				break;
+			}
+			esValido = true;
+			break;
+		case DESCRIBE_PARSER:
+		case JOURNAL_PARSER:
+			if(req.cant_args > 0){
+				log_warning(log_kernel, "[VALIDANDO REQUEST] Cantidad de parametros incorrecta para %s",req.command_str);
+				break;
+			}
+			esValido = true;
+			break;
+		case DROP_PARSER:
+			if(req.cant_args != 1){
+				log_warning(log_kernel, "[VALIDANDO REQUEST] Cantidad de parametros incorrecta para %s",req.command_str);
+				break;
+			}
+			if(strlen(req.args[0])==0){
+				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El argumento %s no es un nombre de tabla valido",req.args[0]);
+				break;
+			}
+			esValido = true;
+			break;
+		case METRICS_PARSER:
+			if(req.cant_args != 0){
+				log_warning(log_kernel, "[VALIDANDO REQUEST] Cantidad de parametros incorrecta para %s",req.command_str);
+				break;
+			}
+			esValido = true;
+			break;
+		case INVALID_COMMAND_PARSER:
+			log_warning(log_kernel, "[VALIDANDO REQUEST] El comando <%s> no existe",req.request_str);
+			break;
+		case SALIR_PARSER:
+			esValido = true;
+			break;
+		default:
+			log_warning(log_kernel, "[VALIDANDO REQUEST] El comando <%s> no existe",req.request_str);
+			break;
+	}
+	borrar_request(req);
+	return esValido;
 }
