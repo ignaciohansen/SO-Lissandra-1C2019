@@ -48,23 +48,37 @@ int main(int argc, char **argv)
 	inicioLogYConfig(PATH_MEMORIA_CONFIG);
 //#endif*/
 
-	//Si quiero que no logge en consola ejecuto poniendo "./PoolMemorias -cl". En cualquier otro caso loggea en consola
-	if(argc <= 1){
-		printf("\n*Se loggea en consola. Para desactivarlo ejecutar el proceso con -cl*\n\n");
-		inicioLogYConfig(PATH_MEMORIA_CONFIG,true);
+	bool loggerEnConsola = true;
+	int numMemoria = -1;
+	if(argc < 2){
+		printf("\n*Se debe indicar el numero de memoria como primer argumento del main*\n\n");
+		return 1;
 	}
-	else if(!strcmp(argv[1],"-cl")){
-		printf("\n*Opción -cl. No se loggea en consola*");
-		inicioLogYConfig(PATH_MEMORIA_CONFIG,false);
+
+	numMemoria = strtol(argv[1],NULL,10);
+	if(numMemoria <= 0){
+		printf("\n*El numero de memoria <%s> no es valido*\n\n",argv[1]);
+		return 1;
+	}
+	printf("\n*El numero de memoria es <%d>*\n\n",numMemoria);
+
+	//Si quiero que no logge en consola ejecuto poniendo "./PoolMemorias <num> -cl". En cualquier otro caso loggea en consola
+	if(argc >= 3){
+		if(!strcmp(argv[2],"-cl")){
+			loggerEnConsola = false;
+		}
+	}
+
+	if(loggerEnConsola){
+		printf("\n*Se loggea en consola. Para desactivarlo ejecutar el proceso con -cl*\n\n\n");
 	}
 	else{
-		printf("\n*Se loggea en consola. Para desactivarlo ejecutar el proceso con -cl\n\n*");
-		inicioLogYConfig(PATH_MEMORIA_CONFIG,true);
+		printf("\n*Opción -cl. No se loggea en consola*");
 	}
+	inicioLogYConfig(numMemoria,loggerEnConsola);
 
-
-	printf("\n*Log creado en %s", LOG_PATH);
-	printf("\n*Archivo de configuración cargado*");
+//	printf("\n*Log creado en %s", LOG_PATH);
+//	printf("\n*Archivo de configuración cargado*");
 
 	int socket_lfs = conectar_a_lfs(true,&max_valor_key);
 

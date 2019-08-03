@@ -923,188 +923,188 @@ int bitmapCalculo(int cantidadBloques) {
 //--------------------------------------- Funciones de Impresion -------------------------------------
 
 void imprimirMensaje(ArchivoLog archivoLog, String mensaje) {
-	if(archivoLog->is_active_console){
+	/*if(archivoLog->is_active_console){
 		puts(mensaje);
-	}
+	}*/
 	log_info(archivoLog, mensaje);
 }
 
 void imprimirMensaje1(ArchivoLog archivoLog, String mensaje, void* algo1) {
-	if(archivoLog->is_active_console){
+	/*if(archivoLog->is_active_console){
 		printf(mensaje, algo1 );
 		puts("");
-	}
+	}*/
 	log_info(archivoLog, mensaje, algo1);
 }
 
 void imprimirMensaje2(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2) {
-	if(archivoLog->is_active_console){
+	/*if(archivoLog->is_active_console){
 		printf(mensaje, algo1, algo2);
 		puts("");
-	}
+	}*/
 	log_info(archivoLog, mensaje, algo1, algo2);
 }
 
 void imprimirMensaje3(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3) {
-	if(archivoLog->is_active_console){
+	/*if(archivoLog->is_active_console){
 		printf(mensaje, algo1, algo2, algo3);
 		puts("");
-	}
+	}*/
 	log_info(archivoLog, mensaje, algo1, algo2, algo3);
 }
 
 void imprimirMensaje4(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3, void* algo4) {
-	if(archivoLog->is_active_console){
+	/*if(archivoLog->is_active_console){
 		printf(mensaje, algo1, algo2, algo3, algo4);
 		puts("");
-	}
+	}*/
 	log_info(archivoLog, mensaje, algo1, algo2, algo3, algo4);
 }
 
 void imprimirAviso(ArchivoLog archivoLog, String mensaje) {
-	if(archivoLog->is_active_console){
+/*	if(archivoLog->is_active_console){
 		printf(AMARILLO);
 		puts(mensaje);
 		printf(BLANCO);
-	}
+	}*/
 	log_warning(archivoLog, mensaje);
 }
 
 void imprimirAviso1(ArchivoLog archivoLog, String mensaje, void* algo1) {
-	if(archivoLog->is_active_console){
+/*	if(archivoLog->is_active_console){
 		printf(AMARILLO);
 		printf(mensaje, algo1 );
 		printf(BLANCO);
 		puts("");
-	}
+	}*/
 	log_warning(archivoLog, mensaje, algo1);
 }
 
 void imprimirAviso2(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2) {
-	if(archivoLog->is_active_console){
+	/*if(archivoLog->is_active_console){
 		printf(AMARILLO);
 		printf(mensaje, algo1, algo2);
 		printf(BLANCO);
 		puts("");
-	}
+	}*/
 	log_warning(archivoLog, mensaje, algo1, algo2);
 }
 
 void imprimirAviso3(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3) {
-	if(archivoLog->is_active_console){
+	/*if(archivoLog->is_active_console){
 		printf(AMARILLO);
 		printf(mensaje, algo1, algo2, algo3);
 		printf(BLANCO);
 		puts("");
-	}
+	}*/
 	log_warning(archivoLog, mensaje, algo1, algo2, algo3);
 }
 
 void imprimirAviso4(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3, void* algo4) {
-	if(archivoLog->is_active_console){
+	/*if(archivoLog->is_active_console){
 		printf(AMARILLO);
 		printf(mensaje, algo1, algo2, algo3, algo4);
 		printf(BLANCO);
 		puts("");
-	}
+	}*/
 	log_warning(archivoLog, mensaje, algo1, algo2, algo3, algo4);
 }
 
 void imprimirError(ArchivoLog archivoLog, String mensaje) {
-	if(archivoLog->is_active_console){
+	/*if(archivoLog->is_active_console){
 		printf(ROJO);
 		puts(mensaje);
 		printf(BLANCO);
-	}
+	}*/
 	log_error(archivoLog, mensaje);
 }
 void imprimirError1(ArchivoLog archivoLog, String mensaje, void* algo1) {
-	if(archivoLog->is_active_console){
+	/*if(archivoLog->is_active_console){
 		printf(ROJO);
 		printf(mensaje, algo1);
 		printf(BLANCO);
 		puts("");
-	}
+	}*/
 	log_error(archivoLog, mensaje, algo1);
 }
 
 void imprimirError2(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2) {
-	if(archivoLog->is_active_console){
+	/*if(archivoLog->is_active_console){
 		printf(ROJO);
 		printf(mensaje, algo1, algo2);
 		printf(BLANCO);
 		puts("");
-	}
+	}*/
 	log_error(archivoLog, mensaje, algo1, algo2);
 }
 
 void imprimirError3(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3) {
-	if(archivoLog->is_active_console){
+	/*if(archivoLog->is_active_console){
 		printf(ROJO);
 		printf(mensaje, algo1, algo2, algo3);
 		printf(BLANCO);
 		puts("");
-	}
+	}*/
 	log_error(archivoLog, mensaje, algo1, algo2, algo3);
 }
 
 void imprimirError4(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3, void* algo4) {
-	if(archivoLog->is_active_console){
+	/*if(archivoLog->is_active_console){
 		printf(ROJO);
 		printf(mensaje, algo1, algo2, algo3, algo4);
 		printf(BLANCO);
 		puts("");
-	}
+	}*/
 	log_error(archivoLog, mensaje, algo1, algo2, algo3, algo4);
 }
 
 void imprimirVerde(ArchivoLog archivoLog, String mensaje) {
-	if(archivoLog->is_active_console){
+/*	if(archivoLog->is_active_console){
 		printf(VERDE);
 		puts(mensaje);
 		printf(BLANCO);
-	}
+	}*/
 	log_info(archivoLog, mensaje);
 }
 
 
 void imprimirVerde1(ArchivoLog archivoLog, String mensaje, void* algo1) {
-	if(archivoLog->is_active_console){
+/*	if(archivoLog->is_active_console){
 		printf(VERDE);
 		printf(mensaje, algo1);
 		printf(BLANCO);
 		puts("");
-	}
+	}*/
 	log_info(archivoLog, mensaje, algo1);
 }
 
 void imprimirVerde2(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2) {
-	if(archivoLog->is_active_console){
+	/*if(archivoLog->is_active_console){
 		printf(VERDE);
 		printf(mensaje, algo1, algo2);
 		printf(BLANCO);
 		puts("");
-	}
+	}*/
 	log_info(archivoLog, mensaje, algo1, algo2);
 }
 
 void imprimirVerde3(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3) {
-	if(archivoLog->is_active_console){
+	/*if(archivoLog->is_active_console){
 		printf(VERDE);
 		printf(mensaje, algo1, algo2, algo3);
 		printf(BLANCO);
 		puts("");
-	}
+	}*/
 	log_info(archivoLog, mensaje, algo1, algo2, algo3);
 }
 
 void imprimirVerde4(ArchivoLog archivoLog, String mensaje, void* algo1, void* algo2, void* algo3, void* algo4) {
-	if(archivoLog->is_active_console){
+/*	if(archivoLog->is_active_console){
 		printf(VERDE);
 		printf(mensaje, algo1, algo2, algo3, algo4);
 		printf(BLANCO);
 		puts("");
-	}
+	}*/
 	log_info(archivoLog, mensaje, algo1, algo2, algo3, algo4);
 }
 

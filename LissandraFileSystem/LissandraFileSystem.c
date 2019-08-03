@@ -14,7 +14,13 @@ int dumps_a_dividir = 1;
 
 //pthread_mutex_t mutex_dump = PTHREAD_MUTEX_INITIALIZER; //@martin, @gian, @nacho lo puse cuando hice el dump pero habría que revisarlo al hacer la sincro
 
-int main() {
+int main(int argc, char **argv) {
+	bool logEnConsola = true;
+	if(argc == 2){
+		if(!strcmp(argv[1],"-cl"))
+			logEnConsola = false;
+	}
+
 
 	pantallaLimpiar();
 
@@ -25,7 +31,7 @@ int main() {
 
 //	list_queries = list_create();
 
-	LisandraSetUP(); // CONFIGURACION Y SETEO SOCKET
+	LisandraSetUP(logEnConsola); // CONFIGURACION Y SETEO SOCKET
 
 	cargarBitmap();
 
@@ -78,11 +84,12 @@ int main() {
  ********************************************************************************************
  */
 
-void LisandraSetUP() {
+void LisandraSetUP(bool logEnConsola) {
 
 	imprimirMensajeProceso("==Iniciando el modulo LISSANDRA FILE SYSTEM==\n");
-
-	logger = archivoLogCrear(LOG_PATH, "Proceso Lissandra File System");
+	archivoLogValidar(LOG_PATH);
+//	logger = archivoLogCrear(LOG_PATH, "Proceso Lissandra File System");
+	logger = log_create(LOG_PATH, "Proceso Lissandra File System", logEnConsola, LOG_LEVEL_INFO);
 
 	imprimirVerde(logger,"[LOG CREADO] continuamos cargando la estructura de configuracion.");
 

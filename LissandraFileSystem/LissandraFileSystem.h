@@ -74,7 +74,7 @@ int socketEscuchaMemoria, conexionEntrante, recibiendoMensaje;
  * 									SET UP LISANDRA FILE SYSTEM
  *--------------------------------------------------------------------------------------------
  */
-void LisandraSetUP();
+void LisandraSetUP(bool logEnConsola);
 bool cargarConfiguracion();
 void iniciaabrirServidorLissandra();
 void atenderRequest(char* linea);
