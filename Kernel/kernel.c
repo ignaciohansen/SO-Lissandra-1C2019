@@ -855,13 +855,14 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 
 	//Si es otro comando:
 	else if (pcb->estado == ejecucion) {
-		log_info(log_kernel, "[EJECUTAR]- Por ejecutar comando ingresado por consulta: %s.", pcb->linea);
+		log_info(log_kernel, "[EJECUTAR]- Por ejecutar comando ingresado por consola: %s.", pcb->linea);
 		resp_com_t respuesta = resolverPedido(pcb->linea);
 		loggearEjecucion(nivel, pcb->pid, pcb->linea);
 
 		pcb->tipoRespuesta = respuesta.tipo;
 
 		log_info(log_kernel, "[EJECUTAR]- RESULTADO FUE: %s", respuesta.msg.str);
+		printf("RESULTADO FUE: %s\n", respuesta.msg.str);
 
 		borrar_respuesta(respuesta);
 
