@@ -298,9 +298,11 @@ void correr_gossiping(id_com_t id_proceso)
 	list_destroy(copia_seeds);
 }
 
+
+
 int iniciar_hilo_gossiping(id_com_t *id_proceso, pthread_t *thread, void (*funcion_actualizacion) (void))
 {
-	thread_gos_args_t *args = malloc(sizeof(thread_gos_args_t));
+	args = malloc(sizeof(thread_gos_args_t));
 	args->id_proceso = *id_proceso;
 	args->funcion = funcion_actualizacion;
 	if(gossiping_inicializado == false){
@@ -312,6 +314,48 @@ int iniciar_hilo_gossiping(id_com_t *id_proceso, pthread_t *thread, void (*funci
 	pthread_detach(*thread);
 	imprimirMensaje(logger_gossiping,"[INICIANDO HILO GOSSIPING] Hilo creado");
 	return 1;
+}
+
+void cerrarHiloGossiping(){
+	//SOLO LIBERA args porque MAIN MEMORIA CANCELA LUEGO EL THREAD, o kernel en su defecto
+	free(args);
+	vaciar_la_lista_memorias_caidas();
+//	vaciar_las_seeds(); NO CREO QUE SEA NECESARIO PERO DEJO CODIGO
+}
+
+void vaciar_las_seeds(){
+/*	list_destroy_and_destroy_elements(g_lista_seeds, eliminar1Seeds);
+			seed_com_t* memoria;
+	*/
+	t_link_element *element = g_lista_seeds->head;
+	t_link_element *aux = NULL;
+	while (element != NULL) {
+		aux = element->next;
+		free(element->data);
+		free(element);
+		element = aux;
+		printf("SE ELIMINO 1 SEED\n\n");
+	}
+	list_destroy(g_lista_seeds);
+	printf("<'NSe vacio toda la lista 'g_lista_seeds'\n\n");
+}
+
+void vaciar_la_lista_memorias_caidas(){
+	//SOLO SE ACTIVA 1 SOLA VEZ, VACIO TODA LA LSITA DE MEMORIAS CAIDAS QUE HAY
+	t_link_element* element = g_memorias_caidas->head;
+	t_link_element*	aux = NULL;
+	int i = 0;
+	while (i < g_memorias_caidas->elements_count) {
+		aux = element->next;
+		free(element->data);
+		free(element);
+		element = aux;
+	//	printf("SE ELIMINO 1 MEMORIA CAIDA\n\n");
+		i++;
+	}
+	list_clean(g_memorias_caidas);
+	list_destroy(g_memorias_caidas);
+//	printf("Se vacio toda la lista <g_memorias_caidas>\n\n");
 }
 
 void *hilo_gossiping(thread_gos_args_t *args_p)

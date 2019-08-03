@@ -17,6 +17,11 @@ typedef struct{
 	void (*funcion) (void);
 }thread_gos_args_t;
 
+thread_gos_args_t * args;
+
+void cerrarHiloGossiping();
+void vaciar_la_lista_memorias_caidas();
+
 t_list* lista_seeds(void);
 void inicializar_estructuras_gossiping(t_log *logger, time_gos_t retardo);
 void actualizar_retardo_gossiping(time_gos_t retardo);
