@@ -15,6 +15,8 @@
 t_list *clientes_activos;
 pthread_mutex_t mutex_clientes_activos = PTHREAD_MUTEX_INITIALIZER;
 
+int g_socket_memoria = -1;
+
 void actualizarMemoriasDisponibles(void)
 {
 	t_list *caidas = hayMemoriasCaidas();
@@ -109,6 +111,8 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	printf("\n*El servidor de memoria está inicializado y listo para recibir clientes");
+
+	g_socket_memoria = socket_servidor;
 
 	signal(SIGINT, INThandler);
 
@@ -367,6 +371,10 @@ void  INThandler(int sig)
 	signal(sig, SIG_IGN);
 	log_info(log_memoria,"[CATCHING SIGNAL] Cierro sockets clientes antes de salir");
 	cerrar_todos_clientes();
+
+	log_info(log_memoria,"[CATCHING SIGNAL] Cierro socket memoria");
+	if(g_socket_memoria != -1)
+		close(g_socket_memoria);
 
 	log_info(log_memoria,"[CATCHING SIGNAL] Libero memoria");
 //	liberar_todo_por_cierre_de_modulo();
@@ -760,7 +768,7 @@ resp_com_t resolver_journal(int socket_lfs,request_t req)
 	rwLockDesbloquear(&sem_insert_select);
 
 	if(cant_pasados != -1){
-		snprintf(msg_resp, 99, "Journal hecho. %d registros recibidos OK",cant_pasados);
+		snprintf(msg_resp, 99, "Journal hecho.");
 		resp = armar_respuesta(RESP_OK, msg_resp);
 	}
 	else{

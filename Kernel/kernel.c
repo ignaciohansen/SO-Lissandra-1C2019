@@ -365,13 +365,22 @@ void consola() {
 		int comando = buscarComando(comandoSeparado[0]);
 
 		log_info(log_kernel, "[CONSOLA]- El Enum correspondiente para el comando es: %d",comando);
+		request_t req;
 
 		switch (comando) {
 		case ADD:
-			printf("Vino ADD.\n");
-			log_info(log_kernel, "[CONSOLA]- ADD ingresado.");
-			comandoAdd(comandoSeparado);
+			req = parser(linea);
+			if(req.cant_args != 4){
+				printf("Comando mal ingresado. Debe ser: ADD MEMORY <NUM> TO <CRITERIO>\n");
+				log_warning(log_kernel,"Comando mal ingresado. Debe ser: ADD MEMORY <NUM> TO <CRITERIO>\n");
+			}
+			else{
+				printf("Vino ADD.\n");
+				log_info(log_kernel, "[CONSOLA]- ADD ingresado.");
+				comandoAdd(comandoSeparado);
+			}
 			free(linea);
+			borrar_request(req);
 			break;
 		case JOURNAL:
 			printf("Vino journal.\n");
@@ -861,12 +870,18 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 		loggearEjecucion(nivel, pcb->pid, pcb->linea);
 
 		pcb->tipoRespuesta = respuesta.tipo;
-		if(respuesta.msg.str>0){
-		log_info(log_kernel, "[EJECUTAR]- RESULTADO FUE: %s", respuesta.msg.str);
-		printf("RESULTADO FUE: %s\n", respuesta.msg.str);
-		}else{
-			printf("EJECUTADO %s RESUELTA OK\n",pcb->linea);
+		if(respuesta.tipo == RESP_OK){
+			if(respuesta.msg.str>0){
+				log_info(log_kernel, "[EJECUTAR]- RESULTADO FUE: %s", respuesta.msg.str);
+				printf("RESULTADO A <%s> FUE: %s\n", pcb->linea, respuesta.msg.str);
+			}else{
+				log_info(log_kernel, "[EJECUTAR]- <%s> RESUELTO OK\n",pcb->linea);
+				printf("<%s> RESUELTO OK\n",pcb->linea);
 
+			}
+		}else{
+			log_warning(log_kernel,"[EJECUTAR]- <%s> NO SE PUDO RESOLVER. Error <%d>\n",pcb->linea,respuesta.tipo);
+			printf("<%s> NO SE PUDO RESOLVER. Error <%d>\n",pcb->linea,respuesta.tipo);
 		}
 
 		borrar_respuesta(respuesta);
