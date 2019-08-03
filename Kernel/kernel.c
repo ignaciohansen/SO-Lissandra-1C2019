@@ -20,19 +20,11 @@ FILE *fp_trace_ejecucion;
 //Agregue esto (lorenzo)
 pthread_mutex_t lista_memorias_criterio_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-int main(int argc, char **argv) {
-
-	bool logEnConsola = true;
-	if(argc == 2){
-		if(!strcmp(argv[1],"-cl"))
-			logEnConsola = false;
-	}
+int main() {
 
 	fp_trace_ejecucion = fopen("../Log/traceEjecucion.txt", "w"); //Para revisar si estamos haciendo bien la planificacion
 
-	archivoLogValidar(LOG_PATH);
-//	log_kernel = archivoLogCrear(LOG_PATH, "[MAIN]- Proceso Kernel.");
-	log_kernel = log_create(LOG_PATH, "Proceso Kernel", logEnConsola, LOG_LEVEL_INFO);
+	log_kernel = archivoLogCrear(LOG_PATH, "[MAIN]- Proceso Kernel.");
 
 	log_info(log_kernel,"[MAIN]- Por cargar configuracion desde archivo.");
 
@@ -354,13 +346,6 @@ void consola() {
 			comandoSeparado = string_split(linea, separator);
 		}
 
-		if(!esComandoValido(linea)){
-			printf("\nEl comando <%s> no es valido. Intente de nuevo...",linea);
-			free(linea);
-			continue;
-		}
-
-
 		if (!strncmp(linea, "SALIR", 4)) {
 			log_info(log_kernel, "[CONSOLA]- Viene el comando en la cadena: %s",	comandoSeparado[0]);
 			free(linea);
@@ -662,20 +647,20 @@ t_pcb* planificarCortoPlazo() {
 
 void agregarANuevo(char* linea) {
 
-	log_info(log_kernel, "[agregarANuevo]- Por bloquear Mutex de Cola Nuevos.");
+	log_info(log_kernel, "[COLA | agregarANuevo]- Por bloquear Mutex de Cola Nuevos.");
 	mutexBloquear(&mutexColaNuevos);
 	list_add(colaNuevos, linea);
 	mutexDesbloquear(&mutexColaNuevos);
 
-	log_info(log_kernel,"[agregarANuevo]- Se agrego a la cola la linea %s: .",linea);
-	log_info(log_kernel, "[agregarANuevo]- Size colaNuevos: %d", list_size(colaNuevos));
+	log_info(log_kernel,"[COLA | agregarANuevo]- Se agrego a la cola la linea %s: .",linea);
+	log_info(log_kernel, "[COLA | agregarANuevo]- Size colaNuevos: %d", list_size(colaNuevos));
 
 }
 
 void agregarAListo(t_pcb* pcbParaAgregar) {
 
 	if (pcbParaAgregar->estado == nuevo) {
-		log_info(log_kernel, "[agregarAListo]- Por sacar el elemento de la cola de nuevos.");
+		log_info(log_kernel, "[COLA | agregarAListo]- Por sacar primer elemento de la cola de nuevos.");
 
 		mutexBloquear(&mutexColaNuevos);
 
@@ -685,7 +670,7 @@ void agregarAListo(t_pcb* pcbParaAgregar) {
 
 	}
 
-	log_info(log_kernel,"[agregarAListo]- Bloqueamos Mutex para poder insertar el elemento en la cola de listos.");
+	log_info(log_kernel,"[COLA | agregarAListo]- Bloqueamos Mutex para poder insertar el elemento en la cola de listos.");
 
 	mutexBloquear(&mutexColaListos);
 
@@ -694,28 +679,28 @@ void agregarAListo(t_pcb* pcbParaAgregar) {
 
 	for (int i = 0; i < list_size(colaListos); i++) {
 		t_pcb *aux = list_get(colaListos, i);
-		log_info(log_kernel,"[agregarAListo]-[DEBUG2]- En la posicion %d de la cola de listos esta el PID: %d",i, aux->pid);
+		log_info(log_kernel,"[COLA | agregarAListo]- En la posicion %d de la cola de listos esta el PID: %d",i, aux->pid);
 	}
 
 	mutexDesbloquear(&mutexColaListos);
 
-	log_info(log_kernel, "[agregarAListo]-  Size colaListos luego de agregar PCB: %d", list_size(colaListos));
+	log_info(log_kernel, "[COLA | agregarAListo]-  Size colaListos luego de agregar PCB: %d", list_size(colaListos));
 
-	log_info(log_kernel, "[agregarAListo]- Por hacer POST a sem_planificador");
+	log_info(log_kernel, "[COLA | agregarAListo]- Por hacer POST a sem_planificador");
 	sem_post(&sem_planificador);
 
-	log_info(log_kernel, "[agregarAListo]- Salimos de la funcion AgregarAListo");
+	log_info(log_kernel, "[COLA | agregarAListo]- Salimos de la funcion AgregarAListo");
 
 }
 
 void agregarAEjecutando(t_pcb* pcb) {
 
-	log_info(log_kernel, "[agregarAEjecutando]- Llego el PID: %d ,para agregar a colaEjecucion.", pcb->pid);
+	log_info(log_kernel, "[COLA | agregarAEjecutando]- Llego el PID: %d ,para agregar a colaEjecucion.", pcb->pid);
 	mutexBloquear(&mutexColaEjecucion);
 	list_add(colaEjecucion, pcb);
 	pcb->estado = ejecucion;
 	mutexDesbloquear(&mutexColaEjecucion);
-	log_info(log_kernel, "[agregarAEjecutando]- Luego de agregar PCB, el Size colaEjecucion: %d", list_size(colaEjecucion));
+	log_info(log_kernel, "[COLA | agregarAEjecutando]- Luego de agregar PCB, el Size colaEjecucion: %d", list_size(colaEjecucion));
 }
 
 t_pcb* obtenerColaListos(void) {
@@ -724,7 +709,7 @@ t_pcb* obtenerColaListos(void) {
 	mutexBloquear(&mutexColaListos);
 	pcb = list_remove(colaListos, 0);
 	mutexDesbloquear(&mutexColaListos);
-	log_info(log_kernel, "[obtenerColaListos]- [DEBUG] El que voy a ejecutar es el PID: %d",pcb->pid);
+	log_info(log_kernel, "[COLA | obtenerColaListos]- El que voy a ejecutar es el PID: %d",pcb->pid);
 	return pcb;
 }
 
@@ -902,21 +887,21 @@ void ejecutar(t_pcb* pcb, int quantum, int nivel) {
 
 void agregarAExit(t_pcb* pcb) {
 
-	log_info(log_kernel, "[agregarAExit]- Size colaExit antes: %d.",	list_size(colaExit));
+	log_info(log_kernel, "[COLA | agregarAExit]- Size colaExit antes: %d.",	list_size(colaExit));
 
 	int resultado = sacarDeColaEjecucion(pcb);
 
 	if (pcb->comando == RUN) {
 
-		log_info(log_kernel, "[agregarAExit]- La direccion del archivo a cerrar: %p.", pcb->archivo);
+		log_info(log_kernel, "[COLA | agregarAExit]- La direccion del archivo a cerrar: %p.", pcb->archivo);
 
 		fclose(pcb->archivo);
 
-		log_info(log_kernel, "[agregarAExit]- Archivo cerrado.");
+		log_info(log_kernel, "[COLA | agregarAExit]- Archivo cerrado.");
 
 	}
 
-	log_info(log_kernel, "[agregarAExit]- Resultado de sacar comando de ejecucion: %d",	resultado);
+	log_info(log_kernel, "[COLA | agregarAExit]- Resultado de sacar comando de ejecucion: %d",	resultado);
 
 	if (resultado >= 0) {
 
@@ -926,24 +911,24 @@ void agregarAExit(t_pcb* pcb) {
 
 		mutexDesbloquear(&mutexColaExit);
 
-		log_info(log_kernel, "[agregarAExit]- Size colaExit despues: %d.",list_size(colaExit));
+		log_info(log_kernel, "[COLA | agregarAExit]- Size colaExit despues: %d.",list_size(colaExit));
 
 		if(pcb->tipoRespuesta < RESP_ERROR_PEDIDO_DESCONOCIDO ){
 
 			printf("El comando: %s termino de ejecutarse", pcb->linea);
 			printf("\n>");
-			printf("");
-//			puts("");
-			log_info(log_kernel, "[agregarAExit]- La linea: %s termino de ejecutarse.", pcb->linea);
+			puts("");
+			log_info(log_kernel, "[COLA | agregarAExit]- La linea: %s termino de ejecutarse.", pcb->linea);
 
 		}
 		else{
 
-			printf("El comando: %s finalizo antes por error en la linea %d", pcb->linea,pcb->progamCounter);
+			printf("El comando: %s ", pcb->linea);
+			puts("finalizo antes por error en la linea ");
+			printf("%d",pcb->progamCounter);
 			printf("\n>");
-			printf("");
-//			puts("");
-			log_info(log_kernel, "[agregarAExit]- El comando: %s termino con error, en la linea %d. Error de TIPO: %d", pcb->linea,pcb->progamCounter,pcb->tipoRespuesta);
+			puts("");
+			log_info(log_kernel, "[COLA | agregarAExit]- El comando: %s termino con error, en la linea %d. Error de TIPO: %d", pcb->linea,pcb->progamCounter,pcb->tipoRespuesta);
 
 		}
 //		free(pcb->linea);
@@ -956,12 +941,12 @@ int sacarDeColaEjecucion(t_pcb* pcb) {
 	int posicion = buscarPcbEnColaEjecucion(pcb);
 
 	if (posicion >= 0) {
-		log_info(log_kernel, "[sacarDeColaEjecucion]- Por sacar de ejecucion");
+		log_info(log_kernel, "[COLA | sacarDeColaEjecucion]- Por sacar de ejecucion");
 		list_remove(colaEjecucion, posicion);
 	}
 
 	mutexDesbloquear(&mutexColaEjecucion);
-	log_info(log_kernel, "[sacarDeColaEjecucion]- colaEjecucion (s): %d",	list_size(colaEjecucion));
+	log_info(log_kernel, "[COLA | sacarDeColaEjecucion]- colaEjecucion (s): %d",	list_size(colaEjecucion));
 
 	return posicion;
 }
@@ -2458,150 +2443,4 @@ void imprimirIntFloat(bool consola, const char *format, int p1, float p2)
 		printf("\n");
 		printf(format,p1,p2);
 	}
-}
-
-bool esComandoValido(char *linea)
-{
-	bool esValido = false;
-	request_t req = parser(linea);
-	log_info(log_kernel, "[VALIDANDO REQUEST] ");
-	int criterio, key, t_compactacion, particiones;
-	switch(req.command){
-		case ADD_PARSER:
-			if(req.cant_args != 4){
-				log_warning(log_kernel, "[VALIDANDO REQUEST] Cantidad de parametros incorrecta para %s",req.command_str);
-				break;
-			}
-			if(strcmp(req.args[0],"MEMORY") || strcmp(req.args[2],"TO")){
-				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El comando %s debe ser de la forma: ADD MEMORY <NUM> TO <CRITERIO>",req.command_str);
-				break;
-			}
-			criterio = buscarCriterio(req.args[3]);
-			if(criterio < 0 || criterio > EC){
-				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El criterio %s no es un criterio valido",req.args[3]);
-				break;
-			}
-			int memoria = atoi(req.args[1]);
-			if(memoria == 0){
-				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El argumento %s no es un numero de memoria valido",req.args[1]);
-				break;
-			}
-			esValido = true;
-			break;
-		case RUN_PARSER:
-			if(req.cant_args != 1){
-				log_warning(log_kernel, "[VALIDANDO REQUEST] Cantidad de parametros incorrecta para %s",req.command_str);
-				break;
-			}
-			if(strlen(req.args[0])<5){
-				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El nombre de archivo <%s> no es valido",req.args[0]);
-				break;
-			}
-			if(!string_ends_with(req.args[0],".lql")){
-				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El nombre de archivo <%s> no es valido",req.args[0]);
-				break;
-			}
-			esValido = true;
-			break;
-		case SELECT_PARSER:
-			if(req.cant_args != 2){
-				log_warning(log_kernel, "[VALIDANDO REQUEST] Cantidad de parametros incorrecta para %s",req.command_str);
-				break;
-			}
-			key = strtol(req.args[1],NULL,10);
-			if(key == 0){
-				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El argumento %s no es un numero de key valido",req.args[1]);
-				break;
-			}
-			if(strlen(req.args[0])==0){
-				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El argumento %s no es un nombre de tabla valido",req.args[0]);
-				break;
-			}
-			esValido = true;
-			break;
-		case INSERT_PARSER:
-			if(req.cant_args != 3 && req.cant_args != 4){
-				log_warning(log_kernel, "[VALIDANDO REQUEST] Cantidad de parametros incorrecta para %s",req.command_str);
-				break;
-			}
-			key = strtol(req.args[1],NULL,10);
-			if(key == 0){
-				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El argumento %s no es un numero de key valido",req.args[1]);
-				break;
-			}
-			if(strlen(req.args[0])==0){
-				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El argumento %s no es un nombre de tabla valido",req.args[0]);
-				break;
-			}
-			if(strlen(req.args[2])==0 || string_contains(req.args[2],";") || string_contains(req.args[2],"|")){
-				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El argumento %s no es un value valido",req.args[0]);
-				break;
-			}
-			esValido = true;
-			break;
-		case CREATE_PARSER:
-			//CREATE TABLA SC 3 40000
-			if(req.cant_args != 4){
-				log_warning(log_kernel, "[VALIDANDO REQUEST] Cantidad de parametros incorrecta para %s",req.command_str);
-				break;
-			}
-			if(strlen(req.args[0])==0){
-				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El argumento %s no es un nombre de tabla valido",req.args[0]);
-				break;
-			}
-			criterio = buscarCriterio(req.args[1]);
-			if(criterio < 0 || criterio > EC){
-				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El criterio %s no es un criterio valido",req.args[3]);
-				break;
-			}
-			particiones = strtol(req.args[2],NULL,10);
-			if(particiones <= 0){
-				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El argumento %s no es una cantidad valida de particiones",req.args[1]);
-				break;
-			}
-			t_compactacion = strtol(req.args[3],NULL,10);
-			if(t_compactacion <= 0){
-				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El argumento %s no es un tiempo de compactacion valido",req.args[1]);
-				break;
-			}
-			esValido = true;
-			break;
-		case DESCRIBE_PARSER:
-		case JOURNAL_PARSER:
-			if(req.cant_args > 0){
-				log_warning(log_kernel, "[VALIDANDO REQUEST] Cantidad de parametros incorrecta para %s",req.command_str);
-				break;
-			}
-			esValido = true;
-			break;
-		case DROP_PARSER:
-			if(req.cant_args != 1){
-				log_warning(log_kernel, "[VALIDANDO REQUEST] Cantidad de parametros incorrecta para %s",req.command_str);
-				break;
-			}
-			if(strlen(req.args[0])==0){
-				log_warning(log_kernel, "[VALIDANDO REQUEST] Error. El argumento %s no es un nombre de tabla valido",req.args[0]);
-				break;
-			}
-			esValido = true;
-			break;
-		case METRICS_PARSER:
-			if(req.cant_args != 0){
-				log_warning(log_kernel, "[VALIDANDO REQUEST] Cantidad de parametros incorrecta para %s",req.command_str);
-				break;
-			}
-			esValido = true;
-			break;
-		case INVALID_COMMAND_PARSER:
-			log_warning(log_kernel, "[VALIDANDO REQUEST] El comando <%s> no existe",req.request_str);
-			break;
-		case SALIR_PARSER:
-			esValido = true;
-			break;
-		default:
-			log_warning(log_kernel, "[VALIDANDO REQUEST] El comando <%s> no existe",req.request_str);
-			break;
-	}
-	borrar_request(req);
-	return esValido;
 }
