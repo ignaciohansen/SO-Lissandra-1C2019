@@ -46,9 +46,9 @@ rm -r  MEMORIA.txt
 fi
 
 cp ../../CONFIGS_SCRIPTS/PRUEBA_BASE/MEM$1_CONFIG.txt ./
-echo "Config lfs copiado"
+echo "Config base copiado"
 
-mv MEM$1_CONFIG.txt MEMORIA.txt
+mv MEM$1_CONFIG.txt MEMORIA_$1.txt
 
 sed -i -e "s/ip/$IP_MEM/" MEM$1_CONFIG.txt
 sed -i -e "s/ip_fs/$IP_LFS/" MEM$1_CONFIG.txt

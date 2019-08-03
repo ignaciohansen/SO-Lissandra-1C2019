@@ -48,7 +48,7 @@ fi
 cp ../../CONFIGS_SCRIPTS/PRUEBA_LFS/LFS_CONFIG.txt ./
 echo "Config lfs copiado"
 
-mv MEM$1_CONFIG.txt MEMORIA.txt
+mv MEM$1_CONFIG.txt MEMORIA_$1.txt
 
 sed -i -e "s/ip/$IP_MEM/" MEM$1_CONFIG.txt
 sed -i -e "s/ip_fs/$IP_LFS/" MEM$1_CONFIG.txt
